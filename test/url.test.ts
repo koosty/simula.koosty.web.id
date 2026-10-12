@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { simulasiUrl } from '../src/lib/catalog';
-import { simulationMetaOf } from '../src/lib/simulations';
+import { simulationMetaOf, LEVEL_BY_SIMULATION_NAME } from '../src/lib/simulations';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
@@ -21,6 +21,21 @@ describe('simulasiUrl', () => {
     expect(simulasiUrl({ level: 'sd', grade: 5, subject: 'matematika', slug: 'pecahan' })).toBe(
       '/sd/kelas-5/matematika/pecahan/',
     );
+  });
+});
+
+describe('level mapping', () => {
+  it('translates the wording a simulation writes in its own metadata', () => {
+    // The 23 current simulations all say "Lower Secondary". A simulation for
+    // another stage must translate too, or all of them warn falsely.
+    expect(LEVEL_BY_SIMULATION_NAME['lower secondary']).toBe('smp');
+    expect(LEVEL_BY_SIMULATION_NAME['upper secondary']).toBe('sma');
+    expect(LEVEL_BY_SIMULATION_NAME.primary).toBe('sd');
+  });
+
+  it('leaves an unknown level untranslated, so a mismatch is reported', () => {
+    // Mapping it to something would hide a real disagreement.
+    expect(LEVEL_BY_SIMULATION_NAME.vocational).toBeUndefined();
   });
 });
 
