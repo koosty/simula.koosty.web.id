@@ -15,3 +15,27 @@ Inlining the simulation into the page instead of framing it was tested and rejec
 The deciding factor is what a bad simulation can cost. Framed, a simulation is confined: the worst case is an ugly frame that we notice in review. Inlined, its css reaches the site navigation and headings, so a single bad file can break pages it does not belong to. Framing costs a small amount of script that the height measurements justify; inlining costs attention per simulation, forever, on a class of breakage the build cannot detect.
 
 The frame carries a `title` naming the simulation, sits under a breadcrumb, and is followed by a visible link to open the simulation in a new tab as a fallback for devices that block iframes.
+
+## Isolation, measured rather than assumed
+
+A frame's styles are isolated from the host page: measured in a browser, a
+simulation injecting `body{background:red !important} h1{font-size:99px !important}`
+left the site's own heading and navigation untouched. Its script is not, as long
+as the frame is same-origin: a simulation can reach `parent.document`, and one
+was made to change the page heading and background to prove it.
+
+Closing that needs a `sandbox` without `allow-same-origin`. That was tried and
+rejected on measurement, not on principle. With `sandbox="allow-scripts"` the
+simulation runs perfectly — the 3D simulation was driven interactively — but the
+parent can no longer read the child document, so the height measurement cannot
+run and the frame stays at a fixed tall height with an inner scrollbar. That
+trades the ticket's first criterion for the tenth.
+
+The sandbox is therefore off, and the reasoning is about trust rather than
+about security: the simulations are self-contained files delivered by a tool this
+project controls, they carry no network calls, and the worst case of a
+misbehaving one is an ugly frame noticed in review. Framing already bounds the
+blast radius against CSS. If the simulations ever come from somewhere untrusted,
+this decision should be revisited, and the cost of revisiting it is a height that
+cannot be measured — which is the real price of this choice, recorded so it is
+not discovered later.

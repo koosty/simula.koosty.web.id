@@ -1,9 +1,12 @@
 ---
 import type { GetStaticPaths } from 'astro';
 import Base from '../../../../layouts/Base.astro';
-import { simulasiFileUrl, simulasiUrlSegments } from '../../../../lib/catalog';
+import { simulasiFileUrl, simulasiUrl, simulasiUrlSegments } from '../../../../lib/catalog';
 import { tingkatLabel } from '../../../../lib/tingkat';
 import { loadCatalog } from '../../../../lib/loadCatalog';
+import { relatedSimulations } from '../../../../lib/related';
+import { subjectLabel } from '../../../../lib/katalogFilter';
+import { FALLBACK_HEIGHT, UNMEASURABLE_HEIGHT, FRAME_ID } from '../../../../lib/frame';
 
 // The route params and the full URL are both composed by simulasiUrlSegments,
 // so the page and the catalog can never disagree about where a simulation
@@ -22,30 +25,109 @@ const { entry } = Astro.props;
 // the level the catalog entry claims, so a level disagreement can never turn
 // into a dead link.
 const rawFileUrl = simulasiFileUrl(entry, entry.fileLevel);
+
+// Suggestions come from the same catalog the page was generated from, so a
+// neighbour linked here is a page the build actually produced. The simulation
+// being read is kept in the list it is matched against, since its position in
+// the class is what the neighbours are chosen around.
+const related = relatedSimulations(await loadCatalog(), entry);
+
+// The breadcrumb walks the same segments the URL does, so it names the stage,
+// the class and the subject a reader arrived through.
+const segments = simulasiUrlSegments(entry);
+const breadcrumb = [
+  { label: 'Beranda', path: '/' },
+  { label: 'Katalog', path: '/katalog/' },
+  { label: tingkatLabel(entry.level), path: `/${segments.tingkat}/` },
+  {
+    label: `Kelas ${entry.grade}`,
+    path: `/${segments.tingkat}/${segments.kelas}/`,
+  },
+];
 ---
 
 <Base title={`${entry.title} · Simula`} description={entry.description}>
   <main class="wrap">
     <article>
+      <nav class="breadcrumb" aria-label="Lokasi">
+        {
+          breadcrumb.map((crumb, index) => (
+            <>
+              {index > 0 && <span aria-hidden="true"> / </span>}
+              <a href={crumb.path}>{crumb.label}</a>
+            </>
+          ))
+        }
+        <span aria-hidden="true"> / </span>
+        <span aria-current="page">{subjectLabel(entry.subject)}</span>
+      </nav>
+
       <header>
         <h1>{entry.title}</h1>
         <p class="description">{entry.description}</p>
         <p class="meta">
-          {tingkatLabel(entry.level)} · Kelas {entry.grade}
+          {tingkatLabel(entry.level)} · Kelas {entry.grade} · {subjectLabel(entry.subject)}
         </p>
       </header>
 
-      <iframe src={rawFileUrl} title={entry.title} loading="lazy"></iframe>
+      <iframe
+        id={FRAME_ID}
+        src={rawFileUrl}
+        title={entry.title}
+        loading="lazy"
+        data-fallback-height={String(FALLBACK_HEIGHT)}
+        data-unmeasurable-height={String(UNMEASURABLE_HEIGHT)}
+      ></iframe>
 
       <p class="fallback">
-        <a href={rawFileUrl}>Buka simulasi ini di tab baru</a> jika simulasi tidak
-        muncul di atas.
+        <a href={rawFileUrl} target="_blank" rel="noopener">Buka simulasi ini di tab baru</a>
+        jika simulasi tidak muncul di atas.
       </p>
+
+      {
+        related.length > 0 && (
+          <nav class="related" aria-labelledby="related-heading">
+            <h2 id="related-heading">Simulasi lain di {subjectLabel(entry.subject)}</h2>
+            <ul>
+              {related.map((item) => (
+                <li>
+                  <a href={simulasiUrl(item)}>{item.title}</a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )
+      }
     </article>
   </main>
 </Base>
 
+<script>
+  import { attachFrameResize, FRAME_ID } from '../../../../lib/frame';
+
+  // The script only grows the frame; the simulation inside is shown either way,
+  // so a reader without scripting sees a frame at its fallback height rather
+  // than a blank page.
+  const frame = document.getElementById(FRAME_ID) as HTMLIFrameElement | null;
+  if (frame) {
+    attachFrameResize(frame, {
+      fallbackHeight: Number(frame.dataset.fallbackHeight),
+      unmeasurableHeight: Number(frame.dataset.unmeasurableHeight),
+    });
+  }
+</script>
+
 <style>
+  .breadcrumb {
+    margin-bottom: 16px;
+    font-size: 0.875rem;
+    color: #9a9a9a;
+  }
+
+  .breadcrumb a {
+    color: #cfe3ff;
+  }
+
   h1 {
     font-size: 2rem;
     font-weight: 600;
@@ -68,10 +150,10 @@ const rawFileUrl = simulasiFileUrl(entry, entry.fileLevel);
   iframe {
     display: block;
     width: 100%;
-    /* A fixed fallback height. Measuring the simulation's real height, and
-       letting the frame grow to it, is the next ticket's work
-       (docs/adr/0005). */
-    height: 80vh;
+    /* A fixed fallback so something usable shows before the script measures the
+       simulation's real height, and so the frame's own height cannot stretch
+       the document being measured (docs/adr/0005). */
+    height: 400px;
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 8px;
     background: #0a0a1a;
@@ -81,5 +163,29 @@ const rawFileUrl = simulasiFileUrl(entry, entry.fileLevel);
     margin-top: 16px;
     font-size: 0.9375rem;
     color: #9a9a9a;
+  }
+
+  .related {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .related h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0 0 12px;
+  }
+
+  .related ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 8px;
+  }
+
+  .related a {
+    color: #cfe3ff;
   }
 </style>
