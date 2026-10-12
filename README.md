@@ -16,11 +16,22 @@ site's shape.
 | `npm run build` | Build static output into `dist/` |
 | `npm run preview` | Serve the built output locally |
 | `npm run check` | Typecheck the Astro and TypeScript sources |
+| `npm run lint` | Lint the sources, including the inside of `.astro` files |
 | `npm test` | Build, then run the tests against the built output |
+| `npm run verify` | Everything a change must pass: check, lint, then test |
 
 The tests read the emitted HTML in `dist/` rather than the source, because what
 ships is what matters. `npm test` builds first, so a stale `dist/` cannot make
 them pass. Node 22.12 or newer is required, which is what Astro needs.
+
+There is no autoformatter. Code is formatted by hand, so run `npm run lint` and
+fix what it reports rather than expecting a tool to settle the layout.
+
+Linting is ESLint with `eslint-plugin-astro`, which reads a whole `.astro` file:
+frontmatter, template and `<script>` together. That is the reason for choosing
+it, since a linter that reads only the frontmatter calls every variable the
+template uses unused. Simulation files under `example-simulations/` are skipped,
+because the external tool produces them and this repository never edits them.
 
 ## Deploying
 
