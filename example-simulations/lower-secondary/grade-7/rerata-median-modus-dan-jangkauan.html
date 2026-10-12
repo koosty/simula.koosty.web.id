@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="education_levels" content="Lower Secondary">
+  <meta name="grade" content="7">
+<title>Rerata, Median, Modus, dan Jangkauan · Matematika SMP Kelas VII</title>
+<meta name="description" content="Murid menghitung ukuran pemusatan dan melihat dampaknya saat data berubah.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Rerata, Median, Modus, dan Jangkauan">
+<meta property="og:description" content="Murid menghitung ukuran pemusatan data nilai IPA kelas 7A: rerata (mean), median, modus, dan jangkauan, lalu melihat dampaknya saat data berubah.">
+<meta property="og:locale" content="id">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font);font-size:var(--text-base);line-height:1.5;background:var(--bg);color:var(--text)}
+:root{
+  /* Colour */
+  --bg:#0a0a1a;
+  --surface:#14141e;
+  --panel:rgba(20,20,30,0.9);
+  --border:rgba(255,255,255,0.1);
+  --border-strong:#333;
+  --text:#ffffff;
+  --text-muted:#aaa;
+  --text-dim:#888;
+  --accent:#6366f1;
+  --accent-hover:#5558e8;
+  --accent-soft:rgba(139,92,246,0.95);
+  --success:#fbbf24;
+  --warning:#fb923c;
+  --error:#ff6b6b;
+  /* Spacing scale */
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;
+  /* Radius scale */
+  --radius-sm:4px;--radius-md:8px;--radius-lg:12px;--radius-pill:999px;
+  /* Type scale (system fonts only) */
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  --font-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --text-base:16px;--text-sm:14px;--text-xs:13px;--text-caption:11px;--text-heading:24px;
+  /* Focus, motion, stacking */
+  --focus-ring:0 0 0 3px rgba(99,102,241,0.5);
+  --motion:0.2s;--motion-slow:0.3s;
+  --z-overlay:100;--z-modal:1000;
+}
+[data-theme="light"]{
+  --bg:#f7f7fb;--surface:#ffffff;--panel:rgba(255,255,255,0.92);
+  --border:rgba(0,0,0,0.12);--border-strong:#d4d4d8;
+  --text:#16161d;--text-muted:#52525b;--text-dim:#71717a;
+  --accent:#4f46e5;--accent-hover:#4338ca;--accent-soft:rgba(79,70,229,0.95);
+  --success:#b45309;--warning:#c2410c;--error:#dc2626;
+}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-4)}
+.panel-heading{font-size:var(--text-sm);color:var(--text-muted);margin-bottom:var(--space-2)}
+.btn{font-family:inherit;font-size:var(--text-sm);min-height:44px;min-width:44px;padding:var(--space-3) var(--space-5);border:1px solid var(--border-strong);border-radius:var(--radius-md);background:var(--border-strong);color:var(--text);cursor:pointer;transition:background var(--motion);touch-action:manipulation}
+.btn:hover{background:var(--text-muted)}
+.btn:active{transform:scale(0.95)}
+.btn:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+.btn:disabled{opacity:0.45;cursor:not-allowed}
+.btn-primary{background:var(--accent);border-color:var(--accent)}
+.btn-primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+.btn-ghost{background:transparent;border-color:var(--border)}
+.btn-ghost:hover{background:var(--surface)}
+.control-label{font-size:var(--text-caption);text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted)}
+input[type="range"]{width:100%;height:6px;-webkit-appearance:none;appearance:none;background:var(--border-strong);border-radius:var(--radius-pill);cursor:pointer}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;background:var(--accent);border-radius:50%;cursor:pointer}
+
+/* Touch target: keep the 6px visual track, but give the control a 44px hit area. */
+input[type="range"] { height: 44px; background: transparent; }
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-moz-range-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-webkit-slider-thumb { margin-top: -7px; }
+input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; background: var(--accent); border-radius: 50%; cursor: pointer; }
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
+#feedback-panel{background:var(--surface);border-left:3px solid var(--accent);border-radius:var(--radius-md);padding:var(--space-3) var(--space-4)}
+#feedback-panel.success{border-left-color:var(--success)}
+#feedback-panel.error{border-left-color:var(--error)}
+.progress-track{height:8px;background:var(--border-strong);border-radius:var(--radius-pill);overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);transition:width var(--motion-slow)}
+
+.wrap{max-width:1100px;margin:0 auto;padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-4)}
+.stack{display:flex;flex-direction:column;gap:var(--space-4)}
+h1{font-size:var(--text-heading);line-height:1.25}
+.sub{font-size:var(--text-sm);color:var(--text-muted);margin-top:var(--space-2);max-width:70ch}
+.stage{position:relative;width:100%;min-height:300px;aspect-ratio:4/3;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+canvas{display:block;width:100%;height:100%;touch-action:none}
+.controls{display:flex;flex-direction:column;gap:var(--space-3)}
+.ctl{display:flex;flex-direction:column;gap:var(--space-2)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2)}
+.mono{font-family:var(--font-mono)}
+#siswa-display,#nilai-display{font-family:var(--font-mono);font-size:var(--text-sm);color:var(--text)}
+.chips{display:flex;flex-wrap:wrap;gap:var(--space-2)}
+.chip{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:44px;min-width:48px;padding:var(--space-2) var(--space-3);font-family:inherit;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);color:var(--text);cursor:pointer;touch-action:manipulation}
+.chip:hover{border-color:var(--accent)}
+.chip:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+.chip[aria-pressed="true"]{border-color:var(--accent);background:var(--panel)}
+.chip-name{font-size:var(--text-caption);color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px}
+.chip-val{font-family:var(--font-mono);font-size:var(--text-sm)}
+.btn-row{display:flex;flex-wrap:wrap;gap:var(--space-2)}
+.btn-row .btn{flex:1 1 44%}
+.readouts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3)}
+.stat{display:flex;flex-direction:column;gap:var(--space-1)}
+.stat-val{font-family:var(--font-mono);font-size:var(--text-heading);line-height:1.2}
+.note{font-size:var(--text-sm);color:var(--text-muted);border-left:3px solid var(--warning);background:var(--bg);border-radius:var(--radius-sm);padding:var(--space-2) var(--space-3)}
+.cek-row{display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}
+.cek-input{flex:1 1 120px;min-height:44px;padding:var(--space-2) var(--space-3);font-family:var(--font-mono);font-size:var(--text-sm);background:var(--bg);color:var(--text);border:1px solid var(--border-strong);border-radius:var(--radius-md)}
+.cek-input:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+.panel h2{font-size:var(--text-heading);margin-bottom:var(--space-2)}
+.panel h3{font-size:var(--text-base);color:var(--accent);margin:var(--space-3) 0 var(--space-1)}
+.calc{font-family:var(--font-mono);font-size:var(--text-sm);overflow-wrap:anywhere;color:var(--text-muted)}
+.calc strong{color:var(--text)}
+@media(min-width:768px){.cols{display:grid;grid-template-columns:1fr 320px;gap:var(--space-4);align-items:start}.stage{aspect-ratio:16/9}.btn-row .btn{flex:1 1 100%}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <h1>Rerata, Median, Modus, dan Jangkauan</h1>
+    <p class="sub">Kelas 7A punya 10 siswa. Setiap titik pada garis bilangan adalah nilai IPA satu siswa. Ubah nilai salah satu siswa, lalu lihat apa yang terjadi pada rerata (mean), median, modus, dan jangkauan. Kamu juga akan menghitung median, modus, dan jangkauan, lalu menganalisis pengaruh perubahan data.</p>
+  </header>
+
+  <div class="cols">
+    <div class="stack">
+      <section class="stage">
+        <canvas id="s22-canvas" role="img" aria-label="Garis bilangan 0 sampai 100 dengan satu titik untuk nilai IPA setiap siswa, penanda rerata, median, modus, dan jangkauan."></canvas>
+      </section>
+
+      <section class="panel">
+        <p class="panel-heading">Hasil perhitungan untuk data saat ini</p>
+        <div class="readouts">
+          <div class="stat"><span class="control-label">Rerata (mean)</span><span class="stat-val" id="rerata-display">82.60</span></div>
+          <div class="stat"><span class="control-label">Median</span><span class="stat-val" id="median-display">84.5</span></div>
+          <div class="stat"><span class="control-label">Modus</span><span class="stat-val" id="modus-display">&#8212;</span></div>
+          <div class="stat"><span class="control-label">Jangkauan</span><span class="stat-val" id="jangkauan-display">29</span></div>
+          <div class="stat"><span class="control-label">Jumlah data</span><span class="stat-val" id="jumlah-display">10</span></div>
+          <div class="stat"><span class="control-label">Nilai terkecil</span><span class="stat-val" id="min-display">66</span></div>
+          <div class="stat"><span class="control-label">Nilai terbesar</span><span class="stat-val" id="max-display">95</span></div>
+          <div class="stat"><span class="control-label">Selisih rerata &#8211; median</span><span class="stat-val" id="selisih-display">1.9</span></div>
+        </div>
+        <p class="note" id="outlier-note" hidden>Nilai ekstrem 20 masuk ke data. Rerata ikut terseret oleh nilai ekstrem, sedangkan median hampir tidak berubah.</p>
+        <p class="note" id="split-note" hidden>Rerata dan median berbeda lebih dari 5. Rerata terpengaruh oleh setiap nilai, sedangkan median hanya melihat nilai tengah.</p>
+      </section>
+
+      <section class="panel">
+        <h2>Data nilai IPA kelas 7A</h2>
+        <p class="panel-heading">Klik salah satu kartu untuk memilih siswa, lalu geser slider nilai.</p>
+        <div class="chips" id="chips"></div>
+      </section>
+    </div>
+
+    <div class="stack">
+      <section class="panel controls">
+        <p class="panel-heading">Kontrol</p>
+
+        <div class="ctl">
+          <div class="row">
+            <label class="control-label" for="siswa-slider">Pilih siswa</label>
+            <span id="siswa-display">Siswa 3 &#8212; 90</span>
+          </div>
+          <input type="range" id="siswa-slider" min="0" max="9" step="1" value="2" aria-label="Pilih siswa">
+        </div>
+
+        <div class="ctl">
+          <div class="row">
+            <label class="control-label" for="nilai-slider">Nilai siswa terpilih</label>
+            <span id="nilai-display">90</span>
+          </div>
+          <input type="range" id="nilai-slider" min="0" max="100" step="1" value="90" aria-label="Nilai siswa terpilih">
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" id="cek-btn" type="button" onclick="cekJawaban()">Cek jawaban saya</button>
+          <button class="btn" id="sort-btn" type="button" onclick="urutkanData()">Urutkan data</button>
+          <button class="btn" id="distraction-btn" type="button" onclick="toggleDistraction()">Tambah nilai ekstrem</button>
+          <button class="btn" id="random-btn" type="button" onclick="dataAcak()">Data acak</button>
+          <button class="btn btn-ghost" id="reset-btn" type="button" onclick="resetState()">Reset</button>
+        </div>
+
+        <div class="ctl">
+          <label class="control-label" for="cek-input">Tulis rerata (mean) di sini</label>
+          <div class="cek-row">
+            <input class="cek-input" id="cek-input" type="text" inputmode="decimal" autocomplete="off" placeholder="mis. 82.60">
+            <button class="btn" id="cek-kirim-btn" type="button" onclick="cekJawaban()">Cek</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="feedback-panel" role="status" aria-live="polite">
+        <span id="feedback-text">Hitung sendiri rerata dari data di atas, ketik jawabannya, lalu tekan tombol Cek jawaban saya.</span>
+      </section>
+    </div>
+  </div>
+
+  <section class="panel">
+    <h2>Cara menghitung</h2>
+    <h3>Rerata (mean)</h3>
+    <p class="calc">Rerata = jumlah data &#247; banyak data</p>
+    <p class="calc">jumlah data = <span id="calc-sum">826</span>, banyak data = <span id="calc-count">10</span></p>
+    <p class="calc">rerata = <span id="calc-sum2">826</span> &#247; <span id="calc-count2">10</span> = <strong id="calc-mean">82.60</strong></p>
+
+    <h3>Median</h3>
+    <p class="calc">Data diurutkan dari yang terkecil: <span id="calc-order">66, 72, 77, 78, 84, 85, 88, 90, 91, 95</span></p>
+    <p class="calc" id="calc-median">Banyak data 10, jadi median = rerata dari data ke-5 dan data ke-6 = (84 + 85) &#247; 2 = <strong>84.5</strong></p>
+
+    <h3>Modus</h3>
+    <p class="calc" id="calc-mode">Modus = nilai yang paling sering muncul.</p>
+
+    <h3>Jangkauan</h3>
+    <p class="calc">Jangkauan = nilai terbesar &#8722; nilai terkecil</p>
+    <p class="calc">jangkauan = <span id="calc-max">95</span> &#8722; <span id="calc-min">66</span> = <strong id="calc-range">29</strong></p>
+  </section>
+</main>
+
+<script type="application/json" id="widget-config">
+{"type":"simulation","concept":"measures-of-center","description":"Murid menghitung ukuran pemusatan dan melihat dampaknya saat data berubah.","variables":[{"name":"nilai","label":"NilaiIPA","min":0,"max":10,"default":7,"unit":"nilai"},{"name":"jumlah","label":"Jumlahsiswa","min":5,"max":20,"default":10,"unit":"orang"}],"presets":[]}
+</script>
+
+<script>
+const DEFAULT_DATA = [72, 85, 90, 78, 66, 91, 84, 77, 88, 95];
+const OUTLIER_VALUE = 20;
+
+let data = DEFAULT_DATA.slice();
+let anim = data.slice();
+let outlier = false;
+let selected = 2;
+let sortMode = false;
+let animMean = 82.6;
+let animMedian = 84.5;
+let rafId = null;
+let sortTimer = null;
+
+const canvas = document.getElementById('s22-canvas');
+const ctx = canvas.getContext('2d');
+const chipsBox = document.getElementById('chips');
+let W = 0;
+let H = 0;
+
+function el(id) { return document.getElementById(id); }
+
+/* ---------- perhitungan ---------- */
+function totalOf(a) { return a.reduce(function (x, y) { return x + y; }, 0); }
+function rerataOf(a) { return a.length ? totalOf(a) / a.length : 0; }
+function medianOf(a) {
+  const s = a.slice().sort(function (x, y) { return x - y; });
+  const n = s.length;
+  if (!n) return 0;
+  return n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2;
+}
+function modusOf(a) {
+  const c = new Map();
+  a.forEach(function (v) { c.set(v, (c.get(v) || 0) + 1); });
+  let top = 0;
+  c.forEach(function (n) { if (n > top) top = n; });
+  const nilai = [];
+  c.forEach(function (n, k) { if (n === top && top > 1) nilai.push(k); });
+  nilai.sort(function (x, y) { return x - y; });
+  return { nilai: nilai, freq: top };
+}
+function fmt1(v) { return (Math.round(v * 10) / 10).toFixed(1); }
+function fmt2(v) { return (Math.round(v * 100) / 100).toFixed(2); }
+
+/* ---------- tampilan angka ---------- */
+function updateAll() {
+  const r = rerataOf(data);
+  const md = medianOf(data);
+  const mo = modusOf(data);
+  const mn = Math.min.apply(null, data);
+  const mx = Math.max.apply(null, data);
+  const s = data.slice().sort(function (x, y) { return x - y; });
+  const t = totalOf(data);
+
+  el('rerata-display').textContent = fmt2(r);
+  el('median-display').textContent = fmt1(md);
+  el('modus-display').textContent = mo.nilai.length ? mo.nilai.join(', ') : '—';
+  el('jangkauan-display').textContent = String(mx - mn);
+  el('jumlah-display').textContent = String(data.length);
+  el('min-display').textContent = String(mn);
+  el('max-display').textContent = String(mx);
+  el('selisih-display').textContent = fmt1(Math.abs(r - md));
+
+  el('calc-sum').textContent = String(t);
+  el('calc-count').textContent = String(data.length);
+  el('calc-sum2').textContent = String(t);
+  el('calc-count2').textContent = String(data.length);
+  el('calc-mean').textContent = fmt2(r);
+  el('calc-order').textContent = s.join(', ');
+  el('calc-max').textContent = String(mx);
+  el('calc-min').textContent = String(mn);
+  el('calc-range').textContent = String(mx - mn);
+
+  const n = data.length;
+  if (n % 2 === 1) {
+    const tengah = s[(n - 1) / 2];
+    el('calc-median').innerHTML = 'Banyak data ' + n + ' (ganjil), jadi median = data ke-' + ((n + 1) / 2) + ' = <strong>' + fmt1(tengah) + '</strong>';
+  } else {
+    const a = s[n / 2 - 1];
+    const b = s[n / 2];
+    el('calc-median').innerHTML = 'Banyak data ' + n + ', jadi median = rerata dari data ke-' + (n / 2) + ' dan data ke-' + (n / 2 + 1) + ' = (' + a + ' + ' + b + ') &#247; 2 = <strong>' + fmt1((a + b) / 2) + '</strong>';
+  }
+
+  if (mo.nilai.length === 0) {
+    el('calc-mode').innerHTML = 'Tidak ada modus karena semua nilai muncul satu kali saja.';
+  } else {
+    el('calc-mode').innerHTML = 'Nilai <strong>' + mo.nilai.join(', ') + '</strong> muncul <strong>' + mo.freq + ' kali</strong>, paling sering dari nilai lain.';
+  }
+
+  el('outlier-note').hidden = !outlier;
+  el('split-note').hidden = outlier || !(Math.abs(r - md) > 5);
+
+  el('distraction-btn').textContent = outlier ? 'Kurangi nilai ekstrem' : 'Tambah nilai ekstrem';
+  syncControls();
+  updateChips();
+}
+
+function syncControls() {
+  el('siswa-slider').max = String(data.length - 1);
+  el('siswa-slider').value = String(selected);
+  el('nilai-slider').value = String(data[selected]);
+  el('nilai-display').textContent = String(data[selected]);
+  el('siswa-display').textContent = 'Siswa ' + (selected + 1) + ' — ' + data[selected];
+}
+
+/* ---------- kartu siswa ---------- */
+function buildChips() {
+  if (sortTimer) { clearTimeout(sortTimer); sortTimer = null; }
+  Array.prototype.forEach.call(chipsBox.children, function (c) {
+    c.style.transition = '';
+    c.style.transform = '';
+  });
+  chipsBox.textContent = '';
+  const order = data.map(function (v, i) { return i; });
+  if (sortMode) order.sort(function (a, b) { return data[a] - data[b] || a - b; });
+  order.forEach(function (i) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip';
+    b.dataset.index = String(i);
+    const nama = document.createElement('span');
+    nama.className = 'chip-name';
+    nama.textContent = 'S' + (i + 1);
+    const nilai = document.createElement('span');
+    nilai.className = 'chip-val';
+    nilai.dataset.val = String(i);
+    nilai.textContent = String(data[i]);
+    b.appendChild(nama);
+    b.appendChild(nilai);
+    chipsBox.appendChild(b);
+  });
+  updateChips();
+}
+
+function updateChips() {
+  const vals = chipsBox.querySelectorAll('.chip-val');
+  vals.forEach(function (n) { n.textContent = String(data[Number(n.dataset.val)]); });
+  const chips = chipsBox.querySelectorAll('.chip');
+  chips.forEach(function (c) {
+    c.setAttribute('aria-pressed', Number(c.dataset.index) === selected ? 'true' : 'false');
+  });
+}
+
+function pilihSiswa(i) {
+  if (i < 0 || i >= data.length) return;
+  selected = i;
+  syncControls();
+  updateChips();
+  mulaiAnimasi();
+}
+
+function stopAnimasi() {
+  if (rafId) cancelAnimationFrame(rafId);
+  rafId = null;
+  if (sortTimer) { clearTimeout(sortTimer); sortTimer = null; }
+}
+
+function mulaiAnimasi() {
+  if (!rafId) rafId = requestAnimationFrame(tik);
+}
+
+function tik() {
+  let jalan = false;
+  for (let i = 0; i < data.length; i++) {
+    const d = data[i] - anim[i];
+    if (Math.abs(d) > 0.05) { anim[i] += d * 0.18; jalan = true; } else { anim[i] = data[i]; }
+  }
+  const targetMean = rerataOf(data);
+  const dMean = targetMean - animMean;
+  if (Math.abs(dMean) > 0.02) { animMean += dMean * 0.18; jalan = true; } else { animMean = targetMean; }
+  const targetMedian = medianOf(data);
+  const dMedian = targetMedian - animMedian;
+  if (Math.abs(dMedian) > 0.02) { animMedian += dMedian * 0.18; jalan = true; } else { animMedian = targetMedian; }
+
+  gambar();
+  if (jalan) { rafId = requestAnimationFrame(tik); } else { rafId = null; }
+}
+
+function selaraskanAnim() {
+  const next = [];
+  for (let i = 0; i < data.length; i++) next.push(i < anim.length ? anim[i] : data[i]);
+  return next;
+}
+
+/* ---------- kanvas ---------- */
+function resizeKanvas() {
+  const r = canvas.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  W = r.width;
+  H = r.height;
+  canvas.width = Math.round(W * dpr);
+  canvas.height = Math.round(H * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  gambar();
+}
+
+function gambar() {
+  if (!W || !H) return;
+  const cs = getComputedStyle(document.documentElement);
+  const g = function (n, fb) {
+    const v = cs.getPropertyValue(n).trim();
+    return v || fb;
+  };
+  const C = {
+    accent: g('--accent', 'transparent'),
+    success: g('--success', 'transparent'),
+    warning: g('--warning', 'transparent'),
+    text: g('--text', cs.color),
+    muted: g('--text-muted', cs.color),
+    dim: g('--text-dim', cs.color),
+    rule: g('--border-strong', 'transparent'),
+    mono: g('--font-mono', 'monospace')
+  };
+
+  ctx.clearRect(0, 0, W, H);
+  const padL = 34;
+  const padR = 16;
+  const axisY = Math.round(H * 0.62);
+  const x0 = padL;
+  const x1 = W - padR;
+  const xFor = function (v) { return x0 + (v / 100) * (x1 - x0); };
+
+  ctx.font = '11px ' + C.mono;
+  ctx.textBaseline = 'middle';
+
+  function label(teks, x, y, warna) {
+    ctx.font = '11px ' + C.mono;
+    const w = ctx.measureText(teks).width;
+    let lx = Math.max(w / 2 + 3, Math.min(W - w / 2 - 3, x));
+    ctx.fillStyle = warna;
+    ctx.textAlign = 'center';
+    ctx.fillText(teks, lx, y);
+  }
+
+  /* garis bilangan */
+  ctx.strokeStyle = C.rule;
+  ctx.lineWidth = 2;
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.moveTo(x0 - 8, axisY);
+  ctx.lineTo(x1 + 8, axisY);
+  ctx.stroke();
+  for (let v = 0; v <= 100; v += 10) {
+    const x = xFor(v);
+    ctx.beginPath();
+    ctx.moveTo(x, axisY);
+    ctx.lineTo(x, axisY + 6);
+    ctx.stroke();
+    ctx.font = '10px ' + C.mono;
+    ctx.fillStyle = C.dim;
+    ctx.textAlign = 'center';
+    ctx.fillText(String(v), x, axisY + 18);
+  }
+
+  /* titik siswa, ditumpuk bila nilainya berdekatan */
+  const maxLanes = Math.max(1, Math.floor((axisY - 62) / 24));
+  const urut = anim.map(function (v, i) { return i; }).sort(function (a, b) { return anim[a] - anim[b] || a - b; });
+  const laneEnd = [];
+  const laneOf = new Array(anim.length);
+  urut.forEach(function (i) {
+    const x = xFor(anim[i]);
+    let l = laneEnd.findIndex(function (e) { return e < x - 14; });
+    if (l === -1) {
+      l = laneEnd.length;
+      if (l >= maxLanes) l = maxLanes - 1;
+    }
+    laneEnd[l] = x;
+    laneOf[i] = l;
+  });
+
+  const mo = modusOf(data);
+  const modeSet = mo.nilai;
+  let modeLabelY = null;
+  let modeLabelX = null;
+
+  anim.forEach(function (v, i) {
+    const x = xFor(v);
+    const y = axisY - 16 - laneOf[i] * 24;
+    const terpilih = i === selected;
+
+    if (modeSet.indexOf(data[i]) !== -1) {
+      ctx.beginPath();
+      ctx.arc(x, y, 11, 0, Math.PI * 2);
+      ctx.strokeStyle = C.warning;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      if (modeLabelY === null || y < modeLabelY) { modeLabelY = y; modeLabelX = x; }
+    }
+
+    ctx.beginPath();
+    ctx.arc(x, y, terpilih ? 9 : 7, 0, Math.PI * 2);
+    ctx.fillStyle = terpilih ? C.warning : C.accent;
+    ctx.fill();
+    if (terpilih) {
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = C.text;
+      ctx.stroke();
+    }
+    ctx.font = '10px ' + C.mono;
+    ctx.fillStyle = C.text;
+    ctx.textAlign = 'center';
+    ctx.fillText(String(i + 1), x, y + 0.5);
+  });
+
+  if (modeLabelY !== null) label('modus ' + modeSet.join(', '), modeLabelX, Math.max(58, modeLabelY - 18), C.warning);
+
+  /* penanda rerata (mean) */
+  const xm = xFor(Math.max(0, Math.min(100, animMean)));
+  ctx.strokeStyle = C.accent;
+  ctx.lineWidth = 2;
+  ctx.setLineDash([5, 4]);
+  ctx.beginPath();
+  ctx.moveTo(xm, axisY - 40);
+  ctx.lineTo(xm, axisY + 8);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  label('rerata (mean) ' + fmt2(animMean), xm, 22, C.accent);
+
+  /* penanda median */
+  const xd = xFor(Math.max(0, Math.min(100, animMedian)));
+  ctx.strokeStyle = C.success;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(xd, axisY - 40);
+  ctx.lineTo(xd, axisY + 8);
+  ctx.stroke();
+  label('median ' + fmt1(animMedian), xd, 40, C.success);
+
+  /* kurung jangkauan */
+  const aMin = Math.min.apply(null, anim);
+  const aMax = Math.max.apply(null, anim);
+  const rx0 = xFor(aMin);
+  const rx1 = xFor(aMax);
+  const by = H - 34;
+  ctx.strokeStyle = C.rule;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(rx0, by - 8);
+  ctx.lineTo(rx0, by);
+  ctx.lineTo(rx1, by);
+  ctx.lineTo(rx1, by - 8);
+  ctx.stroke();
+  label('jangkauan ' + Math.round(aMax - aMin) + ' = ' + Math.round(aMax) + ' − ' + Math.round(aMin), (rx0 + rx1) / 2, by + 14, C.muted);
+  label('terkecil ' + Math.round(aMin), rx0, axisY + 34, C.dim);
+  label('terbesar ' + Math.round(aMax), rx1, axisY + 34, C.dim);
+}
+
+/* ---------- aksi tombol ---------- */
+function urutkanData() {
+  const first = new Map();
+  Array.prototype.forEach.call(chipsBox.children, function (c) {
+    first.set(c, c.getBoundingClientRect());
+  });
+
+  const order = data.map(function (v, i) { return i; });
+  order.sort(function (a, b) { return data[a] - data[b] || a - b; });
+  const frag = document.createDocumentFragment();
+  const kids = Array.prototype.slice.call(chipsBox.children);
+  order.forEach(function (i) { frag.appendChild(kids[i]); });
+  chipsBox.appendChild(frag);
+  sortMode = true;
+
+  Array.prototype.forEach.call(chipsBox.children, function (c) {
+    const f = first.get(c);
+    if (!f) return;
+    const l = c.getBoundingClientRect();
+    const dx = f.left - l.left;
+    const dy = f.top - l.top;
+    if (dx || dy) {
+      c.style.transition = 'none';
+      c.style.transform = 'translate(' + dx + 'px, ' + dy + 'px)';
+    }
+  });
+
+  requestAnimationFrame(function () {
+    Array.prototype.forEach.call(chipsBox.children, function (c) {
+      c.style.transition = 'transform 520ms cubic-bezier(0.2, 0, 0, 1)';
+      c.style.transform = '';
+    });
+  });
+
+  if (sortTimer) clearTimeout(sortTimer);
+  sortTimer = setTimeout(function () {
+    Array.prototype.forEach.call(chipsBox.children, function (c) {
+      c.style.transition = '';
+      c.style.transform = '';
+    });
+    sortTimer = null;
+  }, 560);
+
+  setPesan('Data sudah diurutkan dari yang terkecil. Median adalah nilai tengah, atau rerata dari dua nilai tengah bila banyak data genapel.');
+}
+
+function toggleDistraction() {
+  if (outlier) {
+    data.pop();
+    outlier = false;
+    setPesan('Nilai ekstrem 20 sudah dikeluarkan dari data. Lihat lagi rerata dan median.');
+  } else {
+    data.push(OUTLIER_VALUE);
+    outlier = true;
+    setPesan('Nilai ekstrem 20 masuk ke data. Rerata ikut terseret oleh nilai ekstrem, sedangkan median hampir tidak berubah.');
+  }
+  anim = selaraskanAnim();
+  if (selected > data.length - 1) selected = data.length - 1;
+  buildChips();
+  updateAll();
+  mulaiAnimasi();
+}
+
+function dataAcak() {
+  let seed = 20250912;
+  const acak = function () {
+    seed = (seed * 1664525 + 1013904223) % 4294967296;
+    return seed / 4294967296;
+  };
+  outlier = false;
+  data = DEFAULT_DATA.map(function () { return 60 + Math.floor(acak() * 41); });
+  data[7] = data[2];
+  data[9] = data[5];
+  anim = selaraskanAnim();
+  if (selected > data.length - 1) selected = data.length - 1;
+  buildChips();
+  updateAll();
+  mulaiAnimasi();
+  setPesan('Data baru dibuat. Hitung ulang rerata, median, modus, dan jangkauan dari data ini.');
+}
+
+function setPesan(teks) {
+  const p = el('feedback-panel');
+  p.classList.remove('success', 'error');
+  el('feedback-text').textContent = teks;
+}
+
+function cekJawaban() {
+  const panel = el('feedback-panel');
+  const ketik = el('cek-input').value.trim().replace(',', '.');
+  const nilai = parseFloat(ketik);
+  const target = rerataOf(data);
+  panel.classList.remove('success', 'error');
+  if (!isFinite(nilai) || ketik === '') {
+    panel.classList.add('error');
+    el('feedback-text').textContent = 'Kotak jawaban masih kosong atau bukan angka. Tulis rerata (mean) dengan angka saja, lalu tekan Cek jawaban saya.';
+    return;
+  }
+  if (Math.abs(nilai - target) <= 0.05) {
+    panel.classList.add('success');
+    el('feedback-text').textContent = 'Benar! Rerata = ' + fmt2(target) + ', karena jumlah data ' + totalOf(data) + ' ÷ ' + data.length + ' data.';
+  } else {
+    panel.classList.add('error');
+    el('feedback-text').textContent = 'Belum tepat. Rerata yang benar adalah ' + fmt2(target) + '. Jumlah data = ' + totalOf(data) + ' dan banyak data = ' + data.length + ', jadi ' + totalOf(data) + ' ÷ ' + data.length + ' = ' + fmt2(target) + '.';
+  }
+}
+
+function resetState() {
+  stopAnimasi();
+  data = DEFAULT_DATA.slice();
+  anim = data.slice();
+  outlier = false;
+  selected = 2;
+  sortMode = false;
+  animMean = rerataOf(data);
+  animMedian = medianOf(data);
+  el('cek-input').value = '';
+  el('feedback-panel').classList.remove('success', 'error');
+  el('feedback-text').textContent = 'Hitung sendiri rerata dari data di atas, ketik jawabannya, lalu tekan tombol Cek jawaban saya.';
+  buildChips();
+  updateAll();
+  gambar();
+}
+
+/* ---------- pemasangan ---------- */
+chipsBox.addEventListener('click', function (e) {
+  const chip = e.target.closest('.chip');
+  if (chip) pilihSiswa(Number(chip.dataset.index));
+});
+
+el('siswa-slider').addEventListener('input', function (e) {
+  pilihSiswa(Number(e.target.value));
+});
+
+el('nilai-slider').addEventListener('input', function (e) {
+  data[selected] = Math.max(0, Math.min(100, Number(e.target.value)));
+  updateAll();
+  mulaiAnimasi();
+});
+
+el('cek-input').addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') { e.preventDefault(); cekJawaban(); }
+});
+
+document.addEventListener('keydown', function (e) {
+  const t = e.target;
+  const diKontrol = t && t !== document.body && (t.tagName === 'INPUT' || t.tagName === 'BUTTON' || t.tagName === 'TEXTAREA');
+  if (diKontrol || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === 's' || e.key === 'S') { e.preventDefault(); urutkanData(); }
+  if (e.key === 'r' || e.key === 'R') { e.preventDefault(); resetState(); }
+});
+
+buildChips();
+updateAll();
+resizeKanvas();
+if (window.ResizeObserver) new ResizeObserver(resizeKanvas).observe(canvas.parentElement);
+window.addEventListener('resize', resizeKanvas);
+</script>
+</body>
+</html>

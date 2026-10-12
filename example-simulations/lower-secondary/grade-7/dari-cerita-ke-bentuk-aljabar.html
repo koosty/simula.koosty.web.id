@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="education_levels" content="Lower Secondary">
+  <meta name="grade" content="7">
+  <title>Dari Cerita ke Bentuk Aljabar · Matematika SMP Kelas VII</title>
+  <meta name="description" content="Murid memodelkan situasi sehari-hari menjadi bentuk aljabar, misalnya harga barang dan luas denah.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Dari Cerita ke Bentuk Aljabar">
+  <meta property="og:description" content="Enam cerita sehari-hari di Indonesia dimodelkan menjadi bentuk aljabar. Susun sukunya dari bank suku, lalu periksa hasilnya dengan parameter yang bisa diubah.">
+  <meta property="og:locale" content="id">
+  <style>
+    :root {
+      /* Colour */
+      --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+      --surface: #14141e;     /* panels, cards, step rows */
+      --panel: rgba(20, 20, 30, 0.9);
+      --border: rgba(255, 255, 255, 0.1);
+      --border-strong: #333;
+      --text: #ffffff;
+      --text-muted: #aaa;
+      --text-dim: #888;
+      --accent: #6366f1;      /* primary action, slider thumb, active state */
+      --accent-hover: #5558e8;
+      --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+      --success: #fbbf24;     /* completion, headings, callouts */
+      --warning: #fb923c;
+      --error: #ff6b6b;
+
+      /* Spacing scale */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+
+      /* Radius scale */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-pill: 999px;
+
+      /* Type scale (system fonts only) */
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --text-base: 16px;
+      --text-sm: 14px;
+      --text-xs: 13px;
+      --text-caption: 11px;   /* uppercase control labels */
+      --text-heading: 24px;
+
+      /* Focus, motion, stacking */
+      --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+      --motion: 0.2s;
+      --motion-slow: 0.3s;
+      --z-overlay: 100;        /* panels, tooltips */
+      --z-modal: 1000;         /* loading screens, modal dialogs */
+    }
+
+    [data-theme="light"] {
+      --bg: #f7f7fb;
+      --surface: #ffffff;
+      --panel: rgba(255, 255, 255, 0.92);
+      --border: rgba(0, 0, 0, 0.12);
+      --border-strong: #d4d4d8;
+      --text: #16161d;
+      --text-muted: #52525b;
+      --text-dim: #71717a;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+      --accent-soft: rgba(79, 70, 229, 0.95);
+      --success: #b45309;
+      --warning: #c2410c;
+      --error: #dc2626;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font);
+      font-size: var(--text-base);
+      line-height: 1.5;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+    }
+
+    .panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+    .btn {
+      font-family: inherit;
+      font-size: var(--text-sm);
+      min-height: 44px;
+      min-width: 44px;
+      padding: var(--space-3) var(--space-5);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      background: var(--border-strong);
+      color: var(--text);
+      cursor: pointer;
+      transition: background var(--motion);
+    }
+    .btn:hover { background: var(--text-muted); }
+    .btn:active { transform: scale(0.95); }
+    .btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-primary { background: var(--accent); border-color: var(--accent); }
+    .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+    .btn-ghost { background: transparent; border-color: var(--border); }
+    .btn-ghost:hover { background: var(--surface); }
+
+    .control-label {
+      font-size: var(--text-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    input[type="range"] {
+      width: 100%; height: 6px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px; height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+
+/* Touch target: keep the 6px visual track, but give the control a 44px hit area. */
+input[type="range"] { height: 44px; background: transparent; }
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-moz-range-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-webkit-slider-thumb { margin-top: -7px; }
+input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; background: var(--accent); border-radius: 50%; cursor: pointer; }
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+    }
+
+    #feedback-panel {
+      background: var(--surface);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+    }
+    #feedback-panel.success { border-left-color: var(--success); }
+    #feedback-panel.error { border-left-color: var(--error); }
+
+    .progress-track {
+      height: 8px;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+    .progress-fill { height: 100%; background: var(--accent); transition: width var(--motion-slow); }
+
+    /* ---- layout halaman ---- */
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: var(--space-4);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+    h1 { font-size: var(--text-heading); }
+    .sub { color: var(--text-muted); font-size: var(--text-sm); }
+    .topbar { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+    .topbar .spacer { flex: 1; }
+    .mono { font-family: var(--font-mono); }
+
+    #story {
+      background: var(--surface);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+      font-size: var(--text-base);
+    }
+    #story .who { color: var(--success); font-weight: 600; }
+    #story .given { font-family: var(--font-mono); color: var(--accent); }
+
+    #slots {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2);
+      min-height: 92px;
+      padding: var(--space-3);
+      border: 2px dashed var(--border-strong);
+      border-radius: var(--radius-lg);
+    }
+    .slot {
+      min-width: 64px;
+      min-height: 56px;
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-strong);
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: var(--text-heading);
+      color: var(--text-dim);
+      transition: border-color var(--motion), background var(--motion);
+    }
+    .slot.filled { color: var(--text); border-color: var(--accent); background: var(--surface); }
+    .slot.next { border-color: var(--success); box-shadow: var(--focus-ring); }
+    .slot.pop { animation: pop 0.32s ease-out; }
+    @keyframes pop {
+      0% { transform: scale(0.6); opacity: 0; }
+      60% { transform: scale(1.08); opacity: 1; }
+      100% { transform: scale(1); }
+    }
+
+    #bank { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .bank-term {
+      min-height: 44px;
+      padding: var(--space-2) var(--space-4);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--accent);
+      background: var(--surface);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: var(--text-base);
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .bank-term:hover { background: var(--accent-hover); }
+    .bank-term:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .bank-term.used { opacity: 0.35; cursor: not-allowed; }
+    .bank-term.invalid { border-color: var(--error); }
+
+    .param-row { display: flex; flex-direction: column; gap: var(--space-2); }
+    .readout {
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+      background: var(--bg);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      padding: var(--space-2) var(--space-3);
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+    }
+    .readout b { color: var(--success); }
+
+    .actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+
+    @media (max-width: 420px) {
+      .actions .btn { flex: 1 1 100%; }
+      .slot { min-height: 52px; font-size: var(--text-base); }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="topbar">
+      <div>
+        <h1>Dari Cerita ke Bentuk Aljabar</h1>
+        <p class="sub">Baca cerita, lalu susun bentuk aljabarnya dari bank suku.</p>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn btn-ghost" id="reset-btn">Atur Ulang</button>
+    </header>
+
+    <section class="panel">
+      <div class="topbar" style="margin-bottom: var(--space-3)">
+        <p class="panel-heading" style="margin-bottom: 0">Situasi <span id="level-display" class="mono">1 / 6</span></p>
+        <div class="spacer"></div>
+        <p class="control-label" id="score-display">Skor 0</p>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width: 0%"></div></div>
+    </section>
+
+    <section class="panel">
+      <p class="panel-heading">Cerita</p>
+      <div id="story" aria-live="polite"></div>
+    </section>
+
+    <section class="panel">
+      <p class="panel-heading" id="slots-label">Bentuk aljabar (klik suku di bank, lalu klik slot untuk menghapus)</p>
+      <div id="slots" role="group" aria-labelledby="slots-label"></div>
+    </section>
+
+    <section class="panel">
+      <p class="panel-heading">Bank suku</p>
+      <div id="bank" role="group" aria-label="Bank suku"></div>
+    </section>
+
+    <section class="panel">
+      <p class="panel-heading">Parameter <span id="param-name" class="mono">x</span></p>
+      <div class="param-row">
+        <input type="range" id="param-slider" min="1" max="10" step="1" value="4" aria-label="Nilai parameter">
+        <div class="readout">
+          <span id="param-value" class="mono">x = 4</span>
+          <span>Bentukmu: <b id="yours-display" class="mono">\u2014</b></span>
+          <span>Seharusnya: <b id="target-display" class="mono">\u2014</b></span>
+        </div>
+      </div>
+      <div class="actions" style="margin-top: var(--space-3)">
+        <button class="btn" id="hint-btn">Petunjuk</button>
+        <button class="btn btn-primary" id="check-btn">Periksa</button>
+        <button class="btn" id="next-btn" disabled>Situasi Berikutnya</button>
+      </div>
+      <div id="feedback-panel" role="status" style="margin-top: var(--space-3)">Susun bentuk aljabarnya dari bank suku.</div>
+    </section>
+  </main>
+
+  <script type="application/json" id="widget-config">
+  {
+    "type": "simulation",
+    "concept": "word-to-algebra",
+    "unit": "aljabar",
+    "startMode": "word-to-algebra",
+    "description": "Murid memodelkan situasi sehari-hari menjadi bentuk aljabar, misalnya harga barang dan luas denah.",
+    "variables": [
+      { "name": "param", "label": "Nilai parameter x", "min": 1, "max": 10, "default": 4 }
+    ],
+    "presets": [
+      { "name": "Situasi 1", "variables": { "index": 0 } },
+      { "name": "Situasi 4", "variables": { "index": 3 } }
+    ]
+  }
+  </script>
+
+  <script>
+  (function () {
+    'use strict';
+
+    var SUP = { 2: '\u00B2', 3: '\u00B3' };
+
+    // Setiap situasi: cerita, bentuk aljabar target sebagai daftar suku,
+    // bank suku (termasukosome yang salah), dan cara menghitung hasil.
+    var SITUASI = [
+      {
+        nama: 'Jajan di sekolah',
+        cerita: 'Andri membeli <span class="given">a</span> bungkus roti seharga Rp5.000 dan <span class="given">b</span> gelas es teh seharga Rp3.000. Uang jajan Andri adalah Rp50.000. Bentuk aljabar sisa uang Andri adalah?',
+        var: 'a',
+        target: [{ c: -5000, vars: [{ n: 'a', e: 1 }] }, { c: -3000, vars: [{ n: 'b', e: 1 }] }, { c: 50000, vars: [] }],
+        bank: [
+          { t: { c: -5000, vars: [{ n: 'a', e: 1 }] } }, { t: { c: 50000, vars: [] } },
+          { t: { c: -3000, vars: [{ n: 'b', e: 1 }] } }, { t: { c: 500, vars: [{ n: 'a', e: 1 }] } },
+          { t: { c: 3000, vars: [{ n: 'b', e: 1 }] } }, { t: { c: 5000, vars: [] } }
+        ],
+        paramLabel: 'a',
+        paramMeaning: 'jumlah bungkus roti',
+        paramMax: 10,
+        rupiah: true,
+        alasan: 'Setiap roti mengurangi Rp5.000 (suku \u22125.000a), setiap es teh mengurangi Rp3.000 (suku \u22123.000b), lalu ada sisa uang Rp50.000.'
+      },
+      {
+        nama: 'Luas denah kelas',
+        cerita: 'Denah kelas berbentuk persegi panjang. Panjangnya <span class="given">(a + 4)</span> meter dan lebarnya <span class="given">6</span> meter. Carilah luas denah dalam bentuk aljabar.',
+        var: 'a',
+        target: [{ c: 6, vars: [{ n: 'a', e: 1 }] }, { c: 24, vars: [] }],
+        bank: [
+          { t: { c: 6, vars: [{ n: 'a', e: 1 }] } }, { t: { c: 24, vars: [] } },
+          { t: { c: 4, vars: [{ n: 'a', e: 1 }] } }, { t: { c: 10, vars: [{ n: 'a', e: 1 }] } },
+          { t: { c: 4, vars: [] } }, { t: { c: 6, vars: [] } }
+        ],
+        paramLabel: 'a',
+        paramMeaning: 'bilangan tambahan untuk panjang (meter)',
+        paramMax: 12,
+        satuan: 'm\u00B2',
+        alasan: 'Luas = panjang \u00D7 lebar = (a + 4) \u00D7 6 = 6a + 24. Sifat distributif berlaku.'
+      },
+      {
+        nama: 'Ongkos jajan bulanan',
+        cerita: 'Warung Bu Tini menjual bakso seharga Rp12.000 dan paying seharga Rp8.000. Sari makan bakso <span class="given">a</span> kali dan paying <span class="given">b</span> kali. Bentuk aljabar total yang harus dibayar adalah?',
+        var: 'a',
+        target: [{ c: 12000, vars: [{ n: 'a', e: 1 }] }, { c: 8000, vars: [{ n: 'b', e: 1 }] }],
+        bank: [
+          { t: { c: 12000, vars: [{ n: 'a', e: 1 }] } }, { t: { c: 8000, vars: [{ n: 'b', e: 1 }] } },
+          { t: { c: 8000, vars: [{ n: 'a', e: 1 }] } }, { t: { c: 12000, vars: [{ n: 'b', e: 1 }] } },
+          { t: { c: 1200, vars: [{ n: 'a', e: 1 }] } }, { t: { c: 80000, vars: [] } }
+        ],
+        paramLabel: 'a',
+        paramMeaning: 'jumlah bakso yang dimakan',
+        paramMax: 8,
+        rupiah: true,
+        alasan: 'Bakso Rp12.000 \u00D7 a memberi 12.000a; paying Rp8.000 \u00D7 b memberi 8.000b.'
+      },
+      {
+        nama: 'Isi air dalam botol',
+        cerita: 'Sebuah botol gambir bervolume awal <span class="given">500</span> ml. Setiap kali dituangkan, isinya bertambah <span class="given">a</span> ml. Bentuk aljabar isi botol setelah dituangkan adalah?',
+        var: 'a',
+        target: [{ c: 1, vars: [{ n: 'a', e: 1 }] }, { c: 500, vars: [] }],
+        bank: [
+          { t: { c: 1, vars: [{ n: 'a', e: 1 }] } }, { t: { c: 500, vars: [] } },
+          { t: { c: 5, vars: [{ n: 'a', e: 1 }] } }, { t: { c: 100, vars: [{ n: 'a', e: 1 }] } },
+          { t: { c: 50, vars: [] } }, { t: { c: 1, vars: [] } }
+        ],
+        paramLabel: 'a',
+        paramMeaning: 'jumlah kali dituangkan (ml per kali)',
+        paramMax: 10,
+        satuan: 'ml',
+        alasan: 'Isi awal 500 ml adalah konstanta, setiap tambahan a ml memberi suku a.'
+      },
+      {
+        nama: 'Hemat uang mingle',
+        cerita: 'Dina menabung <span class="given">100.000</span> rupiah. Setiap minggu ia menggunakan <span class="given">2.000</span> rupiah untuk jajan dan <span class="given">1.500</span> rupiah untuk biaya sekolah. Bentuk aljabar sisa uangnya adalah?',
+        var: 'a',
+        target: [{ c: -2000, vars: [{ n: 'a', e: 1 }] }, { c: -1500, vars: [{ n: 'b', e: 1 }] }, { c: 100000, vars: [] }],
+        bank: [
+          { t: { c: -2000, vars: [{ n: 'a', e: 1 }] } }, { t: { c: 100000, vars: [] } },
+          { t: { c: -1500, vars: [{ n: 'b', e: 1 }] } }, { t: { c: 2000, vars: [{ n: 'a', e: 1 }] } },
+          { t: { c: 1500, vars: [{ n: 'b', e: 1 }] } }, { t: { c: 10000, vars: [] } }
+        ],
+        paramLabel: 'a',
+        paramMeaning: 'jumlah minggu jajan',
+        paramMax: 10,
+        rupiah: true,
+        alasan: 'Sisa uang = 100.000 \u2212 2.000a \u2212 1.500b. Suku bertanda negatif mengurangi.'
+      },
+      {
+        nama: 'Keliling denah taman',
+        cerita: 'Denah taman berbentuk persegi panjang dengan panjang <span class="given">(a + 5)</span> meter dan lebar <span class="given">(a + 3)</span> meter. Bentuk aljabar kelilingnya adalah?',
+        var: 'a',
+        target: [{ c: 4, vars: [{ n: 'a', e: 1 }] }, { c: 16, vars: [] }],
+        bank: [
+          { t: { c: 4, vars: [{ n: 'a', e: 1 }] } }, { t: { c: 16, vars: [] } },
+          { t: { c: 2, vars: [{ n: 'a', e: 1 }] } }, { t: { c: 8, vars: [{ n: 'a', e: 1 }] } },
+          { t: { c: 8, vars: [] } }, { t: { c: 20, vars: [] } }
+        ],
+        paramLabel: 'a',
+        paramMeaning: 'bilangan tambahan untuk sisi (meter)',
+        paramMax: 10,
+        satuan: 'm',
+        alasan: 'Keliling = 2 \u00D7 ((a + 5) + (a + 3)) = 2 \u00D7 (2a + 8) = 4a + 16.'
+      }
+    ];
+
+    var state = { index: 0, score: 0, placed: [], param: 4, hinted: false, solved: false, solvedCount: 0 };
+    var slotsEl = document.getElementById('slots');
+    var bankEl = document.getElementById('bank');
+    var storyEl = document.getElementById('story');
+    var fb = document.getElementById('feedback-panel');
+    var slider = document.getElementById('param-slider');
+    var paramName = document.getElementById('param-name');
+    var paramValue = document.getElementById('param-value');
+    var yours = document.getElementById('yours-display');
+    var targetDisp = document.getElementById('target-display');
+    var levelDisp = document.getElementById('level-display');
+    var scoreDisp = document.getElementById('score-display');
+    var progress = document.getElementById('progress-fill');
+    var nextBtn = document.getElementById('next-btn');
+
+    function varNames(t) { return t.vars.map(function (v) { return v.n + (v.e > 1 ? (SUP[v.e] || '^' + v.e) : ''); }).join(''); }
+    function termText(t) {
+      var abs = Math.abs(t.c);
+      if (!t.vars.length) return String(abs);
+      return (abs === 1 ? '' : String(abs)) + varNames(t);
+    }
+    function signedText(t) { return (t.c < 0 ? '\u2212' : '') + termText(t); }
+    function termKey(t) { return t.c + '|' + varNames(t); }
+    function exprText(list) {
+      var out = '';
+      list.forEach(function (t, i) {
+        if (i === 0) out += signedText(t);
+        else out += (t.c < 0 ? ' \u2212 ' : ' + ') + termText(t);
+      });
+      return out;
+    }
+    // Nilai bentuk aljabar: variabel yang sama dengan parameter ikut diganti,
+    // variabel lain dibiarkan apa adanya karena nilainya belum diketahui.
+    function evalExpr(list, p, varName) {
+      var total = 0;
+      var sisa = [];
+      list.forEach(function (t) {
+        if (t.vars.every(function (v) { return v.n === varName; })) {
+          var f = 1;
+          t.vars.forEach(function (v) { f *= Math.pow(p, v.e); });
+          total += t.c * f;
+        } else {
+          sisa.push(signedText(t));
+        }
+      });
+      var teks = fmtNum(total);
+      if (sisa.length) teks += (total === 0 ? '' : ' ') + sisa.join(' ');
+      return teks;
+    }
+    function fmtNum(n) {
+      var neg = n < 0;
+      var s = String(Math.abs(Math.round(n)));
+      var out = '';
+      for (var i = 0; i < s.length; i++) {
+        if (i > 0 && (s.length - i) % 3 === 0) out += '.';
+        out += s[i];
+      }
+      return (neg ? '\u2212' : '') + out;
+    }
+
+    function renderStory() {
+      var s = SITUASI[state.index];
+      storyEl.innerHTML = '<span class="who">' + s.nama + '.</span> ' + s.cerita;
+    }
+
+    function renderSlots() {
+      var s = SITUASI[state.index];
+      slotsEl.textContent = '';
+      var need = s.target.length;
+      for (var i = 0; i < need; i++) {
+        (function (i) {
+          var el = document.createElement('button');
+          el.className = 'slot';
+          el.type = 'button';
+          var t = state.placed[i];
+          if (t) {
+            el.className = 'slot filled pop';
+            el.textContent = signedText(t);
+            el.setAttribute('aria-label', 'Suku ' + signedText(t) + ', klik untuk menghapus');
+          } else {
+            el.textContent = '?';
+            if (i === state.placed.length && !state.solved) el.className = 'slot next';
+            el.setAttribute('aria-label', 'Slot kosong ' + (i + 1));
+          }
+          el.addEventListener('click', function () {
+            if (state.placed[i]) {
+              state.placed.splice(i, 1);
+              renderSlots();
+              renderBank();
+              updateReadout();
+            }
+          });
+          slotsEl.appendChild(el);
+        })(i);
+      }
+    }
+
+    function renderBank() {
+      bankEl.textContent = '';
+      var used = Object.create(null);
+      state.placed.forEach(function (t) {
+        var k = termKey(t);
+        used[k] = (used[k] || 0) + 1;
+      });
+      SITUASI[state.index].bank.forEach(function (item, idx) {
+        var k = termKey(item.t);
+        var exhausted = (used[k] || 0) >= countBank(SITUASI[state.index].bank, k);
+        var el = document.createElement('button');
+        el.type = 'button';
+        el.className = 'bank-term' + (exhausted ? ' used' : '');
+        el.textContent = signedText(item.t);
+        el.setAttribute('data-bank-index', String(idx));
+        el.addEventListener('click', function () {
+          if (exhausted) return;
+          state.placed.push(item.t);
+          if (state.placed.length > SITUASI[state.index].target.length) {
+            state.placed.pop();
+            fb.className = 'error';
+            fb.textContent = 'Suku terlalu banyak. Bentuk aljabar ini hanya punya ' + SITUASI[state.index].target.length + ' suku.';
+            return;
+          }
+          fb.className = '';
+          fb.textContent = 'Suku ' + signedText(item.t) + ' ditaruh di slot ' + state.placed.length + '.';
+          renderSlots();
+          renderBank();
+          updateReadout();
+        });
+        bankEl.appendChild(el);
+      });
+    }
+    function countBank(bank, key) {
+      var n = 0;
+      bank.forEach(function (b) { if (termKey(b.t) === key) n++; });
+      return n;
+    }
+
+    function updateReadout() {
+      var s = SITUASI[state.index];
+      var p = state.param;
+      paramName.textContent = s.paramLabel;
+      paramValue.textContent = s.paramLabel + ' = ' + p + (s.satuan ? ' ' + s.satuan : '');
+      var full = state.placed.length === s.target.length;
+      yours.textContent = state.placed.length
+        ? exprText(state.placed) + ' = ' + evalExpr(state.placed, p, s.paramLabel)
+        : '\u2014';
+      targetDisp.textContent = full
+        ? exprText(s.target) + ' = ' + evalExpr(s.target, p, s.paramLabel)
+        : 'menunggu ' + s.target.length + ' suku';
+      levelDisp.textContent = (state.index + 1) + ' / ' + SITUASI.length;
+      scoreDisp.textContent = 'Skor ' + state.score;
+      progress.style.width = (state.solvedCount / SITUASI.length * 100) + '%';
+      nextBtn.disabled = !state.solved;
+    }
+
+    function check() {
+      var s = SITUASI[state.index];
+      if (state.placed.length < s.target.length) {
+        fb.className = 'error';
+        fb.textContent = 'Bentuk aljabar ini punya ' + s.target.length + ' suku. Baru terisi ' + state.placed.length + '.';
+        return;
+      }
+      var placedKeys = state.placed.map(termKey).sort().join(';');
+      var targetKeys = s.target.map(termKey).sort().join(';');
+      if (placedKeys === targetKeys) {
+        if (!state.solved) {
+          state.solvedCount++;
+          if (!state.hinted) state.score += 10;
+        }
+        state.solved = true;
+        fb.className = 'success';
+        fb.textContent = 'Benar! ' + exprText(s.target) + '. ' + s.alasan +
+          (state.hinted ? ' (skor tetap karena memakai petunjuk)' : ' +10');
+        celebrate();
+        updateReadout();
+      } else {
+        fb.className = 'error';
+        var missing = s.target.filter(function (t) {
+          return !state.placed.some(function (p) { return termKey(p) === termKey(t); });
+        });
+        fb.textContent = 'Belum tepat. Periksa kembali: ' + s.alasan +
+          (missing.length ? ' Suku yang belum tepat: ' + missing.map(signedText).join(', ') + '.' : '');
+      }
+    }
+
+    function celebrate() {
+      var el = slotsEl;
+      el.animate(
+        [{ boxShadow: '0 0 0 0 rgba(251,191,36,0)' }, { boxShadow: '0 0 0 6px rgba(251,191,36,0.35)' }, { boxShadow: '0 0 0 0 rgba(251,191,36,0)' }],
+        { duration: 900, easing: 'ease-out' }
+      );
+      slotsEl.querySelectorAll('.slot.filled').forEach(function (s) {
+        s.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-8px)' }, { transform: 'translateY(0)' }],
+          { duration: 420, delay: 60, easing: 'ease-out' });
+      });
+    }
+
+    function hint() {
+      var s = SITUASI[state.index];
+      state.hinted = true;
+      var target = s.target[state.placed.length];
+      if (!target) {
+        fb.className = '';
+        fb.textContent = 'Semua slot sudah terisi. Tekan Periksa untuk melihat hasilnya.';
+        return;
+      }
+      fb.className = 'error';
+      fb.textContent = 'Petunjuk untuk slot ' + (state.placed.length + 1) + ': cari suku ' + signedText(target) + ' di bank. ' + s.alasan;
+    }
+
+    function loadIndex(i) {
+      state.index = i;
+      state.placed = [];
+      state.param = 4;
+      state.hinted = false;
+      state.solved = false;
+      slider.value = '4';
+      slider.max = String(SITUASI[i].paramMax || 10);
+      fb.className = '';
+      fb.textContent = 'Susun bentuk aljabarnya dari bank suku.';
+      renderStory();
+      renderSlots();
+      renderBank();
+      updateReadout();
+    }
+
+    function resetAll() {
+      state.score = 0;
+      state.solvedCount = 0;
+      loadIndex(0);
+    }
+
+    document.getElementById('check-btn').addEventListener('click', check);
+    document.getElementById('hint-btn').addEventListener('click', hint);
+    document.getElementById('reset-btn').addEventListener('click', resetAll);
+    nextBtn.addEventListener('click', function () {
+      if (state.index + 1 >= SITUASI.length) {
+        fb.className = 'success';
+        fb.textContent = 'Semua ' + SITUASI.length + ' situasi selesai. Skor akhir ' + state.score + '. Tekan Atur Ulang untuk mengulang.';
+        nextBtn.disabled = true;
+        return;
+      }
+      loadIndex(state.index + 1);
+    });
+    slider.addEventListener('input', function () {
+      state.param = Number(slider.value);
+      updateReadout();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.target.tagName === 'INPUT' && e.target.type !== 'range') return;
+      if (e.key === 'r' || e.key === 'R') { resetAll(); return; }
+      if (e.key === 'Enter') { e.preventDefault(); check(); }
+    });
+
+    loadIndex(0);
+  })();
+  </script>
+</body>
+</html>

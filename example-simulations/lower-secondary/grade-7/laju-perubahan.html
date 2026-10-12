@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="education_levels" content="Lower Secondary">
+  <meta name="grade" content="7">
+  <title>Laju Perubahan · Matematika SMP Kelas VII</title>
+  <meta name="description" content="Murid menghitung laju perubahan, kecepatan rata-rata, dan mengaitkannya dengan waktu dan jarak lewat animasi perjalanan dan grafik jarak terhadap waktu.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Laju Perubahan">
+  <meta property="og:description" content="Hitung laju perubahan dari jarak dan waktu, pilih gayaConoce jalan kaki, sepeda, motor, atau mobil, dan lihat grafik jarak terhadap waktu terbentuk saat animasi berjalan.">
+  <meta property="og:locale" content="id">
+  <style>
+:root {
+  /* Colour */
+  --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+  --surface: #14141e;     /* panels, cards, step rows */
+  --panel: rgba(20, 20, 30, 0.9);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: #333;
+  --text: #ffffff;
+  --text-muted: #aaa;
+  --text-dim: #888;
+  --accent: #6366f1;      /* primary action, slider thumb, active state */
+  --accent-hover: #5558e8;
+  --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+  --success: #fbbf24;     /* completion, headings, callouts */
+  --warning: #fb923c;
+  --error: #ff6b6b;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type scale (system fonts only) */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-caption: 11px;   /* uppercase control labels */
+  --text-heading: 24px;
+
+  /* Focus, motion, stacking */
+  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  --motion: 0.2s;
+  --motion-slow: 0.3s;
+  --z-overlay: 100;        /* panels, tooltips */
+  --z-modal: 1000;         /* loading screens, modal dialogs */
+}
+
+[data-theme="light"] {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-strong: #d4d4d8;
+  --text: #16161d;
+  --text-muted: #52525b;
+  --text-dim: #71717a;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.95);
+  --success: #b45309;
+  --warning: #c2410c;
+  --error: #dc2626;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+.btn {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  min-height: 44px;            /* never below 44px, mobile */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--border-strong);
+  color: var(--text);
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.btn:hover { background: var(--text-muted); }
+.btn:active { transform: scale(0.95); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); border-color: var(--accent); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); }
+
+.control-label {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+input[type="range"] {
+  width: 100%; height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+
+/* Touch target: keep the 6px visual track, but give the control a 44px hit area. */
+input[type="range"] { height: 44px; background: transparent; }
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-moz-range-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-webkit-slider-thumb { margin-top: -7px; }
+input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; background: var(--accent); border-radius: 50%; cursor: pointer; }
+/* Visually hidden but announced by screen readers. Use when a layout has no
+   room for a visible <h1> (e.g. a full-bleed canvas) — never as an excuse to
+   drop a heading. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+#feedback-panel {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+#feedback-panel.success { border-left-color: var(--success); }
+#feedback-panel.error { border-left-color: var(--error); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.progress-fill { height: 100%; background: var(--accent); transition: width var(--motion-slow); }
+
+.wrap { max-width: 1080px; margin: 0 auto; padding: var(--space-5) var(--space-4) var(--space-6); }
+h1 { font-size: var(--text-heading); margin-bottom: var(--space-2); }
+h2 { font-size: var(--text-sm); color: var(--text-muted); }
+.lead { color: var(--text-muted); font-size: var(--text-sm); margin-bottom: var(--space-5); }
+.layout { display: flex; flex-direction: column; gap: var(--space-4); }
+@media (min-width: 940px) { .layout { flex-direction: row; align-items: flex-start; } .side { width: 330px; flex: 0 0 330px; } }
+.stage svg { width: 100%; height: auto; display: block; }
+.ctrl { margin-bottom: var(--space-4); }
+.ctrl-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); margin-bottom: var(--space-2); }
+.val { font-family: var(--font-mono); }
+.row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.note { font-size: var(--text-xs); color: var(--text-dim); margin-top: var(--space-2); }
+.readout { font-family: var(--font-mono); font-size: var(--text-heading); }
+.readout-sm { font-family: var(--font-mono); font-size: var(--text-sm); color: var(--text-muted); }
+.hud { display: flex; flex-wrap: wrap; gap: var(--space-4); margin-top: var(--space-3); }
+.hud-item { min-width: 110px; }
+.hud-label { display: block; font-size: var(--text-caption); text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+.hud-value { font-family: var(--font-mono); font-size: var(--text-sm); }
+.road { fill: none; stroke: var(--border-strong); stroke-width: 4; stroke-linecap: round; }
+.road-fill { fill: none; stroke: var(--border); stroke-width: 14; stroke-linecap: round; }
+.trail { fill: none; stroke: var(--accent); stroke-width: 6; stroke-linecap: round; }
+.start-dot { fill: var(--text-muted); }
+.end-dot { fill: var(--success); }
+.rider { fill: var(--success); stroke: var(--bg); stroke-width: 1.5; }
+.wheel { fill: none; stroke: var(--text); stroke-width: 2; }
+.svgtext { fill: var(--text); font-family: var(--font); font-size: 12px; }
+.svgmono { fill: var(--text-muted); font-family: var(--font-mono); font-size: 11px; }
+.axis { stroke: var(--border-strong); stroke-width: 1.5; }
+.gridline { stroke: var(--border); stroke-width: 1; }
+.graph-line { fill: none; stroke: var(--warning); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.graph-area { fill: var(--warning); opacity: 0.15; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Laju Perubahan</h1>
+  <p class="lead">Laju perubahan adalah jarak yang ditempuh setiap satuan waktu. Semakin besar laju, semakin cepat perjalanan selesai.</p>
+
+  <div class="layout">
+    <div class="side">
+      <div class="panel">
+        <h2 class="panel-heading">Jarak dan waktu</h2>
+        <div class="ctrl">
+          <div class="ctrl-head"><label class="control-label" for="distance-slider">Jarak (meter)</label><span class="val" id="distance-display">1.500 m</span></div>
+          <input type="range" id="distance-slider" min="100" max="5000" step="50" value="1500" aria-label="Jarak perjalanan dalam meter">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-head"><label class="control-label" for="time-slider">Waktu (detik)</label><span class="val" id="time-display">360 s</span></div>
+          <input type="range" id="time-slider" min="60" max="1800" step="10" value="360" aria-label="Waktu perjalanan dalam detik">
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top: var(--space-4);">
+        <h2 class="panel-heading">Gaya bergerak</h2>
+        <div class="row" id="mode-group">
+          <button class="btn btn-ghost" id="mode-walk-btn" type="button" data-mode="walk">Jalan kaki</button>
+          <button class="btn btn-ghost" id="mode-bike-btn" type="button" data-mode="bike">Sepeda</button>
+          <button class="btn btn-ghost" id="mode-motor-btn" type="button" data-mode="motor">Motor</button>
+          <button class="btn btn-ghost" id="mode-car-btn" type="button" data-mode="car">Mobil</button>
+        </div>
+        <p class="note" id="mode-note">Pilih cara bergerak untuk mengatur jarak dan waktu.</p>
+      </div>
+
+      <div class="panel" style="margin-top: var(--space-4);">
+        <h2 class="panel-heading">Preset perjalanan</h2>
+        <div class="row">
+          <button class="btn btn-ghost" id="preset-school-btn" type="button">Sepeda ke sekolah</button>
+          <button class="btn btn-ghost" id="preset-warung-btn" type="button">Motor ke warung</button>
+          <button class="btn btn-ghost" id="preset-halte-btn" type="button">Jalan kaki ke halte</button>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top: var(--space-4);">
+        <h2 class="panel-heading">Laju</h2>
+        <p class="readout" id="rate-display">4,17 m/s</p>
+        <p class="readout-sm" id="rate-note">= 15 km/jam</p>
+        <div class="row" style="margin-top: var(--space-3);">
+          <button class="btn btn-primary" id="start-btn" type="button">Mulai</button>
+          <button class="btn" id="reset-btn" type="button">Setel ulang</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex: 1 1 auto; min-width: 0;">
+      <div class="panel stage">
+        <h2 class="panel-heading">Perjalanan dari rumah ke sekolah</h2>
+        <svg id="scene-svg" viewBox="0 0 400 170" role="img" aria-label="Animasi perjalanan sepanjang lintasan">
+          <line class="road-fill" x1="20" y1="105" x2="380" y2="105"></line>
+          <line class="road" x1="20" y1="105" x2="380" y2="105"></line>
+          <polyline class="trail" id="trail" points=""></polyline>
+          <circle class="start-dot" cx="20" cy="105" r="6"></circle>
+          <text class="svgtext" x="10" y="134">Rumah</text>
+          <circle class="end-dot" id="end-dot" cx="380" cy="105" r="6"></circle>
+          <text class="svgtext" x="352" y="134">Sekolah</text>
+          <g id="rider" transform="translate(20,105)">
+            <circle class="wheel" cx="-9" cy="12" r="7"></circle>
+            <circle class="wheel" cx="11" cy="12" r="7"></circle>
+            <circle class="rider" cx="1" cy="-16" r="6"></circle>
+            <rect class="rider" x="-6" y="-9" width="15" height="18" rx="5"></rect>
+          </g>
+          <text class="svgmono" id="scene-status" x="20" y="30">Siap mulai</text>
+        </svg>
+        <div class="hud">
+          <div class="hud-item"><span class="hud-label">Waktu jalan</span><span class="hud-value" id="hud-time">0 s</span></div>
+          <div class="hud-item"><span class="hud-label">Jarak tempuh</span><span class="hud-value" id="hud-distance">0 m</span></div>
+          <div class="hud-item"><span class="hud-label">Sisa jarak</span><span class="hud-value" id="hud-remaining">1.500 m</span></div>
+          <div class="hud-item"><span class="hud-label">Kecepatan</span><span class="hud-value" id="hud-speed">4,17 m/s</span></div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top: var(--space-4);">
+        <h2 class="panel-heading">Grafik jarak terhadap waktu</h2>
+        <svg id="graph-svg" viewBox="0 0 360 210" role="img" aria-label="Grafik jarak terhadap waktu yang terbentuk saat animasi berjalan">
+          <g id="graph-grid"></g>
+          <line class="axis" x1="46" y1="10" x2="46" y2="170"></line>
+          <line class="axis" x1="46" y1="170" x2="346" y2="170"></line>
+          <polygon class="graph-area" id="graph-area" points=""></polygon>
+          <polyline class="graph-line" id="graph-line" points=""></polyline>
+          <circle class="end-dot" id="graph-head" cx="46" cy="170" r="5"></circle>
+          <text class="svgmono" x="46" y="188">0 s</text>
+          <text class="svgmono" x="300" y="188" id="graph-time-max">360 s</text>
+          <text class="svgmono" x="10" y="16" id="graph-dist-max">1.500 m</text>
+          <text class="svgmono" x="52" y="182">jarak</text>
+          <text class="svgmono" x="316" y="200">waktu</text>
+        </svg>
+        <p class="note">Garis naik lurus karena laju tetap. Makin curam, makin cepat.</p>
+      </div>
+
+      <div id="feedback-panel" style="margin-top: var(--space-4);">
+        <p id="feedback-text">Atur jarak dan waktu, lalu tekan Mulai.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="widget-config">
+{
+  "type": "simulation",
+  "concept": "rate_of_change",
+  "description": "Murid menghitung laju perubahan, misalnya kecepatan dan laju konsumsi, lalu memvisualisasikannya.",
+  "variables": [
+    { "name": "distance", "label": "Jarak", "min": 100, "max": 5000, "default": 1500, "unit": "m" },
+    { "name": "time", "label": "Waktu", "min": 60, "max": 1800, "default": 360, "unit": "s" },
+    { "name": "mode", "label": "Gaya bergerak", "min": 0, "max": 3, "default": 1, "unit": "" }
+  ],
+  "presets": [
+    { "name": "Sepeda ke sekolah", "variables": { "distance": 1500, "time": 360, "mode": 1 } },
+    { "name": "Motor ke warung", "variables": { "distance": 2500, "time": 300, "mode": 2 } },
+    { "name": "Jalan kaki ke halte", "variables": { "distance": 600, "time": 430, "mode": 0 } }
+  ]
+}
+</script>
+
+<script>
+(function () {
+  'use strict';
+
+  var TRACK_X0 = 20;
+  var TRACK_X1 = 380;
+  var TRACK_SPAN = TRACK_X1 - TRACK_X0;
+
+  var GX0 = 46, GY_TOP = 10, GY_BOT = 170, GX1 = 346;
+
+  var REAL_SECONDS = 7;
+
+  var MODES = {
+    walk:  { label: 'Jalan kaki', distance: 600,  time: 430 },
+    bike:  { label: 'Sepeda',     distance: 1500, time: 360 },
+    motor: { label: 'Motor',      distance: 2500, time: 300 },
+    car:   { label: 'Mobil',      distance: 2000, time: 180 }
+  };
+
+  var PRESETS = {
+    school: { distance: 1500, time: 360, mode: 'bike' },
+    warung: { distance: 2500, time: 300, mode: 'motor' },
+    halte:  { distance: 600,  time: 430, mode: 'walk' }
+  };
+
+  var el = {
+    distanceSlider: document.getElementById('distance-slider'),
+    timeSlider: document.getElementById('time-slider'),
+    distanceDisplay: document.getElementById('distance-display'),
+    timeDisplay: document.getElementById('time-display'),
+    modeGroup: document.getElementById('mode-group'),
+    modeNote: document.getElementById('mode-note'),
+    rateDisplay: document.getElementById('rate-display'),
+    rateNote: document.getElementById('rate-note'),
+    startBtn: document.getElementById('start-btn'),
+    resetBtn: document.getElementById('reset-btn'),
+    rider: document.getElementById('rider'),
+    trail: document.getElementById('trail'),
+    endDot: document.getElementById('end-dot'),
+    sceneStatus: document.getElementById('scene-status'),
+    hudTime: document.getElementById('hud-time'),
+    hudDistance: document.getElementById('hud-distance'),
+    hudRemaining: document.getElementById('hud-remaining'),
+    hudSpeed: document.getElementById('hud-speed'),
+    graphGrid: document.getElementById('graph-grid'),
+    graphLine: document.getElementById('graph-line'),
+    graphArea: document.getElementById('graph-area'),
+    graphHead: document.getElementById('graph-head'),
+    graphTimeMax: document.getElementById('graph-time-max'),
+    graphDistMax: document.getElementById('graph-dist-max'),
+    feedbackPanel: document.getElementById('feedback-panel'),
+    feedbackText: document.getElementById('feedback-text')
+  };
+
+  var state = {
+    distance: 1500,
+    time: 360,
+    mode: 'bike',
+    simTime: 0,
+    simDistance: 0,
+    phase: 'idle',
+    trailPts: [],
+    graphPts: [],
+    raf: null,
+    lastTS: 0
+  };
+
+  function formatId(n) {
+    return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+
+  function num(n, digits) {
+    return n.toFixed(digits === undefined ? 2 : digits).replace('.', ',');
+  }
+
+  function rate() { return state.distance / state.time; }
+
+  function setFeedback(text, kind) {
+    el.feedbackText.textContent = text;
+    el.feedbackPanel.classList.remove('success', 'error');
+    if (kind === 'success') el.feedbackPanel.classList.add('success');
+    if (kind === 'error') el.feedbackPanel.classList.add('error');
+  }
+
+  function buildGrid() {
+    while (el.graphGrid.firstChild) el.graphGrid.removeChild(el.graphGrid.firstChild);
+    var ns = 'http://www.w3.org/2000/svg';
+    for (var i = 0; i <= 4; i++) {
+      var y = GY_BOT - (i / 4) * (GY_BOT - GY_TOP);
+      var line = document.createElementNS(ns, 'line');
+      line.setAttribute('x1', String(GX0));
+      line.setAttribute('x2', String(GX1));
+      line.setAttribute('y1', y.toFixed(1));
+      line.setAttribute('y2', y.toFixed(1));
+      line.setAttribute('class', 'gridline');
+      el.graphGrid.appendChild(line);
+    }
+  }
+
+  function highlightMode() {
+    var buttons = el.modeGroup.querySelectorAll('button');
+    for (var i = 0; i < buttons.length; i++) {
+      var active = buttons[i].getAttribute('data-mode') === state.mode;
+      buttons[i].className = active ? 'btn btn-primary' : 'btn btn-ghost';
+    }
+    el.modeNote.textContent = 'Laju khas ' + MODES[state.mode].label.toLowerCase() +
+      ' sekitar ' + num(rate()) + ' m/s dengan pengaturan ini.';
+  }
+
+  function updateReadouts() {
+    el.distanceDisplay.textContent = formatId(state.distance) + ' m';
+    el.timeDisplay.textContent = formatId(state.time) + ' s';
+    el.rateDisplay.textContent = num(rate()) + ' m/s';
+    el.rateNote.textContent = '= ' + num(rate() * 3.6) + ' km/jam';
+    el.hudSpeed.textContent = num(rate()) + ' m/s';
+    el.graphTimeMax.textContent = formatId(state.time) + ' s';
+    el.graphDistMax.textContent = formatId(state.distance) + ' m';
+    highlightMode();
+  }
+
+  function paintHud() {
+    el.hudTime.textContent = num(state.simTime, 1) + ' s';
+    el.hudDistance.textContent = formatId(Math.round(state.simDistance)) + ' m';
+    el.hudRemaining.textContent = formatId(Math.max(0, Math.round(state.distance - state.simDistance))) + ' m';
+  }
+
+  function graphPoint(t, d) {
+    var x = GX0 + (t / state.time) * (GX1 - GX0);
+    var y = GY_BOT - (d / state.distance) * (GY_BOT - GY_TOP);
+    return { x: x, y: y };
+  }
+
+  function paintScene() {
+    var frac = state.distance > 0 ? state.simDistance / state.distance : 0;
+    var x = TRACK_X0 + frac * TRACK_SPAN;
+    el.rider.setAttribute('transform', 'translate(' + x.toFixed(2) + ',105)');
+
+    var trailPts = [];
+    for (var i = 0; i < state.trailPts.length; i++) trailPts.push(state.trailPts[i].toFixed(1) + ',105');
+    if (state.phase !== 'idle') trailPts.push(x.toFixed(1) + ',105');
+    el.trail.setAttribute('points', trailPts.join(' '));
+
+    var gp = [];
+    for (var j = 0; j < state.graphPts.length; j++) {
+      gp.push(state.graphPts[j].x.toFixed(1) + ',' + state.graphPts[j].y.toFixed(1));
+    }
+    var head = graphPoint(state.simTime, state.simDistance);
+    gp.push(head.x.toFixed(1) + ',' + head.y.toFixed(1));
+    var pts = gp.join(' ');
+    el.graphLine.setAttribute('points', pts);
+    el.graphArea.setAttribute('points', GX0 + ',' + GY_BOT + ' ' + pts + ' ' + head.x.toFixed(1) + ',' + GY_BOT);
+    el.graphHead.setAttribute('cx', head.x.toFixed(1));
+    el.graphHead.setAttribute('cy', head.y.toFixed(1));
+  }
+
+  function pushPoints() {
+    var t = state.simTime;
+    var d = state.simDistance;
+    if (!state.graphPts.length || t - state.graphPts[state.graphPts.length - 1].t >= 4) {
+      var g = graphPoint(t, d);
+      state.graphPts.push({ x: g.x, y: g.y, t: t });
+      state.trailPts.push(TRACK_X0 + (d / state.distance) * TRACK_SPAN);
+    }
+  }
+
+  function step(ts) {
+    if (state.phase !== 'running') return;
+    if (!state.lastTS) state.lastTS = ts;
+    var dt = Math.min((ts - state.lastTS) / 1000, 0.06);
+    state.lastTS = ts;
+
+    var simAdvance = dt * (state.time / REAL_SECONDS);
+    state.simTime = Math.min(state.time, state.simTime + simAdvance);
+    state.simDistance = rate() * state.simTime;
+    pushPoints();
+    paintScene();
+    paintHud();
+
+    if (state.simTime >= state.time) {
+      finish();
+      return;
+    }
+    state.raf = requestAnimationFrame(step);
+  }
+
+  function finish() {
+    state.phase = 'ended';
+    state.raf = null;
+    state.simTime = state.time;
+    state.simDistance = state.distance;
+    paintScene();
+    paintHud();
+    el.startBtn.textContent = 'Ulangi';
+    el.sceneStatus.textContent = 'Sampai di sekolah';
+    el.endDot.setAttribute('r', '10');
+    setFeedback('Perjalanan selesai. Laju ' + num(rate()) + ' m/s, jadi ' +
+      formatId(state.distance) + ' m butuh ' + formatId(state.time) + ' s. Garis grafik lurus ke atas karena laju tetap.', 'success');
+  }
+
+  function start() {
+    if (state.phase === 'ended') resetRun();
+    state.phase = 'running';
+    state.lastTS = 0;
+    el.startBtn.textContent = 'Jeda';
+    el.sceneStatus.textContent = 'Berjalan';
+    el.endDot.setAttribute('r', '6');
+    setFeedback('Laju tetap ' + num(rate()) + ' m/s selama perjalanan.', null);
+    if (state.raf === null) state.raf = requestAnimationFrame(step);
+  }
+
+  function pause() {
+    if (state.phase !== 'running') return;
+    state.phase = 'paused';
+    if (state.raf !== null) { cancelAnimationFrame(state.raf); state.raf = null; }
+    state.lastTS = 0;
+    el.startBtn.textContent = 'Lanjutkan';
+    el.sceneStatus.textContent = 'Dijeda';
+    setFeedback('Animasi dijeda. Tekan Lanjutkan untuk meneruskan.', null);
+  }
+
+  function resetRun() {
+    if (state.raf !== null) { cancelAnimationFrame(state.raf); state.raf = null; }
+    state.simTime = 0;
+    state.simDistance = 0;
+    state.trailPts = [];
+    state.graphPts = [];
+    state.phase = 'idle';
+    state.lastTS = 0;
+    el.startBtn.textContent = 'Mulai';
+    el.sceneStatus.textContent = 'Siap mulai';
+    el.endDot.setAttribute('r', '6');
+    paintScene();
+    paintHud();
+  }
+
+  function resetAll() {
+    state.distance = 1500;
+    state.time = 360;
+    state.mode = 'bike';
+    el.distanceSlider.value = '1500';
+    el.timeSlider.value = '360';
+    resetRun();
+    updateReadouts();
+    setFeedback('Atur jarak dan waktu, lalu tekan Mulai.', null);
+  }
+
+  function handleStart() {
+    if (state.phase === 'running') pause();
+    else start();
+  }
+
+  el.distanceSlider.addEventListener('input', function () {
+    state.distance = parseInt(el.distanceSlider.value, 10);
+    if (state.phase !== 'idle') { resetRun(); }
+    updateReadouts();
+    paintHud();
+  });
+
+  el.timeSlider.addEventListener('input', function () {
+    state.time = parseInt(el.timeSlider.value, 10);
+    if (state.phase !== 'idle') { resetRun(); }
+    updateReadouts();
+    paintHud();
+  });
+
+  el.modeGroup.addEventListener('click', function (e) {
+    var btn = e.target.closest ? e.target.closest('button[data-mode]') : null;
+    if (!btn) return;
+    var mode = btn.getAttribute('data-mode');
+    state.mode = mode;
+    state.distance = MODES[mode].distance;
+    state.time = MODES[mode].time;
+    el.distanceSlider.value = String(state.distance);
+    el.timeSlider.value = String(state.time);
+    resetRun();
+    updateReadouts();
+    paintHud();
+  });
+
+  document.getElementById('preset-school-btn').addEventListener('click', function () { applyPreset(PRESETS.school); });
+  document.getElementById('preset-warung-btn').addEventListener('click', function () { applyPreset(PRESETS.warung); });
+  document.getElementById('preset-halte-btn').addEventListener('click', function () { applyPreset(PRESETS.halte); });
+
+  function applyPreset(p) {
+    state.distance = p.distance;
+    state.time = p.time;
+    state.mode = p.mode;
+    el.distanceSlider.value = String(p.distance);
+    el.timeSlider.value = String(p.time);
+    resetRun();
+    updateReadouts();
+    paintHud();
+    setFeedback('Preset ' + MODES[p.mode].label.toLowerCase() + '. Tekan Mulai untuk melihat perjalanannya.', null);
+  }
+
+  el.startBtn.addEventListener('click', handleStart);
+  el.resetBtn.addEventListener('click', resetAll);
+
+  document.addEventListener('keydown', function (e) {
+    if (e.target && /input|textarea|select/i.test(e.target.tagName)) return;
+    if (e.key === ' ' || e.key === 'Enter') {
+      if (document.activeElement && document.activeElement.classList.contains('btn')) return;
+      e.preventDefault();
+      handleStart();
+    } else if (e.key === 'r' || e.key === 'R') {
+      resetAll();
+    }
+  });
+
+  window.addEventListener('resize', buildGrid);
+
+  buildGrid();
+  resetAll();
+})();
+</script>
+</body>
+</html>

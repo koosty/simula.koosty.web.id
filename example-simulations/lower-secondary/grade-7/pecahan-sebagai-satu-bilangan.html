@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="education_levels" content="Lower Secondary">
+  <meta name="grade" content="7">
+  <title>Pecahan sebagai Satu Bilangan · Matematika SMP Kelas VII</title>
+  <meta name="description" content="Murid melihat pecahan, desimal, dan persen sebagai tiga bentuk dari bilangan yang sama, lalu membandingkannya.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Pecahan sebagai Satu Bilangan">
+  <meta property="og:description" content="Satu bilangan rasional ditampilkan sekaligus sebagai pecahan, desimal, dan persen di atas garis bilangan, lengkap dengan bar pecahan bergerak dan perbandingan dua pecahan.">
+  <meta property="og:locale" content="id">
+  <style>
+    :root {
+      /* Colour */
+      --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+      --surface: #14141e;     /* panels, cards, step rows */
+      --panel: rgba(20, 20, 30, 0.9);
+      --border: rgba(255, 255, 255, 0.1);
+      --border-strong: #333;
+      --text: #ffffff;
+      --text-muted: #aaa;
+      --text-dim: #888;
+      --accent: #6366f1;      /* primary action, slider thumb, active state */
+      --accent-hover: #5558e8;
+      --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+      --success: #fbbf24;     /* completion, headings, callouts */
+      --warning: #fb923c;
+      --error: #ff6b6b;
+
+      /* Spacing scale */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+
+      /* Radius scale */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-pill: 999px;
+
+      /* Type scale (system fonts only) */
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --text-base: 16px;
+      --text-sm: 14px;
+      --text-xs: 13px;
+      --text-caption: 11px;   /* uppercase control labels */
+      --text-heading: 24px;
+
+      /* Focus, motion, stacking */
+      --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+      --motion: 0.2s;
+      --motion-slow: 0.3s;
+      --z-overlay: 100;        /* panels, tooltips */
+      --z-modal: 1000;         /* loading screens, modal dialogs */
+    }
+
+    [data-theme="light"] {
+      --bg: #f7f7fb;
+      --surface: #ffffff;
+      --panel: rgba(255, 255, 255, 0.92);
+      --border: rgba(0, 0, 0, 0.12);
+      --border-strong: #d4d4d8;
+      --text: #16161d;
+      --text-muted: #52525b;
+      --text-dim: #71717a;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+      --accent-soft: rgba(79, 70, 229, 0.95);
+      --success: #b45309;
+      --warning: #c2410c;
+      --error: #dc2626;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font);
+      font-size: var(--text-base);
+      line-height: 1.5;
+      background: var(--bg);
+      color: var(--text);
+      padding: var(--space-4);
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+    }
+
+    .panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+    .btn {
+      font-family: inherit;
+      font-size: var(--text-sm);
+      min-height: 44px;            /* never below 44px, mobile */
+      min-width: 44px;
+      padding: var(--space-3) var(--space-5);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      background: var(--border-strong);
+      color: var(--text);
+      cursor: pointer;
+      transition: background var(--motion);
+    }
+    .btn:hover { background: var(--text-muted); }
+    .btn:active { transform: scale(0.95); }
+    .btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-primary { background: var(--accent); border-color: var(--accent); }
+    .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+    .btn-ghost { background: transparent; border-color: var(--border); }
+    .btn-ghost:hover { background: var(--surface); }
+
+    .control-label {
+      font-size: var(--text-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    input[type="range"] {
+      width: 100%; height: 6px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px; height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+/* Touch target: keep the 6px visual track, but give the control a 44px hit area. */
+input[type="range"] { height: 44px; background: transparent; }
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-moz-range-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-webkit-slider-thumb { margin-top: -7px; }
+input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; background: var(--accent); border-radius: 50%; cursor: pointer; }
+    input[type="range"]:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+    }
+
+    #feedback-panel {
+      background: var(--surface);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+    }
+    #feedback-panel.success { border-left-color: var(--success); }
+    #feedback-panel.error { border-left-color: var(--error); }
+
+    .progress-track {
+      height: 8px;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+    .progress-fill { height: 100%; background: var(--accent); transition: width var(--motion-slow); }
+
+    /* ---- layout helpers (tokens only) ---- */
+    .wrap { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-4); }
+    h1 { font-size: var(--text-heading); line-height: 1.2; }
+    h2 { font-size: var(--text-base); color: var(--success); margin: 0 0 var(--space-3); }
+    h3 { font-size: var(--text-sm); color: var(--text-muted); margin: 0 0 var(--space-2); }
+    .lead { color: var(--text-muted); font-size: var(--text-sm); }
+    .layout { display: flex; flex-direction: column; gap: var(--space-4); }
+    @media (min-width: 820px) {
+      .layout { flex-direction: row; align-items: flex-start; }
+      #controls { width: 340px; flex: none; }
+      #stage { flex: 1 1 auto; min-width: 0; }
+    }
+    .field { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4); }
+    .field-row { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2); }
+    .mono { font-family: var(--font-mono); }
+    .readout { font-family: var(--font-mono); font-size: var(--text-heading); }
+    .readout-sm { font-family: var(--font-mono); font-size: var(--text-sm); color: var(--text-muted); }
+    .forms { display: grid; grid-template-columns: 1fr; gap: var(--space-3); }
+    @media (min-width: 560px) { .forms { grid-template-columns: repeat(3, 1fr); } }
+    .form-card { border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-3); background: var(--panel); }
+    .form-card .readout { display: block; margin-top: var(--space-1); }
+    .preset-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-2); }
+    .preset-grid .btn { padding: var(--space-2) var(--space-3); }
+    .canvas-wrap { min-height: 300px; }
+    canvas { display: block; width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); touch-action: manipulation; }
+    select {
+      font-family: inherit; font-size: var(--text-sm); min-height: 44px; width: 100%;
+      background: var(--surface); color: var(--text);
+      border: 1px solid var(--border-strong); border-radius: var(--radius-md);
+      padding: var(--space-2) var(--space-3);
+    }
+    select:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .btn-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .note { font-size: var(--text-xs); color: var(--text-dim); margin-top: var(--space-2); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Pecahan sebagai Satu Bilangan</h1>
+      <p class="lead">Satu bilangan rasional bisa ditulis sebagai pecahan, sebagai desimal, dan sebagai persen. Geser penyebut dan pembilang: ketiga bentuk itu bergerak bersama di garis bilangan.</p>
+    </header>
+
+    <div class="layout">
+      <div id="controls" class="panel">
+        <h3>Kontrol</h3>
+
+        <div class="field">
+          <div class="field-row">
+            <label class="control-label" for="b-slider">Penyebut (b)</label>
+            <span id="b-display" class="mono readout-sm">4</span>
+          </div>
+          <input type="range" id="b-slider" min="2" max="20" step="1" value="4" aria-label="Penyebut pecahan">
+        </div>
+
+        <div class="field">
+          <div class="field-row">
+            <label class="control-label" for="a-slider">Pembilang (a)</label>
+            <span id="a-display" class="mono readout-sm">1</span>
+          </div>
+          <input type="range" id="a-slider" min="1" max="3" step="1" value="1" aria-label="Pembilang pecahan">
+          <p class="note">Pembilang selalu lebih kecil dari penyebut, jadi nilainya selalu di antara 0 dan 1.</p>
+        </div>
+
+        <div class="field">
+          <span class="control-label">Pilihan cepat</span>
+          <div class="preset-grid" id="preset-grid"></div>
+        </div>
+
+        <div class="btn-row">
+          <button type="button" class="btn btn-primary" id="replay-btn">Ulangi animasi</button>
+          <button type="button" class="btn btn-ghost" id="reset-btn">Mulai ulang</button>
+        </div>
+      </div>
+
+      <div id="stage" class="panel">
+        <h2>Tiga bentuk dari satu bilangan</h2>
+
+        <div class="forms">
+          <div class="form-card">
+            <h3>Pecahan</h3>
+            <span class="readout" id="fraction-display">1/4</span>
+            <span class="readout-sm" id="parts-display">1 dari 4 bagian</span>
+          </div>
+          <div class="form-card">
+            <h3>Desimal</h3>
+            <span class="readout" id="decimal-display">0,25</span>
+            <span class="readout-sm" id="decimal-note">pembilang : penyebut</span>
+          </div>
+          <div class="form-card">
+            <h3>Persen</h3>
+            <span class="readout" id="percent-display">25%</span>
+            <span class="readout-sm" id="percent-note">dari 100 bagian</span>
+          </div>
+        </div>
+
+        <div class="canvas-wrap" style="margin-top: var(--space-4);">
+          <canvas id="canvas" height="360" role="img" aria-label="Bar pecahan dan garis bilangan dari 0 sampai 1"></canvas>
+        </div>
+  "description": "Satu bilangan rasional ditampilkan sekaligus sebagai pecahan, desimal, dan persen di atas satu garis bilangan, lalu dibandingkan dengan bilangan lain.",
+        <div class="field" style="margin-top: var(--space-4); margin-bottom: var(--space-3);">
+          <label class="control-label" for="compare-select">Bandingkan dengan bilangan lain</label>
+          <select id="compare-select" aria-label="Pilih bilangan lain untuk dibandingkan"></select>
+        </div>
+
+        <div id="compare-display" class="mono readout-sm">1/4 = 0,25 = 25%</div>
+        <div id="feedback-panel" role="status" aria-live="polite">Ubah penyebut atau pembilang, lalu amati ketiga bentuk yang selalu bernilai sama.</div>
+      </div>
+    </div>
+  </div>
+
+  <script type="application/json" id="widget-config">
+{
+  "type": "simulation",
+  "concept": "Pecahan, desimal, dan persen sebagai satu bilangan",
+  "description": "Satu bilangan rasional ditampilkan sekaligus sebagai pecahan, desimal, dan persen di atas satu garis bilangan, lalu dibandingkan dengan bilangan lain.",
+  "variables": [
+    { "name": "b", "label": "Penyebut", "min": 2, "max": 20, "default": 4, "unit": "" },
+    { "name": "a", "label": "Pembilang", "min": 1, "max": 19, "default": 1, "unit": "" }
+  ],
+  "presets": [
+    { "name": "1/2 = 50%", "variables": { "a": 1, "b": 2 } },
+    { "name": "1/4 = 25%", "variables": { "a": 1, "b": 4 } },
+    { "name": "3/4 = 75%", "variables": { "a": 3, "b": 4 } },
+    { "name": "1/5 = 20%", "variables": { "a": 1, "b": 5 } }
+  ]
+}
+  </script>
+
+  <script>
+  (function () {
+    "use strict";
+
+    var PRESETS = [
+      { a: 1, b: 2, label: "1/2 = 50%" },
+      { a: 1, b: 4, label: "1/4 = 25%" },
+      { a: 3, b: 4, label: "3/4 = 75%" },
+      { a: 1, b: 5, label: "1/5 = 20%" }
+    ];
+
+    var COMPARE = [
+      { a: 1, b: 2, label: "1/2" },
+      { a: 1, b: 3, label: "1/3" },
+      { a: 1, b: 4, label: "1/4" },
+      { a: 2, b: 3, label: "2/3" },
+      { a: 1, b: 5, label: "1/5" },
+      { a: 1, b: 8, label: "1/8" },
+      { a: 3, b: 5, label: "3/5" },
+      { a: 1, b: 10, label: "1/10" }
+    ];
+
+    var DUR = 620;
+    var state = {
+      a: 1,
+      b: 4,
+      compare: 0,
+      shown: 0.25,
+      from: 0.25,
+      to: 0.25,
+      t: 1,
+      raf: 0,
+      started: false
+    };
+
+    var canvas = document.getElementById("canvas");
+    var ctx = canvas.getContext("2d");
+    var aSlider = document.getElementById("a-slider");
+    var bSlider = document.getElementById("b-slider");
+    var compareSelect = document.getElementById("compare-select");
+    var feedback = document.getElementById("feedback-panel");
+    var presetGrid = document.getElementById("preset-grid");
+
+    function token(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    /* ---------- formatting ---------- */
+    function decText(v) {
+      var digits = decIsExact(v) ? 4 : 3;
+      var s = Math.abs(v).toFixed(digits);
+      if (decIsExact(v)) s = s.replace(/0+$/, "").replace(/\.$/, "");
+      s = s.replace(".", ",");
+      return (v < 0 ? "-" : "") + s;
+    }
+    function decIsExact(v) {
+      return Math.abs(v * 1000000 - Math.round(v * 1000000)) < 1e-9;
+    }
+    function pctText(v) {
+      var p = v * 100;
+      if (Math.abs(p - Math.round(p)) < 1e-9) return String(Math.round(p)) + "%";
+      return p.toFixed(1).replace(".", ",") + "%";
+    }
+    function fracText(a, b) { return a + "/" + b; }
+
+    /* ---------- drawing ---------- */
+    function resize() {
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      var cssW = canvas.clientWidth || 320;
+      var cssH = 360;
+      canvas.style.height = cssH + "px";
+      canvas.width = Math.round(cssW * dpr);
+      canvas.height = Math.round(cssH * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      draw();
+    }
+
+    function easeInOut(x) {
+      return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+    }
+
+    function draw() {
+      var W = canvas.clientWidth || 320;
+      var H = 360;
+      ctx.clearRect(0, 0, W, H);
+
+      var bg = token("--surface");
+      var border = token("--border-strong");
+      var muted = token("--text-muted");
+      var dim = token("--text-dim");
+      var accent = token("--accent");
+      var warn = token("--warning");
+
+      var value = state.from + (state.to - state.from) * easeInOut(state.t);
+
+      /* ---- fraction bar ---- */
+      var barTop = 44;
+      var barH = 56;
+      var pad = 20;
+      var barW = W - pad * 2;
+      var cell = barW / state.b;
+
+      ctx.font = "600 12px " + token("--font");
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = muted;
+      ctx.fillText("Bar pecahan: " + state.a + " dari " + state.b + " bagian", pad, barTop - 12);
+
+      var filled = Math.min(state.b, Math.round(value * state.b));
+      for (var i = 0; i < state.b; i++) {
+        var x = pad + i * cell;
+        ctx.fillStyle = i < filled ? accent : "transparent";
+        ctx.fillRect(x + 1, barTop, cell - 2, barH);
+        ctx.strokeStyle = i < filled ? accent : border;
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(x + 1.5, barTop + 1.5, cell - 3, barH - 3);
+      }
+      /* fraction label inside the bar */
+      ctx.textAlign = "center";
+      ctx.fillStyle = token("--text");
+      ctx.font = "700 16px " + token("--font-mono");
+      ctx.fillText(fracText(state.a, state.b), W / 2, barTop + barH / 2 + 6);
+
+      /* ---- number line ---- */
+      var axisY = 250;
+      var pad2 = 28;
+      var lineW = W - pad2 * 2;
+      var toX = function (v) { return pad2 + v * lineW; };
+
+      ctx.strokeStyle = border;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(toX(0), axisY);
+      ctx.lineTo(toX(1), axisY);
+      ctx.stroke();
+
+      /* arrow heads */
+      ctx.fillStyle = border;
+      ctx.beginPath();
+      ctx.moveTo(toX(0) - 8, axisY - 5); ctx.lineTo(toX(0), axisY); ctx.lineTo(toX(0) - 8, axisY + 5); ctx.closePath(); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(toX(1) + 8, axisY - 5); ctx.lineTo(toX(1), axisY); ctx.lineTo(toX(1) + 8, axisY + 5); ctx.closePath(); ctx.fill();
+
+      var every = state.b <= 10 ? 1 : (state.b % 2 === 0 ? 2 : 5);
+      ctx.font = "11px " + token("--font-mono");
+      ctx.textAlign = "center";
+      for (var k = 0; k <= state.b; k++) {
+        var tx = toX(k / state.b);
+        var isEdge = k === 0 || k === state.b;
+        ctx.strokeStyle = isEdge ? muted : border;
+        ctx.lineWidth = isEdge ? 2 : 1;
+        ctx.beginPath();
+        ctx.moveTo(tx, axisY - (isEdge ? 10 : 6));
+        ctx.lineTo(tx, axisY + (isEdge ? 10 : 6));
+        ctx.stroke();
+        if (isEdge || k % every === 0) {
+          ctx.fillStyle = isEdge ? token("--text") : dim;
+          ctx.fillText(decShort(k / state.b), tx, axisY + 24);
+        }
+      }
+
+      /* comparison marker (grey, below axis) */
+      var c = COMPARE[state.compare];
+      var cx = toX(c.a / c.b);
+      ctx.fillStyle = dim;
+      ctx.beginPath();
+      ctx.moveTo(cx, axisY + 6); ctx.lineTo(cx - 6, axisY + 15); ctx.lineTo(cx + 6, axisY + 15); ctx.closePath(); ctx.fill();
+      ctx.font = "11px " + token("--font-mono");
+      ctx.fillText(c.label, cx, axisY + 30);
+
+      /* animated marker (above axis) */
+      var mx = toX(value);
+      ctx.fillStyle = warn;
+      ctx.beginPath();
+      ctx.moveTo(mx, axisY - 8);
+      ctx.lineTo(mx - 9, axisY - 22);
+      ctx.lineTo(mx + 9, axisY - 22);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = warn;
+      ctx.beginPath();
+      ctx.arc(mx, axisY, 7, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.font = "700 15px " + token("--font-mono");
+      ctx.fillStyle = warn;
+      ctx.fillText(decText(value), mx, axisY - 32);
+
+      /* progress caption under the line */
+      ctx.font = "12px " + token("--font");
+      ctx.fillStyle = muted;
+      ctx.textAlign = "left";
+      ctx.fillText("Garis bilangan dari 0 sampai 1", pad2, axisY + 56);
+      ctx.textAlign = "right";
+      ctx.fillStyle = dim;
+      ctx.fillText("Segitiga oranye = bilanganmu", W - pad2, axisY + 56);
+    }
+
+    function decShort(v) {
+      if (v === 0) return "0";
+      if (v === 1) return "1";
+      return decText(v);
+    }
+
+    /* ---------- text panel ---------- */
+    function updateText() {
+      var v = state.a / state.b;
+      document.getElementById("fraction-display").textContent = fracText(state.a, state.b);
+      document.getElementById("parts-display").textContent = state.a + " dari " + state.b + " bagian";
+      document.getElementById("decimal-display").textContent = decIsExact(v) ? decText(v) : "≈ " + decText(v);
+      document.getElementById("decimal-note").textContent = decIsExact(v)
+        ? state.a + " : " + state.b + " = " + decText(v)
+        : state.a + " : " + state.b + " tidak habis dibagi";
+      document.getElementById("percent-display").textContent = pctText(v);
+      document.getElementById("percent-note").textContent = "setara " + pctText(v) + " dari 100 bagian";
+      document.getElementById("b-display").textContent = String(state.b);
+      document.getElementById("a-display").textContent = String(state.a);
+      updateCompare(v);
+    }
+
+    function updateCompare(v) {
+      var c = COMPARE[state.compare];
+      var cv = c.a / c.b;
+      var eq = Math.abs(cv - v) < 1e-9;
+      var verdict = eq ? "sama besar dengan" : (cv > v ? "lebih besar dari" : "lebih kecil dari");
+      document.getElementById("compare-display").textContent =
+        fracText(state.a, state.b) + " = " + decText(v) + " = " + pctText(v) +
+        "  •  " + c.label + " = " + decText(cv) + " = " + pctText(cv) + " (" + verdict + " " + fracText(state.a, state.b) + ")";
+    }
+
+    function setFeedback(msg, kind) {
+      feedback.textContent = msg;
+      feedback.className = kind === "success" ? "success" : (kind === "error" ? "error" : "");
+    }
+
+    /* ---------- animation ---------- */
+    function animateTo(target, note) {
+      if (state.raf) cancelAnimationFrame(state.raf);
+      state.from = state.shown;
+      state.to = target;
+      state.t = 0;
+      var start = null;
+      function frame(ts) {
+        if (start === null) start = ts;
+        var p = Math.min(1, (ts - start) / DUR);
+        state.t = p;
+        state.shown = state.from + (state.to - state.from) * easeInOut(p);
+        draw();
+        if (p < 1) {
+          state.raf = requestAnimationFrame(frame);
+        } else {
+          state.raf = 0;
+          state.shown = target;
+          draw();
+        }
+      }
+      state.raf = requestAnimationFrame(frame);
+      if (note) setFeedback(note, "success");
+    }
+
+    function syncSliders() {
+      aSlider.max = String(Math.max(1, state.b - 1));
+      aSlider.value = String(state.a);
+      bSlider.value = String(state.b);
+    }
+
+    function apply(a, b, note) {
+      state.a = a;
+      state.b = b;
+      syncSliders();
+      updateText();
+      animateTo(a / b, note);
+    }
+
+    function onSliderChange() {
+      var b = parseInt(bSlider.value, 10);
+      var a = parseInt(aSlider.value, 10);
+      if (a > b - 1) a = b - 1;
+      if (a < 1) a = 1;
+      state.a = a;
+      state.b = b;
+      syncSliders();
+      updateText();
+      animateTo(a / b, "Sekarang " + fracText(a, b) + " = " + decText(a / b) + " = " + pctText(a / b) + ". Ketiganya menunjuk nilai yang sama.");
+    }
+
+    function resetState() {
+      if (state.raf) { cancelAnimationFrame(state.raf); state.raf = 0; }
+      state.a = 1;
+      state.b = 4;
+      state.compare = 0;
+      state.shown = 0.25;
+      state.from = 0.25;
+      state.to = 0.25;
+      state.t = 1;
+      compareSelect.value = "0";
+      syncSliders();
+      updateText();
+      setFeedback("Ubah penyebut atau pembilang, lalu amati ketiga bentuk yang selalu bernilai sama.", null);
+      draw();
+    }
+
+    /* ---------- build controls ---------- */
+    PRESETS.forEach(function (p, i) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn btn-ghost";
+      btn.id = "preset-" + i + "-btn";
+      btn.textContent = p.label;
+      btn.addEventListener("click", function () {
+        apply(p.a, p.b, "Preset " + fracText(p.a, p.b) + " aktif. Perhatikan dari mana segitiga bergerak di garis bilangan.");
+      });
+      presetGrid.appendChild(btn);
+    });
+
+    COMPARE.forEach(function (c, i) {
+      var opt = document.createElement("option");
+      opt.value = String(i);
+      opt.textContent = c.label + " = " + decText(c.a / c.b);
+      compareSelect.appendChild(opt);
+    });
+
+    bSlider.addEventListener("input", onSliderChange);
+    aSlider.addEventListener("input", onSliderChange);
+    compareSelect.addEventListener("change", function () {
+      state.compare = parseInt(compareSelect.value, 10) || 0;
+      updateText();
+      draw();
+      setFeedback("Segitiga abu-abu adalah bilangan pembanding. Bandingkan posisinya dengan segitiga oranye.", null);
+    });
+
+    document.getElementById("replay-btn").addEventListener("click", function () {
+      animateTo(state.a / state.b, "Animasi diulang dari nol: " + fracText(state.a, state.b) + " bergerak ke " + decText(state.a / state.b) + ".");
+    });
+
+    document.getElementById("reset-btn").addEventListener("click", resetState);
+
+    document.addEventListener("keydown", function (e) {
+      if (e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
+      if (e.key === "r" || e.key === "R") { resetState(); }
+      if (e.key === " ") { e.preventDefault(); animateTo(state.a / state.b, "Animasi diputar ulang."); }
+    });
+
+    if (window.ResizeObserver) {
+      new ResizeObserver(resize).observe(canvas.parentElement);
+    } else {
+      window.addEventListener("resize", resize);
+    }
+
+    syncSliders();
+    updateText();
+    resize();
+    if (!state.started) {
+      state.started = true;
+      state.from = 0;
+      state.to = state.a / state.b;
+      state.shown = 0;
+      animateTo(state.a / state.b, null);
+    }
+  })();
+  </script>
+</body>
+</html>

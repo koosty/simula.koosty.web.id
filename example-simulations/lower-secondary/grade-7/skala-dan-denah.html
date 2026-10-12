@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="education_levels" content="Lower Secondary">
+  <meta name="grade" content="7">
+  <title>Skala dan Denah · Matematika SMP Kelas VII</title>
+  <meta name="description" content="Murid membuat denah dengan skala tertentu dan mengukur jarak sebenarnya di lapangan lewat denah ligandaster dengan rute animasi dan kuis skala.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Skala dan Denah">
+  <meta property="og:description" content="Murid membuat denah dengan skala 1:100 sampai 1:5000, menghitung jarak sebenarnya dari skala, lalu mengerjakan kuis lima soal tentang denah sederhana.">
+  <meta property="og:locale" content="id">
+  <style>
+:root {
+  /* Colour */
+  --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+  --surface: #14141e;     /* panels, cards, step rows */
+  --panel: rgba(20, 20, 30, 0.9);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: #333;
+  --text: #ffffff;
+  --text-muted: #aaa;
+  --text-dim: #888;
+  --accent: #6366f1;      /* primary action, slider thumb, active state */
+  --accent-hover: #5558e8;
+  --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+  --success: #fbbf24;     /* completion, headings, callouts */
+  --warning: #fb923c;
+  --error: #ff6b6b;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type scale (system fonts only) */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-caption: 11px;   /* uppercase control labels */
+  --text-heading: 24px;
+
+  /* Focus, motion, stacking */
+  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  --motion: 0.2s;
+  --motion-slow: 0.3s;
+  --z-overlay: 100;        /* panels, tooltips */
+  --z-modal: 1000;         /* loading screens, modal dialogs */
+}
+
+[data-theme="light"] {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-strong: #d4d4d8;
+  --text: #16161d;
+  --text-muted: #52525b;
+  --text-dim: #71717a;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.95);
+  --success: #b45309;
+  --warning: #c2410c;
+  --error: #dc2626;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+.btn {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  min-height: 44px;            /* never below 44px, mobile */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--border-strong);
+  color: var(--text);
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.btn:hover { background: var(--text-muted); }
+.btn:active { transform: scale(0.95); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); border-color: var(--accent); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); }
+
+.control-label {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+input[type="range"] {
+  width: 100%; height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+
+/* Touch target: keep the 6px visual track, but give the control a 44px hit area. */
+input[type="range"] { height: 44px; background: transparent; }
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-moz-range-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-webkit-slider-thumb { margin-top: -7px; }
+input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; background: var(--accent); border-radius: 50%; cursor: pointer; }
+/* Visually hidden but announced by screen readers. Use when a layout has no
+   room for a visible <h1> (e.g. a full-bleed canvas) — never as an excuse to
+   drop a heading. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+#feedback-panel {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+#feedback-panel.success { border-left-color: var(--success); }
+#feedback-panel.error { border-left-color: var(--error); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.progress-fill { height: 100%; background: var(--accent); transition: width var(--motion-slow); }
+
+.wrap { max-width: 1080px; margin: 0 auto; padding: var(--space-5) var(--space-4) var(--space-6); }
+h1 { font-size: var(--text-heading); margin-bottom: var(--space-2); }
+h2 { font-size: var(--text-sm); color: var(--text-muted); }
+.lead { color: var(--text-muted); font-size: var(--text-sm); margin-bottom: var(--space-5); }
+.layout { display: flex; flex-direction: column; gap: var(--space-4); }
+@media (min-width: 940px) { .layout { flex-direction: row; align-items: flex-start; } .side { width: 340px; flex: 0 0 340px; } }
+.stage { min-height: 320px; }
+.stage svg { width: 100%; height: auto; display: block; }
+.block { fill: var(--surface); stroke: var(--border-strong); stroke-width: 1.5; }
+.road { fill: none; stroke: var(--border-strong); stroke-width: 10; stroke-linecap: round; }
+.route { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.route-glow { fill: none; stroke: var(--accent); stroke-width: 12; stroke-linecap: round; stroke-linejoin: round; opacity: 0.25; }
+.walker { fill: var(--success); stroke: var(--bg); stroke-width: 2; }
+.poi { fill: var(--accent); }
+.poi-text { fill: var(--text); font-family: var(--font); font-size: 12px; }
+.poi-sub { fill: var(--text-muted); font-family: var(--font-mono); font-size: 10px; }
+.svgmono { fill: var(--text-muted); font-family: var(--font-mono); font-size: 13px; }
+.scalebar { fill: var(--warning); }
+.scalebar-track { stroke: var(--text-dim); stroke-width: 1; }
+.ctrl { margin-bottom: var(--space-4); }
+.ctrl-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); margin-bottom: var(--space-2); }
+.val { font-family: var(--font-mono); }
+.row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.note { font-size: var(--text-xs); color: var(--text-dim); margin-top: var(--space-2); }
+.readout { font-family: var(--font-mono); font-size: var(--text-heading); }
+.readout-sm { font-family: var(--font-mono); font-size: var(--text-sm); color: var(--text-muted); }
+.answer-row { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; margin-top: var(--space-3); }
+.answer-input {
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  min-height: 44px;
+  min-width: 120px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--bg);
+  color: var(--text);
+}
+.answer-input:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.score-line { display: flex; justify-content: space-between; font-size: var(--text-xs); color: var(--text-muted); margin: var(--space-2) 0; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Skala dan Denah</h1>
+  <p class="lead">Skala menyatakan perbandingan jarak di denah dengan jarak sebenarnya di lapangan. Semakin kecil skalanya, semakin kecil gambar di denah, tetapi jarak di lapangan tetap sama.</p>
+
+  <div class="layout">
+    <div class="side">
+      <div class="panel">
+        <h2 class="panel-heading">Pilih skala denah</h2>
+        <div class="row" id="scale-group">
+          <button class="btn btn-ghost" id="scale-100-btn" type="button" data-scale="100">1 : 100</button>
+          <button class="btn btn-ghost" id="scale-500-btn" type="button" data-scale="500">1 : 500</button>
+          <button class="btn btn-ghost" id="scale-1000-btn" type="button" data-scale="1000">1 : 1.000</button>
+          <button class="btn btn-ghost" id="scale-5000-btn" type="button" data-scale="5000">1 : 5.000</button>
+        </div>
+        <p class="note" id="scale-note">Skala aktif: 1 : 500.</p>
+      </div>
+
+      <div class="panel" style="margin-top: var(--space-4);">
+        <h2 class="panel-heading">Jarak sebenarnya di lapangan</h2>
+        <div class="ctrl">
+          <div class="ctrl-head"><label class="control-label" for="distance-slider">Jarak (meter)</label><span class="val" id="distance-display">800 m</span></div>
+          <input type="range" id="distance-slider" min="100" max="3000" step="50" value="800" aria-label="Jarak sebenarnya dalam meter">
+        </div>
+        <p class="note">Contoh: jalur dari rumah ke sekolah.</p>
+      </div>
+
+      <div class="panel" style="margin-top: var(--space-4);">
+        <h2 class="panel-heading">Jarak di denah</h2>
+        <p class="readout" id="map-distance-display">160 cm</p>
+        <p class="readout-sm" id="map-distance-m">= 1,6 m bila digambar ukuran penuh</p>
+        <p class="note" id="calc-note">800 m = 80.000 cm. 80.000 : 500 = 160 cm.</p>
+      </div>
+
+      <div class="panel" style="margin-top: var(--space-4);">
+        <div class="row">
+          <button class="btn" id="reset-btn" type="button">Setel ulang</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex: 1 1 auto; min-width: 0;">
+      <div class="panel stage">
+        <h2 class="panel-heading">Denah ligandaster, rute rumah ke sekolah bergerak mengikuti jarak di denah</h2>
+        <svg id="map-svg" viewBox="0 0 460 340" role="img" aria-label="Denah ligandaster dengan rumah, warung, masjid, dan sekolah">
+          <rect class="block" x="8" y="8" width="444" height="324" rx="8"></rect>
+          <path class="road" d="M40 250 L200 250 L200 90 L420 90"></path>
+          <path class="road" d="M40 160 L130 160 L130 250"></path>
+          <path class="route-glow" id="route-glow" d="M60 268 L120 268 L120 200 L200 200 L200 104 L372 104"></path>
+          <path class="route" id="route" d="M60 268 L120 268 L120 200 L200 200 L200 104 L372 104"></path>
+
+          <g id="node-home">
+            <rect class="block" x="34" y="256" width="44" height="34" rx="4"></rect>
+            <text class="poi-text" x="34" y="248">Rumah</text>
+          </g>
+          <g id="node-warung">
+            <circle class="poi" cx="120" cy="176" r="10"></circle>
+            <text class="poi-text" x="138" y="172">Warung</text>
+            <text class="poi-sub" x="138" y="186">simpang</text>
+          </g>
+          <g id="node-masjid">
+            <rect class="block" x="188" y="212" width="46" height="34" rx="4"></rect>
+            <text class="poi-text" x="188" y="264">Masjid</text>
+          </g>
+          <g id="node-sekolah">
+            <rect class="block" x="360" y="66" width="58" height="40" rx="4"></rect>
+            <text class="poi-text" x="360" y="56">Sekolah</text>
+          </g>
+
+          <circle class="walker" id="walker" cx="60" cy="268" r="7"></circle>
+
+          <line class="scalebar-track" id="scalebar-line" x1="20" y1="312" x2="20" y2="322"></line>
+          <rect class="scalebar" id="scalebar" x="20" y="310" width="0" height="10" rx="2"></rect>
+          <text class="svgmono" id="scalebar-label" x="20" y="304">0 cm</text>
+          <text class="svgmono" x="400" y="304">30 cm</text>
+        </svg>
+        <p class="note" id="map-note">Batang di bawah denah menunjukkan jarak di denah dalam sentimeter.</p>
+      </div>
+
+      <div class="panel" id="quiz-panel" style="margin-top: var(--space-4);">
+        <h2 class="panel-heading">Kuis jarak sebenarnya, 5 soal</h2>
+        <div class="score-line">
+          <span id="quiz-question-label">Belum mulai</span>
+          <span id="quiz-score">Skor 0</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="quiz-progress" style="width: 0%"></div></div>
+        <p id="quiz-question" style="margin-top: var(--space-3);">Tekan "Soal baru" untuk memulai kuis.</p>
+        <div class="answer-row">
+          <input class="answer-input" id="answer-input" type="text" inputmode="numeric" placeholder="meter" aria-label="Jawaban jarak sebenarnya dalam meter" disabled>
+          <button class="btn btn-primary" id="check-btn" type="button" disabled>Periksa</button>
+          <button class="btn btn-ghost" id="new-quiz-btn" type="button">Soal baru</button>
+        </div>
+      </div>
+
+      <div id="feedback-panel" style="margin-top: var(--space-4);">
+        <p id="feedback-text">Pilih skala, geser jarak, lalu amati perubahan batang skala di denah.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="widget-config">
+{
+  "type": "simulation",
+  "concept": "scale_drawing",
+  "description": "Murid membuat denah dengan skala tertentu dan mengukur jarak sebenarnya di lapangan.",
+  "variables": [
+    { "name": "scale", "label": "Skala denah", "min": 100, "max": 5000, "default": 500, "unit": "1:n" },
+    { "name": "distance", "label": "Jarak sebenarnya", "min": 100, "max": 3000, "default": 800, "unit": "m" }
+  ],
+  "presets": [
+    { "name": "1 : 100", "variables": { "scale": 100, "distance": 800 } },
+    { "name": "1 : 500", "variables": { "scale": 500, "distance": 800 } },
+    { "name": "1 : 1.000", "variables": { "scale": 1000, "distance": 800 } },
+    { "name": "1 : 5.000", "variables": { "scale": 5000, "distance": 800 } }
+  ]
+}
+</script>
+
+<script>
+(function () {
+  'use strict';
+
+  var DEFAULTS = { scale: 500, distance: 800 };
+  var SCALEBAR_MAX_CM = 30;
+  var SCALEBAR_TRACK = 400;
+  var ROUTE_D = 'M60 268 L120 268 L120 200 L200 200 L200 104 L372 104';
+
+  var el = {
+    scaleGroup: document.getElementById('scale-group'),
+    scaleNote: document.getElementById('scale-note'),
+    distanceSlider: document.getElementById('distance-slider'),
+    distanceDisplay: document.getElementById('distance-display'),
+    mapDistance: document.getElementById('map-distance-display'),
+    mapDistanceM: document.getElementById('map-distance-m'),
+    calcNote: document.getElementById('calc-note'),
+    route: document.getElementById('route'),
+    routeGlow: document.getElementById('route-glow'),
+    walker: document.getElementById('walker'),
+    scalebar: document.getElementById('scalebar'),
+    scalebarLine: document.getElementById('scalebar-line'),
+    mapNote: document.getElementById('map-note'),
+    quizLabel: document.getElementById('quiz-question-label'),
+    quizScore: document.getElementById('quiz-score'),
+    quizProgress: document.getElementById('quiz-progress'),
+    quizQuestion: document.getElementById('quiz-question'),
+    answerInput: document.getElementById('answer-input'),
+    checkBtn: document.getElementById('check-btn'),
+    newQuizBtn: document.getElementById('new-quiz-btn'),
+    feedbackPanel: document.getElementById('feedback-panel'),
+    feedbackText: document.getElementById('feedback-text'),
+    resetBtn: document.getElementById('reset-btn')
+  };
+
+  var state = {
+    scale: DEFAULTS.scale,
+    distance: DEFAULTS.distance,
+    index: 0,
+    score: 0,
+    total: 5,
+    question: null,
+    locked: false
+  };
+
+  var routeLen = 0;
+  var routePos = 0;
+  var routeRAF = null;
+  var lastTS = 0;
+
+  var barCurrent = 0;
+  var barTarget = 0;
+  var barRAF = null;
+
+  function measureRoute() {
+    var len = 0;
+    try { len = el.route.getTotalLength(); } catch (e) { len = 0; }
+    routeLen = (len && isFinite(len)) ? len : 700;
+  }
+
+  function pointOnRoute(len) {
+    try {
+      var pt = el.route.getPointAtLength(len);
+      return { x: pt.x, y: pt.y };
+    } catch (e) {
+      return { x: 60, y: 268 };
+    }
+  }
+
+  function routeStep(ts) {
+    if (!lastTS) lastTS = ts;
+    var dt = Math.min(ts - lastTS, 64);
+    lastTS = ts;
+    routePos += dt * 0.075;
+    if (routePos > routeLen) routePos = routePos % routeLen;
+    var p = pointOnRoute(routePos);
+    el.walker.setAttribute('cx', p.x.toFixed(2));
+    el.walker.setAttribute('cy', p.y.toFixed(2));
+    routeRAF = requestAnimationFrame(routeStep);
+  }
+
+  function startRoute() {
+    if (routeRAF === null) routeRAF = requestAnimationFrame(routeStep);
+  }
+
+  function stopRoute() {
+    if (routeRAF !== null) { cancelAnimationFrame(routeRAF); routeRAF = null; }
+    lastTS = 0;
+  }
+
+  function barFrame() {
+    var diff = barTarget - barCurrent;
+    if (Math.abs(diff) < 0.3) barCurrent = barTarget;
+    else barCurrent += diff * 0.16;
+    var w = Math.max(0, barCurrent);
+    el.scalebar.setAttribute('width', w.toFixed(2));
+    el.scalebarLine.setAttribute('x2', (20 + w).toFixed(2));
+    if (Math.abs(diff) >= 0.3) barRAF = requestAnimationFrame(barFrame);
+    else barRAF = null;
+  }
+
+  function tweenBar() {
+    if (barRAF === null) barRAF = requestAnimationFrame(barFrame);
+  }
+
+  var SCENARIOS = [
+    { text: 'Jarak antara rumah dan warung di denah adalah 4 cm pada denah berskala 1 : 500.', cm: 4, scale: 500 },
+    { text: 'Jalur ke sekolah terukur 12 cm pada denah berskala 1 : 1.000.', cm: 12, scale: 1000 },
+    { text: 'Lembah sekolah dan masjid berjarak 3 cm pada denah berskala 1 : 2.000.', cm: 3, scale: 2000 },
+    { text: 'Jalan kampung digambar 20 cm pada denah berskala 1 : 5.000.', cm: 20, scale: 5000 },
+    { text: 'Jarak rumah ke masjid 9 cm pada denah berskala 1 : 100.', cm: 9, scale: 100 }
+  ];
+
+  function setFeedback(text, kind) {
+    el.feedbackText.textContent = text;
+    el.feedbackPanel.classList.remove('success', 'error');
+    if (kind === 'success') el.feedbackPanel.classList.add('success');
+    if (kind === 'error') el.feedbackPanel.classList.add('error');
+  }
+
+  function updateProgress() {
+    var pct = Math.min(state.index, state.total) / state.total * 100;
+    el.quizProgress.style.width = pct.toFixed(1) + '%';
+    el.quizScore.textContent = 'Skor ' + state.score;
+  }
+
+  function newQuestion() {
+    state.question = SCENARIOS[state.index % SCENARIOS.length];
+    state.index += 1;
+    state.locked = false;
+    el.quizLabel.textContent = 'Soal ' + Math.min(state.index, state.total) + ' dari ' + state.total;
+    el.quizQuestion.textContent = state.question.text + ' Berapa jarak sebenarnya? Jawab dalam meter.';
+    el.answerInput.value = '';
+    el.answerInput.disabled = false;
+    el.checkBtn.disabled = false;
+    updateProgress();
+    setFeedback('Jawab jarak sebenarnya dalam meter, lalu tekan Periksa.', null);
+  }
+
+  function checkAnswer() {
+    if (state.locked || !state.question) return;
+    var given = parseFloat(el.answerInput.value.trim().replace(',', '.'));
+    if (isNaN(given)) {
+      setFeedback('Masukkan angka saja, misalnya 200.', 'error');
+      return;
+    }
+    state.locked = true;
+    el.answerInput.disabled = true;
+    el.checkBtn.disabled = true;
+    var correct = state.question.cm * state.question.scale / 100;
+    var work = state.question.cm * state.question.scale;
+    if (Math.abs(given - correct) < 0.51) {
+      state.score += 1;
+      setFeedback('Benar! ' + state.question.cm + ' cm x ' + state.question.scale + ' = ' +
+        work + ' cm = ' + correct + ' m.', 'success');
+    } else {
+      setFeedback('Belum tepat. Cara hitungnya: ' + state.question.cm + ' cm x ' + state.question.scale +
+        ' = ' + work + ' cm = ' + correct + ' m.', 'error');
+    }
+    updateProgress();
+  }
+
+  function formatId(n) {
+    return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+
+  function highlightScaleButtons() {
+    var buttons = el.scaleGroup.querySelectorAll('button');
+    for (var i = 0; i < buttons.length; i++) {
+      var isActive = parseInt(buttons[i].getAttribute('data-scale'), 10) === state.scale;
+      buttons[i].className = isActive ? 'btn btn-primary' : 'btn btn-ghost';
+    }
+  }
+
+  function updateReadout() {
+    var realCm = state.distance * 100;
+    var mapCm = realCm / state.scale;
+    var mapCmText = mapCm >= 100 ? formatId(Math.round(mapCm)) + ' cm' : mapCm.toFixed(1).replace('.', ',') + ' cm';
+
+    el.distanceDisplay.textContent = formatId(state.distance) + ' m';
+    el.mapDistance.textContent = mapCmText;
+    el.mapDistanceM.textContent = mapCm >= 100
+      ? '= ' + (mapCm / 100).toFixed(1).replace('.', ',') + ' m bila digambar ukuran penuh'
+      : 'kurang dari 1 cm, sangat kecil di kertas';
+    el.calcNote.textContent = formatId(state.distance) + ' m = ' + formatId(realCm) + ' cm. ' +
+      formatId(realCm) + ' : ' + formatId(state.scale) + ' = ' + mapCm.toFixed(1).replace('.', ',') + ' cm.';
+    el.scaleNote.textContent = 'Skala aktif: 1 : ' + formatId(state.scale) + '.';
+    el.mapNote.textContent = 'Skala 1 : ' + formatId(state.scale) + ' berarti 1 cm di denah = ' +
+      formatId(state.scale / 100).replace('.', ',') + ' m di lapangan.';
+
+    barTarget = Math.min(SCALEBAR_TRACK, (mapCm / SCALEBAR_MAX_CM) * SCALEBAR_TRACK);
+    tweenBar();
+    highlightScaleButtons();
+  }
+
+  function resetState() {
+    stopRoute();
+
+    state.scale = DEFAULTS.scale;
+    state.distance = DEFAULTS.distance;
+    el.distanceSlider.value = String(DEFAULTS.distance);
+
+    state.index = 0;
+    state.score = 0;
+    state.question = null;
+    state.locked = false;
+    el.quizLabel.textContent = 'Belum mulai';
+    el.quizQuestion.textContent = 'Tekan "Soal baru" untuk memulai kuis.';
+    el.answerInput.value = '';
+    el.answerInput.disabled = true;
+    el.checkBtn.disabled = true;
+    el.quizProgress.style.width = '0%';
+    el.quizScore.textContent = 'Skor 0';
+
+    barCurrent = 0;
+    barTarget = 0;
+    if (barRAF !== null) { cancelAnimationFrame(barRAF); barRAF = null; }
+    el.scalebar.setAttribute('width', '0');
+    el.scalebarLine.setAttribute('x2', '20');
+
+    routePos = 0;
+    var p = pointOnRoute(0);
+    el.walker.setAttribute('cx', p.x.toFixed(2));
+    el.walker.setAttribute('cy', p.y.toFixed(2));
+
+    measureRoute();
+    updateReadout();
+    setFeedback('Pilih skala, geser jarak, lalu amati perubahan batang skala di denah.', null);
+    startRoute();
+  }
+
+  el.scaleGroup.addEventListener('click', function (e) {
+    var btn = e.target.closest ? e.target.closest('button[data-scale]') : null;
+    if (!btn) return;
+    state.scale = parseInt(btn.getAttribute('data-scale'), 10);
+    updateReadout();
+  });
+
+  el.distanceSlider.addEventListener('input', function () {
+    state.distance = parseInt(el.distanceSlider.value, 10);
+    updateReadout();
+  });
+
+  el.checkBtn.addEventListener('click', checkAnswer);
+  el.newQuizBtn.addEventListener('click', newQuestion);
+  el.resetBtn.addEventListener('click', resetState);
+
+  el.answerInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); checkAnswer(); }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.target && /input|textarea|select/i.test(e.target.tagName)) return;
+    if (e.key === 'r' || e.key === 'R') { resetState(); }
+    else if (e.key === ' ' || e.key === 'Enter') {
+      if (document.activeElement && document.activeElement.classList.contains('btn')) return;
+      e.preventDefault();
+      newQuestion();
+    }
+  });
+
+  window.addEventListener('resize', measureRoute);
+
+  el.route.setAttribute('d', ROUTE_D);
+  el.routeGlow.setAttribute('d', ROUTE_D);
+  resetState();
+})();
+</script>
+</body>
+</html>

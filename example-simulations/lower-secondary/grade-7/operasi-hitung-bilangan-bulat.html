@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="education_levels" content="Lower Secondary">
+  <meta name="grade" content="7">
+  <title>Operasi Hitung Bilangan Bulat · Matematika SMP Kelas VII</title>
+  <meta name="description" content="Latihan bertingkat untuk operasi hitung campur bilangan bulat, dari yang sederhana sampai yang butuh beberapa langkah.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Operasi Hitung Bilangan Bulat">
+  <meta property="og:description" content="Latihan bertingkat untuk operasi hitung campur bilangan bulat, dari yang sederhana sampai yang butuh beberapa langkah. Tiap benar, tingkat kesulitan naik.">
+  <meta property="og:locale" content="id">
+  <style>
+:root {
+  /* Colour */
+  --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+  --surface: #14141e;     /* panels, cards, step rows */
+  --panel: rgba(20, 20, 30, 0.9);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: #333;
+  --text: #ffffff;
+  --text-muted: #aaa;
+  --text-dim: #888;
+  --accent: #6366f1;      /* primary action, slider thumb, active state */
+  --accent-hover: #5558e8;
+  --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+  --success: #fbbf24;     /* completion, headings, callouts */
+  --warning: #fb923c;
+  --error: #ff6b6b;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type scale (system fonts only) */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-caption: 11px;   /* uppercase control labels */
+  --text-heading: 24px;
+
+  /* Focus, motion, stacking */
+  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  --motion: 0.2s;
+  --motion-slow: 0.3s;
+  --z-overlay: 100;        /* panels, tooltips */
+  --z-modal: 1000;         /* loading screens, modal dialogs */
+}
+
+[data-theme="light"] {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-strong: #d4d4d8;
+  --text: #16161d;
+  --text-muted: #52525b;
+  --text-dim: #71717a;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.95);
+  --success: #b45309;
+  --warning: #c2410c;
+  --error: #dc2626;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+.btn {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  min-height: 44px;            /* never below 44px, mobile */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--border-strong);
+  color: var(--text);
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.btn:hover { background: var(--text-muted); }
+.btn:active { transform: scale(0.95); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); border-color: var(--accent); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); }
+
+.control-label {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+input[type="range"] {
+  width: 100%; height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+
+/* Touch target: keep the 6px visual track, but give the control a 44px hit area. */
+input[type="range"] { height: 44px; background: transparent; }
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-moz-range-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-webkit-slider-thumb { margin-top: -7px; }
+input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; background: var(--accent); border-radius: 50%; cursor: pointer; }
+/* Visually hidden but announced by screen readers. Use when a layout has no
+   room for a visible <h1> (e.g. a full-bleed canvas) — never as an excuse to
+   drop a heading. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+#feedback-panel {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+#feedback-panel.success { border-left-color: var(--success); }
+#feedback-panel.error { border-left-color: var(--error); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.progress-fill { height: 100%; background: var(--accent); transition: width var(--motion-slow); }
+
+    /* ---- layout (tokens only) ---- */
+    .wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: var(--space-4) var(--space-4) var(--space-6);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+    h1 { font-size: var(--text-heading); line-height: 1.2; }
+    h2 { font-size: var(--text-base); color: var(--text-muted); font-weight: 600; }
+    h3 { font-size: var(--text-sm); color: var(--text-muted); font-weight: 600; }
+    p { font-size: var(--text-sm); color: var(--text-muted); }
+
+    .scorebar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+    }
+    .stat {
+      flex: 1 1 100px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-3);
+    }
+    .stat .k { font-size: var(--text-caption); text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+    .stat .v { font-family: var(--font-mono); font-size: var(--text-heading); }
+
+    .expression {
+      font-family: var(--font-mono);
+      font-size: var(--text-heading);
+      text-align: center;
+      padding: var(--space-5) var(--space-3);
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-lg);
+      letter-spacing: 1px;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    .expression .ans { color: var(--accent); }
+
+    .answer-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      align-items: flex-end;
+      margin-top: var(--space-4);
+    }
+    .answer-field { flex: 1 1 180px; display: flex; flex-direction: column; gap: var(--space-1); }
+    input[type="text"], input[type="number"] {
+      font-family: var(--font-mono);
+      font-size: var(--text-base);
+      min-height: 44px;
+      padding: var(--space-2) var(--space-3);
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      width: 100%;
+    }
+    input:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+    .btn-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .btn-row .btn { flex: 1 1 130px; }
+
+    #estimate-panel {
+      margin-top: var(--space-4);
+      padding: var(--space-3) var(--space-4);
+      border: 1px dashed var(--border-strong);
+      border-radius: var(--radius-md);
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+      color: var(--text-muted);
+    }
+    #estimate-panel[hidden] { display: none; }
+
+    .steps-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      margin-top: var(--space-3);
+    }
+    .steps-list li {
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: var(--space-2) var(--space-3);
+    }
+
+
+    .slide-in { animation: slideIn var(--motion-slow) ease-out; }
+    @keyframes slideIn {
+      from { transform: translateY(var(--space-2)); opacity: 0.2; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .footnote { font-size: var(--text-xs); color: var(--text-dim); }
+
+    @media (max-width: 420px) {
+      .wrap { padding: var(--space-3) var(--space-2) var(--space-5); }
+      .expression { font-size: var(--text-base); }
+      .stat .v { font-size: var(--text-base); }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Operasi Hitung Bilangan Bulat</h1>
+      <p>Kerjakan soal campur bilangan bulat. Setiap jawaban benar membuat tingkat kesulitan naik satu anak tangga.</p>
+    </header>
+
+    <section class="panel" aria-labelledby="stat-heading">
+      <h2 id="stat-heading" class="panel-heading">Kemajuanmu</h2>
+      <div class="scorebar">
+        <div class="stat"><div class="k">Ronde</div><div class="v" id="round-display">1</div></div>
+        <div class="stat"><div class="k">Benar</div><div class="v" id="score-display">0</div></div>
+        <div class="stat"><div class="k">Salah</div><div class="v" id="wrong-display">0</div></div>
+        <div class="stat"><div class="k">Tingkat</div><div class="v" id="level-display">1</div></div>
+      </div>
+      <div style="margin-top: var(--space-3);">
+        <div class="progress-track" role="progressbar" id="level-track" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1" aria-label="Tingkat kesulitan">
+          <div class="progress-fill" id="level-fill" style="width: 33.33%;"></div>
+        </div>
+        <p class="footnote" style="margin-top: var(--space-1);" id="level-note">Tingkat 1: satu operasi.</p>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="soal-heading">
+      <h2 id="soal-heading" class="panel-heading">Soal ronde ini</h2>
+      <div class="expression" id="expression-display" aria-live="polite">... <span class="ans">= ?</span></div>
+
+      <div class="answer-row">
+        <div class="answer-field">
+          <label class="control-label" for="answer-input">Jawaban kamu</label>
+          <input type="text" id="answer-input" inputmode="numeric" autocomplete="off" placeholder="ketik angka">
+        </div>
+        <button type="button" class="btn btn-primary" id="check-btn">Periksa</button>
+      </div>
+
+      <div style="margin-top: var(--space-4);">
+        <button type="button" class="btn btn-ghost" id="estimate-btn" aria-pressed="false" aria-controls="estimate-panel">Cek dengan estimasi</button>
+        <div id="estimate-panel" hidden></div>
+      </div>
+
+      <div id="feedback-panel" role="status" aria-live="polite" style="margin-top: var(--space-4);">
+        Ketik jawabanmu lalu tekan Periksa. Tanda minus bisa ditulis dengan tanda hubung.
+      </div>
+
+      <ul class="steps-list" id="steps-list" hidden></ul>
+
+      <div class="btn-row" style="margin-top: var(--space-4);">
+        <button type="button" class="btn" id="next-btn" disabled>Soal Berikutnya</button>
+        <button type="button" class="btn btn-ghost" id="reset-btn">Mulai Ulang</button>
+      </div>
+    </section>
+
+    <p class="footnote">Pintasan papan tik: <strong>Enter</strong> untuk memeriksa, <strong>R</strong> untuk mulai ulang.</p>
+  </div>
+
+  <script type="application/json" id="widget-config">
+  {
+    "type": "simulation",
+    "concept": "integer_arithmetic_drill",
+    "description": "Latihan bertingkat untuk operasi hitung campur bilangan bulat, dari yang sederhana sampai yang butuh beberapa langkah.",
+    "variables": [
+      { "name": "level", "label": "Tingkat kesulitan", "min": 1, "max": 3, "default": 1, "unit": "" },
+      { "name": "round", "label": "Ronde", "min": 1, "max": 0, "default": 1, "unit": "" }
+    ],
+    "presets": [
+      { "name": "Mulai dari tingkat 1", "variables": { "level": 1 } },
+      { "name": "Lompat ke tingkat 3", "variables": { "level": 3 } }
+    ]
+  }
+  </script>
+
+  <script>
+  (function () {
+    "use strict";
+
+    var state = {
+      level: 1,          // 1..3
+      round: 1,
+      score: 0,
+      wrong: 0,
+      streak: 0,
+      showEstimate: false,
+      checked: false,   // current round already judged?
+      solved: false,     // current round answered correctly?
+      problem: null,
+      rafId: 0
+    };
+
+    var roundDisplay = document.getElementById("round-display");
+    var scoreDisplay = document.getElementById("score-display");
+    var wrongDisplay = document.getElementById("wrong-display");
+    var levelDisplay = document.getElementById("level-display");
+    var levelFill = document.getElementById("level-fill");
+    var levelTrack = document.getElementById("level-track");
+    var levelNote = document.getElementById("level-note");
+    var expression = document.getElementById("expression-display");
+    var answerInput = document.getElementById("answer-input");
+    var checkBtn = document.getElementById("check-btn");
+    var nextBtn = document.getElementById("next-btn");
+    var resetBtn = document.getElementById("reset-btn");
+    var estimateBtn = document.getElementById("estimate-btn");
+    var estimatePanel = document.getElementById("estimate-panel");
+    var feedback = document.getElementById("feedback-panel");
+    var stepsList = document.getElementById("steps-list");
+
+    function randInt(min, max) {
+      return min + Math.floor(Math.random() * (max - min + 1));
+    }
+
+    function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+    /* Build a token list, then evaluate it with correct precedence. */
+    function buildProblem(level) {
+      var tokens, a, b, c, d, e, f, g, h, k, op, p1, p2, p3;
+
+      if (level === 1) {
+        // One operation. The second number may be negative.
+        a = randInt(-9, 9) || 5;
+        b = randInt(-9, 9) || 3;
+        op = pick(["+", "−"]);
+        if (op === "−" && b < 0) b = -b;   // never print "− −3"
+        tokens = [a, op, b];
+      } else if (level === 2) {
+        // Two operations: a sign change first, then a multiplication.
+        c = randInt(-8, 8) || 3;
+        d = randInt(2, 9);
+        op = pick(["+", "−"]);
+        e = op === "−" ? randInt(1, 8) : randInt(-8, -1);
+        tokens = [c, op, d, "×", e];
+      } else {
+        // Three operations with parentheses around the middle pair.
+        f = randInt(-6, 6) || 4;
+        g = randInt(2, 9);
+        h = randInt(2, 6);
+        k = randInt(0, 6);          // keep the last term positive so it reads clearly
+        p1 = pick(["+", "−"]);
+        p2 = pick(["×", "÷"]);
+        p3 = pick(["+", "−"]);
+        if (p2 === "÷") {
+          // choose a divisor of g so the quotient stays a whole number
+          var divisors = [1, 2, 3, 4, 5, 6, 7, 8, 9].filter(function (d) {
+            return g % d === 0 && d > 1 && d <= 6;
+          });
+          h = pick(divisors);
+        }
+        tokens = [f, p1, "(", g, p2, h, ")", p3, k];
+      }
+
+      return tokens;
+    }
+
+    // Tokens are either numbers or one of "+", "−", "×", "÷", "(", ")".
+    function evalTokens(tokens) {
+      var work = tokens.slice();
+
+      // Reduce every parenthesised group to a single number, innermost first.
+      for (var pass = 0; pass < 8; pass++) {
+        var open = -1;
+        for (var p = work.length - 1; p >= 0; p--) {
+          if (work[p] === "(") { open = p; break; }
+        }
+        if (open < 0) break;
+        var close = -1;
+        for (var q = open + 1; q < work.length; q++) {
+          if (work[q] === ")") { close = q; break; }
+        }
+        if (close < 0) break;
+        var value = evalTokens(work.slice(open + 1, close));
+        work.splice(open, close - open + 1, value);
+      }
+
+      // Flat now: number, operator, number, operator, ...
+      var flat = work.slice();
+
+      // Multiplication and division first.
+      for (var j = flat.length - 2; j >= 1; j -= 2) {
+        if (flat[j] === "×") {
+          flat[j - 1] = flat[j - 1] * flat[j + 1];
+          flat.splice(j, 2);
+        } else if (flat[j] === "÷") {
+          var divisor = flat[j + 1] || 1;
+          flat[j - 1] = Math.round((flat[j - 1] / divisor) * 100) / 100;
+          flat.splice(j, 2);
+        }
+      }
+
+      var acc = flat[0];
+      for (var m = 1; m < flat.length; m += 2) {
+        if (flat[m] === "+") acc += flat[m + 1];
+        else if (flat[m] === "−") acc -= flat[m + 1];
+        else acc *= flat[m + 1];
+      }
+      return Math.round(acc * 100) / 100;
+    }
+
+    function renderTokens(tokens) {
+      var out = "", i;
+      for (i = 0; i < tokens.length; i++) {
+        var t = tokens[i];
+        if (typeof t === "string") {
+          out += (t === "−") ? "&minus;" : (t === "×") ? "&times;" : (t === "÷") ? "&divide;" : t;
+        } else {
+          out += (t < 0 ? "&minus;" + Math.abs(t) : String(t));
+        }
+      }
+      return out;
+    }
+
+    function newProblem() {
+      var tokens = buildProblem(state.level);
+      var answer = evalTokens(tokens);
+      state.problem = { tokens: tokens, answer: answer };
+      state.checked = false;
+      state.solved = false;
+      expression.classList.remove("slide-in");
+      void expression.offsetWidth;
+      expression.classList.add("slide-in");
+      expression.innerHTML = renderTokens(tokens) + " = <span class=\"ans\">?</span>";
+      answerInput.value = "";
+      answerInput.disabled = false;
+      checkBtn.disabled = false;
+      nextBtn.disabled = true;
+      stepsList.hidden = true;
+      stepsList.textContent = "";
+      feedback.className = "";
+      feedback.textContent = "Hitung dulu ya. Ingat: perkalian dan pembagian didahulukan sebelum penjumlahan.";
+      updateStats();
+      updateEstimate();
+      answerInput.focus();
+    }
+
+    function updateStats() {
+      roundDisplay.textContent = String(state.round);
+      scoreDisplay.textContent = String(state.score);
+      wrongDisplay.textContent = String(state.wrong);
+      levelDisplay.textContent = String(state.level);
+      var pct = (state.level / 3) * 100;
+      levelFill.style.width = pct + "%";
+      levelTrack.setAttribute("aria-valuenow", String(state.level));
+      levelNote.textContent = state.level === 1
+        ? "Tingkat 1: satu operasi."
+        : (state.level === 2 ? "Tingkat 2: dua operasi, perhatikan prioritas." : "Tingkat 3: tiga operasi dengan kurung.");
+    }
+
+    function showSteps() {
+      stepsList.textContent = "";
+      var lines = stepLines();
+      lines.forEach(function (line) {
+        var li = document.createElement("li");
+        li.textContent = line;
+        stepsList.appendChild(li);
+      });
+      stepsList.hidden = false;
+    }
+
+    function stepLines() {
+      var toks = state.problem.tokens;
+      var lines = [];
+      // parenthesised group first
+      var openIdx = -1, closeIdx = -1;
+      for (var i = 0; i < toks.length; i++) {
+        if (toks[i] === "(") { openIdx = i; break; }
+      }
+      if (openIdx >= 0) {
+        for (var j = openIdx + 1; j < toks.length; j++) {
+          if (toks[j] === ")") { closeIdx = j; break; }
+        }
+      }
+      var inner = null;
+      if (openIdx >= 0 && closeIdx > openIdx) {
+        inner = toks.slice(openIdx + 1, closeIdx);
+        var innerStr = inner.map(plainToken).join(" ");
+        var iv = evalTokens(inner);
+        lines.push("1. Kurung: " + innerStr + " = " + iv);
+        lines.push("2. Sisa: " + renderPlain(toks, openIdx, closeIdx, iv) + " = " + state.problem.answer);
+      } else {
+        lines.push("1. Perkalian dan pembagian lebih dulu");
+        lines.push("2. " + renderPlainAll(toks) + " = " + state.problem.answer);
+      }
+      return lines;
+    }
+
+    function plainToken(t) {
+      if (typeof t !== "string") return t < 0 ? "−" + Math.abs(t) : String(t);
+      return t === "−" ? "−" : (t === "×" ? "×" : (t === "÷" ? "÷" : t));
+    }
+
+    function renderPlainAll(toks) {
+      return toks.map(plainToken).join(" ");
+    }
+
+    // Replace the parenthesised group with its value, then flatten to text.
+    function renderPlain(toks, openIdx, closeIdx, iv) {
+      var copy = toks.slice();
+      copy.splice(openIdx, closeIdx - openIdx + 2, iv);
+      return copy.map(plainToken).join(" ");
+    }
+
+    function roundEstimate(v) {
+      if (v === 0) return 0;
+      var mag = Math.pow(10, Math.floor(Math.log10(Math.abs(v))) - 1);
+      var q = v / mag;
+      var snapped = Math.abs(q) < 1.5 ? 1 : (Math.abs(q) < 3.5 ? 2 : (Math.abs(q) < 7.5 ? 5 : 10));
+      return snapped * Math.sign(q) * mag;
+    }
+
+    function updateEstimate() {
+      if (!state.problem) return;
+      var est = roundEstimate(state.problem.answer);
+      estimatePanel.textContent = "Estimasi kasar: jawaban sebenarnya sekitar " + est + ". Kalau jawabanmu jauh dari angka ini, ulangi perhitungannya.";
+      estimatePanel.hidden = !state.showEstimate;
+      estimateBtn.setAttribute("aria-pressed", state.showEstimate ? "true" : "false");
+    }
+
+    function check() {
+      if (!state.problem || state.checked) return;
+      var raw = answerInput.value.trim().replace(/\s/g, "").replace(/−/g, "-");
+      if (raw === "") {
+        feedback.className = "error";
+        feedback.textContent = "Isi dulu jawabannya, lalu tekan Periksa.";
+        answerInput.focus();
+        return;
+      }
+      if (!/^-?\d+(\.\d+)?$/.test(raw)) {
+        feedback.className = "error";
+        feedback.textContent = "Masukkan angka saja. Contoh jawaban benar: -12 atau 36. Tanda minus ditulis dengan tanda hubung.";
+        answerInput.focus();
+        return;
+      }
+      var given = parseFloat(raw);
+      var expected = state.problem.answer;
+      state.checked = true;
+      answerInput.disabled = true;
+      checkBtn.disabled = true;
+      nextBtn.disabled = false;
+      showSteps();
+
+      if (Math.abs(given - expected) < 0.001) {
+        state.score++;
+        state.streak++;
+        state.solved = true;
+        feedback.className = "success";
+        var msg = "Benar. " + renderPlainAll(state.problem.tokens) + " = " + expected + ". ";
+        if (state.streak >= 3) msg += "Tiga jawaban benar berturut-turut. Pertahankan! ";
+        if (state.streak === 2 && state.level < 3) {
+          state.level++;
+          msg += "Tingkat kesulitan naik ke " + state.level + ".";
+          updateStats();
+        }
+        feedback.textContent = msg;
+        celebrate();
+      } else {
+        state.wrong++;
+        state.streak = 0;
+        feedback.className = "error";
+        var dirHint = "Periksa lagi tanda tambah/kurang dan letak kurung.";
+        feedback.textContent = "Belum tepat. Jawaban yang benar adalah " + expected + ", sedangkan kamu menulis " + given + ". " + dirHint;
+      }
+      updateStats();
+    }
+
+    function celebrate() {
+      if (state.rafId) cancelAnimationFrame(state.rafId);
+      var start = performance.now();
+      var DUR = 520;
+      var bar = levelFill;
+      var base = (state.level / 3) * 100;
+      function tick(now) {
+        var t = (now - start) / DUR;
+        if (t >= 1) {
+          bar.style.width = base + "%";
+          state.rafId = 0;
+          return;
+        }
+        var bump = Math.sin(t * Math.PI) * 12;
+        bar.style.width = (base + bump) + "%";
+        state.rafId = requestAnimationFrame(tick);
+      }
+      state.rafId = requestAnimationFrame(tick);
+    }
+
+    function next() {
+      if (!state.checked) return;
+      state.round++;
+      newProblem();
+    }
+
+    function resetAll() {
+      if (state.rafId) cancelAnimationFrame(state.rafId);
+      state.rafId = 0;
+      state.level = 1;
+      state.round = 1;
+      state.score = 0;
+      state.wrong = 0;
+      state.streak = 0;
+      state.showEstimate = false;
+      state.checked = false;
+      state.solved = false;
+      state.problem = null;
+      levelFill.style.width = (100 / 3) + "%";
+      estimatePanel.hidden = true;
+      estimateBtn.setAttribute("aria-pressed", "false");
+      estimateBtn.textContent = "Cek dengan estimasi";
+      newProblem();
+      feedback.className = "";
+      feedback.textContent = "Latihan dimulai lagi dari ronde 1, tingkat 1, skor 0. Semua angka soal juga diacak ulang.";
+    }
+
+    checkBtn.addEventListener("click", check);
+    nextBtn.addEventListener("click", next);
+    resetBtn.addEventListener("click", resetAll);
+
+    estimateBtn.addEventListener("click", function () {
+      state.showEstimate = !state.showEstimate;
+      estimateBtn.textContent = state.showEstimate ? "Sembunyikan estimasi" : "Cek dengan estimasi";
+      updateEstimate();
+    });
+
+    answerInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        if (state.checked) next();
+        else check();
+      }
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+      if (e.key === "r" || e.key === "R") { e.preventDefault(); resetAll(); }
+      else if (e.key === "Enter") { e.preventDefault(); if (state.checked) next(); else check(); }
+    });
+
+    updateStats();
+    newProblem();
+  })();
+  </script>
+</body>
+</html>

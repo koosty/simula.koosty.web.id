@@ -1,0 +1,3 @@
+# Astro as the static site generator
+
+The catalog is foreign-made HTML files plus generated index pages, not an application. Astro's content collections give validated front matter and typed queries for the catalog while emitting plain HTML, so no JavaScript framework runtime loads on the index. Simulation files are copied to the output verbatim and never processed. Hugo's taxonomy system would scale better if the catalog grows to thousands of entries, and a plain HTML plus shell-script build would have the fewest dependencies; neither was worth the cost unless the catalog size or the site's simplicity changes.

@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="education_levels" content="Lower Secondary">
+  <meta name="grade" content="7">
+  <title>Hubungan Antar-sudut · Matematika SMP Kelas VII</title>
+  <meta name="description" content="Murid memeriksa hubungan sudut berpotongan, sehadap, dan bersebrangan, termasuk pelurus dan penyiku.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Hubungan Antar-sudut">
+  <meta property="og:description" content="Geser garis potong pada dua garis sejajar, lihat semua sudut ikut berubah, lalu jawab kuis sudut sehadap, bersebrangan, pelurus, dan penyiku.">
+  <meta property="og:locale" content="id">
+  <style>
+    :root {
+      /* Colour */
+      --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+      --surface: #14141e;     /* panels, cards, step rows */
+      --panel: rgba(20, 20, 30, 0.9);
+      --border: rgba(255, 255, 255, 0.1);
+      --border-strong: #333;
+      --text: #ffffff;
+      --text-muted: #aaa;
+      --text-dim: #888;
+      --accent: #6366f1;      /* primary action, slider thumb, active state */
+      --accent-hover: #5558e8;
+      --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+      --success: #fbbf24;     /* completion, headings, callouts */
+      --warning: #fb923c;
+      --error: #ff6b6b;
+
+      /* Spacing scale */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+
+      /* Radius scale */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-pill: 999px;
+
+      /* Type scale (system fonts only) */
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --text-base: 16px;
+      --text-sm: 14px;
+      --text-xs: 13px;
+      --text-caption: 11px;   /* uppercase control labels */
+      --text-heading: 24px;
+
+      /* Focus, motion, stacking */
+      --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+      --motion: 0.2s;
+      --motion-slow: 0.3s;
+      --z-overlay: 100;        /* panels, tooltips */
+      --z-modal: 1000;         /* loading screens, modal dialogs */
+    }
+
+    [data-theme="light"] {
+      --bg: #f7f7fb;
+      --surface: #ffffff;
+      --panel: rgba(255, 255, 255, 0.92);
+      --border: rgba(0, 0, 0, 0.12);
+      --border-strong: #d4d4d8;
+      --text: #16161d;
+      --text-muted: #52525b;
+      --text-dim: #71717a;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+      --accent-soft: rgba(79, 70, 229, 0.95);
+      --success: #b45309;
+      --warning: #c2410c;
+      --error: #dc2626;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font);
+      font-size: var(--text-base);
+      line-height: 1.5;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+    }
+
+    .panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+    .btn {
+      font-family: inherit;
+      font-size: var(--text-sm);
+      min-height: 44px;
+      min-width: 44px;
+      padding: var(--space-3) var(--space-5);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      background: var(--border-strong);
+      color: var(--text);
+      cursor: pointer;
+      transition: background var(--motion);
+    }
+    .btn:hover { background: var(--text-muted); }
+    .btn:active { transform: scale(0.95); }
+    .btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-primary { background: var(--accent); border-color: var(--accent); }
+    .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+    .btn-ghost { background: transparent; border-color: var(--border); }
+    .btn-ghost:hover { background: var(--surface); }
+
+    .control-label {
+      font-size: var(--text-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    input[type="range"] {
+      width: 100%; height: 6px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px; height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+
+/* Touch target: keep the 6px visual track, but give the control a 44px hit area. */
+input[type="range"] { height: 44px; background: transparent; }
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-moz-range-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-webkit-slider-thumb { margin-top: -7px; }
+input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; background: var(--accent); border-radius: 50%; cursor: pointer; }
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+    }
+
+    #feedback-panel {
+      background: var(--surface);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+    }
+    #feedback-panel.success { border-left-color: var(--success); }
+    #feedback-panel.error { border-left-color: var(--error); }
+
+    .progress-track {
+      height: 8px;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+    .progress-fill { height: 100%; background: var(--accent); transition: width var(--motion-slow); }
+
+    /* ---- layout ---- */
+    .wrap { max-width: 960px; margin: 0 auto; padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-4); }
+    h1 { font-size: var(--text-heading); }
+    .sub { color: var(--text-muted); font-size: var(--text-sm); }
+    .mono { font-family: var(--font-mono); }
+    .topbar { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+    .spacer { flex: 1; }
+
+    #figure-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-2);
+    }
+    #figure { display: block; width: 100%; height: auto; touch-action: none; cursor: grab; }
+    #figure.dragging { cursor: grabbing; }
+
+    .line-base { stroke: var(--text-muted); stroke-width: 3; }
+    .line-trans { stroke: var(--accent); stroke-width: 4; stroke-linecap: round; }
+    .arc { fill: none; stroke-width: 2.5; }
+    .arc-a { stroke: var(--success); }
+    .arc-b { stroke: var(--warning); }
+    .lbl { fill: var(--text); font-family: var(--font-mono); font-size: 15px; text-anchor: middle; }
+    .lbl-sm { fill: var(--text-muted); font-family: var(--font-mono); font-size: 12px; text-anchor: middle; }
+    .pt { fill: var(--text); }
+    .hit { stroke: transparent; stroke-width: 34; fill: none; cursor: grab; }
+
+    .modes { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+    .modes .btn.active { background: var(--accent); border-color: var(--accent); }
+
+    .angle-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: var(--space-2); }
+    .angle-cell {
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      padding: var(--space-2) var(--space-3);
+      background: var(--bg);
+      font-family: var(--font-mono);
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-2);
+    }
+    .angle-cell b { color: var(--success); }
+
+    .quiz-opts { display: flex; flex-direction: column; gap: var(--space-2); }
+    .opt { justify-content: flex-start; text-align: left; font-family: var(--font-mono); }
+    .opt.correct { border-color: var(--success); background: var(--surface); }
+    .opt.wrong { border-color: var(--error); }
+
+    @media (max-width: 420px) {
+      .modes .btn, .actions .btn { flex: 1 1 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="topbar">
+      <div>
+        <h1>Hubungan Antar-sudut</h1>
+        <p class="sub">Garis potong bisa diseret. Semua nilai sudut ikut berubah saat kamu menariknya.</p>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn btn-ghost" id="reset-btn">Atur Ulang</button>
+    </header>
+
+    <section class="panel">
+      <div class="topbar" style="margin-bottom: var(--space-3)">
+        <p class="panel-heading" style="margin-bottom: 0">Kuis <span id="quiz-display" class="mono">0 / 6 benar</span></p>
+        <div class="spacer"></div>
+        <p class="control-label">Kemajuan</p>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width: 0%"></div></div>
+    </section>
+
+    <section id="figure-box" class="panel">
+      <div class="topbar" style="margin-bottom: var(--space-2)">
+        <p class="panel-heading" id="figure-title" style="margin-bottom: 0">Dua garis sejajar dan satu garis potong</p>
+        <div class="spacer"></div>
+        <p class="control-label" id="angle-display" style="margin: 0">1 = 55°</p>
+      </div>
+      <svg id="figure" viewBox="0 0 640 400" role="img" aria-labelledby="figure-title">
+        <g id="g-lines"></g>
+        <g id="g-arcs"></g>
+        <g id="g-labels"></g>
+        <g id="g-handle"></g>
+      </svg>
+      <p class="sub" id="figure-hint" style="margin-top: var(--space-2)">Seret garis potong (atau gunakan tombol panah) untuk mengubah sudutnya.</p>
+    </section>
+
+    <section class="panel">
+      <p class="panel-heading">Mode gambar</p>
+      <div class="modes">
+        <button class="btn" id="sejajar-btn">Garis sejajar</button>
+        <button class="btn" id="berpotongan-btn">Garis berpotongan</button>
+        <button class="btn" id="siku-btn">Buat sudut siku</button>
+      </div>
+      <div class="param-row" style="margin-top: var(--space-3)">
+        <label class="control-label" for="sudut-slider">Sudut garis potong (derajat)</label>
+        <input type="range" id="sudut-slider" min="15" max="165" step="1" value="55" aria-label="Sudut garis potong">
+      </div>
+    </section>
+
+    <section class="panel">
+      <p class="panel-heading">Nilai sudut</p>
+      <div class="angle-grid" id="angle-grid"></div>
+      <div id="explain" role="status" style="margin-top: var(--space-3); font-size: var(--text-sm); color: var(--text-muted); min-height: 44px; display:flex; align-items:center;"></div>
+    </section>
+
+    <section class="panel">
+      <p class="panel-heading" id="quiz-title">Kuis: sudut sehadap, bersebrangan, pelurus, dan penyiku</p>
+      <p id="quiz-question" style="margin-bottom: var(--space-3)"></p>
+      <div class="quiz-opts" id="quiz-options"></div>
+      <div id="feedback-panel" role="status" style="margin-top: var(--space-3)">Jawab kuis untuk menguji pemahamanmu.</div>
+      <div class="actions" style="margin-top: var(--space-3)">
+        <button class="btn" id="quiz-new-btn">Soal Berikutnya</button>
+      </div>
+    </section>
+  </main>
+
+  <script type="application/json" id="widget-config">
+  {
+    "type": "simulation",
+    "concept": "angle-relations",
+    "unit": "geometri",
+    "startMode": "angle-relations",
+    "description": "Murid memeriksa hubungan sudut berpotongan, sehadap, dan bersebrangan, termasuk pelurus dan penyiku.",
+    "variables": [
+      { "name": "sudut", "label": "Sudut garis potong", "min": 15, "max": 165, "default": 55, "unit": "\u00B0" }
+    ],
+    "presets": [
+      { "name": "Garis sejajar", "variables": { "mode": "sejajar" } },
+      { "name": "Garis berpotongan", "variables": { "mode": "berpotongan" } },
+      { "name": "Sudut siku", "variables": { "sudut": 90 } }
+    ]
+  }
+  </script>
+
+  <script>
+  (function () {
+    'use strict';
+
+    var SVGNS = 'http://www.w3.org/2000/svg';
+    var VB = { w: 640, h: 400 };
+    var state = {
+      mode: 'sejajar',
+      sudut: 55,
+      quizIndex: 0,
+      quizRight: 0,
+      answered: false
+    };
+
+    var gLines = document.getElementById('g-lines');
+    var gArcs = document.getElementById('g-arcs');
+    var gLabels = document.getElementById('g-labels');
+    var gHandle = document.getElementById('g-handle');
+    var slider = document.getElementById('sudut-slider');
+    var grid = document.getElementById('angle-grid');
+    var fb = document.getElementById('feedback-panel');
+    var angleDisp = document.getElementById('angle-display');
+    var explainEl = document.getElementById('explain');
+    var figTitle = document.getElementById('figure-title');
+
+    function el(name, attrs) {
+      var n = document.createElementNS(SVGNS, name);
+      for (var k in attrs) if (attrs[k] !== undefined && attrs[k] !== null) n.setAttribute(k, attrs[k]);
+      return n;
+    }
+    function rad(d) { return d * Math.PI / 180; }
+    function pt(x, y) { return { x: x, y: y }; }
+    function polar(o, deg, r) { return pt(o.x + r * Math.cos(rad(deg)), o.y - r * Math.sin(rad(deg))); }
+    function line(x1, y1, x2, y2, cls) {
+      return el('line', { x1: x1, y1: y1, x2: x2, y2: y2, class: cls });
+    }
+
+    // Sudut pada titik potong: 4 sudut pada arah berlawanan.
+    // a = sudut antara garis potong dan arah horizontal kanan (atas).
+    function computeAngles(a) {
+      return {
+        // titik atas pada mode sejajar
+        atas: [a, 180 - a, a, 180 - a],
+        bawah: [a, 180 - a, a, 180 - a]
+      };
+    }
+
+    function geometry() {
+      if (state.mode === 'sejajar') {
+        var top = pt(VB.w / 2, 110);
+        var dir = pt(Math.cos(rad(state.sudut)), -Math.sin(rad(state.sudut)));
+        var bottom = pt(top.x + dir.x * 240, top.y + dir.y * 240);
+        return { top: top, bottom: bottom, y1: 110, y2: 290 };
+      }
+      var c = pt(VB.w / 2, 200);
+      var d = pt(Math.cos(rad(state.sudut)), -Math.sin(rad(state.sudut)));
+      return { top: pt(c.x - d.x * 210, c.y - d.y * 210), bottom: pt(c.x + d.x * 210, c.y + d.y * 210), center: c };
+    }
+
+    function drawFigure() {
+      gLines.textContent = '';
+      gArcs.textContent = '';
+      gLabels.textContent = '';
+      gHandle.textContent = '';
+
+      var g = geometry();
+      var angles = computeAngles(state.sudut);
+      var a = state.sudut;
+      var R = 46;
+
+      if (state.mode === 'sejajar') {
+        figTitle.textContent = 'Dua garis sejajar dan satu garis potong';
+        gLines.appendChild(line(30, g.y1, VB.w - 30, g.y1, 'line-base'));
+        gLines.appendChild(line(30, g.y2, VB.w - 30, g.y2, 'line-base'));
+        // tanda panah bahwa kedua garis sejajar
+        arrowMark(70, g.y1); arrowMark(70, g.y2);
+        drawCross(g.top, angles.atas, a, 1);
+        drawCross(g.bottom, angles.bawah, a, -1);
+        gHandle.appendChild(el('circle', { cx: g.bottom.x, cy: g.bottom.y, r: 9, class: 'pt' }));
+      } else {
+        figTitle.textContent = 'Dua garis berpotongan';
+        gLines.appendChild(line(g.top.x, g.top.y, g.bottom.x, g.bottom.y, 'line-trans'));
+        // garis kedua tegak lurus arah potong
+        var p1 = polar(g.center, a + 90, 210);
+        var p2 = polar(g.center, a - 90, 210);
+        gLines.appendChild(line(p1.x, p1.y, p2.x, p2.y, 'line-base'));
+        gLines.appendChild(el('circle', { cx: g.center.x, cy: g.center.y, r: 6, class: 'pt' }));
+        drawCrossCenter(g.center, angles.atas, a);
+      }
+
+      slider.value = String(state.sudut);
+      angleDisp.textContent = '1 = ' + state.sudut + '\u00B0';
+      renderGrid(angles);
+      renderExplain(angles);
+    }
+
+    function arrowMark(x, y) {
+      gLines.appendChild(el('path', {
+        d: 'M' + (x - 8) + ',' + (y - 6) + ' L' + (x + 8) + ',' + y + ' L' + (x - 8) + ',' + (y + 6),
+        class: 'line-base', fill: 'none'
+      }));
+    }
+
+    // Empat sudut pada satu titik potong: kanan-atas, kiri-atas, kiri-bawah, kanan-bawah.
+    function drawCross(o, ang, a, names) {
+      gLines.appendChild(line(o.x - 300 * Math.cos(rad(a)), o.y + 300 * Math.sin(rad(a)),
+        o.x + 300 * Math.cos(rad(a)), o.y - 300 * Math.sin(rad(a)), 'line-trans'));
+      var R = 44;
+      var starts = [0, 180, 180, 0];
+      var ends = [a, 180 - a, 360 - a, 360 - a];
+      for (var i = 0; i < 4; i++) {
+        drawArc(o, starts[i], ends[i], i % 2 === 0 ? 'arc-a' : 'arc-b', R);
+        var mid = (starts[i] + ends[i]) / 2;
+        var lp = polar(o, mid, R + 18);
+        var t = el('text', { x: lp.x, y: lp.y + 5, class: 'lbl' });
+        t.textContent = '\u2220' + names[i] + ' = ' + ang[i] + '\u00B0';
+        gLabels.appendChild(t);
+      }
+    }
+
+    function drawCrossCenter(o, ang, a) {
+      var names = ['1', '2', '3', '4'];
+      var R = 46;
+      var starts = [a, 180, 180 + a, 360];
+      var ends = [180, 180 + a, 360, 360 + a];
+      for (var i = 0; i < 4; i++) {
+        drawArc(o, starts[i], ends[i], i % 2 === 0 ? 'arc-a' : 'arc-b', R);
+        var mid = (starts[i] + ends[i]) / 2;
+        var lp = polar(o, mid, R + 20);
+        var t = el('text', { x: lp.x, y: lp.y + 5, class: 'lbl' });
+        t.textContent = '\u2220' + names[i] + ' = ' + ang[i] + '\u00B0';
+        gLabels.appendChild(t);
+      }
+    }
+
+    function drawArc(o, a1, a2, cls, r) {
+      var p1 = polar(o, a1, r), p2 = polar(o, a2, r);
+      var large = Math.abs(a2 - a1) > 180 ? 1 : 0;
+      gArcs.appendChild(el('path', {
+        d: 'M' + p1.x + ',' + p1.y + ' A' + r + ',' + r + ' 0 ' + large + ' 0 ' + p2.x + ',' + p2.y,
+        class: 'arc ' + cls
+      }));
+    }
+
+    var NAMA = { sejajar: ['1', '2', '3', '4', '5', '6', '7', '8'], berpotongan: ['1', '2', '3', '4'] };
+
+    function renderGrid(angles) {
+      grid.textContent = '';
+      var vals;
+      if (state.mode === 'sejajar') vals = angles.atas.concat(angles.bawah);
+      else vals = angles.atas;
+      vals.forEach(function (v, i) {
+        var cell = document.createElement('div');
+        cell.className = 'angle-cell';
+        var name = NAMA[state.mode][i];
+        cell.innerHTML = '\u2220' + name + ' <b>' + v + '\u00B0</b>';
+        grid.appendChild(cell);
+      });
+    }
+
+    function renderExplain(angles) {
+      var a = angles.atas[0], b = 180 - a;
+      if (state.mode === 'sejajar') {
+        explainEl.textContent = '\u22201 = \u22203 = ' + a + '\u00B0 (bersebrangan), \u22202 = \u22204 = ' + b +
+          '\u00B0, dan \u22201 + \u22202 = 180\u00B0 (pelurus). Sudut sehadap: \u22201 = \u22205 = \u22202 = \u22206 = ' + a + '\u00B0.';
+      } else {
+        explainEl.textContent = '\u22201 = \u22203 = ' + a + '\u00B0 (bersebrangan), \u22202 = \u22204 = ' + b +
+          '\u00B0. \u22201 + \u22202 = 180\u00B0 (pelurus). Saat a = 90\u00B0 semua sudut bersebelahan disebut sudut penyiku.';
+      }
+      if (state.sudut === 90) {
+        explainEl.textContent += ' Sekarang \u22201 = 90\u00B0, jadi setiap pasangan sudut bersebelahan disebut sudut penyiku.';
+      }
+    }
+
+    /* ---------------- seret garis potong ---------------- */
+    var fig = document.getElementById('figure');
+    var dragging = false;
+
+    function svgPoint(evt) {
+      var r = fig.getBoundingClientRect();
+      return pt((evt.clientX - r.left) / r.width * VB.w, (evt.clientY - r.top) / r.height * VB.h);
+    }
+    function angleFromEvent(p) {
+      var g = geometry();
+      var o = state.mode === 'sejajar' ? g.top : g.center;
+      var dx = p.x - o.x, dy = o.y - p.y;
+      var deg = Math.atan2(dy, dx) * 180 / Math.PI;
+      if (state.mode === 'sejajar') {
+        if (deg < 0) deg += 180; else if (deg > 180) deg -= 180;
+      } else {
+        deg = ((deg % 180) + 180) % 180;
+      }
+      return Math.round(Math.max(15, Math.min(165, deg)));
+    }
+    fig.addEventListener('pointerdown', function (e) {
+      dragging = true;
+      fig.classList.add('dragging');
+      fig.setPointerCapture(e.pointerId);
+      angleFrom(svgPoint(e));
+    });
+    fig.addEventListener('pointermove', function (e) {
+      if (!dragging) return;
+      angleFrom(svgPoint(e));
+    });
+    function endDrag(e) {
+      if (!dragging) return;
+      dragging = false;
+      fig.classList.remove('dragging');
+      if (e.pointerId !== undefined && fig.hasPointerCapture && fig.hasPointerCapture(e.pointerId)) {
+        fig.releasePointerCapture(e.pointerId);
+      }
+    }
+    fig.addEventListener('pointerup', endDrag);
+    fig.addEventListener('pointercancel', endDrag);
+
+    function angleFrom(v) {
+      if (v === state.sudut) return;
+      state.sudut = v;
+      drawFigure();
+    }
+    slider.addEventListener('input', function () { angleFrom(Number(slider.value)); });
+
+    /* ---------------- kuis ---------------- */
+    var QUIZ = [
+      { t: 'pada dua garis sejajar', q: '\u22203 = 62\u00B0. Sudut sehadap dengan \u22203 adalah \u2220 berapa, dan berapa nilainya?', opts: ['\u22201 = 62\u00B0', '\u22202 = 118\u00B0', '\u22204 = 62\u00B0'], correct: 0, why: 'Sudut sehadap punya arah yang sama dan keduanya sepad, jadi \u22201 = \u22203 = 62\u00B0.' },
+      { t: 'pada dua garis sejajar', q: '\u22204 = 118\u00B0. Sudut bersebrangan dengan \u22204 adalah \u2220 berapa, dan berapa nilainya?', opts: ['\u22205 = 118\u00B0', '\u22201 = 62\u00B0', '\u22208 = 118\u00B0'], correct: 0, why: '\u22205 berhadapan lurus dengan \u22204, jadi nilainya sama: 118\u00B0.' },
+      { t: 'pada dua garis sejajar', q: '\u22202 = 75\u00B0. Sudut pelurus dengan \u22202 adalah \u2220 berapa, dan berapa nilainya?', opts: ['\u22204 = 75\u00B0', '\u22206 = 105\u00B0', '\u22208 = 105\u00B0'], correct: 1, why: 'Dua sudut pelurus jumlahnya 180\u00B0, jadi 180\u00B0 \u2212 75\u00B0 = 105\u00B0.' },
+      { t: 'pada dua garis sejajar', q: '\u22207 = 130\u00B0. Sudut berpadanan dengan \u22207 (yaitu \u22208) bernilai berapa?', opts: ['\u22208 = 50\u00B0', '\u22208 = 130\u00B0', '\u22208 = 100\u00B0'], correct: 1, why: '\u22207 dan \u22208 letaknya berpadanan pada garis sejajar yang sama, nilainya sama: 130\u00B0.' },
+      { t: 'pada dua garis berpotongan', q: '\u22201 = 48\u00B0. Sudut pelurus dengan \u22201 adalah \u2220 berapa, dan berapa nilainya?', opts: ['\u22202 = 132\u00B0', '\u22202 = 48\u00B0', '\u22203 = 48\u00B0'], correct: 0, why: 'Pelurus berjumlah 180\u00B0, jadi 180\u00B0 \u2212 48\u00B0 = 132\u00B0.' },
+      { t: 'pada dua garis berpotongan', q: '\u22204 = 95\u00B0. Sudut penyiku yang berimpit dengan \u22204 bernilai berapa?', opts: ['\u22204 = 90\u00B0', '\u22201 = 85\u00B0', '\u22202 = 95\u00B0'], correct: 0, why: 'Sudut penyiku tepat 90\u00B0. Karena \u22204 = 95\u00B0, sudut di sebelahnya 180\u00B0 \u2212 95\u00B0 = 85\u00B0, bukan 90\u00B0 \u2014 jadi \u22204 sendiri bukan penyiku.' }
+    ];
+
+    function renderQuiz() {
+      var q = QUIZ[state.quizIndex];
+      document.getElementById('quiz-question').textContent = q.q;
+      var box = document.getElementById('quiz-options');
+      box.textContent = '';
+      q.opts.forEach(function (text, i) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'btn opt';
+        b.textContent = text;
+        b.addEventListener('click', function () { answer(i, b); });
+        box.appendChild(b);
+      });
+      document.getElementById('quiz-display').textContent = state.quizRight + ' / 6 benar';
+      document.getElementById('progress-fill').style.width = (state.quizRight / QUIZ.length * 100) + '%';
+    }
+
+    function answer(i, btn) {
+      if (state.answered) return;
+      state.answered = true;
+      var q = QUIZ[state.quizIndex];
+      var opts = document.querySelectorAll('.opt');
+      var benar = i === q.correct;
+      if (benar) {
+        state.quizRight++;
+        btn.classList.add('correct');
+        fb.className = 'success';
+        fb.textContent = 'Benar! ' + q.why;
+      } else {
+        btn.classList.add('wrong');
+        opts[q.correct].classList.add('correct');
+        fb.className = 'error';
+        fb.textContent = 'Belum tepat. ' + q.why;
+      }
+      document.getElementById('quiz-display').textContent = state.quizRight + ' / ' + QUIZ.length + ' benar';
+      document.getElementById('progress-fill').style.width = (state.quizRight / QUIZ.length * 100) + '%';
+    }
+
+    document.getElementById('quiz-new-btn').addEventListener('click', function () {
+      state.quizIndex = (state.quizIndex + 1) % QUIZ.length;
+      state.answered = false;
+      fb.className = '';
+      fb.textContent = 'Pilih jawaban yang benar untuk soal ' + (state.quizIndex + 1) + '.';
+      renderQuiz();
+    });
+
+    /* ---------------- mode & reset ---------------- */
+    function setMode(m) {
+      state.mode = m;
+      document.getElementById('sejajar-btn').classList.toggle('active', m === 'sejajar');
+      document.getElementById('berpotongan-btn').classList.toggle('active', m === 'berpotongan');
+      drawFigure();
+    }
+    document.getElementById('sejajar-btn').addEventListener('click', function () { setMode('sejajar'); });
+    document.getElementById('berpotongan-btn').addEventListener('click', function () { setMode('berpotongan'); });
+    document.getElementById('siku-btn').addEventListener('click', function () { angleFrom(90); });
+
+    function resetAll() {
+      state.mode = 'sejajar';
+      state.sudut = 55;
+      state.quizIndex = 0;
+      state.quizRight = 0;
+      state.answered = false;
+      setMode('sejajar');
+      angleFrom(55);
+      fb.className = '';
+      fb.textContent = 'Jawab kuis untuk menguji pemahamanmu.';
+      renderQuiz();
+    }
+    document.getElementById('reset-btn').addEventListener('click', resetAll);
+    document.addEventListener('keydown', function (e) {
+      if (e.target.tagName === 'INPUT') return;
+      if (e.key === 'r' || e.key === 'R') { resetAll(); return; }
+      if (e.key === 'ArrowLeft') { angleFrom(state.sudut - 2); e.preventDefault(); }
+      if (e.key === 'ArrowRight') { angleFrom(state.sudut + 2); e.preventDefault(); }
+    });
+
+    setMode('sejajar');
+    renderQuiz();
+  })();
+  </script>
+</body>
+</html>

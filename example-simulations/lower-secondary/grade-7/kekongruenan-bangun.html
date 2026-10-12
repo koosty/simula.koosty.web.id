@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="education_levels" content="Lower Secondary">
+  <meta name="grade" content="7">
+<title>Kekongruenan Bangun · Matematika SMP Kelas VII</title>
+<meta name="description" content="Murid melipat, memotong, dan mencocokkan bangun datar untuk memeriksa syarat kekongruenan.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Kekongruenan Bangun">
+<meta property="og:description" content="Murid melipat, memotong, dan mencocokkan bangun datar untuk memeriksa syarat kekongruenan.">
+<meta property="og:locale" content="id">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font);font-size:var(--text-base);line-height:1.5;background:var(--bg);color:var(--text)}
+:root{
+  /* Colour */
+  --bg:#0a0a1a;
+  --surface:#14141e;
+  --panel:rgba(20,20,30,0.9);
+  --border:rgba(255,255,255,0.1);
+  --border-strong:#333;
+  --text:#ffffff;
+  --text-muted:#aaa;
+  --text-dim:#888;
+  --accent:#6366f1;
+  --accent-hover:#5558e8;
+  --accent-soft:rgba(139,92,246,0.95);
+  --success:#fbbf24;
+  --warning:#fb923c;
+  --error:#ff6b6b;
+
+  /* Spacing scale */
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;
+
+  /* Radius scale */
+  --radius-sm:4px;--radius-md:8px;--radius-lg:12px;--radius-pill:999px;
+
+  /* Type scale (system fonts only) */
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  --font-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --text-base:16px;--text-sm:14px;--text-xs:13px;--text-caption:11px;--text-heading:24px;
+
+  /* Focus, motion, stacking */
+  --focus-ring:0 0 0 3px rgba(99,102,241,0.5);
+  --motion:0.2s;--motion-slow:0.3s;
+  --z-overlay:100;--z-modal:1000;
+}
+[data-theme="light"]{
+  --bg:#f7f7fb;--surface:#ffffff;--panel:rgba(255,255,255,0.92);
+  --border:rgba(0,0,0,0.12);--border-strong:#d4d4d8;
+  --text:#16161d;--text-muted:#52525b;--text-dim:#71717a;
+  --accent:#4f46e5;--accent-hover:#4338ca;--accent-soft:rgba(79,70,229,0.95);
+  --success:#b45309;--warning:#c2410c;--error:#dc2626;
+}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-4)}
+.panel-heading{font-size:var(--text-sm);color:var(--text-muted);margin-bottom:var(--space-2)}
+.btn{font-family:inherit;font-size:var(--text-sm);min-height:44px;min-width:44px;padding:var(--space-3) var(--space-5);border:1px solid var(--border-strong);border-radius:var(--radius-md);background:var(--border-strong);color:var(--text);cursor:pointer;transition:background var(--motion);touch-action:manipulation}
+.btn:hover{background:var(--text-muted)}
+.btn:active{transform:scale(0.95)}
+.btn:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+.btn:disabled{opacity:0.45;cursor:not-allowed}
+.btn-primary{background:var(--accent);border-color:var(--accent)}
+.btn-primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+.btn-ghost{background:transparent;border-color:var(--border)}
+.btn-ghost:hover{background:var(--surface)}
+.control-label{font-size:var(--text-caption);text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted)}
+input[type="range"]{width:100%;height:6px;-webkit-appearance:none;appearance:none;background:var(--border-strong);border-radius:var(--radius-pill);cursor:pointer}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;background:var(--accent);border-radius:50%;cursor:pointer}
+
+/* Touch target: keep the 6px visual track, but give the control a 44px hit area. */
+input[type="range"] { height: 44px; background: transparent; }
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-moz-range-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-webkit-slider-thumb { margin-top: -7px; }
+input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; background: var(--accent); border-radius: 50%; cursor: pointer; }
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
+#feedback-panel{background:var(--surface);border-left:3px solid var(--accent);border-radius:var(--radius-md);padding:var(--space-3) var(--space-4)}
+#feedback-panel.success{border-left-color:var(--success)}
+#feedback-panel.error{border-left-color:var(--error)}
+.progress-track{height:8px;background:var(--border-strong);border-radius:var(--radius-pill);overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);transition:width var(--motion-slow)}
+
+/* ---- layout ---- */
+.wrap{max-width:1100px;margin:0 auto;padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-4)}
+h1{font-size:var(--text-heading);line-height:1.2}
+.sub{color:var(--text-muted);font-size:var(--text-sm);margin-top:var(--space-1)}
+h2{font-size:18px;margin-bottom:var(--space-2)}
+h3{font-size:var(--text-sm);color:var(--text-muted);margin-bottom:var(--space-1)}
+.stage{position:relative;width:100%;height:340px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+canvas{display:block;width:100%;height:100%;touch-action:none}
+.controls{display:flex;flex-direction:column;gap:var(--space-3)}
+.row{display:flex;flex-wrap:wrap;gap:var(--space-2)}
+.row.fill .btn{flex:1 1 auto}
+.mono{font-family:var(--font-mono)}
+.tag{display:inline-block;font-size:var(--text-xs);color:var(--text-muted);border:1px solid var(--border);border-radius:var(--radius-pill);padding:var(--space-1) var(--space-3);font-family:var(--font-mono)}
+.hint{font-size:var(--text-xs);color:var(--text-dim)}
+ul{padding-left:var(--space-5);color:var(--text-muted);font-size:var(--text-sm)}
+li{margin-bottom:var(--space-1)}
+.overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:var(--space-4);background:var(--panel);z-index:var(--z-overlay)}
+.overlay.show{display:flex}
+.overlay .inner{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-5);max-width:22rem}
+.overlay .big{font-size:34px;line-height:1;margin-bottom:var(--space-2)}
+.overlay h2{margin-bottom:var(--space-2)}
+.overlay p{font-size:var(--text-sm);color:var(--text-muted)}
+.quiz-q{font-size:var(--text-sm);margin-bottom:var(--space-3)}
+@media(min-width:768px){
+  .stage{height:420px}
+  .cols{display:grid;grid-template-columns:1fr 340px;gap:var(--space-4);align-items:start}
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <h1>Kekongruenan Bangun</h1>
+    <p class="sub">Dua bangun kongruen bila dapat diletakkan tepat berimpit: semua sisi sama panjang dan semua sudut sama besar.</p>
+  </header>
+
+  <div class="cols">
+    <section class="stage">
+      <canvas id="shape-canvas" aria-label="KanvasDua bangun datar yang dapat digeser dan diputar"></canvas>
+      <div id="result-overlay" class="overlay" role="status">
+        <div class="inner">
+          <div class="big" id="overlay-icon">&#10003;</div>
+          <h2 id="overlay-title">Kongruen!</h2>
+          <p id="overlay-text"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel controls">
+      <div>
+        <h3>Pasangan bangun</h3>
+        <div class="row fill" id="pair-list"></div>
+      </div>
+      <div>
+        <h3>Bangun yang digerakkan</h3>
+        <div class="row fill">
+          <button class="btn btn-ghost" id="shape-btn" onclick="cycleActive()">Geser: merah</button>
+        </div>
+        <p class="hint">Seret bentuk di kanvas untuk menggeser. Bila sedang aktif, gunakan tombol putar.</p>
+      </div>
+      <div>
+        <h3>Putar &amp; perbesar</h3>
+        <label class="control-label" for="rotation-slider">Rotasi (derajat)</label>
+        <input type="range" id="rotation-slider" min="0" max="359" step="1" value="0">
+        <p class="mono tag" id="rotation-display">0&deg;</p>
+        <label class="control-label" for="scale-slider">Perbesar (1&ndash;2)</label>
+        <input type="range" id="scale-slider" min="1" max="2" step="0.01" value="1">
+        <p class="mono tag" id="scale-display">1.00&times;</p>
+      </div>
+      <div class="row fill">
+        <button class="btn btn-primary" id="superimpose-btn" onclick="superimpose()">T superimpose</button>
+        <button class="btn" id="swap-btn" onclick="swapShapes()">Tukar posisi</button>
+        <button class="btn btn-ghost" id="reset-btn" onclick="resetState()">Reset</button>
+      </div>
+    </section>
+  </div>
+
+  <section id="feedback-panel" role="status">Seret atau putar bentuk merah, lalu tekan <strong>T superimpose</strong> untuk mencocokkannya.</section>
+
+  <section class="panel">
+    <h2>Kuis kongruensi</h2>
+    <p class="hint" id="quiz-score">Skor 0 dari 6</p>
+    <div class="progress-track"><div class="progress-fill" id="quiz-progress" style="width:0%"></div></div>
+    <p class="quiz-q" id="quiz-question">Tekan <strong>Mulai kuis</strong> untuk memulai.</p>
+    <div class="row fill" id="quiz-options"></div>
+    <div class="row fill" style="margin-top:var(--space-3)">
+      <button class="btn btn-primary" id="quiz-start-btn" onclick="startQuiz()">Mulai kuis</button>
+      <button class="btn btn-ghost" id="quiz-reset-btn" onclick="resetQuiz()">Reset kuis</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Syarat kekongruenan</h2>
+    <ul>
+      <li>Panjang setiap sisi sama dengan pasangan sisinya.</li>
+      <li>Besar setiap sudut sama dengan pasangan sudutnya.</li>
+      <li>Cara praktis: superimpose. Bila tepat berimpit, bangunnya kongruen.</li>
+    </ul>
+    <h3>Kongruensi segitiga</h3>
+    <p class="hint">SSS, SAS, ASA, dan SAA membuat dua segitiga kongruen.</p>
+  </section>
+</main>
+
+<script type="application/json" id="widget-config">
+{"type":"simulation","concept":"congruence_check","description":"Murid melipat, memotong, dan mencocokkan bangun datar untuk memeriksa syarat kekongruenan.","variables":[{"name":"rotation","label":"Rotasi","min":0,"max":359,"default":0,"unit":"derajat"},{"name":"scale","label":"Perbesar","min":1,"max":2,"default":1,"unit":"kali"}],"presets":[]}
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  'use strict';
+
+  /* ---------- token reader ---------- */
+  function token(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+  function mix(hexA, hexB, t) {
+    function p(h) { h = h.replace('#', ''); if (h.length === 3) h = h.split('').map(function (c) { return c + c; }).join(''); return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)]; }
+    var a = p(hexA), b = p(hexB);
+    return 'rgb(' + Math.round(a[0] + (b[0] - a[0]) * t) + ',' + Math.round(a[1] + (b[1] - a[1]) * t) + ',' + Math.round(a[2] + (b[2] - a[2]) * t) + ')';
+  }
+
+  /* ---------- shape library ----------
+     Each shape: local unit polygon points, plus optional side/angle labels.
+     "variant" 0 = original, 1 = a deliberately non-congruent partner.        */
+  var PAIRS = [
+    {
+      name: 'Segitiga sama sisi',
+      tip: 'Semua sisi sama panjang dan semua sudut 60&deg;. Pasangannya kongruen.',
+      a: { kind: 'poly', pts: [[-55, 45], [55, 45], [0, -55]], variant: 0, labels: ['3 cm', '3 cm', '3 cm'] },
+      b: { kind: 'poly', pts: [[-55, 45], [55, 45], [0, -55]], variant: 0, labels: ['3 cm', '3 cm', '3 cm'] }
+    },
+    {
+      name: 'Segitiga sembarang',
+      tip: 'Sisi-sisinya berbeda-beda, tetapi keduanya punya ukuran yang persis sama.',
+      a: { kind: 'poly', pts: [[-60, 40], [50, 40], [5, -50]], variant: 0, labels: ['4 cm', '6 cm', '5 cm'] },
+      b: { kind: 'poly', pts: [[-60, 40], [50, 40], [5, -50]], variant: 0, labels: ['4 cm', '6 cm', '5 cm'] }
+    },
+    {
+      name: 'Persegi',
+      tip: 'Empat sisi sama panjang, empat sudut siku. Kongruen setelah berimpit.',
+      a: { kind: 'poly', pts: [[-45, -45], [45, -45], [45, 45], [-45, 45]], variant: 0, labels: ['4 cm', '4 cm', '4 cm', '4 cm'] },
+      b: { kind: 'poly', pts: [[-45, -45], [45, -45], [45, 45], [-45, 45]], variant: 0, labels: ['4 cm', '4 cm', '4 cm', '4 cm'] }
+    },
+    {
+      name: 'Persegi panjang',
+      tip: 'Sisi berhadapan sama panjang. Yang satu 6 cm &times; 3 cm.',
+      a: { kind: 'poly', pts: [[-60, -30], [60, -30], [60, 30], [-60, 30]], variant: 0, labels: ['6 cm', '3 cm', '6 cm', '3 cm'] },
+      b: { kind: 'poly', pts: [[-60, -30], [60, -30], [60, 30], [-60, 30]], variant: 0, labels: ['6 cm', '3 cm', '6 cm', '3 cm'] }
+    },
+    {
+      name: 'Trapesium',
+      tip: 'Trapesium sama kaki: dua sisi miring sama panjang, sisi atas lebih pendek.',
+      a: { kind: 'poly', pts: [[-60, 40], [60, 40], [38, -30], [-38, -30]], variant: 0, labels: ['8 cm', '5 cm', '5 cm', '8 cm'] },
+      b: { kind: 'poly', pts: [[-60, 40], [60, 40], [38, -30], [-38, -30]], variant: 0, labels: ['8 cm', '5 cm', '5 cm', '8 cm'] }
+    },
+    {
+      name: 'Segitiga tidak kongruen',
+      tip: 'Bentuknya sama, tetapi satu sisinya lebih panjang. Jadi tidak kongruen.',
+      a: { kind: 'poly', pts: [[-60, 40], [50, 40], [5, -50]], variant: 0, labels: ['4 cm', '6 cm', '5 cm'] },
+      b: { kind: 'poly', pts: [[-60, 40], [50, 40], [5, -50]], variant: 1, labels: ['4 cm', '7 cm', '5 cm'] }
+    }
+  ];
+
+  /* Points used for drawing each variant (a variant changes real geometry). */
+  function pointsOf(shape) {
+    var pts = shape.pts.map(function (p) { return [p[0], p[1]]; });
+    if (shape.kind === 'poly' && shape.variant === 1) {
+      /* one side stretched: push the far-right vertex outward and shrink the
+         opposite side, so exactly one corresponding side differs */
+      pts[1] = [pts[1][0] + 34, pts[1][1] - 10];
+      pts[2] = [pts[2][0] + 10, pts[2][1] + 14];
+    }
+    return pts;
+  }
+  function edgeLen(pts, i) {
+    var p = pts[i], q = pts[(i + 1) % pts.length];
+    return Math.hypot(q[0] - p[0], q[1] - p[1]);
+  }
+  function cornerAngle(pts, i) {
+    var prev = pts[(i - 1 + pts.length) % pts.length], cur = pts[i], next = pts[(i + 1) % pts.length];
+    var a1 = Math.atan2(prev[1] - cur[1], prev[0] - cur[0]);
+    var a2 = Math.atan2(next[1] - cur[1], next[0] - cur[0]);
+    var d = a1 - a2;
+    while (d > Math.PI) d -= 2 * Math.PI;
+    while (d < -Math.PI) d += 2 * Math.PI;
+    return Math.abs(d) * 180 / Math.PI;
+  }
+  function scaleTo(pts, f) { return pts.map(function (p) { return [p[0] * f, p[1] * f]; }); }
+
+  /* ---------- state ---------- */
+  var state = {
+    pairIndex: 0,
+    active: 'a',
+    rotation: { a: 0, b: 0 },
+    scale: { a: 1, b: 1 },
+    pos: { a: null, b: null },
+    overlay: null,      /* {from:{x,y}, to:{x,y}, rot, t, dur, verify} */
+    result: null,       /* null | {ok:boolean} */
+    mismatch: -1,
+    dragging: null,
+    hover: null
+  };
+
+  var canvas = document.getElementById('shape-canvas');
+  var ctx = canvas.getContext('2d');
+  var W = 0, H = 0, DPR = 1;
+
+  function homePos(which) {
+    return which === 'a' ? { x: W * 0.3, y: H * 0.5 } : { x: W * 0.73, y: H * 0.5 };
+  }
+
+  /* ---------- canvas sizing ---------- */
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    var r = canvas.getBoundingClientRect();
+    W = Math.max(1, r.width); H = Math.max(1, r.height);
+    canvas.width = Math.round(W * DPR);
+    canvas.height = Math.round(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    if (!state.pos.a || !state.pos.b) {
+      state.pos.a = homePos('a'); state.pos.b = homePos('b');
+    }
+    draw();
+  }
+
+  /* ---------- drawing ---------- */
+  function shapePoints(which) {
+    var pair = PAIRS[state.pairIndex];
+    var shape = which === 'a' ? pair.a : pair.b;
+    return scaleTo(pointsOf(shape), state.scale[which]);
+  }
+
+  function drawPolygon(which, opts) {
+    var pts = shapePoints(which);
+    var pos = state.pos[which];
+    var rot = state.rotation[which] * Math.PI / 180;
+    var pair = PAIRS[state.pairIndex];
+    var shape = which === 'a' ? pair.a : pair.b;
+    var isActive = state.active === which;
+    var hi = (opts && opts.mismatch === which) ? state.mismatch : -1;
+
+    ctx.save();
+    ctx.translate(pos.x, pos.y);
+    ctx.rotate(rot);
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    for (var i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.closePath();
+    ctx.fillStyle = which === 'a'
+      ? mix(token('--accent'), token('--bg'), isActive ? 0.15 : 0.42)
+      : mix(token('--success'), token('--bg'), isActive ? 0.3 : 0.55);
+    ctx.globalAlpha = 0.75;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = isActive ? 3 : 2;
+    var base = which === 'a' ? token('--accent') : token('--success');
+    ctx.strokeStyle = hi >= 0 ? token('--error') : base;
+    if (hi >= 0) { ctx.lineWidth = 4; ctx.setLineDash([6, 4]); }
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    /* highlight the mismatching side */
+    if (hi >= 0) {
+      var p = pts[hi], q = pts[(hi + 1) % pts.length];
+      ctx.beginPath(); ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]);
+      ctx.strokeStyle = token('--error'); ctx.lineWidth = 5;
+      ctx.setLineDash([]); ctx.stroke();
+    }
+
+    /* side labels */
+    if (opts && opts.labels !== false) {
+      ctx.fillStyle = token('--text');
+      ctx.font = '12px ' + token('--font-mono');
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      for (var k = 0; k < pts.length; k++) {
+        var m = [(pts[k][0] + pts[(k + 1) % pts.length][0]) / 2, (pts[k][1] + pts[(k + 1) % pts.length][1]) / 2];
+        var e = edgeLen(pts, k) || 1;
+        var nx = (pts[(k + 1) % pts.length][1] - pts[k][1]) / e;
+        var ny = -(pts[(k + 1) % pts.length][0] - pts[k][0]) / e;
+        var tx = m[0] + nx * 13, ty = m[1] + ny * 13;
+        var txt = shape.labels[k] || '';
+        ctx.fillStyle = (k === hi) ? token('--error') : token('--text');
+        ctx.fillText(txt, tx, ty);
+      }
+    }
+
+    /* vertex dots */
+    ctx.fillStyle = isActive ? token('--text') : token('--text-muted');
+    for (var j = 0; j < pts.length; j++) {
+      ctx.beginPath(); ctx.arc(pts[j][0], pts[j][1], 3.5, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+
+    /* name tag */
+    ctx.font = '12px ' + token('--font');
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    ctx.fillStyle = isActive ? token('--text') : token('--text-muted');
+    ctx.fillText(which === 'a' ? 'Bangun A (merah)' : 'Bangun B (kuning)', pos.x, pos.y + 96);
+    ctx.fillStyle = token('--text-dim');
+    ctx.font = '11px ' + token('--font-mono');
+    ctx.fillText('rotasi ' + state.rotation[which] + '&deg;', pos.x, pos.y + 112);
+  }
+
+  function localToScreen(which, lp) {
+    var pos = state.pos[which];
+    var rot = state.rotation[which] * Math.PI / 180;
+    var cos = Math.cos(rot), sin = Math.sin(rot);
+    return { x: pos.x + lp[0] * cos - lp[1] * sin, y: pos.y + lp[0] * sin + lp[1] * cos };
+  }
+  function inside(which, mx, my) {
+    var pts = shapePoints(which), pos = state.pos[which];
+    var rot = -state.rotation[which] * Math.PI / 180;
+    var dx = mx - pos.x, dy = my - pos.y;
+    var lx = dx * Math.cos(rot) - dy * Math.sin(rot);
+    var ly = dx * Math.sin(rot) + dy * Math.cos(rot);
+    var insidePoly = false;
+    for (var i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+      if ((pts[i][1] > ly) !== (pts[j][1] > ly) &&
+          lx < (pts[j][0] - pts[i][0]) * (ly - pts[i][1]) / (pts[j][1] - pts[i][1]) + pts[i][0]) insidePoly = !insidePoly;
+    }
+    return insidePoly;
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    /* faint dot grid */
+    ctx.fillStyle = token('--border');
+    for (var gx = 16; gx < W; gx += 28) {
+      for (var gy = 16; gy < H; gy += 28) {
+        ctx.fillRect(gx, gy, 1.5, 1.5);
+      }
+    }
+    if (!state.overlay) {
+      drawPolygon('a', { mismatch: state.result && !state.result.ok ? 'a' : -1 });
+      drawPolygon('b', { mismatch: state.result && !state.result.ok ? 'b' : -1 });
+    } else {
+      drawPolygon('b', { mismatch: -1 });
+      drawPolygon('a', { mismatch: state.result && !state.result.ok ? 'a' : -1 });
+    }
+  }
+
+  /* ---------- superimpose animation ---------- */
+  function superimpose() {
+    if (state.overlay) return;
+    hideOverlay();
+    state.result = null; state.mismatch = -1;
+    state.overlay = {
+      t: 0, dur: 850,
+      from: { x: state.pos.a.x, y: state.pos.a.y, rot: state.rotation.a },
+      to: { x: state.pos.b.x, y: state.pos.b.y, rot: state.rotation.b },
+      verify: false
+    };
+    requestAnimationFrame(tick);
+  }
+
+  function easeInOut(t) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
+
+  function tick(now) {
+    if (!state.overlay) return;
+    var o = state.overlay;
+    o.t += 1;
+    var p = Math.min(1, o.t / o.dur);
+    var e = easeInOut(p);
+    state.pos.a.x = o.from.x + (o.to.x - o.from.x) * e;
+    state.pos.a.y = o.from.y + (o.to.y - o.from.y) * e - Math.sin(Math.PI * p) * 26;
+    state.rotation.a = o.from.rot + (o.to.rot - o.from.rot) * e;
+    if (p >= 1) {
+      state.overlay.verify = true;
+      state.result = verify();
+      draw();
+      showOverlay(state.result);
+      state.overlay = null;
+      setFeedback(state.result);
+      return;
+    }
+    draw();
+    requestAnimationFrame(tick);
+  }
+
+  /* ---------- verification ---------- */
+  function verify() {
+    var pa = shapePoints('a'), pb = shapePoints('b');
+    if (pa.length !== pb.length) return { ok: false, side: -1, msg: 'Banyaknya sudut berbeda, jadi tidak kongruen.' };
+    if (Math.abs(state.scale.a - state.scale.b) > 0.001) {
+      /* scale only affects the "active" shape, so a mismatch lands on the first differing side */
+      return { ok: false, side: 0, msg: 'Ukurannya berbeda setelah diperbesar. Bangun kongruen harus sama besar.' };
+    }
+    var best = null;
+    for (var off = 0; off < pa.length; off++) {
+      var okSides = true, okAngles = true, worst = 0, worstIdx = -1;
+      for (var i = 0; i < pa.length; i++) {
+        var la = edgeLen(pa, i), lb = edgeLen(pb, (i + off) % pb.length);
+        var d = Math.abs(la - lb);
+        if (d > 0.9) { okSides = false; if (d > worst) { worst = d; worstIdx = i; } }
+        var aa = cornerAngle(pa, i), ab = cornerAngle(pb, (i + off) % pb.length);
+        if (Math.abs(aa - ab) > 2.2) okAngles = false;
+      }
+      if (okSides && okAngles) return { ok: true, msg: PAIRS[state.pairIndex].tip };
+      var score = (okSides ? 0 : 1000 + worst) + (okAngles ? 0 : 500);
+      if (!best || score < best.score) best = { score: score, side: worstIdx, okSides: okSides, okAngles: okAngles };
+    }
+    var labelA = PAIRS[state.pairIndex].a.labels[best.side] || 'sisi ini';
+    var labelB = PAIRS[state.pairIndex].b.labels[best.side] || 'sisi ini';
+    var msg;
+    if (!best.okSides) {
+      msg = 'Sisi ini tidak sama panjang: ' + labelA + ' vs ' + labelB + '. Dua bangun kongruen harus semua sisinya sama.';
+    } else if (!best.okAngles) {
+      msg = 'Sisi sudah sama, tetapi besar sudutnya berbeda. Kongruen berarti semua sudut juga sama.';
+    } else {
+      msg = 'Bangun ini tidak tepat berimpit, jadi belum bisa disebut kongruen.';
+    }
+    return { ok: false, side: best.side, msg: msg };
+  }
+
+  function showOverlay(res) {
+    var ov = document.getElementById('result-overlay');
+    document.getElementById('overlay-icon').textContent = res.ok ? '\u2713' : '\u2715';
+    document.getElementById('overlay-icon').style.color = res.ok ? token('--success') : token('--error');
+    document.getElementById('overlay-title').textContent = res.ok ? 'Kongruen!' : 'Belum kongruen';
+    document.getElementById('overlay-title').style.color = res.ok ? token('--success') : token('--error');
+    document.getElementById('overlay-text').textContent = res.msg;
+    ov.classList.add('show');
+  }
+  function hideOverlay() { document.getElementById('result-overlay').classList.remove('show'); }
+
+  function setFeedback(res) {
+    var f = document.getElementById('feedback-panel');
+    f.classList.remove('success', 'error');
+    if (res) {
+      f.classList.add(res.ok ? 'success' : 'error');
+      f.textContent = (res.ok ? 'Bangun A tepat berimpit dengan Bangun B. ' : 'Bangun A tidak tepat berimpit. ') + res.msg;
+    } else {
+      f.textContent = 'Seret atau putar bentuk merah, lalu tekan T superimpose untuk mencocokkannya.';
+    }
+  }
+
+  /* ---------- control wiring ---------- */
+  function buildPairButtons() {
+    var host = document.getElementById('pair-list');
+    host.innerHTML = '';
+    PAIRS.forEach(function (p, i) {
+      var b = document.createElement('button');
+      b.className = 'btn' + (i === state.pairIndex ? ' btn-primary' : '');
+      b.textContent = p.name;
+      b.id = 'node-pair-' + i;
+      b.onclick = function () { selectPair(i); };
+      host.appendChild(b);
+    });
+  }
+  function selectPair(i) {
+    state.pairIndex = i;
+    state.active = 'a';
+    state.rotation.a = state.rotation.b = 0;
+    state.scale.a = state.scale.b = 1;
+    state.pos.a = homePos('a'); state.pos.b = homePos('b');
+    state.result = null; state.mismatch = -1; state.overlay = null;
+    syncSliders();
+    buildPairButtons();
+    hideOverlay();
+    setFeedback(null);
+    draw();
+  }
+  function syncSliders() {
+    document.getElementById('rotation-slider').value = String(state.rotation[state.active]);
+    document.getElementById('rotation-display').textContent = state.rotation[state.active] + '\u00B0';
+    document.getElementById('scale-slider').value = String(state.scale[state.active]);
+    document.getElementById('scale-display').textContent = state.scale[state.active].toFixed(2) + '\u00D7';
+    document.getElementById('shape-btn').textContent = 'Geser: ' + (state.active === 'a' ? 'merah' : 'kuning');
+  }
+  function cycleActive() {
+    state.active = state.active === 'a' ? 'b' : 'a';
+    syncSliders(); draw();
+  }
+  function swapShapes() {
+    var pa = state.pos.a; state.pos.a = state.pos.b; state.pos.b = pa;
+    var ra = state.rotation.a; state.rotation.a = state.rotation.b; state.rotation.b = ra;
+    var sa = state.scale.a; state.scale.a = state.scale.b; state.scale.b = sa;
+    state.result = null; state.overlay = null;
+    hideOverlay(); setFeedback(null); syncSliders(); draw();
+  }
+
+  document.getElementById('rotation-slider').addEventListener('input', function (e) {
+    state.rotation[state.active] = parseInt(e.target.value, 10);
+    state.result = null; state.overlay = null; hideOverlay(); setFeedback(null);
+    syncSliders(); draw();
+  });
+  document.getElementById('scale-slider').addEventListener('input', function (e) {
+    state.scale[state.active] = parseFloat(e.target.value);
+    state.result = null; state.overlay = null; hideOverlay(); setFeedback(null);
+    syncSliders(); draw();
+  });
+
+  /* ---------- pointer drag ---------- */
+  function pointerPos(e) {
+    var r = canvas.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+  canvas.addEventListener('pointerdown', function (e) {
+    var p = pointerPos(e);
+    if (inside('a', p.x, p.y)) { state.dragging = 'a'; state.active = 'a'; }
+    else if (inside('b', p.x, p.y)) { state.dragging = 'b'; state.active = 'b'; }
+    else return;
+    canvas.setPointerCapture(e.pointerId);
+    state.result = null; state.overlay = null; hideOverlay(); setFeedback(null);
+    syncSliders(); draw();
+  });
+  canvas.addEventListener('pointermove', function (e) {
+    if (!state.dragging) return;
+    var p = pointerPos(e);
+    var r = canvas.getBoundingClientRect();
+    state.pos[state.dragging].x = Math.max(0, Math.min(r.width, p.x));
+    state.pos[state.dragging].y = Math.max(0, Math.min(r.height, p.y));
+    draw();
+  });
+  function endDrag(e) {
+    if (!state.dragging) return;
+    state.dragging = null;
+    if (e && e.pointerId !== undefined && canvas.hasPointerCapture && canvas.hasPointerCapture(e.pointerId)) {
+      canvas.releasePointerCapture(e.pointerId);
+    }
+  }
+  canvas.addEventListener('pointerup', endDrag);
+  canvas.addEventListener('pointercancel', endDrag);
+
+  /* ---------- quiz ---------- */
+  var QUIZ = [
+    { q: 'Dua segitiga sama sisi memiliki sisi 3 cm. Apakah keduanya kongruen?', opts: ['Ya, kongruen', 'Tidak, kongruen'], a: 0,
+      why: 'Semua sisi sama panjang (3 cm) dan semua sudut 60&deg;, jadi kongruen.' },
+    { q: 'Dua persegi panjang: 6 cm &times; 3 cm dan 6 cm &times; 4 cm. Kongruen?', opts: ['Kongruen', 'Tidak kongruen'], a: 1,
+      why: 'Lebarnya berbeda (3 cm vs 4 cm), jadi sisi tidak sama panjang.' },
+    { q: 'Sudut A sebuah segitiga lancip, sudut B segitiga lain juga lancip, sama besarnya. Dua segitiga ini kongruen?', opts: ['Pasti kongruen', 'Belum tentu kongruen'], a: 1,
+      why: 'Sudut sama saja belum tentu. Perlu sisi atau sudut lainnya juga sama (SSS, SAS, ASA, SAA).' },
+    { q: 'Dua segitiga sama sisi dengan panjang sisi berbeda (3 cm dan 5 cm). Kongruen?', opts: ['Kongruen', 'Tidak kongruen'], a: 1,
+      why: 'Bentuk sama tapi ukuran berbeda. Kongruen menuntut ukuran juga sama.' },
+    { q: 'Dua trapesium sama kaki dengan sisi atas, bawah, dan miring sama ukurannya. Kongruen?', opts: ['Kongruen', 'Tidak kongruen'], a: 0,
+      why: 'Semua sisi sama panjang dan sudut sama besar, jadi kongruen.' },
+    { q: 'Manakah bangun yang kongruen dengan segitiga sama sisi?', opts: ['Segitiga sama sisi', 'Persegi panjang'], a: 0,
+      why: 'Hanya segitiga sama sisi yang punya tiga sisi sama panjang. Persegi panjang bukan segitiga.' }
+  ];
+  var quiz = { active: false, i: 0, score: 0, answered: false };
+
+  function startQuiz() {
+    quiz.active = true; quiz.i = 0; quiz.score = 0; quiz.answered = false;
+    document.getElementById('quiz-start-btn').textContent = 'Ulangi kuis';
+    renderQuiz();
+  }
+  function renderQuiz() {
+    var q = QUIZ[quiz.i];
+    document.getElementById('quiz-question').innerHTML = '<strong>Soal ' + (quiz.i + 1) + '.</strong> ' + q.q;
+    document.getElementById('quiz-score').textContent = 'Skor ' + quiz.score + ' dari ' + QUIZ.length;
+    document.getElementById('quiz-progress').style.width = (quiz.score / QUIZ.length * 100) + '%';
+    var host = document.getElementById('quiz-options');
+    host.innerHTML = '';
+    q.opts.forEach(function (o, i) {
+      var b = document.createElement('button');
+      b.className = 'btn btn-ghost';
+      b.textContent = o;
+      b.id = 'quiz-option-' + i;
+      b.onclick = function () { answerQuiz(i); };
+      host.appendChild(b);
+    });
+    quiz.answered = false;
+    var f = document.getElementById('feedback-panel');
+    f.classList.remove('success', 'error');
+    f.textContent = 'Jawab soal kuis di bawah.';
+  }
+  function answerQuiz(choice) {
+    if (quiz.answered) return;
+    quiz.answered = true;
+    var q = QUIZ[quiz.i];
+    var f = document.getElementById('feedback-panel');
+    f.classList.remove('success', 'error');
+    if (choice === q.a) {
+      quiz.score++;
+      f.classList.add('success');
+      f.textContent = 'Benar! ' + q.why;
+    } else {
+      f.classList.add('error');
+      f.textContent = 'Belum tepat. Jawaban yang benar: ' + q.opts[q.a] + '. ' + q.why;
+    }
+    document.getElementById('quiz-score').textContent = 'Skor ' + quiz.score + ' dari ' + QUIZ.length;
+    document.getElementById('quiz-progress').style.width = (quiz.score / QUIZ.length * 100) + '%';
+    for (var k = 0; k < q.opts.length; k++) {
+      var btn = document.getElementById('quiz-option-' + k);
+      if (!btn) continue;
+      btn.disabled = true;
+      if (k === q.a) btn.classList.add('btn-primary');
+    }
+    if (quiz.i < QUIZ.length - 1) {
+      setTimeout(function () { quiz.i++; renderQuiz(); }, 1600);
+    } else {
+      setTimeout(function () {
+        f.classList.remove('success', 'error');
+        f.classList.add('success');
+        f.textContent = 'Kuis selesai! Skor akhir ' + quiz.score + ' dari ' + QUIZ.length + '. Tekan Ulangi kuis untuk mengulang.';
+        quiz.active = false;
+      }, 1600);
+    }
+  }
+  function resetQuiz() {
+    quiz.active = false; quiz.i = 0; quiz.score = 0; quiz.answered = false;
+    document.getElementById('quiz-start-btn').textContent = 'Mulai kuis';
+    document.getElementById('quiz-question').innerHTML = 'Tekan <strong>Mulai kuis</strong> untuk memulai.';
+    document.getElementById('quiz-score').textContent = 'Skor 0 dari ' + QUIZ.length;
+    document.getElementById('quiz-progress').style.width = '0%';
+    var host = document.getElementById('quiz-options');
+    host.innerHTML = '';
+  }
+
+  /* ---------- reset ---------- */
+  function resetState() {
+    resetQuiz();
+    selectPair(state.pairIndex);
+    document.getElementById('quiz-start-btn').textContent = 'Mulai kuis';
+  }
+
+  /* ---------- keyboard ---------- */
+  document.addEventListener('keydown', function (e) {
+    if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+    if (e.key === 'r' || e.key === 'R') { e.preventDefault(); resetState(); }
+    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); superimpose(); }
+  });
+
+  buildPairButtons();
+  syncSliders();
+  new ResizeObserver(resize).observe(canvas);
+  resize();
+});
+</script>
+</body>
+</html>

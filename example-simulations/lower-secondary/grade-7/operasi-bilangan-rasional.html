@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="education_levels" content="Lower Secondary">
+  <meta name="grade" content="7">
+  <title>Operasi Bilangan Rasional · Matematika SMP Kelas VII</title>
+  <meta name="description" content="Latihan operasi hitung campur pada bilangan rasional, termasuk perkalian dan pembagian pecahan.">
+  <meta property="og:type" content="website">
+  <meta property="og:description" content="Hitung campur pecahan dengan pembilang dan penyebut yang bisa diatur, lihat langkah demi langkah, lalu kerjakan sepuluh soal dengan skor dan progres.">
+  <meta property="og:locale" content="id">
+  <style>
+    :root {
+      /* Colour */
+      --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+      --surface: #14141e;     /* panels, cards, step rows */
+      --panel: rgba(20, 20, 30, 0.9);
+      --border: rgba(255, 255, 255, 0.1);
+      --border-strong: #333;
+      --text: #ffffff;
+      --text-muted: #aaa;
+      --text-dim: #888;
+      --accent: #6366f1;      /* primary action, slider thumb, active state */
+      --accent-hover: #5558e8;
+      --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+      --success: #fbbf24;     /* completion, headings, callouts */
+      --warning: #fb923c;
+      --error: #ff6b6b;
+
+      /* Spacing scale */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+
+      /* Radius scale */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-pill: 999px;
+
+      /* Type scale (system fonts only) */
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --text-base: 16px;
+      --text-sm: 14px;
+      --text-xs: 13px;
+      --text-caption: 11px;   /* uppercase control labels */
+      --text-heading: 24px;
+
+      /* Focus, motion, stacking */
+      --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+      --motion: 0.2s;
+      --motion-slow: 0.3s;
+      --z-overlay: 100;        /* panels, tooltips */
+      --z-modal: 1000;         /* loading screens, modal dialogs */
+    }
+
+    [data-theme="light"] {
+      --bg: #f7f7fb;
+      --surface: #ffffff;
+      --panel: rgba(255, 255, 255, 0.92);
+      --border: rgba(0, 0, 0, 0.12);
+      --border-strong: #d4d4d8;
+      --text: #16161d;
+      --text-muted: #52525b;
+      --text-dim: #71717a;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+      --accent-soft: rgba(79, 70, 229, 0.95);
+      --success: #b45309;
+      --warning: #c2410c;
+      --error: #dc2626;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font);
+      font-size: var(--text-base);
+      line-height: 1.5;
+      background: var(--bg);
+      color: var(--text);
+      padding: var(--space-4);
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+    }
+
+    .panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+    .btn {
+      font-family: inherit;
+      font-size: var(--text-sm);
+      min-height: 44px;            /* never below 44px, mobile */
+      min-width: 44px;
+      padding: var(--space-3) var(--space-5);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      background: var(--border-strong);
+      color: var(--text);
+      cursor: pointer;
+      transition: background var(--motion);
+    }
+    .btn:hover { background: var(--text-muted); }
+    .btn:active { transform: scale(0.95); }
+    .btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-primary { background: var(--accent); border-color: var(--accent); }
+    .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+    .btn-ghost { background: transparent; border-color: var(--border); }
+    .btn-ghost:hover { background: var(--surface); }
+
+    .control-label {
+      font-size: var(--text-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    input[type="range"] {
+      width: 100%; height: 6px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px; height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+/* Touch target: keep the 6px visual track, but give the control a 44px hit area. */
+input[type="range"] { height: 44px; background: transparent; }
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-moz-range-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-webkit-slider-thumb { margin-top: -7px; }
+input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; background: var(--accent); border-radius: 50%; cursor: pointer; }
+    input[type="range"]:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+    }
+
+    #feedback-panel {
+      background: var(--surface);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+    }
+    #feedback-panel.success { border-left-color: var(--success); }
+    #feedback-panel.error { border-left-color: var(--error); }
+
+    .progress-track {
+      height: 8px;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+    .progress-fill { height: 100%; background: var(--accent); transition: width var(--motion-slow); }
+
+    /* ---- layout helpers (tokens only) ---- */
+    .wrap { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-4); }
+    h1 { font-size: var(--text-heading); line-height: 1.2; }
+    h2 { font-size: var(--text-base); color: var(--success); margin: 0 0 var(--space-3); }
+    h3 { font-size: var(--text-sm); color: var(--text-muted); margin: 0 0 var(--space-2); }
+    .lead { color: var(--text-muted); font-size: var(--text-sm); }
+    .tabs { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .mono { font-family: var(--font-mono); }
+    .readout { font-family: var(--font-mono); font-size: var(--text-heading); }
+    .readout-sm { font-family: var(--font-mono); font-size: var(--text-sm); color: var(--text-muted); }
+    .layout { display: flex; flex-direction: column; gap: var(--space-4); }
+    @media (min-width: 820px) {
+      .layout { flex-direction: row; align-items: flex-start; }
+      #controls { width: 340px; flex: none; }
+      #stage { flex: 1 1 auto; min-width: 0; }
+    }
+    .hidden { display: none; }
+    .frac-box { border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-3); background: var(--panel); }
+    .frac-box .name { font-size: var(--text-caption); text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+    .steps { margin-top: var(--space-3); }
+    .stepper { display: flex; align-items: center; gap: var(--space-1); }
+    .stepper .btn { min-width: 44px; padding: var(--space-2) var(--space-3); }
+    .stepper input {
+      width: 56px; min-height: 44px; text-align: center;
+      font-family: var(--font-mono); font-size: var(--text-base);
+      color: var(--text); background: var(--surface);
+      border: 1px solid var(--border-strong); border-radius: var(--radius-md);
+    }
+    .stepper input:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .op-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-2); margin: var(--space-4) 0; }
+    .op-row .btn { padding: var(--space-3) var(--space-2); }
+    .op-row .btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); }
+    canvas { display: block; width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); touch-action: manipulation; }
+    .canvas-wrap { min-height: 240px; }
+    .steps { margin-top: var(--space-3); }
+    .step-row { border-left: 3px solid var(--border-strong); padding: var(--space-2) var(--space-3); margin-bottom: var(--space-2); border-radius: var(--radius-sm); background: var(--panel); }
+    .step-row b { color: var(--success); }
+    .step-row p { font-size: var(--text-sm); }
+    .answer-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin-top: var(--space-3); }
+    .answer-row .stepper input { width: 72px; }
+    .scoreboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--space-3); margin-bottom: var(--space-3); }
+    .scoreboard div { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-3); }
+    .scoreboard .k { font-size: var(--text-caption); text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+    .scoreboard .v { font-family: var(--font-mono); font-size: var(--text-heading); }
+    #context-select { min-height: 44px; width: 100%; }
+    .note { font-size: var(--text-xs); color: var(--text-dim); margin-top: var(--space-2); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Operasi Bilangan Rasional</h1>
+      <p class="lead">Atur dua pecahan, pilih operasi, lalu lihat langkah perhitungannya. Beralih ke mode Latihan untuk mengerjakan sepuluh soal sendiri.</p>
+    </header>
+
+    <div class="tabs" role="group" aria-label="Pilih mode">
+      <button type="button" class="btn btn-primary" id="mode-explore-btn" aria-pressed="true">Mode Jelajah</button>
+      <button type="button" class="btn btn-ghost" id="mode-practice-btn" aria-pressed="false">Mode Latihan</button>
+      <button type="button" class="btn btn-ghost" id="reset-btn">Mulai ulang</button>
+    </div>
+
+    <section id="explore-mode">
+      <div class="layout">
+        <div id="controls" class="panel">
+          <h3>Bilangan yang dihitung</h3>
+
+          <div class="frac-box" style="margin-bottom: var(--space-3);">
+            <span class="name">Pecahan pertama</span>
+            <div class="frac-controls">
+              <div class="stepper">
+                <button type="button" class="btn btn-ghost" id="a1-up-btn" aria-label="Tambah pembilang pertama">+</button>
+                <input type="text" inputmode="numeric" id="a1-input" value="2" aria-label="Pembilang pertama">
+                <button type="button" class="btn btn-ghost" id="a1-down-btn" aria-label="Kurangi pembilang pertama">-</button>
+              </div>
+              <span aria-hidden="true">/</span>
+              <div class="stepper">
+                <button type="button" class="btn btn-ghost" id="b1-up-btn" aria-label="Tambah penyebut pertama">+</button>
+                <input type="text" inputmode="numeric" id="b1-input" value="3" aria-label="Penyebut pertama">
+                <button type="button" class="btn btn-ghost" id="b1-down-btn" aria-label="Kurangi penyebut pertama">-</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="frac-box">
+            <span class="name">Pecahan kedua</span>
+            <div class="frac-controls">
+              <div class="stepper">
+                <button type="button" class="btn btn-ghost" id="a2-up-btn" aria-label="Tambah pembilang kedua">+</button>
+                <input type="text" inputmode="numeric" id="a2-input" value="3" aria-label="Pembilang kedua">
+                <button type="button" class="btn btn-ghost" id="a2-down-btn" aria-label="Kurangi pembilang kedua">-</button>
+              </div>
+              <span aria-hidden="true">/</span>
+              <div class="stepper">
+                <button type="button" class="btn btn-ghost" id="b2-up-btn" aria-label="Tambah penyebut kedua">+</button>
+                <input type="text" inputmode="numeric" id="b2-input" value="4" aria-label="Penyebut kedua">
+                <button type="button" class="btn btn-ghost" id="b2-down-btn" aria-label="Kurangi penyebut kedua">-</button>
+              </div>
+            </div>
+          </div>
+
+          <h3 style="margin-top: var(--space-4);">Operasi</h3>
+          <div class="op-row" role="group" aria-label="Pilih operasi">
+            <button type="button" class="btn btn-ghost" data-op="+" aria-pressed="false">+</button>
+            <button type="button" class="btn btn-ghost" data-op="-" aria-pressed="false">-</button>
+            <button type="button" class="btn btn-ghost" data-op="*" aria-pressed="true">x</button>
+            <button type="button" class="btn btn-ghost" data-op="/" aria-pressed="false">/</button>
+          </div>
+
+          <div class="field" style="display:flex;flex-direction:column;gap:var(--space-2);">
+            <label class="control-label" for="context-select">Contoh konteks soal</label>
+            <select id="context-select"></select>
+          </div>
+        </div>
+
+        <div id="stage" class="panel">
+          <h2>Perhitungan</h2>
+          <div class="scoreboard">
+            <div><span class="k">Operasi</span><span class="v" id="op-display">x</span></div>
+            <div><span class="k">Hasil</span><span class="v" id="result-display">1/2</span></div>
+            <div><span class="k">Setara desimal</span><span class="v" id="decimal-display">0,50</span></div>
+          </div>
+
+          <div class="canvas-wrap">
+            <canvas id="canvas" height="260" role="img" aria-label="Perbandingan besar bar pecahan hasil"></canvas>
+          </div>
+
+          <div id="steps" class="steps"></div>
+
+          <div id="feedback-panel" role="status" aria-live="polite">Pilih operasi atau ubah salah satu pecahan untuk melihat langkah hitungnya.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="practice-mode" class="hidden">
+      <div class="panel">
+        <h2>Latihan: 10 soal</h2>
+        <div class="scoreboard">
+          <div><span class="k">Soal</span><span class="v" id="q-index">1/10</span></div>
+          <div><span class="k">Skor</span><span class="v" id="score-display">0</span></div>
+          <div><span class="k">Benar</span><span class="v" id="correct-display">0</span></div>
+        </div>
+        <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="progress-fill" style="width: 0%"></div></div>
+
+        <h3 style="margin-top: var(--space-4);">Soal</h3>
+        <p class="mono" id="question-display" style="font-size: var(--text-heading);">2/3 + 1/4 = ?</p>
+        <div class="answer-row">
+          <div class="stepper">
+            <span class="control-label">Pembilang</span>
+            <input type="text" inputmode="numeric" id="ans-num" value="" aria-label="Jawaban pembilang">
+          </div>
+          <div class="stepper">
+            <span class="control-label">Penyebut</span>
+            <input type="text" inputmode="numeric" id="ans-den" value="" aria-label="Jawaban penyebut">
+          </div>
+          <button type="button" class="btn btn-primary" id="check-btn">Periksa</button>
+          <button type="button" class="btn btn-ghost" id="skip-btn">Lewati</button>
+        </div>
+
+        <div id="practice-steps" class="steps"></div>
+        <div id="practice-feedback" role="status" aria-live="polite" class="hidden"></div>
+      </div>
+    </section>
+  </div>
+
+  <script type="application/json" id="widget-config">
+{
+  "type": "simulation",
+  "concept": "Operasi hitung bilangan rasional",
+  "description": "Latihan operasi hitung campur pada bilangan rasional, termasuk perkalian dan pembagian pecahan.",
+  "variables": [
+    { "name": "a1", "label": "Pembilang pertama", "min": 1, "max": 12, "default": 2, "unit": "" },
+    { "name": "b1", "label": "Penyebut pertama", "min": 1, "max": 12, "default": 3, "unit": "" },
+    { "name": "a2", "label": "Pembilang kedua", "min": 1, "max": 12, "default": 3, "unit": "" },
+    { "name": "b2", "label": "Penyebut kedua", "min": 1, "max": 12, "default": 4, "unit": "" }
+  ],
+  "presets": [
+    { "name": "Perkalian pecahan", "variables": { "a1": 2, "b1": 3, "a2": 3, "b2": 4 } },
+    { "name": "Pembagian pecahan", "variables": { "a1": 3, "b1": 4, "a2": 2, "b2": 3 } },
+    { "name": "Penjumlahan beda penyebut", "variables": { "a1": 1, "b1": 2, "a2": 1, "b2": 4 } },
+    { "name": "Pengurangan", "variables": { "a1": 5, "b1": 6, "a2": 1, "b2": 3 } }
+  ]
+}
+  </script>
+
+  <script>
+  (function () {
+    "use strict";
+
+    var CONTEXTS = [
+      { id: "none", name: "Tanpa konteks (pecahan biasa)", text: null },
+      {
+        id: "harga", name: "Jumlah barang",
+        text: function (a, b, op) {
+          return "Dina membeli " + a + "/" + b + " kg cokelat. Ia membeli " + a + "/" + b + " kg cokelat lagi. Berapa kilogram cokelat yang dibeli Dina?";
+        }
+      },
+      {
+        id: "panjang", name: "Panjang papan",
+        text: function (a, b) {
+          return "Sebuah papan panjangnya " + a + "/" + b + " meter. Papan kedua dipotong menjadi " + a + "/" + b + " meter. Berapa panjang kedua papan setelah digabung?";
+        }
+      },
+      {
+        id: "kecepatan", name: "Waktu tempuh",
+        text: function (a, b) {
+          return "Rani menempuh jalan selama " + a + "/" + b + " jam, lalu perjalanan kedua memakan " + a + "/" + b + " jam. Berapa total waktu tempuhnya?";
+        }
+      }
+    ];
+    var OPS = ["+", "-", "*", "/"];
+    var TOTAL = 10;
+
+    var state = {
+      a1: 2, b1: 3, a2: 3, b2: 4,
+      op: "*",
+      context: "none",
+      mode: "explore",
+      problems: [],
+      idx: 0,
+      score: 0,
+      correct: 0,
+      attempts: 0,
+      solved: false
+    };
+
+    var canvas = document.getElementById("canvas");
+    var ctx = canvas.getContext("2d");
+
+    /* ---------- helpers ---------- */
+    function gcd(x, y) {
+      x = Math.abs(x); y = Math.abs(y);
+      while (y) { var t = y; y = x % y; x = t; }
+      return x || 1;
+    }
+    function lcm(x, y) { return Math.abs(x * y) / gcd(x, y); }
+    function clampInt(v, lo, hi) {
+      v = Math.floor(Number(v));
+      if (!isFinite(v)) return lo;
+      return Math.max(lo, Math.min(hi, v));
+    }
+    function token(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+    function decText(v) {
+      var neg = v < 0;
+      var x = Math.abs(v);
+      var s = x.toFixed(4).replace(/0+$/, "").replace(/\.$/, "");
+      s = s.replace(".", ",");
+    }
+    /* ---------- computation ---------- */
+    function compute(a1, b1, a2, b2, op) {
+      var num, den, steps = [], title, g;
+      if (op === "+" || op === "-") {
+        den = lcm(b1, b2);
+        var n1 = a1 * (den / b1);
+        var n2 = a2 * (den / b2);
+        num = op === "+" ? n1 + n2 : n1 - n2;
+        steps.push({ k: "Samakan penyebut", v: "Penyebut bersama dari " + b1 + " dan " + b2 + " adalah " + den + "." });
+        steps.push({ k: "Ubah pecahan", v: a1 + "/" + b1 + " = " + n1 + "/" + den + " dan " + a2 + "/" + b2 + " = " + n2 + "/" + den + "." });
+        steps.push({ k: "Hitung pembilang", v: n1 + " " + op + " " + n2 + " = " + num + ", jadi hasilnya " + num + "/" + den + "." });
+        title = "Menyamakan penyebut, lalu menjumlahkan pembilang";
+      } else if (op === "*") {
+        num = a1 * a2;
+        den = b1 * b2;
+        steps.push({ k: "Perkalian silang", v: "Pembilang: " + a1 + " x " + a2 + " = " + num + ". Penyebut: " + b1 + " x " + b2 + " = " + den + "." });
+        steps.push({ k: "Hasil belum disederhanakan", v: num + "/" + den + "." });
+        title = "Perkalian: pembilang dengan pembilang, penyebut dengan penyebut";
+      } else {
+        num = a1 * b2;
+        den = b1 * a2;
+        steps.push({ k: "Perkalian silang", v: "Bagian yang atas: " + a1 + " x " + b2 + " = " + num + ". Bagian yang bawah: " + b1 + " x " + a2 + " = " + den + "." });
+        steps.push({ k: "Hasil belum disederhanakan", v: num + "/" + den + "." });
+        title = "Pembagian: penyebut kedua pindah ke atas dan dibalik";
+      }
+      g = gcd(num, den);
+      if (g > 1) {
+        steps.push({ k: "Sederhanakan", v: "FPB dari " + Math.abs(num) + " dan " + den + " adalah " + g + ", jadi " + num + "/" + den + " = " + (num / g) + "/" + (den / g) + "." });
+        num = num / g; den = den / g;
+      } else {
+        steps.push({ k: "Sederhanakan", v: "Tidak bisa disederhanakan lagi karena FPB-nya 1." });
+      }
+      if (num < 0) {
+        steps.push({ k: "Tanda", v: "Hasilnya negatif, ditulis dengan tanda minus di depan: " + num + "/" + den + "." });
+      }
+      return { num: num, den: den, steps: steps, title: title };
+    }
+
+    /* ---------- explore mode ---------- */
+    function readInputs() {
+      state.a1 = clampInt(document.getElementById("a1-input").value, 0, 12);
+      state.b1 = clampInt(document.getElementById("b1-input").value, 1, 12);
+      state.a2 = clampInt(document.getElementById("a2-input").value, 0, 12);
+      state.b2 = clampInt(document.getElementById("b2-input").value, 1, 12);
+    }
+    function writeInputs() {
+      document.getElementById("a1-input").value = String(state.a1);
+      document.getElementById("b1-input").value = String(state.b1);
+      document.getElementById("a2-input").value = String(state.a2);
+      document.getElementById("b2-input").value = String(state.b2);
+    }
+
+    function renderExplore() {
+      readInputs();
+      writeInputs();
+      var r = compute(state.a1, state.b1, state.a2, state.b2, state.op);
+      var value = r.num / r.den;
+
+      document.getElementById("op-display").textContent = state.op === "*" ? "x" : (state.op === "/" ? ":" : state.op);
+      document.getElementById("result-display").textContent = r.num + "/" + r.den;
+      document.getElementById("decimal-display").textContent = decText(value);
+
+      var stepsHtml = '<h3>Langkah: ' + r.title + "</h3>";
+      r.steps.forEach(function (s, i) {
+        stepsHtml += '<div class="step-row"><p><b>Langkah ' + (i + 1) + " - " + s.k + ".</b> " + s.v + "</p></div>";
+      });
+      var ctxDef = CONTEXTS.filter(function (c) { return c.id === state.context; })[0];
+      if (ctxDef && ctxDef.text) {
+        stepsHtml += '<div class="step-row"><p><b>Contoh konteks.</b> ' + ctxDef.text(state.a1, state.b1, state.op) + " Hasilnya tetap sama: <span class=\"mono\">" + state.a1 + "/" + state.b1 + " " + (state.op === "*" ? "x" : state.op) + " " + state.a2 + "/" + state.b2 + " = " + r.num + "/" + r.den + "</span>.</p></div>";
+      }
+      document.getElementById("steps").innerHTML = stepsHtml;
+
+      var fb = document.getElementById("feedback-panel");
+      var big = Math.abs(value);
+      fb.textContent = state.a1 + "/" + state.b1 + " " + (state.op === "*" ? "x" : state.op) + " " + state.a2 + "/" + state.b2 +
+        " = " + r.num + "/" + r.den + " = " + decText(value) + ". Bar di bawah menunjukkan besar hasilnya: " +
+        (big > 1 ? "lebih besar dari 1" : (Math.abs(big - 1) < 1e-9 ? "sama dengan 1" : "kurang dari 1")) + ".";
+      fb.className = "";
+
+      drawBars(value);
+    }
+
+    function drawBars(value) {
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      var W = canvas.clientWidth || 320;
+      var H = 260;
+      canvas.style.height = H + "px";
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, W, H);
+
+      var accent = token("--accent");
+      var muted = token("--text-muted");
+      var success = token("--success");
+      var dim = token("--text-dim");
+      var border = token("--border-strong");
+
+      var v1 = state.a1 / state.b1;
+      var v2 = state.a2 / state.b2;
+      var scaleMax = Math.max(3, Math.ceil(Math.max(Math.abs(v1), Math.abs(v2), Math.abs(value)) + 1));
+
+      function row(y, label, v, color) {
+        ctx.fillStyle = muted;
+        ctx.font = "12px " + token("--font");
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.fillText(label, 12, y);
+        var bx = 96;
+        var bw = W - bx - 20;
+        var per = bw / scaleMax;
+        ctx.strokeStyle = border;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(bx + 0.5, y - 11.5, bw, 23);
+        var w = Math.min(bw, Math.max(2, Math.abs(v) * per));
+        ctx.fillStyle = color;
+        if (v < 0) {
+          var zx = bx + Math.min(scaleMax, -v) * per;
+          ctx.fillRect(zx, y - 11, Math.min(bw, Math.abs(v) * per), 22);
+        } else {
+          ctx.fillRect(bx, y - 11, w, 22);
+        }
+        ctx.fillStyle = token("--text");
+        ctx.font = "700 12px " + token("--font-mono");
+        ctx.fillText(decText(v), bx, y + 24);
+      }
+
+      ctx.fillStyle = dim;
+      ctx.font = "11px " + token("--font");
+      ctx.textAlign = "left";
+      ctx.fillText("Besar tiap bilangan (satu garis penuh = 1)", 12, 18);
+
+      row(66, "Pecahan 1", v1, muted);
+      row(140, "Pecahan 2", v2, muted);
+      row(214, "Hasil", value, success);
+    }
+
+    function bindStepper(btnId, inputId, key, lo, hi) {
+      var input = document.getElementById(inputId);
+      var btn = document.getElementById(btnId);
+      btn.addEventListener("click", function () {
+        var v = clampInt(input.value, lo, hi) + (btn.id.indexOf("-up-") !== -1 ? 1 : -1);
+        input.value = String(clampInt(v, lo, hi));
+        renderExplore();
+      });
+      input.addEventListener("change", renderExplore);
+    }
+
+    /* ---------- practice mode ---------- */
+    function makeProblem(n) {
+      var ops = ["+", "-", "*", "/"];
+      var op = ops[n % ops.length];
+      var a1, b1, a2, b2, guard = 0;
+      do {
+        b1 = 2 + Math.floor(Math.random() * 7);
+        b2 = 2 + Math.floor(Math.random() * 7);
+        a1 = 1 + Math.floor(Math.random() * (b1 - 1 > 0 ? b1 - 1 : 1));
+        a2 = 1 + Math.floor(Math.random() * (b2 - 1 > 0 ? b2 - 1 : 1));
+        if (op === "-") { if (a1 / b1 < a2 / b2) { var t = a1; a1 = a2; a2 = t; var tb = b1; b1 = b2; b2 = tb; } }
+        if (op === "/") { if (a2 === 0) a2 = 1; }
+        guard++;
+      } while (guard < 20 && (op === "-" && a1 / b1 < a2 / b2));
+      var r = compute(a1, b1, a2, b2, op);
+      return { a1: a1, b1: b1, a2: a2, b2: b2, op: op, num: r.num, den: r.den, steps: r.steps };
+    }
+
+    function startPractice() {
+      state.problems = [];
+      for (var i = 0; i < TOTAL; i++) state.problems.push(makeProblem(i));
+      state.idx = 0;
+      state.score = 0;
+      state.correct = 0;
+      state.solved = false;
+      renderProblem();
+    }
+
+    function renderProblem() {
+      var p = state.problems[state.idx];
+      if (!p) return;
+      state.attempts = 0;
+      document.getElementById("q-index").textContent = (state.idx + 1) + "/" + TOTAL;
+      document.getElementById("score-display").textContent = String(state.score);
+      document.getElementById("correct-display").textContent = String(state.correct);
+      document.getElementById("progress-fill").style.width = (state.idx / TOTAL * 100) + "%";
+      document.getElementById("question-display").textContent = p.a1 + "/" + p.b1 + " " + p.op + " " + p.a2 + "/" + p.b2 + " = ?";
+      document.getElementById("ans-num").value = "";
+      document.getElementById("ans-den").value = "";
+      document.getElementById("practice-steps").innerHTML = "";
+      var fb = document.getElementById("practice-feedback");
+      fb.className = "";
+      fb.textContent = "Tulis pembilang dan penyebut hasil yang sudah disederhanakan. Jawaban salah tidak menghapus skor, kamu bisa mencoba lagi.";
+    }
+
+    function checkAnswer() {
+      if (state.solved) return;
+      var p = state.problems[state.idx];
+      var n = clampInt(document.getElementById("ans-num").value, -99, 99);
+      var d = clampInt(document.getElementById("ans-den").value, 1, 99);
+      document.getElementById("ans-num").value = String(n);
+      document.getElementById("ans-den").value = String(d);
+      state.attempts++;
+      var fb = document.getElementById("practice-feedback");
+      var ok = (n === p.num && d === p.den) || (n * p.den === p.num * d && d !== 0);
+      if (ok) {
+        state.solved = true;
+        state.correct++;
+        var gained = state.attempts === 1 ? 10 : 4;
+        state.score += gained;
+        fb.textContent = "Benar! " + p.a1 + "/" + p.b1 + " " + p.op + " " + p.a2 + "/" + p.b2 + " = " + p.num + "/" + p.den + ". Skor +" + gained + ".";
+        if (state.attempts > 1) {
+          fb.textContent += " Kamu mencoba " + state.attempts + " kali, tetap dapat poin karena sudah paham.";
+        }
+        fb.className = "success";
+        renderStepsFor(p);
+      } else {
+        fb.textContent = "Belum tepat. Ingat, hasilnya harus sudah disederhanakan. Coba lagi, skormu tidak hilang. Explanasi lengkapnya baru muncul setelah jawabanmu benar.";
+        fb.className = "error";
+      }
+      document.getElementById("score-display").textContent = String(state.score);
+      document.getElementById("correct-display").textContent = String(state.correct);
+    }
+
+    function renderStepsFor(p) {
+      var html = "<h3>Langkah perhitungan</h3>";
+      p.steps.forEach(function (s, i) {
+        html += '<div class="step-row"><p><b>Langkah ' + (i + 1) + " - " + s.k + ".</b> " + s.v + "</p></div>";
+      });
+      document.getElementById("practice-steps").innerHTML = html;
+    }
+
+    function nextProblem() {
+      if (state.idx >= TOTAL - 1) {
+        state.idx = TOTAL;
+        document.getElementById("progress-fill").style.width = "100%";
+        var fb = document.getElementById("practice-feedback");
+        fb.textContent = "Selesai! Skor akhir " + state.score + " dari " + (TOTAL * 10) + ". Benar " + state.correct + " dari " + TOTAL + ". Tekan Mulai ulang untuk mengulang latihan.";
+        fb.className = "success";
+        document.getElementById("question-display").textContent = "Semua 10 soal selesai.";
+        return;
+      }
+      state.idx++;
+      state.solved = false;
+      renderProblem();
+    }
+
+    /* ---------- mode + reset ---------- */
+    function setMode(mode) {
+      state.mode = mode;
+      var explore = document.getElementById("explore-mode");
+      var practice = document.getElementById("practice-mode");
+      var eb = document.getElementById("mode-explore-btn");
+      var pb = document.getElementById("mode-practice-btn");
+      if (mode === "explore") {
+        explore.classList.remove("hidden");
+        practice.classList.add("hidden");
+        eb.className = "btn btn-primary";
+        eb.setAttribute("aria-pressed", "true");
+        pb.className = "btn btn-ghost";
+        pb.setAttribute("aria-pressed", "false");
+        renderExplore();
+      } else {
+        explore.classList.add("hidden");
+        practice.classList.remove("hidden");
+        eb.className = "btn btn-ghost";
+        eb.setAttribute("aria-pressed", "false");
+        pb.className = "btn btn-primary";
+        pb.setAttribute("aria-pressed", "true");
+        startPractice();
+      }
+    }
+
+    function resetState() {
+      state.a1 = 2; state.b1 = 3; state.a2 = 3; state.b2 = 4;
+      state.op = "*";
+      state.context = "none";
+      document.getElementById("context-select").value = "none";
+      document.querySelectorAll(".op-row .btn").forEach(function (b) {
+        var on = b.getAttribute("data-op") === "*";
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+      writeInputs();
+      state.problems = [];
+      state.idx = 0; state.score = 0; state.correct = 0; state.solved = false; state.attempts = 0;
+      document.getElementById("ans-num").value = "";
+      document.getElementById("ans-den").value = "";
+      document.getElementById("practice-steps").innerHTML = "";
+      document.getElementById("practice-feedback").className = "";
+      document.getElementById("practice-feedback").textContent = "Tulis pembilang dan penyebut hasil yang sudah disederhanakan. Jawaban salah tidak menghapus skor, kamu bisa mencoba lagi.";
+      document.getElementById("progress-fill").style.width = "0%";
+      document.getElementById("q-index").textContent = "1/10";
+      document.getElementById("score-display").textContent = "0";
+      document.getElementById("correct-display").textContent = "0";
+      document.getElementById("question-display").textContent = "2/3 + 1/4 = ?";
+      setMode("explore");
+    }
+
+    /* ---------- init ---------- */
+    var ctxSelect = document.getElementById("context-select");
+    CONTEXTS.forEach(function (c) {
+      var o = document.createElement("option");
+      o.value = c.id;
+      o.textContent = c.name;
+      ctxSelect.appendChild(o);
+    });
+    ctxSelect.addEventListener("change", function () {
+      state.context = ctxSelect.value;
+      renderExplore();
+    });
+
+    bindStepper("a1-up-btn", "a1-input", "a1", 0, 12);
+    bindStepper("a1-down-btn", "a1-input", "a1", 0, 12);
+    bindStepper("b1-up-btn", "b1-input", "b1", 1, 12);
+    bindStepper("b1-down-btn", "b1-input", "b1", 1, 12);
+    bindStepper("a2-up-btn", "a2-input", "a2", 0, 12);
+    bindStepper("a2-down-btn", "a2-input", "a2", 0, 12);
+    bindStepper("b2-up-btn", "b2-input", "b2", 1, 12);
+    bindStepper("b2-down-btn", "b2-input", "b2", 1, 12);
+
+    document.querySelectorAll(".op-row .btn").forEach(function (b) {
+      b.addEventListener("click", function () {
+        state.op = b.getAttribute("data-op");
+        document.querySelectorAll(".op-row .btn").forEach(function (x) {
+          x.setAttribute("aria-pressed", x.getAttribute("data-op") === state.op ? "true" : "false");
+        });
+        renderExplore();
+      });
+    });
+
+    document.getElementById("mode-explore-btn").addEventListener("click", function () { setMode("explore"); });
+    document.getElementById("mode-practice-btn").addEventListener("click", function () { setMode("practice"); });
+    document.getElementById("reset-btn").addEventListener("click", resetState);
+    document.getElementById("check-btn").addEventListener("click", checkAnswer);
+    document.getElementById("skip-btn").addEventListener("click", function () {
+      if (state.solved) { nextProblem(); return; }
+      var p = state.problems[state.idx];
+      if (!p) return;
+      var fb = document.getElementById("practice-feedback");
+      fb.textContent = "Dilewati. Jawaban yang benar: " + p.num + "/" + p.den + ". Tekan Periksa lagi kalau mau mencoba, atau Lanjut ke soal berikutnya.";
+      fb.className = "error";
+      renderStepsFor(p);
+    });
+    document.getElementById("ans-num").addEventListener("keydown", function (e) { if (e.key === "Enter") checkAnswer(); });
+    document.getElementById("ans-den").addEventListener("keydown", function (e) { if (e.key === "Enter") checkAnswer(); });
+
+    /* next-problem button injected into practice panel */
+    var nextBtn = document.createElement("button");
+    nextBtn.type = "button";
+    nextBtn.className = "btn btn-ghost";
+    nextBtn.id = "next-btn";
+    nextBtn.textContent = "Soal berikutnya";
+    nextBtn.addEventListener("click", function () {
+      if (!state.solved) {
+        var fb = document.getElementById("practice-feedback");
+        fb.textContent = "Selesaikan dulu soal ini, atau tekan Lewati untuk melihat jawabannya.";
+        fb.className = "error";
+        return;
+      }
+      nextProblem();
+    });
+    document.getElementById("check-btn").parentNode.appendChild(nextBtn);
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "r" || e.key === "R") { if (!/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) resetState(); }
+    });
+
+    if (window.ResizeObserver) {
+      new ResizeObserver(function () { if (state.mode === "explore") drawBars(state.a1 / state.b1); }).observe(canvas.parentElement);
+    } else {
+      window.addEventListener("resize", function () { if (state.mode === "explore") drawBars(state.a1 / state.b1); });
+    }
+
+    writeInputs();
+    setMode("explore");
+  })();
+  </script>
+</body>
+</html>

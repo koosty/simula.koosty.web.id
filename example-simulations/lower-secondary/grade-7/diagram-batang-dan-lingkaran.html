@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="education_levels" content="Lower Secondary">
+  <meta name="grade" content="7">
+  <title>Diagram Batang dan Lingkaran · Matematika SMP Kelas VII</title>
+  <meta name="description" content="Murid menyusun, membaca, dan menafsirkan diagram batang dan diagram lingkaran termasuk sudut pusat.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Diagram Batang dan Lingkaran">
+  <meta property="og:description" content="Studio diagram: ubah data, lihat diagram batang dan lingkaran berdampingan, lalu tebak sudut pusat tiap irisan memakai rumus sudut pusat = (jumlah / total) x 360 derajat.">
+  <meta property="og:locale" content="id">
+  <style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font);font-size:var(--text-base);line-height:1.5;background:var(--bg);color:var(--text)}
+:root{
+  /* Colour */
+  --bg:#0a0a1a;
+  --surface:#14141e;
+  --panel:rgba(20,20,30,0.9);
+  --border:rgba(255,255,255,0.1);
+  --border-strong:#333;
+  --text:#ffffff;
+  --text-muted:#aaa;
+  --text-dim:#888;
+  --accent:#6366f1;
+  --accent-hover:#5558e8;
+  --accent-soft:rgba(139,92,246,0.95);
+  --success:#fbbf24;
+  --warning:#fb923c;
+  --error:#ff6b6b;
+  /* Spacing scale */
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;
+  /* Radius scale */
+  --radius-sm:4px;--radius-md:8px;--radius-lg:12px;--radius-pill:999px;
+  /* Type scale (system fonts only) */
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  --font-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --text-base:16px;--text-sm:14px;--text-xs:13px;--text-caption:11px;--text-heading:24px;
+  /* Focus, motion, stacking */
+  --focus-ring:0 0 0 3px rgba(99,102,241,0.5);
+  --motion:0.2s;--motion-slow:0.3s;
+  --z-overlay:100;--z-modal:1000;
+}
+[data-theme="light"]{
+  --bg:#f7f7fb;--surface:#ffffff;--panel:rgba(255,255,255,0.92);
+  --border:rgba(0,0,0,0.12);--border-strong:#d4d4d8;
+  --text:#16161d;--text-muted:#52525b;--text-dim:#71717a;
+  --accent:#4f46e5;--accent-hover:#4338ca;--accent-soft:rgba(79,70,229,0.95);
+  --success:#b45309;--warning:#c2410c;--error:#dc2626;
+}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-4)}
+.panel-heading{font-size:var(--text-sm);color:var(--text-muted);margin-bottom:var(--space-2)}
+.btn{font-family:inherit;font-size:var(--text-sm);min-height:44px;min-width:44px;padding:var(--space-3) var(--space-5);border:1px solid var(--border-strong);border-radius:var(--radius-md);background:var(--border-strong);color:var(--text);cursor:pointer;transition:background var(--motion);touch-action:manipulation}
+.btn:hover{background:var(--text-muted)}
+.btn:active{transform:scale(0.95)}
+.btn:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+.btn:disabled{opacity:0.45;cursor:not-allowed}
+.btn-primary{background:var(--accent);border-color:var(--accent)}
+.btn-primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+.btn-ghost{background:transparent;border-color:var(--border)}
+.btn-ghost:hover{background:var(--surface)}
+.control-label{font-size:var(--text-caption);text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted)}
+input[type="range"]{width:100%;height:6px;-webkit-appearance:none;appearance:none;background:var(--border-strong);border-radius:var(--radius-pill);cursor:pointer}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;background:var(--accent);border-radius:50%;cursor:pointer}
+
+/* Touch target: keep the 6px visual track, but give the control a 44px hit area. */
+input[type="range"] { height: 44px; background: transparent; }
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-moz-range-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-webkit-slider-thumb { margin-top: -7px; }
+input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; background: var(--accent); border-radius: 50%; cursor: pointer; }
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
+#feedback-panel{background:var(--surface);border-left:3px solid var(--accent);border-radius:var(--radius-md);padding:var(--space-3) var(--space-4)}
+#feedback-panel.success{border-left-color:var(--success)}
+#feedback-panel.error{border-left-color:var(--error)}
+.progress-track{height:8px;background:var(--border-strong);border-radius:var(--radius-pill);overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);transition:width var(--motion-slow)}
+
+.wrap{max-width:1100px;margin:0 auto;padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-4)}
+h1{font-size:var(--text-heading);line-height:1.25}
+h2{font-size:var(--text-sm);color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:var(--space-2)}
+h3{font-size:var(--text-sm);margin-bottom:var(--space-1)}
+.sub{color:var(--text-muted);font-size:var(--text-sm)}
+.stage{position:relative;width:100%;min-height:320px;aspect-ratio:16/9;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+canvas{display:block;width:100%;height:100%;touch-action:none}
+.controls{display:flex;flex-direction:column;gap:var(--space-3)}
+.ctrl-head{display:flex;justify-content:space-between;align-items:center;gap:var(--space-2);margin-bottom:var(--space-2)}
+.row{display:flex;flex-wrap:wrap;gap:var(--space-2)}
+.row .btn{flex:1 1 auto}
+.mono{font-family:var(--font-mono);color:var(--text)}
+.val{font-family:var(--font-mono);color:var(--text);font-size:var(--text-sm)}
+.note{font-size:var(--text-xs);color:var(--text-dim);margin-top:var(--space-2)}
+ol,ul{padding-left:var(--space-5);font-size:var(--text-sm);color:var(--text-muted)}
+li{margin-bottom:var(--space-1)}
+.formula{font-family:var(--font-mono);font-size:var(--text-sm);background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-3);color:var(--text);overflow-x:auto}
+.edit-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:var(--space-3);margin-top:var(--space-3)}
+.field{display:flex;flex-direction:column;gap:var(--space-1)}
+input[type="number"]{font-family:var(--font-mono);font-size:var(--text-sm);min-height:44px;width:100%;padding:var(--space-2) var(--space-3);background:var(--bg);color:var(--text);border:1px solid var(--border-strong);border-radius:var(--radius-md);touch-action:manipulation}
+input[type="number"]:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+input[type="number"]:disabled{opacity:0.45;cursor:not-allowed}
+.guess-row{display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}
+.guess-row input[type="number"]{flex:1 1 110px}
+.chips{display:flex;flex-wrap:wrap;gap:var(--space-2);margin-top:var(--space-2)}
+.chip{display:flex;align-items:center;gap:var(--space-2);min-height:44px;min-width:44px;padding:var(--space-2) var(--space-3);background:transparent;border:1px solid var(--border);border-radius:var(--radius-md);color:var(--text);font:inherit;font-size:var(--text-xs);cursor:pointer;touch-action:manipulation}
+.chip:hover{background:var(--border)}
+.chip:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+.chip[aria-pressed="true"]{border-color:var(--accent);box-shadow:var(--focus-ring)}
+.sw{width:14px;height:14px;border-radius:var(--radius-sm);border:1px solid var(--border);flex:0 0 auto}
+.two{display:flex;flex-direction:column;gap:var(--space-4)}
+@media (min-width:768px){.two{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);align-items:start}}
+.hidden{display:none}
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <h1>Diagram Batang dan Lingkaran</h1>
+    <p class="sub">Data yang sama bisa dibuat jadi diagram batang atau diagram lingkaran. Pada diagram lingkaran, besar sudut pusat suatu irisan sebanding dengan banyaknya data.</p>
+  </header>
+
+  <section class="stage">
+    <canvas id="chart-canvas" role="img" aria-label="Diagram batang dan diagram lingkaran dari data yang dipilih"></canvas>
+  </section>
+
+  <section class="panel controls">
+    <h2>Tampilan</h2>
+    <div class="row" role="group" aria-label="Pilih tampilan diagram">
+      <button type="button" class="btn btn-primary" id="node-bar-btn">Diagram batang</button>
+      <button type="button" class="btn" id="node-pie-btn">Diagram lingkaran</button>
+      <button type="button" class="btn" id="node-both-btn">Dua-duanya</button>
+    </div>
+    <p class="note" id="dataset-label">Data: Cara siswa datang ke sekolah.</p>
+    <div class="row">
+      <button type="button" class="btn" id="dataset-btn">Ganti data</button>
+      <button type="button" class="btn btn-ghost" id="editing-btn">Ubah data</button>
+      <button type="button" class="btn btn-ghost" id="equal-slice-btn">Samakan semua</button>
+    </div>
+
+    <div id="edit-panel" class="hidden">
+      <div class="ctrl-head">
+        <span class="control-label">Jumlah siswa</span>
+        <span class="control-label">0 sampai 40</span>
+      </div>
+      <div class="edit-grid" id="edit-grid"></div>
+    </div>
+
+    <div class="ctrl">
+      <div class="ctrl-head">
+        <label class="control-label" for="slice-slider">Irisan terpilih</label>
+        <span class="val" id="slice-display">-</span>
+      </div>
+      <input type="range" id="slice-slider" min="0" max="3" step="1" value="0">
+    </div>
+
+    <div class="ctrl">
+      <div class="ctrl-head">
+        <label class="control-label" for="zoom-slider">Perbesar</label>
+        <span class="val" id="zoom-display">&times;1.00</span>
+      </div>
+      <input type="range" id="zoom-slider" min="0.8" max="2" step="0.05" value="1">
+    </div>
+
+    <div class="ctrl">
+      <h3>Tebak sudut pusat</h3>
+      <div class="row">
+        <button type="button" class="btn btn-primary" id="guess-btn" onclick="startGuess()">Mulai tebak</button>
+      </div>
+      <div class="guess-row" id="guess-row">
+        <label class="sr-only" for="guess-input">Jawaban sudut pusat dalam derajat</label>
+        <input type="number" id="guess-input" inputmode="numeric" min="0" max="360" step="1" placeholder="derajat" disabled>
+        <button type="button" class="btn" id="guess-submit-btn" disabled>Kirim jawaban</button>
+      </div>
+      <div class="ctrl-head" style="margin-top:var(--space-3)">
+        <span class="control-label">Teka-teki dijawab benar</span>
+        <span class="val" id="score-display">0 dari 0</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+
+    <div class="row">
+      <button type="button" class="btn btn-ghost" id="reset-btn" onclick="resetState()">Mulai ulang</button>
+    </div>
+  </section>
+
+  <section id="feedback-panel" aria-live="polite">
+    <p id="feedback-text">Pilih <strong>Mulai tebak</strong>, lalu jawab berapa besar sudut pusat irisan yang ditandai.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Keterangan</h2>
+    <p class="note">Klik keterangan untuk memilih irisan pada diagram lingkaran.</p>
+    <div class="chips" id="legend-chips"></div>
+  </section>
+
+  <div class="two">
+    <section class="panel">
+      <h2>Cara memakai</h2>
+      <ol>
+        <li>Pilih <strong>Diagram batang</strong>, <strong>Diagram lingkaran</strong>, atau <strong>Dua-duanya</strong> untuk melihat data yang sama dalam dua bentuk.</li>
+        <li>Tekan <strong>Ubah data</strong>, lalu ketik jumlah siswa pada setiap kategori. Diagram langsung berubah.</li>
+        <li>Tekan <strong>Samakan semua</strong> untuk membuat semua irisan sama besar.</li>
+        <li>Tekan <strong>Mulai tebak</strong>, hitung sudut pusat irisan yang ditandai, lalu kirim jawabanmu.</li>
+        <li>Tombol <strong>Mulai ulang</strong> mengembalikan semua keadaan awal.</li>
+      </ol>
+      <p class="note">Pintasan papan ketik: B batang, P lingkaran, D dua-duanya, G tebak, R ulang.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Sudut pusat</h2>
+      <p class="formula">sudut pusat = (jumlah kategori / jumlah seluruh) &times; 360&deg;</p>
+      <p class="note" style="margin-top:var(--space-3)">Seluruh lingkaran besarnya 360&deg;. Bagian irisan mendapat sudut sebesar bagiannya dari lingkaran itu.</p>
+      <p class="formula" id="formula-live" style="margin-top:var(--space-2)">-</p>
+    </section>
+  </div>
+</main>
+
+<script type="application/json" id="widget-config">{"type":"simulation","concept":"charts","description":"Murid menyusun, membaca, dan menafsirkan diagram batang dan diagram lingkaran termasuk sudut pusat.","variables":[{"name":"data","label":"Data","min":0,"max":8,"default":4,"unit":"kategori"},{"name":"slice","label":"Potongan terpilih","min":0,"max":3,"default":0,"unit":"iri"}],"presets":[]}</script>
+
+<script>
+(function(){
+  "use strict";
+
+  var DATASETS = [
+    { title: "Cara siswa datang ke sekolah",
+      cats: [{label:"Sepeda",count:8},{label:"Jalan Kaki",count:12},{label:"Angkutan Umum",count:5},{label:"Diantar Orang Tua",count:7}] },
+    { title: "Warna favorit murid",
+      cats: [{label:"Merah",count:6},{label:"Biru",count:9},{label:"Kuning",count:4},{label:"Hijau",count:5},{label:"Putih",count:8}] }
+  ];
+  var MAX_VAL = 40;
+  var MAX_CATS = 5;
+  var BASE_ZOOM = 1;
+
+  /* Nama warna Indonesia, disusun dari rona warna irisan yang benar-benar
+     dihitung dari token tema (bukan kode warna yang ditulis manual). */
+  var COLOR_NAMES = [
+    {h:0,n:"merah"},{h:20,n:"jingga"},{h:45,n:"kuning"},{h:80,n:"hijau kekuningan"},
+    {h:120,n:"hijau"},{h:165,n:"hijau kebiruan"},{h:205,n:"biru"},{h:250,n:"biru ungu"},
+    {h:285,n:"ungu"},{h:320,n:"ungu kemerah"},{h:340,n:"merah muda"}
+  ];
+
+  var canvas = document.getElementById("chart-canvas");
+  var ctx = canvas.getContext("2d");
+  var els = {
+    feedback: document.getElementById("feedback-panel"),
+    feedbackText: document.getElementById("feedback-text"),
+    datasetBtn: document.getElementById("dataset-btn"),
+    datasetLabel: document.getElementById("dataset-label"),
+    editingBtn: document.getElementById("editing-btn"),
+    equalBtn: document.getElementById("equal-slice-btn"),
+    editPanel: document.getElementById("edit-panel"),
+    editGrid: document.getElementById("edit-grid"),
+    sliceSlider: document.getElementById("slice-slider"),
+    sliceDisplay: document.getElementById("slice-display"),
+    zoomSlider: document.getElementById("zoom-slider"),
+    zoomDisplay: document.getElementById("zoom-display"),
+    guessBtn: document.getElementById("guess-btn"),
+    guessInput: document.getElementById("guess-input"),
+    guessSubmit: document.getElementById("guess-submit-btn"),
+    scoreDisplay: document.getElementById("score-display"),
+    progressFill: document.getElementById("progress-fill"),
+    legendChips: document.getElementById("legend-chips"),
+    formulaLive: document.getElementById("formula-live"),
+    tabs: { bar: document.getElementById("node-bar-btn"), pie: document.getElementById("node-pie-btn"), both: document.getElementById("node-both-btn") }
+  };
+
+  var state = {
+    dataset: 0,
+    view: "bar",
+    editing: false,
+    counts: [],
+    zoom: BASE_ZOOM,
+    slice: 0,
+    hover: -1,
+    guess: -1,
+    answered: false,
+    right: 0,
+    tries: 0
+  };
+
+  /* Nilai yang sedang digambar (hasil interpolasi) dan nilai tujuan. */
+  var shown = [], pull = [], pullTo = [];
+  var tween = 1;
+  var tweenFrom = [], tweenTo = [];
+  var pulse = null;
+  var rafId = null;
+  var lastTs = 0;
+  var cssW = 0, cssH = 0;
+  var palette = [];
+  var colorNames = [];
+  var tok = null;
+
+  /* ---------------- warna dari token ---------------- */
+
+  function readTokens(){
+    var cs = getComputedStyle(document.documentElement);
+    var g = function(n){ return cs.getPropertyValue(n).trim(); };
+    return {
+      accent: g("--accent"), accentSoft: g("--accent-soft"), success: g("--success"),
+      warning: g("--warning"), error: g("--error"), text: g("--text"),
+      muted: g("--text-muted"), dim: g("--text-dim"), surface: g("--surface"),
+      border: g("--border"), strong: g("--border-strong")
+    };
+  }
+
+  function parseColor(str){
+    if(!str) return null;
+    var s = str.trim();
+    if(s.charAt(0) === "#"){
+      var hx = s.slice(1);
+      if(hx.length === 3) hx = hx.charAt(0)+hx.charAt(0)+hx.charAt(1)+hx.charAt(1)+hx.charAt(2)+hx.charAt(2);
+      if(hx.length < 6) return null;
+      return [parseInt(hx.slice(0,2),16), parseInt(hx.slice(2,4),16), parseInt(hx.slice(4,6),16)];
+    }
+    var m = s.match(/-?\d+(\.\d+)?/g);
+    if(m && m.length >= 3) return [parseFloat(m[0]), parseFloat(m[1]), parseFloat(m[2])];
+    return null;
+  }
+
+  function rgbToHsl(rgb){
+    var r = rgb[0]/255, g = rgb[1]/255, b = rgb[2]/255;
+    var mx = Math.max(r,g,b), mn = Math.min(r,g,b), h = 0, s = 0;
+    var l = (mx + mn) / 2;
+    var d = mx - mn;
+    if(d > 0.0001){
+      s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+      if(mx === r) h = ((g - b) / d + (g < b ? 6 : 0));
+      else if(mx === g) h = (b - r) / d + 2;
+      else h = (r - g) / d + 4;
+      h *= 60;
+    }
+    return [h, s * 100, l * 100];
+  }
+
+  function buildPalette(n){
+    var base = parseColor(tok.accent) || parseColor(tok.success) || [99,102,241];
+    var b = rgbToHsl(base);
+    var cols = [], names = [];
+    var step = 360 / n;
+    for(var i = 0; i < n; i++){
+      var h = (b[0] + i * step + 360) % 360;
+      var s = Math.max(38, Math.min(88, b[1] - 6));
+      var l = Math.max(30, Math.min(70, b[2] + [0, 8, -7, 4, -11][i % 5]));
+      cols.push("hsl(" + h.toFixed(1) + " " + s.toFixed(1) + "% " + l.toFixed(1) + "%)");
+      names.push(nameForHue(h));
+    }
+    return { colors: cols, names: names };
+  }
+
+  function nameForHue(h){
+    var best = COLOR_NAMES[0], bd = 999;
+    for(var i = 0; i < COLOR_NAMES.length; i++){
+      var d = Math.abs(COLOR_NAMES[i].h - h);
+      if(d > 180) d = 360 - d;
+      if(d < bd){ bd = d; best = COLOR_NAMES[i]; }
+    }
+    return best.n;
+  }
+
+  /* ---------------- data ---------------- */
+
+  function nCats(){ return DATASETS[state.dataset].cats.length; }
+  function total(){ var t = 0; for(var i = 0; i < state.counts.length; i++) t += state.counts[i]; return t; }
+  function pct(i){ var t = total(); return t > 0 ? state.counts[i] / t * 100 : 0; }
+  function angleOf(i){ return pct(i) / 100 * 360; }
+
+  function setTargets(animate){
+    var n = nCats();
+    if(shown.length !== n || !animate){
+      shown = state.counts.slice();
+      pull = new Array(MAX_CATS).fill(0);
+      pullTo = new Array(MAX_CATS).fill(0);
+      tween = 1;
+    } else {
+      tweenFrom = shown.slice();
+      tweenTo = state.counts.slice();
+      tween = 0;
+    }
+  }
+
+  function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
+
+  function currentCounts(){
+    var n = nCats(), out = new Array(n);
+    for(var i = 0; i < n; i++){
+      out[i] = tween < 1 ? tweenFrom[i] + (tweenTo[i] - tweenFrom[i]) * easeOutCubic(tween) : shown[i];
+    }
+    return out;
+  }
+
+  /* ---------------- layout panel edit ---------------- */
+
+  function buildEditInputs(){
+    els.editGrid.textContent = "";
+    for(var i = 0; i < MAX_CATS; i++){
+      (function(i){
+        var used = i < nCats();
+        var wrap = document.createElement("div");
+        wrap.className = "field";
+        var lab = document.createElement("label");
+        lab.className = "control-label";
+        lab.textContent = used ? DATASETS[state.dataset].cats[i].label : "Tidak dipakai";
+        lab.setAttribute("for", "val-" + i);
+        var inp = document.createElement("input");
+        inp.type = "number";
+        inp.id = "val-" + i;
+        inp.min = 0;
+        inp.max = MAX_VAL;
+        inp.step = 1;
+        inp.value = used ? state.counts[i] : 0;
+        inp.disabled = !used;
+        inp.addEventListener("input", function(){
+          if(i >= nCats()) return;
+          var v = parseInt(inp.value, 10);
+          if(isNaN(v)) return;
+          if(v < 0) v = 0;
+          if(v > MAX_VAL) v = MAX_VAL;
+          inp.value = v;
+          state.counts[i] = v;
+          setTargets(true);
+          refresh();
+        });
+        wrap.appendChild(lab);
+        wrap.appendChild(inp);
+        els.editGrid.appendChild(wrap);
+      })(i);
+    }
+  }
+
+  function syncEditInputs(){
+    var inputs = els.editGrid.querySelectorAll("input");
+    for(var i = 0; i < inputs.length; i++){
+      var used = i < nCats();
+      inputs[i].disabled = !used;
+      if(used && document.activeElement !== inputs[i]) inputs[i].value = state.counts[i];
+    }
+  }
+
+  function buildLegend(){
+    els.legendChips.textContent = "";
+    var n = nCats();
+    for(var i = 0; i < n; i++){
+      (function(i){
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "chip";
+        b.setAttribute("aria-pressed", i === state.slice ? "true" : "false");
+        var sw = document.createElement("span");
+        sw.className = "sw";
+        sw.style.background = palette[i];
+        var nm = document.createElement("span");
+        nm.textContent = DATASETS[state.dataset].cats[i].label;
+        var num = document.createElement("span");
+        num.className = "mono";
+        num.textContent = state.counts[i] + " (" + fmtPct(pct(i)) + ")";
+        b.appendChild(sw); b.appendChild(nm); b.appendChild(num);
+        b.addEventListener("click", function(){ selectSlice(i); });
+        els.legendChips.appendChild(b);
+      })(i);
+    }
+  }
+
+  function fmtPct(v){
+    if(Math.abs(v - Math.round(v)) < 0.05) return Math.round(v) + "%";
+    return v.toFixed(1).replace(".", ",") + "%";
+  }
+
+  function selectSlice(i){
+    state.slice = i;
+    els.sliceSlider.value = String(i);
+    updateSliceUI();
+    buildLegend();
+    kick();
+  }
+
+  function updateSliceUI(){
+    var i = state.slice;
+    if(i >= nCats()) i = 0;
+    els.sliceSlider.max = String(nCats() - 1);
+    els.sliceSlider.value = String(i);
+    els.sliceDisplay.textContent = DATASETS[state.dataset].cats[i].label + " (" + colorNames[i] + ")";
+  }
+
+  /* ---------------- tampilan ---------------- */
+
+  function setView(v){
+    state.view = v;
+    Object.keys(els.tabs).forEach(function(k){
+      els.tabs[k].className = "btn" + (k === v ? " btn-primary" : "");
+    });
+    kick();
+  }
+
+  function refresh(){
+    var p = buildPalette(nCats());
+    palette = p.colors;
+    colorNames = p.names;
+    for(var i = 0; i < MAX_CATS; i++){
+      if(pull[i] === undefined){ pull[i] = 0; pullTo[i] = 0; }
+      pullTo[i] = 0;
+    }
+    updateSliceUI();
+    buildLegend();
+    updateFormula();
+    if(state.editing) syncEditInputs();
+    els.zoomDisplay.textContent = "×" + state.zoom.toFixed(2);
+    kick();
+  }
+
+  function updateFormula(){
+    var t = total();
+    if(t <= 0){ els.formulaLive.textContent = "Isi dulu jumlah siswa."; return; }
+    var i = state.slice, lbl = DATASETS[state.dataset].cats[i].label;
+    els.formulaLive.textContent = lbl + ": (" + state.counts[i] + " / " + t + ") × 360° = " + fmtAng(angleOf(i)) + "°";
+  }
+
+  function fmtAng(a){ return (Math.round(a * 10) / 10).toFixed(1).replace(".", ","); }
+
+  function setEditing(on){
+    state.editing = on;
+    els.editPanel.classList.toggle("hidden", !on);
+    els.editingBtn.textContent = on ? "Selesai ubah" : "Ubah data";
+    els.editingBtn.className = "btn" + (on ? " btn-primary" : " btn-ghost");
+    if(on){ buildEditInputs(); els.editGrid.querySelector("input").focus(); }
+  }
+
+  function equalAll(){
+    var n = nCats();
+    var base = Math.round(state.counts.reduce(function(a,b){ return a + b; }, 0) / n) || 1;
+    for(var i = 0; i < n; i++) state.counts[i] = base;
+    if(!state.editing) setEditing(true); else syncEditInputs();
+    setTargets(true);
+    refresh();
+  }
+
+  /* ---------------- tebak sudut pusat ---------------- */
+
+  function startGuess(){
+    var n = nCats();
+    var i = 0;
+    if(n > 1){
+      i = Math.floor(Math.random() * n);
+      if(i === state.guess) i = (i + 1 + Math.floor(Math.random() * (n - 1))) % n;
+    }
+    state.guess = i;
+    state.answered = false;
+    selectSlice(i);
+    if(state.view === "bar") setView("pie");
+    els.guessBtn.textContent = "Tebak irisan lain";
+    els.feedback.className = "";
+    els.feedbackText.innerHTML = "Berapa besar sudut pusat irisan berwarna <strong>" + colorNames[i] +
+      "</strong> (" + DATASETS[state.dataset].cats[i].label + ")? Tulis jawabannya dalam derajat, ya.";
+    els.guessInput.disabled = false;
+    els.guessInput.value = "";
+    els.guessSubmit.disabled = false;
+    els.guessInput.focus();
+    kick();
+  }
+
+  function submitGuess(){
+    if(state.guess < 0 || state.answered) return;
+    var v = parseFloat(String(els.guessInput.value).replace(",", "."));
+    if(isNaN(v)){
+      els.feedback.className = "error";
+      els.feedbackText.textContent = "Tulis dulu angka untuk sudut pusat, lalu tekan Kirim jawaban.";
+      return;
+    }
+    state.answered = true;
+    state.tries++;
+    var i = state.guess, t = total(), want = angleOf(i);
+    els.guessInput.disabled = true;
+    els.guessSubmit.disabled = true;
+    if(Math.abs(v - want) <= 0.6){
+      state.right++;
+      els.feedback.className = "success";
+      els.feedbackText.innerHTML = "Benar! Sudut pusat irisan " + colorNames[i] + " besarnya <strong>" +
+        fmtAng(want) + "°</strong>. Karena irisan itu " + fmtPct(pct(i)) + " dari lingkaran penuh (360°).";
+      pulse = { idx: i, start: performance.now(), dur: 1400 };
+    } else {
+      els.feedback.className = "error";
+      els.feedbackText.innerHTML = "Belum tepat. Seharusnya <strong>" + fmtAng(want) + "°</strong>. " +
+        "Sudut pusat = (jumlah / total) × 360° = (" + state.counts[i] + " / " + t + ") × 360° = " + fmtAng(want) + "°.";
+    }
+    els.guessBtn.textContent = "Tebak irisan lain";
+    els.scoreDisplay.textContent = state.right + " dari " + state.tries;
+    els.progressFill.style.width = (state.tries > 0 ? state.right / state.tries * 100 : 0) + "%";
+    kick();
+  }
+
+  /* ---------------- gambar ---------------- */
+
+  function resize(){
+    var rect = canvas.getBoundingClientRect();
+    var dpr = window.devicePixelRatio || 1;
+    cssW = Math.max(240, rect.width);
+    cssH = Math.max(200, rect.height);
+    canvas.width = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssH * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    tok = readTokens();
+    kick();
+  }
+
+  function niceMax(v){
+    if(v <= 5) return 5;
+    var raw = v / 4;
+    var mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    var norm = raw / mag;
+    var step = norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 5 ? 5 : 10;
+    return step * mag * 4;
+  }
+
+  function fitText(ctx2, str, maxW){
+    if(ctx2.measureText(str).width <= maxW) return str;
+    var s = str;
+    while(s.length > 1 && ctx2.measureText(s + "…").width > maxW) s = s.slice(0, -1);
+    return s + "…";
+  }
+
+  function drawBar(r, counts){
+    var fs = Math.max(10, Math.min(14, r.w / 34));
+    var padL = 42 * state.zoom * 0.5 + 20, padR = 14, padT = 26, padB = 44;
+    var pw = (r.w - padL - padR) * state.zoom;
+    var ph = (r.h - padT - padB) * state.zoom;
+    var px = r.x + (r.w - padL - padR - pw) / 2 + padL;
+    var py = r.y + (r.h - padT - padB - ph) / 2 + padT;
+    var n = counts.length;
+    var maxC = 0;
+    for(var i = 0; i < n; i++) maxC = Math.max(maxC, counts[i]);
+    var top = niceMax(Math.max(maxC, 1));
+    ctx.font = fs - 2 + "px " + tok.muted;
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    for(var g = 0; g <= 4; g++){
+      var y = py + ph - ph * g / 4;
+      ctx.beginPath();
+      ctx.strokeStyle = g === 0 ? tok.strong : tok.border;
+      ctx.lineWidth = 1;
+      ctx.moveTo(px, y); ctx.lineTo(px + pw, y);
+      ctx.stroke();
+      ctx.fillStyle = tok.muted;
+      ctx.fillText(String(Math.round(top * g / 4)), px - 6, y);
+    }
+    ctx.textAlign = "center";
+    var slot = pw / n;
+    var bw = Math.min(slot * 0.62, 56);
+    var active = state.guess >= 0 ? state.guess : state.hover;
+    for(var k = 0; k < n; k++){
+      var cx = px + slot * (k + 0.5);
+      var h = counts[k] / top * ph;
+      var y0 = py + ph - h;
+      ctx.fillStyle = k === active ? tok.accentSoft : tok.accent;
+      ctx.beginPath();
+      if(ctx.roundRect) ctx.roundRect(cx - bw / 2, y0, bw, Math.max(h, 1), 3);
+      else ctx.rect(cx - bw / 2, y0, bw, Math.max(h, 1));
+      ctx.fill();
+      ctx.fillStyle = k === active ? tok.text : tok.muted;
+      ctx.font = fs - 1 + "px " + tok.muted;
+      ctx.fillText(String(counts[k]), cx, y0 - fs * 0.8);
+      ctx.fillStyle = tok.text;
+      ctx.font = (fs - 2) + "px " + tok.text;
+      var lbl = DATASETS[state.dataset].cats[k].label;
+      var measured = ctx.measureText(lbl).width;
+      if(measured > slot - 4){
+        ctx.save();
+        ctx.translate(cx, py + ph + 10);
+        ctx.rotate(-Math.PI / 7);
+        ctx.textAlign = "right";
+        ctx.textBaseline = "middle";
+        ctx.fillText(fitText(ctx, lbl, ph * 0.6), 0, 0);
+        ctx.restore();
+      } else {
+        ctx.fillText(lbl, cx, py + ph + fs + 8);
+      }
+    }
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = tok.dim;
+    ctx.font = fs - 2 + "px " + tok.muted;
+    ctx.fillText("Jumlah siswa", r.x + 6, r.y + 14);
+  }
+
+  function drawPie(r, counts){
+    var n = counts.length;
+    var t = 0;
+    for(var i = 0; i < n; i++) t += counts[i];
+    var cx = r.x + r.w / 2, cy = r.y + r.h / 2;
+    var rad = Math.min(r.w, r.h) * 0.34 * state.zoom;
+    var fs = Math.max(10, Math.min(14, r.w / 34));
+    ctx.font = fs - 2 + "px " + tok.muted;
+    if(t <= 0){
+      ctx.fillStyle = tok.muted;
+      ctx.textAlign = "center";
+      ctx.fillText("Belum ada data. Isi jumlah siswa dulu.", cx, cy);
+      ctx.textAlign = "left";
+      return;
+    }
+    var a = -Math.PI / 2;
+    for(var k = 0; k < n; k++){
+      var sweep = counts[k] / t * Math.PI * 2;
+      var off = pull[k] || 0;
+      var mid = a + sweep / 2;
+      var ox = Math.cos(mid) * off, oy = Math.sin(mid) * off;
+      ctx.beginPath();
+      ctx.moveTo(cx + ox, cy + oy);
+      ctx.arc(cx + ox, cy + oy, rad, a, a + sweep);
+      ctx.closePath();
+      ctx.fillStyle = palette[k];
+      ctx.fill();
+      if(k === state.slice){
+        ctx.strokeStyle = tok.text;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+      ctx.strokeStyle = tok.surface;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx + ox, cy + oy);
+      ctx.arc(cx + ox, cy + oy, rad, a, a + sweep);
+      ctx.stroke();
+      if(sweep > 0.14){
+        ctx.fillStyle = tok.text;
+        ctx.font = (fs - 2) + "px " + tok.text;
+        ctx.textAlign = "center";
+        var lr = rad * 1.16;
+        var lp = counts[k] / t * 100;
+        var lx = cx + Math.cos(mid) * lr, ly = cy + Math.sin(mid) * lr;
+        var txt = fmtPct(lp);
+        var tw = ctx.measureText(txt).width;
+        ctx.fillStyle = tok.surface;
+        ctx.fillRect(lx - tw / 2 - 4, ly - fs, tw + 8, fs + 6);
+        ctx.fillStyle = tok.text;
+        ctx.fillText(txt, lx, ly);
+      }
+      a += sweep;
+    }
+    if(pulse){
+      var pa = -Math.PI / 2;
+      for(var q = 0; q < pulse.idx; q++) pa += counts[q] / t * Math.PI * 2;
+      var ps = counts[pulse.idx] / t * Math.PI * 2;
+      var prog = Math.max(0, Math.min(1, (performance.now() - pulse.start) / pulse.dur));
+      ctx.save();
+      ctx.globalAlpha = 1 - prog;
+      ctx.strokeStyle = tok.success;
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(cx, cy, rad * (1 + 0.14 * prog), pa, pa + ps);
+      ctx.stroke();
+      ctx.restore();
+    }
+    if(state.guess >= 0){
+      var sa = -Math.PI / 2;
+      for(var w = 0; w < state.guess; w++) sa += counts[w] / t * Math.PI * 2;
+      var ss = counts[state.guess] / t * Math.PI * 2;
+      ctx.save();
+      ctx.strokeStyle = tok.text;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 5]);
+      ctx.beginPath();
+      ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(sa) * rad, cy + Math.sin(sa) * rad);
+      ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(sa + ss) * rad, cy + Math.sin(sa + ss) * rad);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(cx, cy, rad * 0.7, sa, sa + ss);
+      ctx.stroke();
+      var sm = sa + ss / 2;
+      var tx = cx + Math.cos(sm) * rad * 0.82, ty = cy + Math.sin(sm) * rad * 0.82;
+      var lbl2 = state.answered ? fmtAng(counts[state.guess] / t * 360) + "°" : "?";
+      ctx.font = (fs + 2) + "px " + tok.text;
+      ctx.textAlign = "center";
+      var w2 = ctx.measureText(lbl2).width;
+      ctx.fillStyle = tok.surface;
+      ctx.fillRect(tx - w2 / 2 - 5, ty - fs - 4, w2 + 10, fs + 10);
+      ctx.fillStyle = tok.text;
+      ctx.fillText(lbl2, tx, ty + 2);
+      ctx.restore();
+    }
+    ctx.textAlign = "left";
+    ctx.fillStyle = tok.dim;
+    ctx.font = fs - 2 + "px " + tok.muted;
+    ctx.fillText("Jumlah seluruh: " + t, r.x + 6, r.y + 14);
+  }
+
+  function draw(){
+    var counts = currentCounts();
+    ctx.clearRect(0, 0, cssW, cssH);
+    ctx.fillStyle = tok.surface;
+    ctx.fillRect(0, 0, cssW, cssH);
+    ctx.lineWidth = 1;
+    if(state.view === "bar"){
+      drawBar({x:0,y:0,w:cssW,h:cssH}, counts);
+    } else if(state.view === "pie"){
+      drawPie({x:0,y:0,w:cssW,h:cssH}, counts);
+    } else {
+      drawBar({x:0,y:0,w:cssW/2,h:cssH}, counts);
+      drawPie({x:cssW/2,y:0,w:cssW/2,h:cssH}, counts);
+      ctx.beginPath();
+      ctx.strokeStyle = tok.border;
+      ctx.moveTo(cssW/2, 8); ctx.lineTo(cssW/2, cssH - 8);
+      ctx.stroke();
+    }
+    ctx.textBaseline = "alphabetic";
+    ctx.textAlign = "left";
+  }
+
+  /* ---------------- loop ---------------- */
+
+  function step(now){
+    var more = false;
+    if(tween < 1){
+      tween = Math.min(1, tween + (lastTs ? now - lastTs : 16) / 520);
+      shown = currentCounts();
+      if(tween < 1) more = true;
+    }
+    var baseR = Math.min(cssW, cssH) * 0.34 * state.zoom;
+    for(var i = 0; i < MAX_CATS; i++){
+      pullTo[i] = i < nCats() && i === state.slice ? baseR * 0.10 : 0;
+      pull[i] = pull[i] + (pullTo[i] - pull[i]) * 0.18;
+      if(Math.abs(pullTo[i] - pull[i]) > 0.4) more = true;
+    }
+    if(pulse){
+      if(now - pulse.start > pulse.dur) pulse = null; else more = true;
+    }
+    lastTs = now;
+    return more;
+  }
+
+  function frame(now){
+    rafId = null;
+    var more = step(now);
+    draw();
+    if(more) rafId = requestAnimationFrame(frame);
+  }
+
+  function kick(){
+    if(rafId === null) rafId = requestAnimationFrame(frame);
+  }
+
+  /* ---------------- interaksi ---------------- */
+
+  function localPoint(ev){
+    var r = canvas.getBoundingClientRect();
+    return { x: ev.clientX - r.left, y: ev.clientY - r.top, w: r.width, h: r.height };
+  }
+
+  canvas.addEventListener("pointermove", function(ev){
+    var p = localPoint(ev);
+    var counts = currentCounts();
+    var hit = -1, showBar = state.view === "bar", showPie = state.view === "pie" || state.view === "both";
+    if(showBar){
+      var area = showPie ? { x:0, y:0, w:p.w/2, h:p.h } : { x:0, y:0, w:p.w, h:p.h };
+      hit = barIndexAt(p, area);
+    } else if(showPie){
+      var parea = { x: state.view === "both" ? p.w/2 : 0, y:0, w: state.view === "both" ? p.w/2 : p.w, h:p.h };
+      hit = pieIndexAt(p, parea, counts);
+    }
+    if(hit !== state.hover){ state.hover = hit; kick(); }
+  });
+
+  canvas.addEventListener("pointerleave", function(){ state.hover = -1; kick(); });
+
+  canvas.addEventListener("pointerdown", function(ev){
+    var p = localPoint(ev);
+    var counts = currentCounts();
+    var hit = -1;
+    if(state.view === "bar") hit = barIndexAt(p, { x:0, y:0, w:p.w, h:p.h });
+    else {
+      var area = state.view === "both" ? { x:p.w/2, y:0, w:p.w/2, h:p.h } : { x:0, y:0, w:p.w, h:p.h };
+      hit = pieIndexAt(p, area, counts);
+    }
+    if(hit >= 0) selectSlice(hit);
+  });
+
+  function barIndexAt(p, area){
+    var padL = 42 * state.zoom * 0.5 + 20, padR = 14;
+    var pw = (area.w - padL - padR) * state.zoom;
+    var px = area.x + (area.w - padL - padR - pw) / 2 + padL;
+    if(p.x < px || p.x > px + pw) return -1;
+    var n = nCats();
+    return Math.min(n - 1, Math.max(0, Math.floor((p.x - px) / (pw / n))));
+  }
+
+  function pieIndexAt(p, area, counts){
+    var cx = area.x + area.w / 2, cy = area.y + area.h / 2;
+    var rad = Math.min(area.w, area.h) * 0.34 * state.zoom;
+    var d = Math.hypot(p.x - cx, p.y - cy);
+    if(d > rad * 1.05) return -1;
+    var a = Math.atan2(p.y - cy, p.x - cx) + Math.PI / 2;
+    while(a < 0) a += Math.PI * 2;
+    var t = 0, i;
+    for(i = 0; i < counts.length; i++) t += counts[i];
+    if(t <= 0) return -1;
+    var acc = 0;
+    for(i = 0; i < counts.length; i++){
+      acc += counts[i] / t * Math.PI * 2;
+      if(a <= acc) return i;
+    }
+    return counts.length - 1;
+  }
+
+  /* ---------------- tombol ---------------- */
+
+  els.datasetBtn.addEventListener("click", function(){
+    state.dataset = (state.dataset + 1) % DATASETS.length;
+    state.counts = DATASETS[state.dataset].cats.map(function(c){ return c.count; });
+    state.guess = -1;
+    state.answered = false;
+    state.slice = 0;
+    els.datasetLabel.textContent = "Data: " + DATASETS[state.dataset].title + ".";
+    closeGuess();
+    setEditing(state.editing);
+    setTargets(false);
+    refresh();
+  });
+
+  els.editingBtn.addEventListener("click", function(){ setEditing(!state.editing); });
+
+  els.equalBtn.addEventListener("click", equalAll);
+
+  els.tabs.bar.addEventListener("click", function(){ setView("bar"); });
+  els.tabs.pie.addEventListener("click", function(){ setView("pie"); });
+  els.tabs.both.addEventListener("click", function(){ setView("both"); });
+
+  els.sliceSlider.addEventListener("input", function(){
+    var v = parseInt(els.sliceSlider.value, 10);
+    if(isNaN(v)) return;
+    state.slice = Math.max(0, Math.min(nCats() - 1, v));
+    updateSliceUI();
+    buildLegend();
+    updateFormula();
+    kick();
+  });
+
+  els.zoomSlider.addEventListener("input", function(){
+    var v = parseFloat(els.zoomSlider.value);
+    if(isNaN(v)) return;
+    state.zoom = v;
+    els.zoomDisplay.textContent = "×" + state.zoom.toFixed(2);
+    kick();
+  });
+
+  els.guessSubmit.addEventListener("click", submitGuess);
+  els.guessInput.addEventListener("keydown", function(ev){
+    if(ev.key === "Enter"){ ev.preventDefault(); submitGuess(); }
+  });
+
+  function closeGuess(){
+    state.guess = -1;
+    state.answered = false;
+    els.guessInput.value = "";
+    els.guessInput.disabled = true;
+    els.guessSubmit.disabled = true;
+    els.guessBtn.textContent = "Mulai tebak";
+    els.feedback.className = "";
+    els.feedbackText.innerHTML = "Pilih <strong>Mulai tebak</strong>, lalu jawab berapa besar sudut pusat irisan yang ditandai.";
+  }
+
+  window.startGuess = startGuess;
+  window.resetState = resetState;
+
+  function resetState(){
+    state.dataset = 0;
+    state.view = "bar";
+    state.counts = DATASETS[0].cats.map(function(c){ return c.count; });
+    state.zoom = BASE_ZOOM;
+    state.slice = 0;
+    state.hover = -1;
+    state.right = 0;
+    state.tries = 0;
+    state.guess = -1;
+    state.answered = false;
+    pulse = null;
+    lastTs = 0;
+    for(var i = 0; i < MAX_CATS; i++){ pull[i] = 0; pullTo[i] = 0; }
+    els.datasetLabel.textContent = "Data: " + DATASETS[0].title + ".";
+    els.zoomSlider.value = String(BASE_ZOOM);
+    els.zoomDisplay.textContent = "×" + BASE_ZOOM.toFixed(2);
+    els.scoreDisplay.textContent = "0 dari 0";
+    els.progressFill.style.width = "0%";
+    closeGuess();
+    setEditing(false);
+    buildEditInputs();
+    setView("bar");
+    var zeros = [];
+    for(i = 0; i < state.counts.length; i++) zeros.push(0);
+    shown = zeros.slice();
+    tweenFrom = zeros.slice();
+    tweenTo = state.counts.slice();
+    tween = 0;
+    refresh();
+  }
+
+  document.addEventListener("keydown", function(ev){
+    var tag = ev.target && ev.target.tagName;
+    if(tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+    if(ev.metaKey || ev.ctrlKey || ev.altKey) return;
+    var k = ev.key.toLowerCase();
+    if(k === "r"){ resetState(); }
+    else if(k === "b"){ setView("bar"); }
+    else if(k === "p"){ setView("pie"); }
+    else if(k === "d"){ setView("both"); }
+    else if(k === "g"){ startGuess(); }
+    else return;
+    ev.preventDefault();
+  });
+
+  /* ---------------- mulai ---------------- */
+
+  function init(){
+    resize();
+    if(window.ResizeObserver){
+      var ro = new ResizeObserver(resize);
+      ro.observe(canvas.parentNode);
+    }
+    window.addEventListener("resize", resize);
+    resetState();
+  }
+
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>

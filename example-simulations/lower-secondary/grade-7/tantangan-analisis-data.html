@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="education_levels" content="Lower Secondary">
+  <meta name="grade" content="7">
+  <title>Tantangan Analisis Data · Matematika SMP Kelas VII</title>
+  <meta name="description" content="Tantangan berjenjang untuk membaca diagram, menghitung ukuran pemusatan, dan menyimpulkan dari data.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Tantangan Analisis Data">
+  <meta property="og:description" content="Tantangan berjenjang 12 level: klik langsung bagian diagram yang menjawab pertanyaan, geser penanda ke nilai rerata (mean), lalu bandingkan rerata dan jangkauan dua kelas untuk mengambil keputusan.">
+  <meta property="og:locale" content="id">
+  <style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font);font-size:var(--text-base);line-height:1.5;background:var(--bg);color:var(--text)}
+:root{
+  /* Colour */
+  --bg:#0a0a1a;
+  --surface:#14141e;
+  --panel:rgba(20,20,30,0.9);
+  --border:rgba(255,255,255,0.1);
+  --border-strong:#333;
+  --text:#ffffff;
+  --text-muted:#aaa;
+  --text-dim:#888;
+  --accent:#6366f1;
+  --accent-hover:#5558e8;
+  --accent-soft:rgba(139,92,246,0.95);
+  --success:#fbbf24;
+  --warning:#fb923c;
+  --error:#ff6b6b;
+  /* Spacing scale */
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;
+  /* Radius scale */
+  --radius-sm:4px;--radius-md:8px;--radius-lg:12px;--radius-pill:999px;
+  /* Type scale (system fonts only) */
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  --font-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --text-base:16px;--text-sm:14px;--text-xs:13px;--text-caption:11px;--text-heading:24px;
+  /* Focus, motion, stacking */
+  --focus-ring:0 0 0 3px rgba(99,102,241,0.5);
+  --motion:0.2s;--motion-slow:0.3s;
+  --z-overlay:100;--z-modal:1000;
+}
+[data-theme="light"]{
+  --bg:#f7f7fb;--surface:#ffffff;--panel:rgba(255,255,255,0.92);
+  --border:rgba(0,0,0,0.12);--border-strong:#d4d4d8;
+  --text:#16161d;--text-muted:#52525b;--text-dim:#71717a;
+  --accent:#4f46e5;--accent-hover:#4338ca;--accent-soft:rgba(79,70,229,0.95);
+  --success:#b45309;--warning:#c2410c;--error:#dc2626;
+}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-4)}
+.panel-heading{font-size:var(--text-sm);color:var(--text-muted);margin-bottom:var(--space-2)}
+.btn{font-family:inherit;font-size:var(--text-sm);min-height:44px;min-width:44px;padding:var(--space-3) var(--space-5);border:1px solid var(--border-strong);border-radius:var(--radius-md);background:var(--border-strong);color:var(--text);cursor:pointer;transition:background var(--motion);touch-action:manipulation}
+.btn:hover{background:var(--text-muted)}
+.btn:active{transform:scale(0.95)}
+.btn:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+.btn:disabled{opacity:0.45;cursor:not-allowed}
+.btn-primary{background:var(--accent);border-color:var(--accent)}
+.btn-primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+.btn-ghost{background:transparent;border-color:var(--border)}
+.btn-ghost:hover{background:var(--surface)}
+.control-label{font-size:var(--text-caption);text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted)}
+input[type="range"]{width:100%;height:6px;-webkit-appearance:none;appearance:none;background:var(--border-strong);border-radius:var(--radius-pill);cursor:pointer}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;background:var(--accent);border-radius:50%;cursor:pointer}
+
+/* Touch target: keep the 6px visual track, but give the control a 44px hit area. */
+input[type="range"] { height: 44px; background: transparent; }
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-moz-range-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-webkit-slider-thumb { margin-top: -7px; }
+input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; background: var(--accent); border-radius: 50%; cursor: pointer; }
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
+#feedback-panel{background:var(--surface);border-left:3px solid var(--accent);border-radius:var(--radius-md);padding:var(--space-3) var(--space-4)}
+#feedback-panel.success{border-left-color:var(--success)}
+#feedback-panel.error{border-left-color:var(--error)}
+.progress-track{height:8px;background:var(--border-strong);border-radius:var(--radius-pill);overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);transition:width var(--motion-slow)}
+
+/* ---- layout & komponen tambahan (pakai token) ---- */
+[hidden]{display:none !important}
+.wrap{max-width:1100px;margin:0 auto;padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-4)}
+h1{font-size:var(--text-heading);line-height:1.2;letter-spacing:0.2px}
+.sub{color:var(--text-muted);font-size:var(--text-sm);margin-top:var(--space-1)}
+.stage{position:relative;width:100%;min-height:320px;aspect-ratio:16/9;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+canvas{display:block;width:100%;height:100%;touch-action:none}
+.cols{display:flex;flex-direction:column;gap:var(--space-4)}
+@media(min-width:768px){.cols{display:grid;grid-template-columns:1fr 320px;gap:var(--space-4);align-items:start}}
+.hud{display:flex;flex-wrap:wrap;gap:var(--space-3);justify-content:space-between;margin-bottom:var(--space-3)}
+.stat{display:flex;flex-direction:column;gap:var(--space-1);min-width:70px}
+.stat-value{font-family:var(--font-mono);font-size:var(--text-heading);line-height:1.1}
+.row{display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}
+.hint{font-size:var(--text-xs);color:var(--text-dim);margin-top:var(--space-3)}
+.controls{display:flex;flex-direction:column;gap:var(--space-3)}
+.objective{font-size:var(--text-sm);color:var(--text);background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-3)}
+.field{display:flex;flex-direction:column;gap:var(--space-2)}
+input[type="number"]{font-family:var(--font-mono);font-size:var(--text-base);min-height:44px;padding:var(--space-2) var(--space-3);background:var(--panel);color:var(--text);border:1px solid var(--border-strong);border-radius:var(--radius-md)}
+input[type="number"]:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+input[type="range"]:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+.chip{font-family:inherit;font-size:var(--text-sm);min-height:44px;padding:var(--space-2) var(--space-3);border:1px solid var(--border-strong);border-radius:var(--radius-pill);background:transparent;color:var(--text-muted);cursor:pointer;transition:background var(--motion);touch-action:manipulation}
+.chip:hover{background:var(--panel);color:var(--text)}
+.chip:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--text)}
+.lives{display:flex;gap:var(--space-2);align-items:center;height:var(--text-heading)}
+.life{width:16px;height:16px;border-radius:var(--radius-pill);background:var(--accent);display:inline-block;transition:background var(--motion)}
+.life.off{background:var(--border-strong)}
+#feedback-panel p{font-size:var(--text-sm)}
+.toast{position:absolute;left:var(--space-3);top:var(--space-3);max-width:min(320px,80%);background:var(--panel);border:1px solid var(--accent);border-radius:var(--radius-md);padding:var(--space-2) var(--space-3);font-size:var(--text-sm);opacity:0;transform:translateY(-8px);transition:opacity var(--motion-slow),transform var(--motion-slow);pointer-events:none;z-index:var(--z-overlay)}
+.toast.show{opacity:1;transform:translateY(0)}
+.overlay{position:fixed;left:0;top:0;right:0;bottom:0;background:var(--panel);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;padding:var(--space-4);z-index:var(--z-modal)}
+.card{width:100%;max-width:540px;max-height:100%;overflow:auto;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-5);display:flex;flex-direction:column;gap:var(--space-3)}
+.card h2{font-size:var(--text-heading)}
+.card p,.card li{font-size:var(--text-sm);color:var(--text-muted)}
+.card ol,.card ul{padding-left:var(--space-5);display:flex;flex-direction:column;gap:var(--space-2)}
+.card .key{display:flex;flex-wrap:wrap;gap:var(--space-2);margin-top:var(--space-1)}
+.mono{font-family:var(--font-mono);color:var(--text)}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <h1>Tantangan Analisis Data</h1>
+    <p class="sub">12 level berjenjang: baca diagram, hitung ukuran pemusatan, lalu putuskan.</p>
+  </header>
+
+  <section class="stage">
+    <canvas id="diagram-canvas" role="img" aria-label="Diagram data belum tampil"></canvas>
+    <div id="toast-panel" class="toast" role="status" aria-live="polite"></div>
+  </section>
+
+  <div class="cols">
+    <section class="panel">
+      <div class="hud">
+        <div class="stat">
+          <span class="control-label">Skor</span>
+          <span id="score-display" class="stat-value">0</span>
+        </div>
+        <div class="stat">
+          <span class="control-label">Level</span>
+          <span id="level-display" class="stat-value">1 / 12</span>
+        </div>
+        <div class="stat">
+          <span class="control-label">Waktu</span>
+          <span id="timer-display" class="stat-value">60 s</span>
+        </div>
+        <div class="stat">
+          <span class="control-label">Nyawa</span>
+          <span id="lives-display" class="lives"></span>
+        </div>
+      </div>
+      <div class="progress-track"><div id="progress-fill" class="progress-fill" style="width:0%"></div></div>
+      <div class="row" style="margin-top:var(--space-3)">
+        <button id="diagram-btn" class="btn btn-ghost" type="button">Ganti diagram</button>
+        <button id="pause-btn" class="btn btn-ghost" type="button">Jeda</button>
+        <button id="reset-btn" class="btn btn-ghost" type="button">Ulang</button>
+      </div>
+      <p id="diagram-name-display" class="hint">Diagram batang</p>
+    </section>
+
+    <section class="panel controls">
+      <h2 class="panel-heading">Tujuan level ini</h2>
+      <p id="objective-display" class="objective">Tekan tombol Mulai untuk bermain.</p>
+
+      <div id="guess-field" class="field" hidden>
+        <span class="control-label">Geser penanda rerata</span>
+        <input id="guess-slider" type="range" min="0" max="100" step="1" value="0" aria-label="Nilai perkiraan rerata">
+        <span class="control-label">Atau ketik nilainya</span>
+        <input id="answer-input" type="number" min="0" max="100" step="1" value="0" inputmode="numeric" aria-label="Jawaban rerata">
+        <button id="kirim-btn" class="btn btn-primary" type="button">Kirim jawaban</button>
+      </div>
+
+      <div id="decision-field" class="field" hidden>
+        <span class="control-label">Pilih kesimpulan</span>
+        <input id="keputusan-slider" type="range" min="0" max="2" step="1" value="0" aria-label="Pilihan kesimpulan">
+        <div class="row" id="decision-options">
+          <button type="button" class="chip" data-choice="0" aria-pressed="true">Kelas 7A lebih baik</button>
+          <button type="button" class="chip" data-choice="1" aria-pressed="false">Kelas 7B lebih baik</button>
+          <button type="button" class="chip" data-choice="2" aria-pressed="false">Sama saja</button>
+        </div>
+        <button id="keputusan-btn" class="btn btn-primary" type="button">Kunci pilihan</button>
+      </div>
+    </section>
+  </div>
+
+  <section id="feedback-panel"><p id="feedback-text">Tekan tombol Mulai untuk masuk ke level 1.</p></section>
+</main>
+
+<div id="start-screen" class="overlay">
+  <div class="card">
+    <h2>Tantangan Analisis Data</h2>
+    <p>Kamu punya 3 nyawa dan 12 level. Setiap level punya satu tugas data.</p>
+    <h3>Tiga fase</h3>
+    <ol>
+      <li>Fase 1 (level 1-4) baca diagram. Klik langsung batang, irisan, titik, atau tumpukan yang menjawab pertanyaan.</li>
+      <li>Fase 2 (level 5-8) hitung rerata (mean). Geser penanda di kanvas atau ketik angka, lalu kirim.</li>
+      <li>Fase 3 (level 9-12) bandingkan. Lihat rerata dan jangkauan dua kelas, lalu kunci kesimpulanmu.</li>
+    </ol>
+    <h3>Kontrol</h3>
+    <ul>
+      <li>Tombol Ganti diagram untuk membaca data dalam 4 bentuk. Ganti diagram tidak mengulang level.</li>
+      <li>Klik langsung pada diagram untuk menjawab di fase 1 dan menggeser penanda di fase 2.</li>
+      <li>Tombol R mengulang permainan, tombol Spasi atau P menjeda.</li>
+    </ul>
+    <div class="key">
+      <span class="chip" aria-hidden="true">R: Ulang</span>
+      <span class="chip" aria-hidden="true">Spasi: Jeda</span>
+    </div>
+    <button id="start-btn" class="btn btn-primary" type="button" onclick="startGame()">Mulai bermain</button>
+  </div>
+</div>
+
+<div id="gameover-screen" class="overlay" hidden>
+  <div class="card">
+    <h2 id="end-title">Permainan selesai</h2>
+    <p id="end-text">Nyawamu habis. Coba baca diagram dengan lebih teliti.</p>
+    <p class="mono">Skor akhir: <span id="end-score">0</span> dari level <span id="end-level">1</span>.</p>
+    <button id="mainlagi-btn" class="btn btn-primary" type="button" onclick="startGame()">Main lagi</button>
+  </div>
+</div>
+
+<script type="application/json" id="widget-config">
+{"type":"game","gameType":"action","description":"Tantangan berjenjang untuk membaca diagram, menghitung ukuran pemusatan, dan menyimpulkan dari data.","gameConfig":{"controls":["level_slider","answer_input"],"targets":[{"id":"t1","type":"diagram","x":0,"width":1}],"initialConditions":{"level":1,"score":0,"lives":3},"successCondition":"completeLevel","levels":12},"scoring":{"completionPoints":100,"accuracyBonus":"tanpa Lives bonus 50","timeBonus":true},"achievements":[]}
+</script>
+
+<script>
+(function(){
+'use strict';
+
+/* ====================== konstanta ====================== */
+var FONT='system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif';
+var TAU=Math.PI*2;
+var TOTAL=12;
+var TYPES=[
+  {key:'batang',name:'Diagram batang',hint:'Lihat batang yang lebih tinggi. Makin tinggi batang, makin banyak datanya.'},
+  {key:'lingkaran',name:'Diagram lingkaran',hint:'Lihat lingkaran yang lebih besar. Makin besar irisan, makin banyak datanya.'},
+  {key:'garis',name:'Diagram garis',hint:'Lihat titik yang paling tinggi pada garis. Titik tinggi berarti nilai besar.'},
+  {key:'gambar',name:'Gambar/foto (SVG)',hint:'Lihat tumpukan atau kotak yang paling tinggi pada gambar.'}
+];
+var BADGES=[
+  {id:'pembaca',name:'Pembaca Rajin',desc:'Menyelesaikan fase 1 tanpa kehilangan nyawa.'},
+  {id:'tepat',name:'Tepat Sekali',desc:'Benar pada percobaan pertama di level 5 atau lebih tinggi.'},
+  {id:'adil',name:'Penilai Adil',desc:'Menyelesaikan fase 3, level 9 sampai 12.'},
+  {id:'teliti',name:'Pembaca Teliti',desc:'Membaca keempat bentuk diagram.'},
+  {id:'utuh',name:'Nyawa Utuh',desc:'Menyelesaikan semua level dengan 3 nyawa.'}
+];
+
+/* ====================== DOM ====================== */
+var canvas=document.getElementById('diagram-canvas');
+var ctx=canvas.getContext('2d');
+var scoreEl=document.getElementById('score-display');
+var levelEl=document.getElementById('level-display');
+var timerEl=document.getElementById('timer-display');
+var livesEl=document.getElementById('lives-display');
+var progressEl=document.getElementById('progress-fill');
+var feedbackEl=document.getElementById('feedback-panel');
+var feedbackText=document.getElementById('feedback-text');
+var objectiveEl=document.getElementById('objective-display');
+var diagramNameEl=document.getElementById('diagram-name-display');
+var diagramBtn=document.getElementById('diagram-btn');
+var pauseBtn=document.getElementById('pause-btn');
+var resetBtn=document.getElementById('reset-btn');
+var guessField=document.getElementById('guess-field');
+var guessEl=document.getElementById('guess-slider');
+var answerEl=document.getElementById('answer-input');
+var kirimBtn=document.getElementById('kirim-btn');
+var decisionField=document.getElementById('decision-field');
+var decisionEl=document.getElementById('keputusan-slider');
+var decisionBtn=document.getElementById('keputusan-btn');
+var chips=[].slice.call(document.querySelectorAll('#decision-options .chip'));
+var startScreen=document.getElementById('start-screen');
+var endScreen=document.getElementById('gameover-screen');
+var endTitle=document.getElementById('end-title');
+var endText=document.getElementById('end-text');
+var endScore=document.getElementById('end-score');
+var endLevel=document.getElementById('end-level');
+var toastEl=document.getElementById('toast-panel');
+
+/* ====================== state ====================== */
+var S={
+  started:false,paused:false,over:false,
+  level:1,score:0,lives:3,time:60,timeMax:60,
+  data:null,diagram:0,guess:0,decision:0,locked:false,
+  tries:0,cleanPhase1:true,
+  anim:[],sweep:0,winT:0,winner:-1,winnerT:0,
+  flash:{idx:-1,t:0},pulse:{idx:-1,t:0},parts:[],
+  hits:[],hitMode:'none',pie:null,readTypes:{},badges:{},
+  raf:0,last:0,timeouts:[],toastTimer:0
+};
+var dpr=1,CW=0,CH=0;
+
+/* ====================== util ====================== */
+function T(){var c=getComputedStyle(document.documentElement);return{
+  surface:c.getPropertyValue('--surface').trim(),
+  border:c.getPropertyValue('--border').trim(),
+  strong:c.getPropertyValue('--border-strong').trim(),
+  text:c.getPropertyValue('--text').trim(),
+  muted:c.getPropertyValue('--text-muted').trim(),
+  dim:c.getPropertyValue('--text-dim').trim(),
+  accent:c.getPropertyValue('--accent').trim(),
+  success:c.getPropertyValue('--success').trim(),
+  warning:c.getPropertyValue('--warning').trim(),
+  error:c.getPropertyValue('--error').trim()};}
+function clamp(v,a,b){return v<a?a:(v>b?b:v);}
+function fmt(v){return Math.abs(v-Math.round(v))<0.05?String(Math.round(v)):v.toFixed(1).replace('.',',');}
+function randInt(a,b){return a+Math.floor(Math.random()*(b-a+1));}
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
+function sum(a){var s=0;for(var i=0;i<a.length;i++)s+=a[i];return s;}
+function mean(a){return sum(a)/a.length;}
+function range(a){return Math.max.apply(null,a)-Math.min.apply(null,a);}
+function later(fn,ms){var id=setTimeout(function(){S.timeouts=S.timeouts.filter(function(x){return x!==id;});fn();},ms);S.timeouts.push(id);return id;}
+function clearTimeouts(){S.timeouts.forEach(clearTimeout);S.timeouts=[];}
+
+/* ====================== generate data ====================== */
+function genGroup(n,lo,hi,targetSum){
+  var vals=[],s=0,i,v;
+  for(i=0;i<n-1;i++){v=randInt(lo,hi);vals.push(v);s+=v;}
+  v=targetSum-s;
+  if(v<lo||v>hi)return null;
+  vals.push(v);
+  return vals;
+}
+function makeRead(){
+  var labels=(S.level===4)?['Buku','Pena','Penghapus']:['7A','7B','7C'];
+  var lo=S.level===4?3:5,hi=S.level===4?12:20;
+  var values=[],i;
+  for(i=0;i<3;i++)values.push(randInt(lo,hi));
+  if(range(values)===0)values[2]=values[0]+3;
+  var target,question;
+  if(S.level===2){
+    target=values.indexOf(Math.max.apply(null,values));
+    question='Bacalah diagram. Bagian mana yang paling banyak? Klik bagian itu langsung.';
+  }else if(S.level===3){
+    target=values.indexOf(Math.min.apply(null,values));
+    question='Bacalah diagram. Bagian mana yang paling sedikit? Klik bagian itu langsung.';
+  }else{
+    target=randInt(0,2);
+    question='Bacalah diagram. Berapa jumlah siswa di kelas '+labels[target]+'? Klik bagian itu langsung.';
+  }
+  return {mode:'read',labels:labels,values:values,target:target,question:question,
+    answer:values[target],animN:3};
+}
+function makeMean(){
+  var n=5+(S.level-5);
+  var values=[],i;
+  for(i=0;i<n;i++)values.push(randInt(55,95));
+  var m=mean(values);
+  if(m<35||m>95){values[n-1]=clamp(values[n-1]+10,55,95);m=mean(values);}
+  return {mode:'mean',values:values,correct:m,animN:n,
+    question:'Hitung rerata (mean) dari '+n+' nilai berikut. Geser penanda di kanvas, lalu kirim jawaban.'};
+}
+function makeCompare(){
+  var n=5+((S.level-9)%3);
+  var forceDiff=(S.level<11);
+  var A=[],B=[],i,tries=0;
+  while(tries<220){
+    tries++;
+    for(i=0;i<n;i++)A[i]=randInt(60,95);
+    if(forceDiff){
+      var targetSumB=sum(A)+n*randInt(3,8);
+      B=genGroup(n,55,98,targetSumB);
+      if(!B)continue;
+      if(Math.abs(mean(A)-mean(B))<=1)continue;
+    }else{
+      var ma=mean(A);
+      B=genGroup(n,55,98,Math.round((ma+randInt(-8,8)/10)*n));
+      if(!B)continue;
+      if(Math.abs(mean(A)-mean(B))>1)continue;
+      if(range(A)===range(B))continue;
+    }
+    break;
+  }
+  var ma=mean(A),mb=mean(B),ra=range(A),rb=range(B),correct;
+  if(Math.abs(ma-mb)>1){correct=(ma>mb)?0:1;}
+  else if(ra!==rb){correct=(ra<rb)?0:1;}
+  else {correct=2;}
+  return {mode:'compare',n:n,A:A,B:B,ma:ma,mb:mb,ra:ra,rb:rb,correct:correct,animN:n*2,
+    question:'Bandingkan data Kelas 7A dan Kelas 7B. Baca rerata dan jangkauan keduanya, lalu kunci kesimpulanmu.'};
+}
+function compareReason(d){
+  var na='Kelas 7A',nb='Kelas 7B';
+  if(Math.abs(d.ma-d.mb)>1){
+    var w=(d.ma>d.mb)?na:nb;
+    return na+' rerata '+fmt(d.ma)+' dan '+nb+' rerata '+fmt(d.mb)+'. Rerata lebih tinggi berarti lebih baik, jadi '+w+' lebih baik.';
+  }
+  var base=na+' rerata '+fmt(d.ma)+' dan '+nb+' rerata '+fmt(d.mb)+'. Selisih rerata kurang dari 1, jadi bandingkan jangkauan: '+na+' '+d.ra+', '+nb+' '+d.rb+'. ';
+  if(d.correct===2)return base+'Jangkauan sama besar, jadi keduanya sama saja.';
+  return base+'Jangkauan lebih kecil berarti lebih konsisten, jadi '+((d.correct===0)?na:nb)+' lebih baik.';
+}
+
+/* ====================== level flow ====================== */
+function phaseOf(level){return level<=4?'read':(level<=8?'mean':'compare');}
+function timeFor(level){return level<=4?60:(level<=8?75:90);}
+
+function loadLevel(level){
+  S.level=level;
+  var phase=phaseOf(level);
+  S.data=phase==='read'?makeRead():(phase==='mean'?makeMean():makeCompare());
+  S.anim=[];S.sweep=0;S.winT=0;S.winner=-1;S.winnerT=0;
+  S.flash.idx=-1;S.pulse.idx=-1;S.parts=[];
+  S.hits=[];S.hitMode='none';S.pie=null;
+  S.locked=false;S.tries=0;
+  S.timeMax=timeFor(level);S.time=S.timeMax;
+  if(phase==='read'){
+    S.diagram=S.level-1;
+  }
+  if(phase==='mean'){
+    var wrong=clamp(Math.round(S.data.correct+(Math.random()<0.5?-1:1)*randInt(9,22)),0,100);
+    if(Math.abs(wrong-S.data.correct)<=2)wrong=clamp(Math.round(S.data.correct)+12,0,100);
+    S.guess=wrong;
+  }
+  S.decision=0;
+  syncControls();
+  updateDiagramButton();
+  objectiveEl.textContent=S.data.question;
+  setFeedback(phase==='read'?'Cari bagian diagram yang menjawab pertanyaan di atas, lalu klik langsung pada diagram.':(phase==='mean'?'Geser penanda ke perkiraan rerata. Penanda bergerak mengikuti slider.':'Geser pilihan atau ketuk salah satu pilihan, lalu tekan Kunci pilihan.'),'');
+  updateHud();
+  updateAria();
+  draw();
+}
+function syncControls(){
+  var phase=phaseOf(S.level);
+  guessField.hidden=(phase!=='mean');
+  decisionField.hidden=(phase!=='compare');
+  guessEl.value=String(S.guess);
+  answerEl.value=String(S.guess);
+  decisionEl.value=String(S.decision);
+  chips.forEach(function(c){
+    c.setAttribute('aria-pressed',Number(c.dataset.choice)===S.decision?'true':'false');
+  });
+  kirimBtn.disabled=false;
+  decisionBtn.disabled=false;
+}
+function nextLevel(){
+  if(S.level>=TOTAL){finish(true);return;}
+  loadLevel(S.level+1);
+}
+function finish(win){
+  S.over=true;
+  endTitle.textContent=win?'Semua level selesai!':'Nyawamu habis';
+  endText.textContent=win?'Keren! Kamu membaca diagram, menghitung rerata, dan mengambil keputusan dengan benar.':'Jangan menyerah. Baca diagram pelan-pelan, lalu coba lagi.';
+  endScore.textContent=String(S.score);
+  endLevel.textContent=String(Math.min(S.level,TOTAL));
+  endScreen.hidden=false;
+  if(win&&S.level>=9)unlock('adil');
+  if(win&&S.lives===3)unlock('utuh');
+}
+function gameOver(){
+  finish(false);
+}
+function loseLife(msg){
+  S.lives-=1;
+  if(phaseOf(S.level)==='read')S.cleanPhase1=false;
+  updateHud();
+  setFeedback(msg+' Sisa nyawa: '+S.lives+'.','error');
+  if(S.lives<=0){gameOver();}
+}
+function award(){
+  var base=100;
+  var timeBonus=Math.round(S.time/2);
+  var bonus=S.tries<=1?50:0;
+  var total=base+timeBonus+bonus;
+  S.score+=total;
+  return {total:total,base:base,time:timeBonus,bonus:bonus};
+}
+function correct(msg,delay){
+  var p=award();
+  updateHud();
+  var txt=msg+' Poin +'+p.total+': benar '+p.base+', bonus waktu +'+p.time;
+  if(p.bonus)txt+=', bonus tanpa salah +'+p.bonus;
+  txt+='.';
+  setFeedback(txt,'success');
+  if(S.tries===1&&S.level>=5)unlock('tepat');
+  if(S.level===4&&S.cleanPhase1)unlock('pembaca');
+  S.locked=true;
+  later(function(){if(!S.over)nextLevel();},delay||1000);
+}
+
+/* ====================== aksi pemain ====================== */
+function answerRead(idx){
+  if(S.locked||S.over||!S.data||S.data.mode!=='read')return;
+  var d=S.data;
+  S.tries++;
+  if(idx===d.target){
+    S.pulse={idx:idx,t:0};
+    var p=S.hitPoint(idx);
+    burst(p,T().success);
+    flyToScore(p);
+    correct(d.labels[idx]+' = '+fmt(d.answer)+'. Klikmu tepat pada bagian itu.',1000);
+  }else{
+    S.flash={idx:idx,t:0};
+    loseLife('Belum tepat. '+TYPES[S.diagram].hint);
+    S.locked=true;
+    later(function(){S.locked=false;},1200);
+  }
+}
+function submitGuess(){
+  if(S.locked||S.over||!S.data||S.data.mode!=='mean')return;
+  var d=S.data;
+  S.tries++;
+  var diff=Math.abs(S.guess-d.correct);
+  if(diff<=2){
+    burstAtAxis(S.guess,T().success);
+    correct('Tepat! Rerata datanya '+fmt(d.correct)+'. Selisih penandamu '+fmt(diff)+'.',1000);
+  }else{
+    loseLife('Belum tepat. '+d.values.join(' + ')+' = '+sum(d.values)+'. rerata = jumlah / banyak data = '+sum(d.values)+' / '+d.values.length+' = '+fmt(d.correct)+'.');
+    S.locked=true;
+    later(function(){if(!S.over)loadLevel(S.level);},2600);
+  }
+}
+function submitDecision(){
+  if(S.locked||S.over||!S.data||S.data.mode!=='compare')return;
+  var d=S.data;
+  S.tries++;
+  if(S.decision===d.correct){
+    S.winner=(d.correct===2)?-2:d.correct;
+    correct('Tepat! '+compareReason(d),1700);
+  }else{
+    loseLife('Belum tepat. '+compareReason(d));
+    S.locked=true;
+    later(function(){if(!S.over)loadLevel(S.level);},3000);
+  }
+}
+
+/* ====================== HUD ====================== */
+function updateHud(){
+  scoreEl.textContent=String(S.score);
+  levelEl.textContent=S.level+' / '+TOTAL;
+  progressEl.style.width=Math.round((S.level-1)/TOTAL*100)+'%';
+  renderLives();
+  updateTimer();
+}
+function renderLives(){
+  var html='';
+  for(var i=0;i<3;i++)html+='<span class="life'+(i<S.lives?'':' off')+'"></span>';
+  livesEl.innerHTML=html;
+  livesEl.setAttribute('aria-label',S.lives+' nyawa tersisa');
+}
+function updateTimer(){
+  timerEl.textContent=Math.ceil(S.time)+' s';
+  timerEl.style.color=S.time<=10?T().error:T().text;
+}
+function setFeedback(text,cls){
+  feedbackText.textContent=text;
+  feedbackEl.classList.remove('success','error');
+  if(cls)feedbackEl.classList.add(cls);
+}
+function updateDiagramButton(){
+  var next=(S.diagram+1)%TYPES.length;
+  diagramBtn.textContent='Ganti: '+TYPES[next].name;
+  diagramNameEl.textContent='Tampak sekarang: '+TYPES[S.diagram].name+'. Mengganti bentuk diagram tidak mengulang level.';
+  S.readTypes[TYPES[S.diagram].key]=true;
+  if(Object.keys(S.readTypes).length>=TYPES.length)unlock('teliti');
+}
+function updateAria(){
+  if(!S.data){canvas.setAttribute('aria-label','Diagram data belum tampil');return;}
+  var d=S.data,extra='';
+  if(d.mode==='read')extra=' Nilai: '+d.labels.map(function(l,i){return l+' '+d.values[i];}).join(', ')+'.';
+  else if(d.mode==='mean')extra=' Nilai: '+d.values.join(', ')+'.';
+  else extra=' Kelas 7A rerata '+fmt(d.ma)+' jangkauan '+d.ra+'. Kelas 7B rerata '+fmt(d.mb)+' jangkauan '+d.rb+'.';
+  canvas.setAttribute('aria-label',TYPES[S.diagram].name+'.'+extra+' '+d.question);
+}
+
+/* ====================== lencana ====================== */
+function unlock(id){
+  if(S.badges[id])return;
+  S.badges[id]=true;
+  var b=null,i;
+  for(i=0;i<BADGES.length;i++)if(BADGES[i].id===id)b=BADGES[i];
+  if(!b)return;
+  toastEl.textContent='Lencana terbuka: '+b.name+' — '+b.desc;
+  toastEl.classList.add('show');
+  clearTimeout(S.toastTimer);
+  S.toastTimer=setTimeout(hideToast,3500);
+}
+function hideToast(){
+  toastEl.classList.remove('show');
+  toastEl.textContent='';
+}
+
+/* ====================== partikel ====================== */
+function burst(p,color){
+  if(!p)return;
+  for(var i=0;i<14;i++){
+    var a=Math.random()*TAU,sp=60+Math.random()*180;
+    S.parts.push({x:p.x,y:p.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-40,life:0.7+Math.random()*0.4,max:1.1,size:2+Math.random()*3,color:color,mode:'burst'});
+  }
+}
+function burstAtAxis(v,color){
+  var y=axisY(),p=axisX(v);
+  burst({x:p,y:y-30},color);
+}
+function flyToScore(p){
+  if(!p)return;
+  var sr=scoreEl.getBoundingClientRect(),cr=canvas.getBoundingClientRect();
+  var tx=sr.left+sr.width/2-cr.left,ty=sr.top+sr.height/2-cr.top;
+  for(var i=0;i<7;i++){
+    S.parts.push({x:p.x,y:p.y,vx:(Math.random()-0.5)*90,vy:-120-Math.random()*90,life:0.8,max:0.8,size:3,color:T().accent,mode:'fly',tx:tx,ty:ty});
+  }
+}
+function updateParts(dt){
+  var keep=[];
+  for(var i=0;i<S.parts.length;i++){
+    var p=S.parts[i];
+    p.life-=dt;
+    if(p.life<=0)continue;
+    if(p.mode==='fly'){
+      var dx=p.tx-p.x,dy=p.ty-p.y,dist=Math.max(1,Math.hypot(dx,dy));
+      var sp=520*dt;
+      if(dist<=sp){p.x=p.tx;p.y=p.ty;p.life=Math.min(p.life,0.12);}
+      else{p.x+=dx/dist*sp;p.y+=dy/dist*sp;}
+    }else{
+      p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=420*dt;
+    }
+    keep.push(p);
+  }
+  S.parts=keep;
+}
+function drawParts(){
+  for(var i=0;i<S.parts.length;i++){
+    var p=S.parts[i],a=clamp(p.life/p.max,0,1);
+    ctx.globalAlpha=a;
+    ctx.fillStyle=p.color;
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.size*(0.4+a),0,TAU);
+    ctx.fill();
+  }
+  ctx.globalAlpha=1;
+}
+
+/* ====================== geometri kanvas ====================== */
+function head(){return CH-104;}
+function axisY(){return head()+26;}
+function axisX(v){var x0=58,x1=CW-24;return x0+(clamp(v,0,100)/100)*(x1-x0);}
+
+/* ====================== gambar ====================== */
+function box(x,y,w,h,r,fill,stroke){
+  if(h<=0||w<=0)return;
+  r=Math.max(0,Math.min(r,w/2,h/2));
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+  if(fill){ctx.fillStyle=fill;ctx.fill();}
+  if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1.5;ctx.stroke();}
+}
+function label(txt,x,y,size,color,align,weight){
+  ctx.font=(weight||'500')+' '+(size||13)+'px '+FONT;
+  ctx.fillStyle=color;ctx.textAlign=align||'center';ctx.textBaseline='middle';
+  ctx.fillText(txt,x,y);
+}
+function truncate(txt,maxW,size){
+  ctx.font='500 '+(size||12)+'px '+FONT;
+  if(ctx.measureText(txt).width<=maxW)return txt;
+  var s=txt;
+  while(s.length>1&&ctx.measureText(s+'...').width>maxW)s=s.slice(0,-1);
+  return s+'...';
+}
+
+function drawCategorical(values,labels,R,o){
+  var t=T(),n=values.length,i;
+  var maxV=o.max||Math.max.apply(null,values.concat([1]))*1.18;
+  var step=(R.x1-R.x0)/n;
+  var bw=Math.min(78,step*0.62);
+  ctx.save();
+  ctx.strokeStyle=t.border;ctx.lineWidth=1;
+  for(var g=0;g<=4;g++){
+    var y=R.y0-(R.y0-R.y1)*(g/4);
+    ctx.beginPath();ctx.moveTo(R.x0,y);ctx.lineTo(R.x1,y);ctx.stroke();
+    label(fmt(maxV*g/4),R.x0-8,y+4,11,t.dim,'right');
+  }
+  ctx.strokeStyle=t.strong;ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(R.x0,R.y0);ctx.lineTo(R.x1,R.y0);ctx.stroke();
+  for(i=0;i<n;i++){
+    var target=(values[i]/maxV)*(R.y0-R.y1);
+    var h=Math.max(2,(S.anim[o.base+i]===undefined?1:S.anim[o.base+i])*target);
+    var cx=R.x0+step*i+step/2,bx=cx-bw/2;
+    var col=o.color(i);
+    if(S.flash.idx===i)col=t.error;
+    if(S.pulse.idx===i)col=t.success;
+    box(bx,R.y0-h,bw,h,6,col);
+    if(o.showValue!==false)label(fmt(values[i]),cx,R.y0-h-12,13,t.text,'center','700');
+    if(labels&&o.labels!==false)label(truncate(labels[i],step-4,12),cx,R.y0+16,12,t.muted,'center');
+    if(S.pulse.idx===i){
+      var pr=1-(S.pulse.t/0.9);
+      ctx.globalAlpha=pr*0.9;
+      ctx.strokeStyle=t.success;ctx.lineWidth=3;
+      ctx.beginPath();ctx.arc(cx,R.y0-h/2,10+(1-pr)*42,0,TAU);ctx.stroke();
+      ctx.globalAlpha=1;
+    }
+  }
+  ctx.restore();
+  S.hits=[];
+  for(i=0;i<n;i++){
+    var cxx=R.x0+step*i+step/2;
+    S.hits.push({x:cxx-step/2,y:R.y1,w:step,h:R.y0-R.y1,idx:i,cx:cxx,cy:R.y0});
+  }
+  S.hitMode='rect';
+}
+
+function drawLineChart(values,labels,R,o){
+  var t=T(),n=values.length,i;
+  var maxV=o.max||Math.max.apply(null,values.concat([1]))*1.18;
+  var step=(R.x1-R.x0)/Math.max(1,n-1);
+  ctx.save();
+  ctx.strokeStyle=t.border;ctx.lineWidth=1;
+  for(var g=0;g<=4;g++){
+    var y=R.y0-(R.y0-R.y1)*(g/4);
+    ctx.beginPath();ctx.moveTo(R.x0,y);ctx.lineTo(R.x1,y);ctx.stroke();
+    label(fmt(maxV*g/4),R.x0-8,y+4,11,t.dim,'right');
+  }
+  ctx.strokeStyle=t.strong;ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(R.x0,R.y0);ctx.lineTo(R.x1,R.y0);ctx.stroke();
+  var pts=[];
+  for(i=0;i<n;i++){
+    var a=(S.anim[o.base+i]===undefined?1:S.anim[o.base+i]);
+    var y=R.y0-(values[i]/maxV)*(R.y0-R.y1)*a;
+    pts.push({x:R.x0+step*i,y:y,idx:i});
+  }
+  ctx.strokeStyle=o.color(0);ctx.lineWidth=3;
+  ctx.beginPath();
+  for(i=0;i<pts.length;i++){if(i===0)ctx.moveTo(pts[i].x,pts[i].y);else ctx.lineTo(pts[i].x,pts[i].y);}
+  ctx.stroke();
+  for(i=0;i<pts.length;i++){
+    var col=o.color(i);
+    if(S.flash.idx===i)col=t.error;
+    if(S.pulse.idx===i)col=t.success;
+    ctx.beginPath();ctx.arc(pts[i].x,pts[i].y,9,0,TAU);
+    ctx.fillStyle=col;ctx.fill();
+    ctx.lineWidth=2;ctx.strokeStyle=t.surface;ctx.stroke();
+    if(S.flash.idx===i){
+      ctx.beginPath();ctx.arc(pts[i].x,pts[i].y,18+(S.flash.t/0.9)*20,0,TAU);
+      ctx.strokeStyle=t.error;ctx.lineWidth=3;ctx.stroke();
+    }
+    if(S.pulse.idx===i){
+      ctx.beginPath();ctx.arc(pts[i].x,pts[i].y,10+(S.pulse.t/0.9)*40,0,TAU);
+      ctx.strokeStyle=t.success;ctx.lineWidth=3;ctx.stroke();
+    }
+    label(fmt(values[i]),pts[i].x,pts[i].y-20,12,t.text,'center','700');
+    if(labels)label(truncate(labels[i],step+16,11),pts[i].x,R.y0+16,11,t.muted,'center');
+  }
+  ctx.restore();
+  S.hits=pts.map(function(p){return {x:p.x,y:p.y,r:26,idx:p.idx,cx:p.x,cy:p.y};});
+  S.hitMode='point';
+}
+
+function drawPieChart(values,labels,R,o){
+  var t=T(),n=values.length,i;
+  var cx=(R.x0+R.x1)/2,cy=(R.y0+R.y1)/2;
+  var r=Math.max(24,Math.min((R.x1-R.x0)/2,(R.y0-R.y1)/2));
+  var tot=sum(values),a=-Math.PI/2,slices=[],acc=0;
+  var sweep=S.sweep*TAU;
+  ctx.save();
+  ctx.beginPath();
+  for(i=0;i<n;i++){
+    var a0=acc/tot*TAU,a1=(acc+values[i])/tot*TAU;acc+=values[i];
+    var d0=a+a0,dd=Math.min(a1,sweep);
+    if(dd<=0)continue;
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,d0,d0+dd);
+    ctx.closePath();
+    var col=o.color(i);
+    if(S.flash.idx===i)col=t.error;
+    if(S.pulse.idx===i)col=t.success;
+    ctx.fillStyle=col;ctx.fill();
+    ctx.lineWidth=2;ctx.strokeStyle=t.surface;ctx.stroke();
+    slices.push({a0:a+a0,a1:a+a1,idx:i});
+    var mid=a+(a0+a1)/2;
+    label(fmt(values[i]),cx+Math.cos(mid)*r*0.62,cy+Math.sin(mid)*r*0.62,12,t.text,'center','700');
+  }
+  ctx.restore();
+  if(labels){
+    for(i=0;i<n;i++){
+      var mid2=-Math.PI/2+(acc0(values,i)/tot)*TAU+((values[i]/tot)*TAU)/2;
+      label(truncate(labels[i],(R.x1-R.x0)/(n*1.4),11),R.x0+((R.x1-R.x0)/(n*1.4))*(i+0.5),R.y0+14,11,t.muted,'center');
+    }
+  }
+  S.pie={x:cx,y:cy,rOut:r*1.12,rIn:Math.max(6,r*0.35),slices:slices};
+  S.hits=[];S.hitMode='pie';
+}
+function acc0(values,i){var s=0,k;for(k=0;k<i;k++)s+=values[k];return s;}
+
+function drawPictogram(values,labels,R,o){
+  var t=T(),n=values.length,i;
+  var bandH=(R.y0-R.y1)/n;
+  var rows=Math.max(1,Math.round(bandH/16));
+  var maxV=Math.max.apply(null,values);
+  var cols=Math.max(1,Math.ceil(maxV/rows));
+  var cw=Math.min(14,(R.x1-R.x0)/cols-2);
+  var inner=bandH-18;
+  var chh=Math.max(2,Math.min(14,inner/rows-2));
+  ctx.save();
+  ctx.strokeStyle=t.border;ctx.lineWidth=2;
+  ctx.strokeRect(R.x0,R.y1,(R.x1-R.x0),(R.y0-R.y1));
+  for(i=0;i<n;i++){
+    var top=R.y0-i*bandH;
+    var base=top-4;
+    var count=Math.round((S.anim[o.base+i]===undefined?1:S.anim[o.base+i])*values[i]);
+    var col=o.color(i);
+    if(S.flash.idx===i)col=t.error;
+    if(S.pulse.idx===i)col=t.success;
+    var colX=R.x0+6,rowTop=base-rows*chh;
+    for(var k=0;k<count;k++){
+      var rIdx=Math.floor(k/cols),cIdx=k%cols;
+      var y=base-rIdx*(chh+1)-chh;
+      var x=colX+cIdx*(cw+1);
+      if(y<top-4)break;
+      box(x,y,cw,chh,1.5,col);
+    }
+    if(labels)label(truncate(labels[i],(R.x1-R.x0),12),R.x0+(R.x1-R.x0)/2,top-bandH+12,12,t.muted,'center');
+    S.hits=S.hits||[];
+    S.hits.push({x:R.x0,y:top-bandH,w:R.x1-R.x0,h:bandH,idx:i,cx:(R.x0+R.x1)/2,cy:top-bandH/2+R.y1});
+  }
+  ctx.restore();
+  if(S.hitMode!=='rect')S.hitMode='rect';
+}
+
+function drawChart(values,labels,R,o){
+  switch(TYPES[S.diagram].key){
+    case 'batang':drawCategorical(values,labels,R,o);break;
+    case 'lingkaran':drawPieChart(values,labels,R,o);break;
+    case 'garis':drawLineChart(values,labels,R,o);break;
+    default:drawPictogram(values,labels,R,o);
+  }
+}
+
+function colorFor(i){
+  var t=T(),c=[t.accent,t.success,t.warning];
+  return c[i%c.length];
+}
+
+function drawMeanChart(){
+  var t=T(),d=S.data;
+  var R={x0:58,y0:head()-14,x1:CW-24,y1:52};
+  label('Nilai '+d.values.length+' siswa kelas 7B',R.x0,26,14,t.muted,'left','700');
+  drawChart(d.values,null,R,{color:colorFor,base:0,labels:false});
+}
+function drawAxisStrip(){
+  var t=T();
+  var y=axisY(),x0=58,x1=CW-24;
+  ctx.save();
+  ctx.strokeStyle=t.strong;ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(x0,y);ctx.lineTo(x1,y);ctx.stroke();
+  for(var v=0;v<=100;v+=10){
+    var x=axisX(v);
+    ctx.strokeStyle=t.border;ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+7);ctx.stroke();
+    label(String(v),x,y+18,11,t.dim,'center');
+  }
+  label('Sumbu nilai 0 sampai 100',x0,y-16,12,t.muted,'left');
+  var gx=axisX(S.guess);
+  var col=(S.locked&&S.data&&Math.abs(S.guess-S.data.correct)<=2)?t.success:t.accent;
+  ctx.strokeStyle=col;ctx.lineWidth=4;
+  ctx.beginPath();ctx.moveTo(gx,y-6);ctx.lineTo(gx,y+8);ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(gx-9,y-16);ctx.lineTo(gx+9,y-16);ctx.lineTo(gx,y-4);ctx.closePath();
+  ctx.fillStyle=col;ctx.fill();
+  label('rerata '+fmt(S.guess),clamp(gx,x0+34,x1-34),y-28,13,t.text,'center','700');
+  ctx.restore();
+}
+
+function drawReadChart(){
+  var t=T(),d=S.data;
+  label(d.question,14,26,13,t.muted,'left','700');
+  var R={x0:58,y0:head()-8,x1:CW-24,y1:52};
+  drawChart(d.values,d.labels,R,{color:colorFor,base:0});
+}
+
+function drawTrophy(x,y,scale,color){
+  var t=T();
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.scale(scale,scale);
+  ctx.fillStyle=color;
+  ctx.beginPath();
+  ctx.moveTo(-14,-16);ctx.lineTo(14,-16);ctx.lineTo(10,0);ctx.arcTo(0,10,-10,0,true);ctx.lineTo(-14,-16);
+  ctx.closePath();ctx.fill();
+  ctx.fillRect(-4,8,8,8);
+  ctx.fillRect(-12,16,24,5);
+  ctx.restore();
+}
+
+function drawCompareChart(){
+  var t=T(),d=S.data;
+  label('Dua kelompok data siswa SMP kelas VII',14,24,13,t.muted,'left','700');
+  var pad=12,gap=14;
+  var pw=(CW-pad*2-gap)/2;
+  var top=44,bottom=CH-16;
+  for(var g=0;g<2;g++){
+    var px=pad+g*(pw+gap);
+    var name=g===0?'Kelas 7A':'Kelas 7B';
+    var vals=g===0?d.A:d.B;
+    var m=g===0?d.ma:d.mb, rg=g===0?d.ra:d.rb;
+    var won=(S.winner===-2)||(S.winner===g);
+    box(px,top,pw,bottom-top,12,t.panel,won?t.accent:t.border);
+    label(name,px+pw/2,top+18,15,won?t.text:t.muted,'center','700');
+    label('rerata '+fmt(m)+'  ·  jangkauan '+rg,px+pw/2,top+36,12,won?t.text:t.dim,'center');
+    var R={x0:px+40,y0:bottom-30,x1:px+pw-14,y1:top+52};
+    var growth=(S.winner<0)?1:(won?(0.65+0.35*S.winT):1);
+    ctx.save();
+    if(growth!==1){
+      ctx.translate(0,R.y0);
+      ctx.scale(1,growth);
+      ctx.translate(0,-R.y0);
+    }
+    drawChart(vals,null,R,{color:function(i){return g===0?colorFor(i):t.accent;},base:g*d.n,max:Math.max.apply(null,vals)*1.15});
+    ctx.restore();
+    if(won&&S.winT>0.02){
+      var bob=Math.sin(S.winnerT*6)*3;
+      drawTrophy(px+pw/2,top+66+bob,0.7,t.success);
+      label(S.winner===-2?'sama saja':'lebih baik',px+pw/2,top+100+bob,12,t.success,'center','700');
+    }
+  }
+}
+
+function draw(){
+  var t=T();
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,CW,CH);
+  ctx.fillStyle=t.surface;
+  ctx.fillRect(0,0,CW,CH);
+  if(!S.started||!S.data){
+    label('Diagram akan muncul di sini',CW/2,CH/2-8,17,t.dim,'center','700');
+    label('Tekan tombol Mulai untuk bermain.',CW/2,CH/2+20,14,t.dim,'center');
+    return;
+  }
+  S.hits=[];S.hitMode='none';S.pie=null;
+  var mode=S.data.mode;
+  if(mode==='read')drawReadChart();
+  else if(mode==='mean'){drawMeanChart();drawAxisStrip();}
+  else drawCompareChart();
+  drawParts();
+  if(S.paused){
+    ctx.fillStyle=t.panel;
+    ctx.fillRect(0,0,CW,CH);
+    label('Permainan dijeda',CW/2,CH/2-8,19,t.text,'center','700');
+    label('Tekan tombol Lanjut atau Spasi untuk melanjutkan.',CW/2,CH/2+22,13,t.muted,'center');
+  }
+}
+
+/* ====================== interaksi kanvas ====================== */
+function localPoint(ev){
+  var r=canvas.getBoundingClientRect();
+  return {x:(ev.clientX-r.left),y:(ev.clientY-r.top)};
+}
+function hitAt(x,y){
+  if(S.hitMode==='rect'){
+    for(var i=0;i<S.hits.length;i++){
+      var h=S.hits[i];
+      if(x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h)return h.idx;
+    }
+    return -1;
+  }
+  if(S.hitMode==='point'){
+    var best=-1,bd=1e9;
+    for(var j=0;j<S.hits.length;j++){
+      var p=S.hits[j],dd=Math.hypot(x-p.x,y-p.y);
+      if(dd<p.r&&dd<bd){bd=dd;best=p.idx;}
+    }
+    return best;
+  }
+  if(S.hitMode==='pie'&&S.pie){
+    var c=S.pie,dx=x-c.x,dy=y-c.y,r=Math.hypot(dx,dy);
+    if(r>c.rOut||r<c.rIn)return -1;
+    var a=Math.atan2(dy,dx);
+    if(a<-Math.PI/2)a+=TAU;
+    for(var k=0;k<c.slices.length;k++){
+      var s=c.slices[k];
+      if(a>=s.a0&&a<s.a1)return s.idx;
+    }
+    return -1;
+  }
+  return -1;
+}
+function hitPoint(idx){
+  if(S.hitMode==='pie'){
+    if(!S.pie)return null;
+    var a=-Math.PI/2;
+    for(var i=0;i<S.data.values.length;i++){
+      if(i===idx)break;
+      a+=S.data.values[i]/sum(S.data.values)*TAU;
+    }
+    return {x:S.pie.x+Math.cos(a+S.data.values[idx]/sum(S.data.values)*TAU/2)*S.pie.rOut*0.6,
+            y:S.pie.y+Math.sin(a+S.data.values[idx]/sum(S.data.values)*TAU/2)*S.pie.rOut*0.6};
+  }
+  for(var j=0;j<S.hits.length;j++)if(S.hits[j].idx===idx)return {x:S.hits[j].cx,y:S.hits[j].cy};
+  return null;
+}
+function canvasDown(ev){
+  if(!S.started||S.paused||S.over||S.locked||!S.data)return;
+  var pt=localPoint(ev);
+  var mode=S.data.mode;
+  if(mode==='read'){
+    var idx=hitAt(pt.x,pt.y);
+    if(idx>=0)answerRead(idx);
+    return;
+  }
+  if(mode==='mean'){
+    if(pt.y<axisY()-40)return;
+    var x0=58,x1=CW-24;
+    var v=clamp(Math.round((pt.x-x0)/(x1-x0)*100),0,100);
+    S.guess=v;syncControls();draw();
+  }
+}
+canvas.addEventListener('pointerdown',canvasDown);
+canvas.addEventListener('pointermove',function(ev){
+  if(!S.data||S.data.mode!=='read')return;
+  var pt=localPoint(ev);
+  canvas.style.cursor=hitAt(pt.x,pt.y)>=0?'pointer':'default';
+});
+
+/* =====================* kontrol ====================== */
+diagramBtn.addEventListener('click',function(){
+  S.diagram=(S.diagram+1)%TYPES.length;
+  S.anim=[];S.sweep=0;
+  updateDiagramButton();
+  updateAria();
+  setFeedback('Bentuk lain untuk data yang sama. Sekarang dibaca sebagai '+TYPES[S.diagram].name+'.','');
+  S.parts=[];
+  draw();
+});
+pauseBtn.addEventListener('click',togglePause);
+resetBtn.addEventListener('click',function(){resetState();});
+guessEl.addEventListener('input',function(){S.guess=Number(guessEl.value);answerEl.value=String(S.guess);draw();});
+answerEl.addEventListener('input',function(){
+  var v=clamp(Math.round(Number(answerEl.value)||0),0,100);
+  S.guess=v;guessEl.value=String(v);draw();
+});
+kirimBtn.addEventListener('click',submitGuess);
+decisionEl.addEventListener('input',function(){S.decision=Number(decisionEl.value);syncControls();});
+chips.forEach(function(chip){
+  chip.addEventListener('click',function(){
+    S.decision=Number(chip.dataset.choice);
+    syncControls();
+  });
+});
+decisionBtn.addEventListener('click',submitDecision);
+
+function togglePause(){
+  if(!S.started||S.over)return;
+  S.paused=!S.paused;
+  pauseBtn.textContent=S.paused?'Lanjut':'Jeda';
+  setFeedback(S.paused?'Permainan dijeda. Tekan Spasi atau tombol Lanjut untuk melanjutkan.':'Permainan dilanjutkan.','');
+  draw();
+}
+
+document.addEventListener('keydown',function(ev){
+  var tag=ev.target&&ev.target.tagName;
+  if(tag==='INPUT'||tag==='TEXTAREA')return;
+  var k=ev.key.toLowerCase();
+  if(k==='r'){resetState();ev.preventDefault();return;}
+  if(k===' '||k==='p'){togglePause();ev.preventDefault();}
+});
+
+/* ====================== loop ====================== */
+function updateAnim(dt){
+  if(!S.data)return;
+  var k=1-Math.pow(0.0025,dt);
+  for(var i=0;i<(S.data.animN||4);i++){
+    if(S.anim[i]===undefined)S.anim[i]=0;
+    S.anim[i]+=(1-S.anim[i])*k;
+  }
+  S.sweep+=(1-S.sweep)*k;
+  S.winnerT+=dt;
+  if(S.winner!==-1&&S.winT<1)S.winT+=(1-S.winT)*k;
+  if(S.flash.idx>=0){S.flash.t+=dt;if(S.flash.t>0.9)S.flash.idx=-1;}
+  if(S.pulse.idx>=0){S.pulse.t+=dt;if(S.pulse.t>0.9)S.pulse.idx=-1;}
+}
+function timeUp(){
+  var d=S.data,msg;
+  S.tries++;
+  if(d.mode==='read'){
+    msg='Waktu habis! Jawaban untuk '+d.question.replace('Bacalah diagram. ','')+' belum ditemukan.';
+  }else if(d.mode==='mean'){
+    msg='Waktu habis! rerata = jumlah / banyak data = '+sum(d.values)+' / '+d.values.length+' = '+fmt(d.correct)+'.';
+  }else{
+    msg='Waktu habis! '+compareReason(d);
+  }
+  S.locked=true;
+  loseLife(msg);
+  if(!S.over)later(function(){if(!S.over)loadLevel(S.level);},2400);
+}
+function loop(ts){
+  S.raf=requestAnimationFrame(loop);
+  var dt=S.last?Math.min(0.05,(ts-S.last)/1000):0;
+  S.last=ts;
+  if(!S.started||S.paused||S.over)return;
+  if(S.time>0){
+    S.time=Math.max(0,S.time-dt);
+    updateTimer();
+    if(S.time===0)timeUp();
+  }
+  updateAnim(dt);
+  updateParts(dt);
+  draw();
+}
+
+/* ====================== mulai / ulang ====================== */
+function startGame(){
+  clearTimeouts();
+  S.started=true;S.paused=false;S.over=false;
+  S.score=0;S.lives=3;S.cleanPhase1=true;
+  S.readTypes={};S.badges={};
+  S.winner=-1;S.winnerT=0;S.winT=0;S.parts=[];
+  S.flash={idx:-1,t:0};S.pulse={idx:-1,t:0};
+  S.last=0;
+  startScreen.hidden=true;
+  endScreen.hidden=true;
+  hideToast();
+  pauseBtn.textContent='Jeda';
+  renderLives();
+  if(!S.raf)S.raf=requestAnimationFrame(loop);
+  loadLevel(1);
+}
+function resetState(){
+  clearTimeouts();
+  if(S.raf){cancelAnimationFrame(S.raf);S.raf=0;}
+  S.last=0;
+  S.started=false;S.paused=false;S.over=false;
+  S.level=1;S.score=0;S.lives=3;S.time=0;S.timeMax=60;
+  S.data=null;S.diagram=0;S.guess=0;S.decision=0;S.locked=false;
+  S.anim=[];S.sweep=0;S.winT=0;S.winner=-1;S.winnerT=0;
+  S.flash={idx:-1,t:0};S.pulse={idx:-1,t:0};S.parts=[];
+  S.hits=[];S.hitMode='none';S.pie=null;
+  S.readTypes={};S.badges={};
+  S.cleanPhase1=true;
+  startScreen.hidden=false;
+  endScreen.hidden=true;
+  scoreEl.textContent='0';
+  levelEl.textContent='1 / '+TOTAL;
+  timerEl.textContent='60 s';
+  timerEl.style.color='';
+  renderLives();
+  progressEl.style.width='0%';
+  objectiveEl.textContent='Tekan tombol Mulai untuk bermain.';
+  setFeedback('Tekan tombol Mulai untuk masuk ke level 1.','');
+  guessEl.value='0';
+  answerEl.value='0';
+  guessField.hidden=true;
+  decisionField.hidden=true;
+  decisionEl.value='0';
+  chips.forEach(function(c){c.setAttribute('aria-pressed',c.dataset.choice==='0'?'true':'false');});
+  kirimBtn.disabled=false;
+  decisionBtn.disabled=false;
+  diagramBtn.textContent='Ganti: '+TYPES[1].name;
+  diagramNameEl.textContent='Tampak sekarang: '+TYPES[0].name+'. Mengganti bentuk diagram tidak mengulang level.';
+  pauseBtn.textContent='Jeda';
+  hideToast();
+  canvas.style.cursor='default';
+  canvas.setAttribute('aria-label','Diagram data belum tampil');
+  draw();
+}
+
+/* ====================== ukuran kanvas ====================== */
+function resize(){
+  var r=canvas.getBoundingClientRect();
+  dpr=Math.min(2,window.devicePixelRatio||1);
+  CW=Math.max(1,Math.round(r.width));
+  CH=Math.max(1,Math.round(r.height));
+  canvas.width=Math.round(CW*dpr);
+  canvas.height=Math.round(CH*dpr);
+  draw();
+}
+if(window.ResizeObserver){new ResizeObserver(resize).observe(canvas);}
+window.addEventListener('resize',resize);
+window.addEventListener('orientationchange',resize);
+
+/* ====================== API global ====================== */
+window.startGame=startGame;
+window.resetState=resetState;
+
+/* ====================== awal ====================== */
+renderLives();
+resize();
+draw();
+})();
+</script>
+</body>
+</html>

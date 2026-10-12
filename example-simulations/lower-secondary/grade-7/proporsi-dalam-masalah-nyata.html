@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="education_levels" content="Lower Secondary">
+  <meta name="grade" content="7">
+  <title>Proporsi dalam Masalah Nyata · Matematika SMP Kelas VII</title>
+  <meta name="description" content="Murid menyelesaikan masalah proporsi seperti harga per kg, takaran resep, cat tembok, iuran kelas, dan porsi buffet dengan Operand silang.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Proporsi dalam Masalah Nyata">
+  <meta property="og:description" content="Enam masalah proporsi sehari-hari: harga per kg, takaran resep kue, cat tembok, bahan prima, iuran kelas, porsi buffet. Isi sel kosong dan lihat batang proporsional.">
+  <meta property="og:locale" content="id">
+  <style>
+:root {
+  /* Colour */
+  --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+  --surface: #14141e;     /* panels, cards, step rows */
+  --panel: rgba(20, 20, 30, 0.9);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: #333;
+  --text: #ffffff;
+  --text-muted: #aaa;
+  --text-dim: #888;
+  --accent: #6366f1;      /* primary action, slider thumb, active state */
+  --accent-hover: #5558e8;
+  --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+  --success: #fbbf24;     /* completion, headings, callouts */
+  --warning: #fb923c;
+  --error: #ff6b6b;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type scale (system fonts only) */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-caption: 11px;   /* uppercase control labels */
+  --text-heading: 24px;
+
+  /* Focus, motion, stacking */
+  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  --motion: 0.2s;
+  --motion-slow: 0.3s;
+  --z-overlay: 100;        /* panels, tooltips */
+  --z-modal: 1000;         /* loading screens, modal dialogs */
+}
+
+[data-theme="light"] {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-strong: #d4d4d8;
+  --text: #16161d;
+  --text-muted: #52525b;
+  --text-dim: #71717a;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.95);
+  --success: #b45309;
+  --warning: #c2410c;
+  --error: #dc2626;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+.btn {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  min-height: 44px;            /* never below 44px, mobile */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--border-strong);
+  color: var(--text);
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.btn:hover { background: var(--text-muted); }
+.btn:active { transform: scale(0.95); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); border-color: var(--accent); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); }
+
+.control-label {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+input[type="range"] {
+  width: 100%; height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+
+/* Touch target: keep the 6px visual track, but give the control a 44px hit area. */
+input[type="range"] { height: 44px; background: transparent; }
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-moz-range-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-webkit-slider-thumb { margin-top: -7px; }
+input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; background: var(--accent); border-radius: 50%; cursor: pointer; }
+/* Visually hidden but announced by screen readers. Use when a layout has no
+   room for a visible <h1> (e.g. a full-bleed canvas) — never as an excuse to
+   drop a heading. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+#feedback-panel {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+#feedback-panel.success { border-left-color: var(--success); }
+#feedback-panel.error { border-left-color: var(--error); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.progress-fill { height: 100%; background: var(--accent); transition: width var(--motion-slow); }
+
+.wrap { max-width: 1080px; margin: 0 auto; padding: var(--space-5) var(--space-4) var(--space-6); }
+h1 { font-size: var(--text-heading); margin-bottom: var(--space-2); }
+h2 { font-size: var(--text-sm); color: var(--text-muted); }
+h3 { font-size: var(--text-sm); color: var(--text-muted); }
+.lead { color: var(--text-muted); font-size: var(--text-sm); margin-bottom: var(--space-5); }
+.layout { display: flex; flex-direction: column; gap: var(--space-4); }
+@media (min-width: 940px) { .layout { flex-direction: row; align-items: flex-start; } .side { width: 330px; flex: 0 0 330px; } }
+.scenario-title { font-size: var(--text-base); margin-bottom: var(--space-2); }
+.scenario-desc { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-3); }
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: var(--space-2); font-size: var(--text-sm); }
+th { color: var(--text-muted); font-weight: 500; border-bottom: 1px solid var(--border-strong); }
+tbody tr { border-bottom: 1px solid var(--border); }
+.num { font-family: var(--font-mono); white-space: nowrap; }
+.cell-input {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  min-height: 44px;
+  width: 100%;
+  max-width: 130px;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-md);
+  background: var(--bg);
+  color: var(--text);
+}
+.cell-input:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.cell-input:disabled { opacity: 0.6; }
+.row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.note { font-size: var(--text-xs); color: var(--text-dim); margin-top: var(--space-2); }
+.readout { font-family: var(--font-mono); font-size: var(--text-heading); }
+.readout-sm { font-family: var(--font-mono); font-size: var(--text-sm); color: var(--text-muted); }
+.score-line { display: flex; justify-content: space-between; font-size: var(--text-xs); color: var(--text-muted); margin: var(--space-2) 0; }
+.stage svg { width: 100%; height: auto; display: block; }
+.bar { fill: var(--accent); }
+.bar-target { fill: var(--success); }
+.bar-bg { fill: var(--border); }
+.svgmono { fill: var(--text-muted); font-family: var(--font-mono); font-size: 12px; }
+.svgtext { fill: var(--text); font-family: var(--font); font-size: 12px; }
+.work-box { border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-3); margin-top: var(--space-3); }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Proporsi dalam Masalah Nyata</h1>
+  <p class="lead">Proporsi berarti dua perbandingan bernilai sama. Kalikan nilai yang berhadapan pada kedua ruas, lalu bagi dengan nilai yang diketahui. Panjang batang selalu sebanding dengan nilainya.</p>
+
+  <div class="layout">
+    <div class="side">
+      <div class="panel">
+        <h2 class="panel-heading">Kemajuan</h2>
+        <div class="score-line">
+          <span id="step-label">Situasi 1 dari 6</span>
+          <span id="score-label">Skor 0</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="progress" style="width: 0%"></div></div>
+        <div class="row" style="margin-top: var(--space-3);">
+          <button class="btn btn-primary" id="next-btn" type="button" disabled>Situasi berikutnya</button>
+          <button class="btn" id="reset-btn" type="button">Mulai ulang</button>
+        </div>
+        <p class="note">Isi sel kosong, tekan Periksa, lalu lanjut ke situasi berikutnya.</p>
+      </div>
+
+      <div class="panel" style="margin-top: var(--space-4);">
+        <h2 class="panel-heading">Perbandingan yang tetap</h2>
+        <p class="readout" id="ratio-display">12.000 : 1</p>
+        <p class="readout-sm" id="ratio-note">Nilai perbandingan tetap sama di semua baris.</p>
+      </div>
+
+      <div class="panel" style="margin-top: var(--space-4);">
+        <h2 class="panel-heading">Batang proporsional</h2>
+        <svg id="bar-svg" viewBox="0 0 300 180" role="img" aria-label="Batang proporsional untuk tiap baris tabel">
+          <g id="bar-rows"></g>
+        </svg>
+        <p class="note">Batang memanjang atau memendek saat nilainya berubah.</p>
+      </div>
+    </div>
+
+    <div style="flex: 1 1 auto; min-width: 0;">
+      <div class="panel">
+        <h3 class="scenario-title" id="scenario-title">Harga buah per kilogram</h3>
+        <p class="scenario-desc" id="scenario-desc">Buah mangga dihargai Rp12.000 untuk 1 kg.</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th id="th-x">Banyak (kg)</th>
+              <th id="th-y">Harga (Rp)</th>
+              <th>Panjang batang</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+
+        <div class="row" style="margin-top: var(--space-4);">
+          <button class="btn btn-primary" id="check-btn" type="button">Periksa</button>
+        </div>
+      </div>
+
+      <div id="feedback-panel" style="margin-top: var(--space-4);">
+        <p id="feedback-text">Isi sel yang tanda ?. Nilai benar akan membuat batang memanjang sesuai proporsinya.</p>
+      </div>
+
+      <div class="panel work-box" style="margin-top: var(--space-4);">
+        <h3>Cara perkalian silang</h3>
+        <p class="readout-sm" id="cross-text">1 x ? = 12.000 x 1</p>
+        <p class="note" id="cross-note">Kalikan diagonal seberang, lalu bagi dengan nilai yang diketahui.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="widget-config">
+{
+  "type": "simulation",
+  "concept": "proportion_problems",
+  "description": "Murid menyelesaikan masalah proporsi: harga barang per kg, takaran resep kue, cat tembok, bahan prima, iuran kelas, dan porsi buffet.",
+  "variables": [
+    { "name": "scenario", "label": "Situasi", "min": 1, "max": 6, "default": 1, "unit": "" }
+  ],
+  "presets": [
+    { "name": "Harga per kg", "variables": { "scenario": 1 } },
+    { "name": "Cat tembok", "variables": { "scenario": 3 } }
+  ]
+}
+</script>
+
+<script>
+(function () {
+  'use strict';
+
+  var TRACK = 150;
+  var BAR_ROW_H = 40;
+
+  var SCENARIOS = [
+    {
+      title: 'Harga buah per kilogram',
+      desc: 'Buah mangga diwarung diharga Rp12.000 untuk setiap 1 kg.',
+      xLabel: 'Banyak (kg)', yLabel: 'Harga (Rp)', yUnit: 'Rp',
+      rate: 12000, known: 1, blank: 4, rows: [1, 2, 3, 4], blankAt: 3
+    },
+    {
+      title: 'Takaran resep kue',
+      desc: 'Resep nastar butuh 100 g feminino untuk 1 sitemap. Ibu mau membuat 5 sitemap.',
+      xLabel: 'Sitemap', yLabel: 'Tepung (g)', yUnit: 'g',
+      rate: 100, known: 1, blank: 5, rows: [1, 2, 3, 5], blankAt: 3
+    },
+    {
+      title: 'Cat tembok',
+      desc: 'Satu kaleng cat cukup untuk 10 meter persegi tembok.',
+      xLabel: 'Kaleng', yLabel: 'Luas tembok (m2)', yUnit: 'm2',
+      rate: 10, known: 1, blank: 7, rows: [1, 2, 4, 7], blankAt: 3
+    },
+    {
+      title: 'Pembagian bahan prima',
+      desc: 'Satu batch adonan bakso memakai 2 kg daging. Toko membuat 8 batch.',
+      xLabel: 'Batch', yLabel: 'Daging (kg)', yUnit: 'kg',
+      rate: 2, known: 1, blank: 8, rows: [1, 3, 5, 8], blankAt: 3
+    },
+    {
+      title: 'Iuran kelas',
+      desc: 'Iuran study tour Rp25.000 setiap siswa. Kelas 7A ada 28 siswa.',
+      xLabel: 'Siswa', yLabel: 'Iuran (Rp)', yUnit: 'Rp',
+      rate: 25000, known: 1, blank: 28, rows: [1, 12, 20, 28], blankAt: 3
+    },
+    {
+      title: 'Porsi buffet',
+      desc: 'Satu porsi buffet berat 250 g. Dapur sekolah menyiapkan 32 porsi untuk acara kelas.',
+      xLabel: 'Porsi', yLabel: 'Berat (g)', yUnit: 'g',
+      rate: 250, known: 1, blank: 32, rows: [1, 8, 15, 32], blankAt: 3
+    }
+  ];
+
+  var el = {
+    stepLabel: document.getElementById('step-label'),
+    scoreLabel: document.getElementById('score-label'),
+    progress: document.getElementById('progress'),
+    nextBtn: document.getElementById('next-btn'),
+    resetBtn: document.getElementById('reset-btn'),
+    ratioDisplay: document.getElementById('ratio-display'),
+    ratioNote: document.getElementById('ratio-note'),
+    barRows: document.getElementById('bar-rows'),
+    scenarioTitle: document.getElementById('scenario-title'),
+    scenarioDesc: document.getElementById('scenario-desc'),
+    thX: document.getElementById('th-x'),
+    thY: document.getElementById('th-y'),
+    tableBody: document.getElementById('table-body'),
+    checkBtn: document.getElementById('check-btn'),
+    feedbackPanel: document.getElementById('feedback-panel'),
+    feedbackText: document.getElementById('feedback-text'),
+    crossText: document.getElementById('cross-text'),
+    crossNote: document.getElementById('cross-note')
+  };
+
+  var state = { index: 0, score: 0, answered: false, revealed: new Array(SCENARIOS.length).fill(false) };
+
+  var bars = [];
+  var currentW = [];
+  var targetW = [];
+  var barRAF = null;
+
+  function formatId(n) {
+    return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+
+  function valueFor(sc, x) { return sc.rate * x; }
+
+  function setFeedback(text, kind) {
+    el.feedbackText.textContent = text;
+    el.feedbackPanel.classList.remove('success', 'error');
+    if (kind === 'success') el.feedbackPanel.classList.add('success');
+    if (kind === 'error') el.feedbackPanel.classList.add('error');
+  }
+
+  function buildBars(sc) {
+    while (el.barRows.firstChild) el.barRows.removeChild(el.barRows.firstChild);
+    bars = [];
+    currentW = [];
+    targetW = [];
+    var maxV = valueFor(sc, sc.rows[sc.rows.length - 1]);
+    for (var i = 0; i < sc.rows.length; i++) {
+      var x = sc.rows[i];
+      var y = valueFor(sc, x);
+      var g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      var top = i * BAR_ROW_H;
+
+      var label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.setAttribute('x', '0');
+      label.setAttribute('y', String(top + 12));
+      label.setAttribute('class', 'svgtext');
+      label.textContent = String(x);
+
+      var bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      bg.setAttribute('x', '34');
+      bg.setAttribute('y', String(top + 2));
+      bg.setAttribute('width', String(TRACK));
+      bg.setAttribute('height', '14');
+      bg.setAttribute('rx', '4');
+      bg.setAttribute('class', 'bar-bg');
+
+      var bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      bar.setAttribute('x', '34');
+      bar.setAttribute('y', String(top + 2));
+      bar.setAttribute('width', '0');
+      bar.setAttribute('height', '14');
+      bar.setAttribute('rx', '4');
+      bar.setAttribute('class', i === sc.blankAt ? 'bar-target' : 'bar');
+
+      var value = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      value.setAttribute('x', '190');
+      value.setAttribute('y', String(top + 13));
+      value.setAttribute('class', 'svgmono');
+      value.textContent = formatId(y);
+
+      g.appendChild(label); g.appendChild(bg); g.appendChild(bar); g.appendChild(value);
+      el.barRows.appendChild(g);
+
+      bars.push({ bar: bar, value: value, x: x });
+      var w = (y / maxV) * TRACK;
+      currentW.push(0);
+      targetW.push(w);
+    }
+  }
+
+  function renderTable(sc) {
+    while (el.tableBody.firstChild) el.tableBody.removeChild(el.tableBody.firstChild);
+    for (var i = 0; i < sc.rows.length; i++) {
+      var x = sc.rows[i];
+      var tr = document.createElement('tr');
+
+      var tdX = document.createElement('td');
+      tdX.className = 'num';
+      tdX.textContent = String(x);
+
+      var tdY = document.createElement('td');
+      tdY.className = 'num';
+
+      if (i === sc.blankAt) {
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.inputMode = 'numeric';
+        input.className = 'cell-input';
+        input.id = 'answer-input';
+        input.setAttribute('aria-label', 'Isi ' + sc.yLabel + ' untuk ' + x + ' ' + sc.xLabel);
+        input.value = state.revealed[state.index] ? formatId(valueFor(sc, x)) : '';
+        input.disabled = state.answered || state.revealed[state.index];
+        tdY.appendChild(input);
+      } else {
+        tdY.textContent = formatId(valueFor(sc, x));
+      }
+
+      var tdBar = document.createElement('td');
+      var mini = document.createElement('div');
+      var maxV = valueFor(sc, sc.rows[sc.rows.length - 1]);
+      var pct = (valueFor(sc, x) / maxV) * 100;
+      mini.className = 'progress-track';
+      var fill = document.createElement('div');
+      fill.className = 'progress-fill';
+      fill.style.width = pct.toFixed(1) + '%';
+      mini.appendChild(fill);
+      tdBar.appendChild(mini);
+
+      tr.appendChild(tdX); tr.appendChild(tdY); tr.appendChild(tdBar);
+      el.tableBody.appendChild(tr);
+    }
+  }
+
+  function updateRatio(sc) {
+    el.ratioDisplay.textContent = formatId(sc.rate) + ' : 1';
+    el.ratioNote.textContent = 'Setiap 1 ' + sc.xLabel.replace(/\s*\(.*\)/, '') + ' selalu ' +
+      formatId(sc.rate) + ' ' + sc.yUnit + ', berapa pun banyak barisnya.';
+  }
+
+  function updateCross(sc) {
+    var x = sc.blank;
+    el.crossText.textContent = sc.known + ' x ? = ' + formatId(sc.rate) + ' x ' + x;
+    el.crossNote.textContent = 'Nilai yang dicari = (' + formatId(sc.rate) + ' x ' + x + ') : ' + sc.known + '.';
+  }
+
+  function barFrame() {
+    var settled = true;
+    for (var i = 0; i < bars.length; i++) {
+      var diff = targetW[i] - currentW[i];
+      if (Math.abs(diff) > 0.4) { currentW[i] += diff * 0.18; settled = false; }
+      else currentW[i] = targetW[i];
+      bars[i].bar.setAttribute('width', currentW[i].toFixed(2));
+    }
+    if (!settled) barRAF = requestAnimationFrame(barFrame);
+    else barRAF = null;
+  }
+
+  function tweenBars() {
+    if (barRAF === null) barRAF = requestAnimationFrame(barFrame);
+  }
+
+  function loadScenario(i) {
+    state.index = i;
+    state.answered = false;
+    var sc = SCENARIOS[i];
+
+    el.scenarioTitle.textContent = sc.title;
+    el.scenarioDesc.textContent = sc.desc;
+    el.thX.textContent = sc.xLabel;
+    el.thY.textContent = sc.yLabel;
+    el.stepLabel.textContent = 'Situasi ' + (i + 1) + ' dari ' + SCENARIOS.length;
+    el.progress.style.width = ((i / SCENARIOS.length) * 100).toFixed(1) + '%';
+    el.scoreLabel.textContent = 'Skor ' + state.score;
+
+    updateRatio(sc);
+    updateCross(sc);
+    renderTable(sc);
+    buildBars(sc);
+    tweenBars();
+
+    el.checkBtn.disabled = state.revealed[i];
+    el.nextBtn.disabled = i === 0;
+    el.nextBtn.textContent = (i === SCENARIOS.length - 1) ? 'Ulangi dari awal' : 'Situasi berikutnya';
+
+    if (state.revealed[i]) {
+      setFeedback('Jawaban situasi ini sudah tercatat: ' + formatId(sc.rate * sc.blank) + ' ' + sc.yUnit + '.', 'success');
+    } else {
+      setFeedback('Isi sel yang tanda ?. Nilai benar akan membuat batang memanjang sesuai proporsinya.', null);
+    }
+  }
+
+  function checkAnswer() {
+    if (state.answered || state.revealed[state.index]) return;
+    var sc = SCENARIOS[state.index];
+    var input = document.getElementById('answer-input');
+    if (!input) return;
+    var given = parseFloat(input.value.trim().replace(/\./g, '').replace(',', '.'));
+    if (isNaN(given)) {
+      setFeedback('Isi kotak dengan angka saja, lalu tekan Periksa.', 'error');
+      return;
+    }
+    state.answered = true;
+    input.disabled = true;
+    el.checkBtn.disabled = true;
+
+    var correct = valueFor(sc, sc.blank);
+    var work = sc.rate * sc.blank;
+    el.crossText.textContent = sc.known + ' x ' + formatId(correct) + ' = ' + formatId(sc.rate) + ' x ' + sc.blank;
+    el.crossNote.textContent = 'Kedua ruas sama, jadi ' + sc.known + ' : ' + sc.blank + ' = ' +
+      formatId(sc.rate) + ' : ' + formatId(correct) + '. Proporsinya terjaga.';
+
+    var maxV = valueFor(sc, sc.rows[sc.rows.length - 1]);
+    var idx = bars.length - 1;
+    targetW[idx] = (correct / maxV) * TRACK;
+    tweenBars();
+
+    if (Math.abs(given - correct) < 0.5) {
+      state.score += 1;
+      state.revealed[state.index] = true;
+      el.scoreLabel.textContent = 'Skor ' + state.score;
+      el.progress.style.width = (((state.index + 1) / SCENARIOS.length) * 100).toFixed(1) + '%';
+      setFeedback('Benar! ' + sc.rate + ' x ' + sc.blank + ' = ' + formatId(work) + ' ' + sc.yUnit + '.', 'success');
+    } else {
+      setFeedback('Belum tepat. Coba bagi: ' + formatId(sc.rate) + ' x ' + sc.blank + ' = ' +
+        formatId(work) + ' ' + sc.yUnit + '.', 'error');
+    }
+    el.nextBtn.disabled = false;
+  }
+
+  function resetState() {
+    state.index = 0;
+    state.score = 0;
+    state.answered = false;
+    for (var i = 0; i < state.revealed.length; i++) state.revealed[i] = false;
+    loadScenario(0);
+  }
+
+  el.checkBtn.addEventListener('click', checkAnswer);
+  el.nextBtn.addEventListener('click', function () {
+    loadScenario((state.index + 1) % SCENARIOS.length);
+  });
+  el.resetBtn.addEventListener('click', resetState);
+
+  document.addEventListener('keydown', function (e) {
+    if (e.target && /input|textarea|select/i.test(e.target.tagName)) {
+      if (e.key === 'Enter') { e.preventDefault(); checkAnswer(); }
+      return;
+    }
+    if (e.key === 'r' || e.key === 'R') resetState();
+    else if (e.key === 'Enter') { e.preventDefault(); checkAnswer(); }
+  });
+
+  loadScenario(0);
+})();
+</script>
+</body>
+</html>

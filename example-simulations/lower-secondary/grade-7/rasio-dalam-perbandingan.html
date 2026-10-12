@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="education_levels" content="Lower Secondary">
+  <meta name="grade" content="7">
+  <title>Rasio dalam Perbandingan · Matematika SMP Kelas VII</title>
+  <meta name="description" content="Murid membandingkan dua besaran sebagai rasio dan membedakan rasio dari proporsi lewat visualisasi batang dan mode bandingkan.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Rasio dalam Perbandingan">
+  <meta property="og:description" content="Murid membandingkan dua besaran sebagai rasio dan membedakan rasio dari proporsi. Slider A dan B, batang berskala, preset 2:3, 1:4, 3:5, dan mode bandingkan dua pasang.">
+  <meta property="og:locale" content="id">
+  <style>
+:root {
+  /* Colour */
+  --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+  --surface: #14141e;     /* panels, cards, step rows */
+  --panel: rgba(20, 20, 30, 0.9);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: #333;
+  --text: #ffffff;
+  --text-muted: #aaa;
+  --text-dim: #888;
+  --accent: #6366f1;      /* primary action, slider thumb, active state */
+  --accent-hover: #5558e8;
+  --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+  --success: #fbbf24;     /* completion, headings, callouts */
+  --warning: #fb923c;
+  --error: #ff6b6b;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type scale (system fonts only) */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-caption: 11px;   /* uppercase control labels */
+  --text-heading: 24px;
+
+  /* Focus, motion, stacking */
+  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  --motion: 0.2s;
+  --motion-slow: 0.3s;
+  --z-overlay: 100;        /* panels, tooltips */
+  --z-modal: 1000;         /* loading screens, modal dialogs */
+}
+
+[data-theme="light"] {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-strong: #d4d4d8;
+  --text: #16161d;
+  --text-muted: #52525b;
+  --text-dim: #71717a;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.95);
+  --success: #b45309;
+  --warning: #c2410c;
+  --error: #dc2626;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+.btn {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  min-height: 44px;            /* never below 44px, mobile */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--border-strong);
+  color: var(--text);
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.btn:hover { background: var(--text-muted); }
+.btn:active { transform: scale(0.95); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); border-color: var(--accent); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); }
+
+.control-label {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+input[type="range"] {
+  width: 100%; height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+
+/* Touch target: keep the 6px visual track, but give the control a 44px hit area. */
+input[type="range"] { height: 44px; background: transparent; }
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-moz-range-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-webkit-slider-thumb { margin-top: -7px; }
+input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; background: var(--accent); border-radius: 50%; cursor: pointer; }
+/* Visually hidden but announced by screen readers. Use when a layout has no
+   room for a visible <h1> (e.g. a full-bleed canvas) — never as an excuse to
+   drop a heading. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+#feedback-panel {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+#feedback-panel.success { border-left-color: var(--success); }
+#feedback-panel.error { border-left-color: var(--error); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.progress-fill { height: 100%; background: var(--accent); transition: width var(--motion-slow); }
+
+.wrap { max-width: 1080px; margin: 0 auto; padding: var(--space-5) var(--space-4) var(--space-6); }
+h1 { font-size: var(--text-heading); margin-bottom: var(--space-2); }
+.lead { color: var(--text-muted); font-size: var(--text-sm); margin-bottom: var(--space-5); }
+.layout { display: flex; flex-direction: column; gap: var(--space-4); }
+@media (min-width: 900px) { .layout { flex-direction: row; align-items: flex-start; } .side { width: 340px; flex: 0 0 340px; } }
+.stage { min-height: 320px; }
+.stage svg { width: 100%; height: auto; display: block; }
+.bar-a { fill: var(--accent); }
+.bar-b { fill: var(--success); }
+.bar-ca { fill: var(--accent); }
+.bar-cb { fill: var(--success); }
+.axis { stroke: var(--border-strong); stroke-width: 2; }
+.gridline { stroke: var(--border); stroke-width: 1; }
+.svglabel { fill: var(--text); font-family: var(--font); font-size: 14px; }
+.svgmono { fill: var(--text-muted); font-family: var(--font-mono); font-size: 13px; }
+.readout { font-family: var(--font-mono); font-size: var(--text-heading); }
+.ctrl { margin-bottom: var(--space-4); }
+.ctrl-head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); }
+.val { font-family: var(--font-mono); color: var(--text); }
+.row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.note { font-size: var(--text-xs); color: var(--text-dim); margin-top: var(--space-2); }
+.card { border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-3); margin-top: var(--space-3); }
+.card h3 { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+.compare-grid { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.compare-grid > * { flex: 1 1 200px; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Rasio dalam Perbandingan</h1>
+  <p class="lead">Rasio membandingkan dua besaran. Rasio hanya menyatakan perbandingan; proporsi menyatakan bahwa dua perbandingan bernilai sama.</p>
+
+  <div class="layout">
+    <div class="side">
+      <div class="panel">
+        <h2 class="panel-heading">Besi yang dibandingkan</h2>
+        <div class="ctrl">
+          <div class="ctrl-head"><label class="control-label" for="a-slider">Besi A</label><span class="val" id="a-display">6</span></div>
+          <input type="range" id="a-slider" min="1" max="12" step="1" value="6" aria-label="Besi A">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-head"><label class="control-label" for="b-slider">Besi B</label><span class="val" id="b-display">9</span></div>
+          <input type="range" id="b-slider" min="1" max="12" step="1" value="9" aria-label="Besi B">
+        </div>
+        <p class="note">Contoh: 6 kakao dan 9 susu.</p>
+      </div>
+
+      <div class="panel" style="margin-top: var(--space-4);">
+        <h2 class="panel-heading">Rasio yang terbentuk</h2>
+        <p class="readout" id="ratio-display">6 : 9 = 2 : 3</p>
+        <p class="note" id="ratio-note">Sederhanakan dengan membagi keduanya dengan 3.</p>
+      </div>
+
+      <div class="panel" style="margin-top: var(--space-4);">
+        <h2 class="panel-heading">Preset</h2>
+        <div class="row">
+          <button class="btn btn-ghost" id="preset-r23-btn" type="button">2 : 3</button>
+          <button class="btn btn-ghost" id="preset-r14-btn" type="button">1 : 4</button>
+          <button class="btn btn-ghost" id="preset-r35-btn" type="button">3 : 5</button>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top: var(--space-4);">
+        <h2 class="panel-heading">Mode bandingkan</h2>
+        <div class="row">
+          <button class="btn btn-primary" id="compare-btn" type="button">Mulai bandingkan</button>
+          <button class="btn btn-ghost" id="next-compare-btn" type="button" disabled>Pasangan baru</button>
+        </div>
+        <p class="note">Bandingkan nilai A/B kedua pasangan. Mana yang lebih besar?</p>
+      </div>
+
+      <div class="panel" style="margin-top: var(--space-4);">
+        <div class="row">
+          <button class="btn" id="reset-btn" type="button">Setel ulang</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex: 1 1 auto; min-width: 0;">
+      <div class="panel stage">
+        <h2 class="panel-heading">Batang perbandingan — panjang batang sebanding dengan besar besi</h2>
+        <svg id="main-svg" viewBox="0 0 420 240" role="img" aria-label="Diagram batang untuk besi A dan besi B">
+          <g id="main-grid"></g>
+          <rect id="bar-a" class="bar-a" x="0" y="40" width="0" height="44" rx="4"></rect>
+          <rect id="bar-b" class="bar-b" x="0" y="130" width="0" height="44" rx="4"></rect>
+          <line class="axis" x1="0" y1="196" x2="400" y2="196"></line>
+          <text class="svglabel" id="label-a" x="0" y="28">A</text>
+          <text class="svglabel" id="label-b" x="0" y="118">B</text>
+          <text class="svgmono" id="value-a" x="0" y="222">A = 6</text>
+          <text class="svgmono" id="value-b" x="200" y="222">B = 9</text>
+        </svg>
+        <p class="note" id="stage-note">Geser slider: batang mengikuti perubahan secara animasi.</p>
+      </div>
+
+      <div class="panel" id="compare-panel" style="margin-top: var(--space-4);">
+        <h2 class="panel-heading">Tugas bandingkan</h2>
+        <p id="compare-question">Tekan "Mulai bandingkan" untuk mendapat pasangan.</p>
+        <div class="compare-grid">
+          <div class="card">
+            <h3 id="pair1-title">Pasangan 1</h3>
+            <svg id="c1-svg" viewBox="0 0 200 120" role="img" aria-label="Batang pasangan pertama">
+              <line class="axis" x1="0" y1="106" x2="190" y2="106"></line>
+              <rect id="c1a" class="bar-ca" x="0" y="18" width="0" height="32" rx="4"></rect>
+              <rect id="c1b" class="bar-cb" x="0" y="62" width="0" height="32" rx="4"></rect>
+              <text class="svglabel" id="c1-a-label" x="0" y="12">A</text>
+              <text class="svglabel" id="c1-b-label" x="0" y="56">B</text>
+            </svg>
+          </div>
+          <div class="card">
+            <h3 id="pair2-title">Pasangan 2</h3>
+            <svg id="c2-svg" viewBox="0 0 200 120" role="img" aria-label="Batang pasangan kedua">
+              <line class="axis" x1="0" y1="106" x2="190" y2="106"></line>
+              <rect id="c2a" class="bar-ca" x="0" y="18" width="0" height="32" rx="4"></rect>
+              <rect id="c2b" class="bar-cb" x="0" y="62" width="0" height="32" rx="4"></rect>
+              <text class="svglabel" id="c2-a-label" x="0" y="12">A</text>
+              <text class="svglabel" id="c2-b-label" x="0" y="56">B</text>
+            </svg>
+          </div>
+        </div>
+        <div class="row" style="margin-top: var(--space-3);">
+          <button class="btn btn-primary" id="answer-1-btn" type="button" disabled>Pasangan 1 lebih besar</button>
+          <button class="btn btn-primary" id="answer-2-btn" type="button" disabled>Pasangan 2 lebih besar</button>
+        </div>
+      </div>
+
+      <div id="feedback-panel" style="margin-top: var(--space-4);">
+        <p id="feedback-text">Atur besi A dan B, lalu amati panjang kedua batang.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="widget-config">
+{
+  "type": "simulation",
+  "concept": "ratio_basics",
+  "description": "Murid membandingkan dua besaran sebagai rasio dan membedakan rasio dari proporsi.",
+  "variables": [
+    { "name": "a", "label": "Besi A", "min": 1, "max": 12, "default": 6, "unit": "" },
+    { "name": "b", "label": "Besi B", "min": 1, "max": 12, "default": 9, "unit": "" }
+  ],
+  "presets": [
+    { "name": "2 : 3", "variables": { "a": 6, "b": 9 } },
+    { "name": "1 : 4", "variables": { "a": 3, "b": 12 } },
+    { "name": "3 : 5", "variables": { "a": 6, "b": 10 } }
+  ]
+}
+</script>
+
+<script>
+(function () {
+  'use strict';
+
+  var DEFAULTS = { a: 6, b: 9 };
+  var MAX = 12;
+
+  var el = {
+    aSlider: document.getElementById('a-slider'),
+    bSlider: document.getElementById('b-slider'),
+    aDisplay: document.getElementById('a-display'),
+    bDisplay: document.getElementById('b-display'),
+    ratioDisplay: document.getElementById('ratio-display'),
+    ratioNote: document.getElementById('ratio-note'),
+    barA: document.getElementById('bar-a'),
+    barB: document.getElementById('bar-b'),
+    labelA: document.getElementById('label-a'),
+    labelB: document.getElementById('label-b'),
+    valueA: document.getElementById('value-a'),
+    valueB: document.getElementById('value-b'),
+    stageNote: document.getElementById('stage-note'),
+    compareBtn: document.getElementById('compare-btn'),
+    nextCompareBtn: document.getElementById('next-compare-btn'),
+    compareQuestion: document.getElementById('compare-question'),
+    pair1Title: document.getElementById('pair1-title'),
+    pair2Title: document.getElementById('pair2-title'),
+    c1a: document.getElementById('c1a'),
+    c1b: document.getElementById('c1b'),
+    c2a: document.getElementById('c2a'),
+    c2b: document.getElementById('c2b'),
+    c1aLabel: document.getElementById('c1-a-label'),
+    c1bLabel: document.getElementById('c1-b-label'),
+    c2aLabel: document.getElementById('c2-a-label'),
+    c2bLabel: document.getElementById('c2-b-label'),
+    answer1: document.getElementById('answer-1-btn'),
+    answer2: document.getElementById('answer-2-btn'),
+    feedbackPanel: document.getElementById('feedback-panel'),
+    feedbackText: document.getElementById('feedback-text'),
+    resetBtn: document.getElementById('reset-btn')
+  };
+
+  var state = { a: DEFAULTS.a, b: DEFAULTS.b, pair1: null, pair2: null, answered: false };
+
+  /* Tweened bar widths so slider moves are visibly animated. */
+  var anim = { running: false };
+  var current = { mainA: 0, mainB: 0, c1a: 0, c1b: 0, c2a: 0, c2b: 0 };
+  var target = { mainA: 0, mainB: 0, c1a: 0, c2a: 0, c2b: 0, c1b: 0 };
+
+  var MAIN_TRACK = 380;
+  var MINI_TRACK = 180;
+
+  function gcd(x, y) { while (y) { var t = y; y = x % y; x = t; } return x; }
+
+  function reducePair(a, b) {
+    var g = gcd(a, b);
+    return { ra: a / g, rb: b / g, g: g };
+  }
+
+  function setMainTargets() {
+    target.mainA = (state.a / MAX) * MAIN_TRACK;
+    target.mainB = (state.b / MAX) * MAIN_TRACK;
+  }
+
+  function setCompareTargets() {
+    if (!state.pair1 || !state.pair2) return;
+    target.c1a = (state.pair1.a / MAX) * MINI_TRACK;
+    target.c1b = (state.pair1.b / MAX) * MINI_TRACK;
+    target.c2a = (state.pair2.a / MAX) * MINI_TRACK;
+    target.c2b = (state.pair2.b / MAX) * MINI_TRACK;
+  }
+
+  function paint() {
+    el.barA.setAttribute('width', current.mainA.toFixed(2));
+    el.barB.setAttribute('width', current.mainB.toFixed(2));
+    el.c1a.setAttribute('width', current.c1a.toFixed(2));
+    el.c1b.setAttribute('width', current.c1b.toFixed(2));
+    el.c2a.setAttribute('width', current.c2a.toFixed(2));
+    el.c2b.setAttribute('width', current.c2b.toFixed(2));
+  }
+
+  function frame() {
+    var keys = ['mainA', 'mainB', 'c1a', 'c1b', 'c2a', 'c2b'];
+    var settled = true;
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i];
+      var diff = target[k] - current[k];
+      if (Math.abs(diff) > 0.4) { current[k] += diff * 0.18; settled = false; }
+      else { current[k] = target[k]; }
+    }
+    paint();
+    paintAxisLabels();
+    if (!settled) { anim.running = true; requestAnimationFrame(frame); }
+    else { anim.running = false; }
+  }
+
+  function kick() {
+    if (anim.running) return;
+    anim.running = true;
+    requestAnimationFrame(frame);
+  }
+
+  function paintAxisLabels() {
+    var nextA = current.mainA + 8;
+    var nextB = current.mainB + 8;
+    el.labelA.setAttribute('x', String(Math.min(nextA, 396)));
+    el.labelB.setAttribute('x', String(Math.min(nextB, 396)));
+    el.valueA.textContent = 'A = ' + state.a;
+    el.valueB.textContent = 'B = ' + state.b;
+  }
+
+  function updateRatioReadout() {
+    var r = reducePair(state.a, state.b);
+    el.ratioDisplay.textContent = state.a + ' : ' + state.b + ' = ' + r.ra + ' : ' + r.rb;
+    if (r.g === 1) {
+      el.ratioNote.textContent = 'Keduanya sudah prima satu sama lain, jadi rasio tidak bisa disederhanakan.';
+    } else {
+      el.ratioNote.textContent = 'Sederhanakan dengan membagi keduanya dengan ' + r.g + '. Rasio ' +
+        r.ra + ' : ' + r.rb + ' sama nilainya dengan ' + state.a + ' : ' + state.b + '.';
+    }
+    var value = state.a / state.b;
+    if (value > 1) {
+      el.stageNote.textContent = 'Rasio lebih besar dari 1 karena A (' + state.a + ') melebihi B (' + state.b + ').';
+    } else if (value < 1) {
+      el.stageNote.textContent = 'Rasio lebih kecil dari 1 karena A (' + state.a + ') kurang dari B (' + state.b + ').';
+    } else {
+      el.stageNote.textContent = 'Rasio sama dengan 1 karena A dan B sama besar.';
+    }
+  }
+
+  function readSliders() {
+    state.a = parseInt(el.aSlider.value, 10);
+    state.b = parseInt(el.bSlider.value, 10);
+    el.aDisplay.textContent = String(state.a);
+    el.bDisplay.textContent = String(state.b);
+    updateRatioReadout();
+    setMainTargets();
+    kick();
+    paintAxisLabels();
+  }
+
+  function drawGrid() {
+    var g = document.getElementById('main-grid');
+    while (g.firstChild) g.removeChild(g.firstChild);
+    var svgNS = 'http://www.w3.org/2000/svg';
+    for (var i = 0; i <= 4; i++) {
+      var line = document.createElementNS(svgNS, 'line');
+      var x = (i / 4) * MAIN_TRACK;
+      line.setAttribute('x1', String(x));
+      line.setAttribute('x2', String(x));
+      line.setAttribute('y1', '36');
+      line.setAttribute('y2', '178');
+      line.setAttribute('class', 'gridline');
+      g.appendChild(line);
+    }
+  }
+
+  function randomPair() {
+    return { a: 1 + Math.floor(Math.random() * MAX), b: 1 + Math.floor(Math.random() * MAX) };
+  }
+
+  function newComparison() {
+    var p1 = randomPair();
+    var p2 = randomPair();
+    state.pair1 = p1;
+    state.pair2 = p2;
+    state.answered = false;
+
+    el.pair1Title.textContent = 'Pasangan 1 — A = ' + p1.a + ', B = ' + p1.b;
+    el.pair2Title.textContent = 'Pasangan 2 — A = ' + p2.a + ', B = ' + p2.b;
+    el.c1aLabel.setAttribute('x', '0');
+    el.c1bLabel.setAttribute('x', '0');
+    el.c2aLabel.setAttribute('x', '0');
+    el.c2bLabel.setAttribute('x', '0');
+
+    el.compareQuestion.textContent = 'Bandingkan nilai A/B kedua pasangan. Pasangan mana yang lebih besar?';
+    el.answer1.disabled = false;
+    el.answer2.disabled = false;
+    el.nextCompareBtn.disabled = false;
+
+    setFeedback('Pilih jawabanmu.', null);
+
+    setCompareTargets();
+    kick();
+  }
+
+  function setFeedback(text, kind) {
+    el.feedbackText.textContent = text;
+    el.feedbackPanel.classList.remove('success', 'error');
+    if (kind === 'success') el.feedbackPanel.classList.add('success');
+    if (kind === 'error') el.feedbackPanel.classList.add('error');
+  }
+
+  function checkAnswer(choice) {
+    if (!state.pair1 || state.answered) return;
+    state.answered = true;
+    var v1 = state.pair1.a / state.pair1.b;
+    var v2 = state.pair2.a / state.pair2.b;
+    var correct = (v1 > v2) ? 1 : ((v2 > v1) ? 2 : 0);
+    var detail = 'Nilai pasangan 1 = ' + state.pair1.a + '/' + state.pair1.b + ' = ' + v1.toFixed(2) +
+      '. Nilai pasangan 2 = ' + state.pair2.a + '/' + state.pair2.b + ' = ' + v2.toFixed(2) + '.';
+    if (correct === 0) {
+      setFeedback('Keduanya sama besar. ' + detail + ' Tidak ada pasangan yang lebih besar di sini — tekan "Pasangan baru".', 'success');
+    } else if (choice === correct) {
+      setFeedback('Benar! ' + detail + ' Ingat: rasio hanya membandingkan, tidak menyatakan bahwa dua perbandingan sama.', 'success');
+    } else {
+      setFeedback('Belum tepat. ' + detail + ' Bandingkan dengan cara membagi A dengan B, bukan dengan mengurangi.', 'error');
+    }
+  }
+
+  function applyPreset(a, b) {
+    el.aSlider.value = String(a);
+    el.bSlider.value = String(b);
+    state.answered = false;
+    readSliders();
+  }
+
+  function resetState() {
+    el.aSlider.value = String(DEFAULTS.a);
+    el.bSlider.value = String(DEFAULTS.b);
+    state.pair1 = null;
+    state.pair2 = null;
+    state.answered = false;
+
+    current.mainA = 0; current.mainB = 0;
+    current.c1a = 0; current.c1b = 0; current.c2a = 0; current.c2b = 0;
+    target.c1a = 0; target.c1b = 0; target.c2a = 0; target.c2b = 0;
+
+    el.pair1Title.textContent = 'Pasangan 1';
+    el.pair2Title.textContent = 'Pasangan 2';
+    el.compareQuestion.textContent = 'Tekan "Mulai bandingkan" untuk mendapat pasangan.';
+    el.answer1.disabled = true;
+    el.answer2.disabled = true;
+    el.nextCompareBtn.disabled = true;
+
+    readSliders();
+    setFeedback('Atur besi A dan B, lalu amati panjang kedua batang.', null);
+    kick();
+  }
+
+  el.aSlider.addEventListener('input', readSliders);
+  el.bSlider.addEventListener('input', readSliders);
+  el.compareBtn.addEventListener('click', newComparison);
+  el.nextCompareBtn.addEventListener('click', newComparison);
+  el.answer1.addEventListener('click', function () { checkAnswer(1); });
+  el.answer2.addEventListener('click', function () { checkAnswer(2); });
+  el.resetBtn.addEventListener('click', resetState);
+  document.getElementById('preset-r23-btn').addEventListener('click', function () { applyPreset(6, 9); });
+  document.getElementById('preset-r14-btn').addEventListener('click', function () { applyPreset(3, 12); });
+  document.getElementById('preset-r35-btn').addEventListener('click', function () { applyPreset(6, 10); });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.target && /input|textarea|select/i.test(e.target.tagName)) return;
+    if (e.key === 'r' || e.key === 'R') { resetState(); }
+    else if (e.key === ' ' || e.key === 'Enter') {
+      if (document.activeElement && document.activeElement.classList.contains('btn')) return;
+      e.preventDefault();
+      newComparison();
+    }
+  });
+
+  drawGrid();
+  resetState();
+  window.addEventListener('resize', drawGrid);
+})();
+</script>
+</body>
+</html>

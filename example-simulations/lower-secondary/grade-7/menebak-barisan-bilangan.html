@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="education_levels" content="Lower Secondary">
+  <meta name="grade" content="7">
+  <title>Menebak Barisan Bilangan · Matematika SMP Kelas VII</title>
+  <meta name="description" content="Permainan menebak suku berikutnya pada barisan bilangan dengan tingkat kesulitan bertingkat.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Menebak Barisan Bilangan">
+  <meta property="og:description" content="Delapan tingkat barisan bilangan yang makin sulit. Tebak suku berikutnya, pakai tiga petunjuk bertingkat, lalu jelaskan alasanmu dengan bahasa sendiri. Tanpa batas waktu.">
+  <meta property="og:locale" content="id">
+  <style>
+    :root {
+      /* Colour */
+      --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+      --surface: #14141e;     /* panels, cards, step rows */
+      --panel: rgba(20, 20, 30, 0.9);
+      --border: rgba(255, 255, 255, 0.1);
+      --border-strong: #333;
+      --text: #ffffff;
+      --text-muted: #aaa;
+      --text-dim: #888;
+      --accent: #6366f1;      /* primary action, slider thumb, active state */
+      --accent-hover: #5558e8;
+      --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+      --success: #fbbf24;     /* completion, headings, callouts */
+      --warning: #fb923c;
+      --error: #ff6b6b;
+
+      /* Spacing scale */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+
+      /* Radius scale */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-pill: 999px;
+
+      /* Type scale (system fonts only) */
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --text-base: 16px;
+      --text-sm: 14px;
+      --text-xs: 13px;
+      --text-caption: 11px;   /* uppercase control labels */
+      --text-heading: 24px;
+
+      /* Focus, motion, stacking */
+      --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+      --motion: 0.2s;
+      --motion-slow: 0.3s;
+      --z-overlay: 100;        /* panels, tooltips */
+      --z-modal: 1000;         /* loading screens, modal dialogs */
+    }
+
+    [data-theme="light"] {
+      --bg: #f7f7fb;
+      --surface: #ffffff;
+      --panel: rgba(255, 255, 255, 0.92);
+      --border: rgba(0, 0, 0, 0.12);
+      --border-strong: #d4d4d8;
+      --text: #16161d;
+      --text-muted: #52525b;
+      --text-dim: #71717a;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+      --accent-soft: rgba(79, 70, 229, 0.95);
+      --success: #b45309;
+      --warning: #c2410c;
+      --error: #dc2626;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font);
+      font-size: var(--text-base);
+      line-height: 1.5;
+      background: var(--bg);
+      color: var(--text);
+      padding: var(--space-4);
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+    }
+
+    .panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+    .btn {
+      font-family: inherit;
+      font-size: var(--text-sm);
+      min-height: 44px;            /* never below 44px, mobile */
+      min-width: 44px;
+      padding: var(--space-3) var(--space-5);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      background: var(--border-strong);
+      color: var(--text);
+      cursor: pointer;
+      transition: background var(--motion);
+    }
+    .btn:hover { background: var(--text-muted); }
+    .btn:active { transform: scale(0.95); }
+    .btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-primary { background: var(--accent); border-color: var(--accent); }
+    .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+    .btn-ghost { background: transparent; border-color: var(--border); }
+    .btn-ghost:hover { background: var(--surface); }
+
+    .control-label {
+      font-size: var(--text-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    input[type="range"] {
+      width: 100%; height: 6px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px; height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+/* Touch target: keep the 6px visual track, but give the control a 44px hit area. */
+input[type="range"] { height: 44px; background: transparent; }
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-moz-range-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-webkit-slider-thumb { margin-top: -7px; }
+input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; background: var(--accent); border-radius: 50%; cursor: pointer; }
+    input[type="range"]:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+    }
+
+    #feedback-panel {
+      background: var(--surface);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+    }
+    #feedback-panel.success { border-left-color: var(--success); }
+    #feedback-panel.error { border-left-color: var(--error); }
+
+    .progress-track {
+      height: 8px;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+    .progress-fill { height: 100%; background: var(--accent); transition: width var(--motion-slow); }
+
+    /* ---- layout helpers (tokens only) ---- */
+    .wrap { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-4); }
+    h1 { font-size: var(--text-heading); line-height: 1.2; }
+    h2 { font-size: var(--text-base); color: var(--success); margin: 0 0 var(--space-3); }
+    h3 { font-size: var(--text-sm); color: var(--text-muted); margin: 0 0 var(--space-2); }
+    .lead { color: var(--text-muted); font-size: var(--text-sm); }
+    .mono { font-family: var(--font-mono); }
+    .scoreboard { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-3); margin-bottom: var(--space-3); }
+    @media (max-width: 420px) { .scoreboard { grid-template-columns: repeat(2, 1fr); } }
+    .scoreboard div { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-3); }
+    .scoreboard .k { display: block; font-size: var(--text-caption); text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+    .scoreboard .v { display: block; font-family: var(--font-mono); font-size: var(--text-heading); }
+    .seq { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: var(--space-3) 0; }
+    .seq span {
+      font-family: var(--font-mono); font-size: var(--text-heading);
+      min-width: 64px; text-align: center;
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: var(--space-2) var(--space-3);
+    }
+    .seq span.hidden-term { border-color: var(--warning); color: var(--warning); border-style: dashed; }
+    .seq span.revealed { border-style: solid; color: var(--success); border-color: var(--success); }
+    .answer-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+    input[type="text"], textarea {
+      font-family: var(--font-mono); font-size: var(--text-base);
+      min-height: 44px; padding: var(--space-2) var(--space-3);
+      color: var(--text); background: var(--surface);
+      border: 1px solid var(--border-strong); border-radius: var(--radius-md);
+    }
+    input[type="text"] { width: 120px; text-align: center; }
+    textarea { width: 100%; min-height: 88px; resize: vertical; font-family: var(--font); font-size: var(--text-sm); }
+    input[type="text"]:focus-visible, textarea:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .btn-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .hint-list { margin: var(--space-2) 0 0; padding-left: var(--space-5); font-size: var(--text-sm); color: var(--text-muted); }
+    .hint-list li { margin-bottom: var(--space-1); }
+    .hidden { display: none; }
+    .history { margin-top: var(--space-4); }
+    .history ol { padding-left: var(--space-5); font-size: var(--text-xs); color: var(--text-dim); }
+    .history li { margin-bottom: var(--space-1); }
+    .note { font-size: var(--text-xs); color: var(--text-dim); margin-top: var(--space-2); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Menebak Barisan Bilangan</h1>
+      <p class="lead">Barisannya lengkap dan diam, jadi kamu boleh-Berhenti berpikir sesuka hati. Tebak suku berikutnya, pakai petunjuk bila perlu, lalu jelaskan alasanmu dengan bahasa sendiri.</p>
+    </header>
+
+    <section class="panel" id="game-panel">
+      <h2>Tingkat <span class="mono" id="level-display">1</span> dari 8</h2>
+
+      <div class="scoreboard">
+        <div><span class="k">Skor</span><span class="v" id="score-display">0</span></div>
+        <div><span class="k">Tingkat</span><span class="v" id="level-score-display">1/8</span></div>
+        <div><span class="k">Benar</span><span class="v" id="correct-display">0</span></div>
+        <div><span class="k">Suku erreicht</span><span class="v" id="attempt-display">0/2</span></div>
+      </div>
+
+      <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="progress-fill" style="width: 0%"></div></div>
+      <p class="note" id="progress-note">Suku yang dijawab benar pada tingkat ini: 0 dari 2.</p>
+
+      <h3 style="margin-top: var(--space-4);">Barisan bilangan</h3>
+      <div class="seq" id="seq-display"></div>
+
+      <div class="answer-row">
+        <input type="text" inputmode="numeric" id="answer-input" aria-label="Tebakan suku berikutnya">
+        <button type="button" class="btn btn-primary" id="submit-btn">Kirim tebakan</button>
+      </div>
+
+      <div class="btn-row" style="margin-top: var(--space-3);">
+        <button type="button" class="btn btn-ghost" id="hint-1-btn">Petunjuk 1: suku ke-2</button>
+        <button type="button" class="btn btn-ghost" id="hint-2-btn">Petunjuk 2: bedanya</button>
+        <button type="button" class="btn btn-ghost" id="hint-3-btn">Petunjuk 3: aturannya</button>
+      </div>
+      <ul class="hint-list" id="hint-list"></ul>
+
+      <div id="feedback-panel" role="status" aria-live="polite" style="margin-top: var(--space-3);">Tulis tebakanmu. Salah tidak mengakhiri permainan, jadi tenang saja dan coba lagi.</div>
+
+      <div id="explain-block" class="hidden" style="margin-top: var(--space-4);">
+        <h3>Jelaskan alasanmu</h3>
+        <p class="note" style="margin-top: 0;">Tulis aturan polanya dengan kalimatmu sendiri, lalu bandingkan dengan jawaban berikut.</p>
+        <textarea id="explain-input" aria-label="Penjelasan alasanmu"></textarea>
+        <div class="btn-row" style="margin-top: var(--space-2);">
+          <button type="button" class="btn btn-primary" id="explain-btn">Bandingkan penjelasanku</button>
+          <button type="button" class="btn btn-ghost" id="next-btn">Ronde berikutnya</button>
+        </div>
+        <div id="explain-feedback" style="margin-top: var(--space-3);"></div>
+      </div>
+
+      <div class="btn-row" style="margin-top: var(--space-4);">
+        <button type="button" class="btn btn-ghost" id="reset-btn">Mulai ulang permainan</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Riwayat ronde</h2>
+      <div class="history">
+        <ol id="history-display"></ol>
+      </div>
+    </section>
+  </div>
+
+  <script type="application/json" id="widget-config">
+{
+  "type": "game",
+  "gameType": "guess",
+  "description": "Permainan menebak suku berikutnya pada barisan bilangan dengan tingkat kesulitan bertingkat.",
+  "gameConfig": {
+    "controls": ["answer_input", "submit_btn", "hint_1_btn", "hint_2_btn", "hint_3_btn", "explain_input"],
+    "targets": [
+      { "id": "seq_next_term", "type": "sequence_term", "levels": 8 }
+    ],
+    "initialConditions": { "level": 1, "score": 0, "roundsPerLevel": 2 },
+    "successCondition": "menebak suku berikutnya dengan benar, lalu menjelaskan aturan polanya",
+    "levels": [
+      { "id": 1, "rule": "selisih tetap positif" },
+      { "id": 2, "rule": "selisih tetap" },
+      { "id": 3, "rule": "selisih tetap, angka lebih besar" },
+      { "id": 4, "rule": "selisih tetap dengan pembulatan" },
+      { "id": 5, "rule": "dikali bilangan tetap" },
+      { "id": 6, "rule": "hasil kali tetap" },
+      { "id": 7, "rule": "dua suku sebelumnya dijumlahkan" },
+      { "id": 8, "rule": "selisih berganti-ganti" }
+    ]
+  },
+  "scoring": {
+    "completionPoints": 20,
+    "accuracyBonus": "benar di percobaan pertama dapat 20 poin, percobaan kedua 12, percobaan ketiga 8",
+    "timeBonus": false
+  },
+  "achievements": [
+    { "id": "perfect_level", "name": "Tingkat Sempurna", "description": "Semua suku benar di percobaan pertama sampai tingkat 5" },
+    { "id": "all_levels", "name": "Juara Pola", "description": "Menyelesaikan seluruh 8 tingkat" }
+  ]
+}
+  </script>
+
+  <script>
+  (function () {
+    "use strict";
+
+    var MAX_LEVEL = 8;
+    var PER_LEVEL = 2;
+
+    function ri(lo, hi) { return lo + Math.floor(Math.random() * (hi - lo + 1)); }
+
+    /* ---------- sequence builders, one per level ---------- */
+    function buildRound(level) {
+      var seq = [], answer, rule, second, diff = null, kind;
+      switch (level) {
+        case 1:
+          kind = "tambah";
+          var d1 = ri(2, 5), a1 = ri(1, 9);
+          for (var i = 0; i < 4; i++) seq.push(a1 + i * d1);
+          answer = a1 + 4 * d1; diff = d1;
+          rule = "setiap suku ditambah " + d1 + ", jadi polanya naik tetap sebesar " + d1 + ".";
+          break;
+        case 2:
+          kind = "tambah";
+          var d2 = ri(3, 9), a2 = ri(2, 20);
+          for (var j = 0; j < 4; j++) seq.push(a2 + j * d2);
+          answer = a2 + 4 * d2; diff = d2;
+          rule = "setiap suku ditambah " + d2 + ", jadi polanya naik tetap sebesar " + d2 + ".";
+          break;
+        case 3:
+          kind = "tambah";
+          var d3 = ri(6, 15), a3 = ri(5, 30);
+          for (var k = 0; k < 4; k++) seq.push(a3 + k * d3);
+          answer = a3 + 4 * d3; diff = d3;
+          rule = "selisih antar suku selalu " + d3 + ", jadi cukup tambahkan " + d3 + " pada suku terakhir.";
+          break;
+        case 4:
+          kind = "tambah";
+          var d4 = ri(3, 12), a4 = ri(1, 15);
+          for (var m = 0; m < 4; m++) seq.push(a4 + m * d4);
+          answer = a4 + 4 * d4; diff = d4;
+          rule = "selisihnya tidak berubah, selalu " + d4 + ". Barisannya: " + seq[0] + ", " + seq[1] + ", " + seq[2] + ", " + seq[3] + ", " + answer + ".";
+          break;
+        case 5:
+          kind = "kali";
+          var r5 = 2, a5 = ri(2, 9);
+          for (var n = 0; n < 4; n++) seq.push(a5 * Math.pow(r5, n));
+          answer = a5 * Math.pow(r5, 4); diff = answer - seq[3];
+          rule = "setiap suku dikali " + r5 + ". Barisannya: " + a5 + ", " + (a5 * r5) + ", " + (a5 * r5 * r5) + ", dan seterusnya sampai " + answer + ".";
+          break;
+        case 6:
+          kind = "kali";
+          var a6 = ri(1, 5), r6 = 3;
+          for (var p = 0; p < 4; p++) seq.push(a6 * Math.pow(r6, p));
+          answer = a6 * Math.pow(r6, 4); diff = answer - seq[3];
+          rule = "tiap suku dikali " + r6 + ". Perhatikan pangkatnya: " + a6 + " lalu dikali " + r6 + " berulang kali sampai " + answer + ".";
+          break;
+        case 7:
+          kind = "jumlah";
+          var f1 = ri(1, 8), f2 = ri(1, 9);
+          seq.push(f1, f2);
+          for (var q = 0; q < 2; q++) seq.push(seq[seq.length - 2] + seq[seq.length - 1]);
+          answer = seq[3] + seq[2]; diff = answer - seq[3];
+          rule = "setiap suku adalah jumlah dua suku sebelumnya: " + seq[2] + " + " + seq[3] + " = " + answer + ".";
+          break;
+        default:
+          kind = "selang";
+          var a8 = ri(1, 12), dA = ri(2, 5), dB = ri(6, 11);
+          seq.push(a8);
+          for (var s = 0; s < 4; s++) seq.push(seq[s] + (s % 2 === 0 ? dA : dB));
+          answer = seq[4] + dB; diff = dB;
+          rule = "selisihnya berganti-ganti antara " + dA + " dan " + dB + ": naik " + dA + ", naik " + dB + ", naik " + dA + ", lalu naik " + dB + " lagi.";
+          break;
+      }
+      second = seq[1];
+      return { level: level, seq: seq, answer: answer, rule: rule, kind: kind, second: second, diff: diff };
+    }
+
+    /* ---------- state ---------- */
+    var state = {
+      level: 1,
+      levelSolved: 0,
+      score: 0,
+      correct: 0,
+      attempts: 0,
+      round: null,
+      hinted: 0,
+      answered: false,
+      history: [],
+      revealed: false,
+      anim: { raf: 0, t: 0, active: false, term: 0 }
+    };
+
+    var seqDisplay = document.getElementById("seq-display");
+    var feedback = document.getElementById("feedback-panel");
+
+    function setFeedback(msg, kind) {
+      feedback.textContent = msg;
+      feedback.className = kind === "success" ? "success" : (kind === "error" ? "error" : "");
+    }
+
+    /* ---------- rendering ---------- */
+    function renderScoreboard() {
+      document.getElementById("score-display").textContent = String(state.score);
+      document.getElementById("level-display").textContent = String(state.level);
+      document.getElementById("level-score-display").textContent = state.level + "/" + MAX_LEVEL;
+      document.getElementById("correct-display").textContent = String(state.correct);
+      document.getElementById("attempt-display").textContent = state.levelSolved + "/" + PER_LEVEL;
+      var pct = state.levelSolved / PER_LEVEL * 100;
+      document.getElementById("progress-fill").style.width = pct + "%";
+      document.getElementById("progress-note").textContent =
+        "Suku yang dijawab benar di tingkat ini: " + state.levelSolved + " dari " + PER_LEVEL + ".";
+    }
+
+    function renderSequence() {
+      var r = state.round;
+      var html = "";
+      for (var i = 0; i < r.seq.length; i++) {
+        html += "<span>" + r.seq[i] + "</span>";
+      }
+      if (!state.revealed) {
+        html += '<span class="hidden-term">?</span>';
+      } else {
+        html += '<span class="revealed">' + r.answer + "</span>";
+      }
+      seqDisplay.innerHTML = html;
+    }
+
+    function renderHints() {
+      var ul = document.getElementById("hint-list");
+      var r = state.round;
+      var items = [];
+      if (state.hinted >= 1) items.push("Suku ke-2 adalah " + r.second + ".");
+      if (state.hinted >= 2) {
+        items.push(r.diff === null
+          ? "Bedanya tidak tetap, tapi polanya masih bisa diterka."
+          : "Selisih dari suku " + (r.seq.length - 1) + " ke suku berikutnya adalah " + r.diff + ".");
+      }
+      if (state.hinted >= 3) items.push("Aturannya: " + r.rule);
+      ul.innerHTML = items.map(function (t) { return "<li>" + t + "</li>"; }).join("");
+
+      ["hint-1-btn", "hint-2-btn", "hint-3-btn"].forEach(function (id, i) {
+        document.getElementById(id).disabled = state.hinted > i;
+      });
+    }
+
+    function renderHistory() {
+      var ol = document.getElementById("history-display");
+      if (!state.history.length) {
+        ol.innerHTML = "<li>Belum ada ronde yang dijawab.</li>";
+        return;
+      }
+      ol.innerHTML = state.history.map(function (h) {
+        return "<li>Tingkat " + h.level + ": " + h.seq + " &rarr; " + (h.ok ? "benar (" + h.answer + ")" : "salah, tebakan " + h.guess + ", jawaban " + h.answer) + "</li>";
+      }).join("");
+    }
+
+    /* ---------- reveal animation ---------- */
+    function revealAnswer() {
+      if (state.anim.raf) cancelAnimationFrame(state.anim.raf);
+      state.revealed = true;
+      var start = null;
+      var DUR = 420;
+      var termEl = seqDisplay.lastElementChild;
+      function frame(ts) {
+        if (start === null) start = ts;
+        var t = Math.min(1, (ts - start) / DUR);
+        var e = 1 - Math.pow(1 - t, 3);
+        if (termEl) {
+          var s = 0.7 + 0.3 * e;
+          termEl.style.transform = "scale(" + s.toFixed(3) + ")";
+          termEl.style.opacity = String(0.4 + 0.6 * e);
+        }
+        if (t < 1) {
+          state.anim.raf = requestAnimationFrame(frame);
+        } else {
+          state.anim.raf = 0;
+          if (termEl) { termEl.style.transform = "scale(1)"; termEl.style.opacity = "1"; }
+        }
+      }
+      state.anim.raf = requestAnimationFrame(frame);
+      renderSequence();
+    }
+
+    /* ---------- round lifecycle ---------- */
+    function newRound() {
+      if (state.anim.raf) { cancelAnimationFrame(state.anim.raf); state.anim.raf = 0; }
+      state.round = buildRound(state.level);
+      state.hinted = 0;
+      state.answered = false;
+      state.revealed = false;
+      state.attempts = 0;
+      document.getElementById("answer-input").value = "";
+      document.getElementById("explain-input").value = "";
+      document.getElementById("explain-block").classList.add("hidden");
+      document.getElementById("explain-feedback").innerHTML = "";
+      document.getElementById("submit-btn").disabled = false;
+      renderScoreboard();
+      renderSequence();
+      renderHints();
+      setFeedback("Barisan ini punya pola. Tebagannya berapa? Salah tidak mengakhiri permainan.", null);
+    }
+
+    function submitAnswer() {
+      if (state.answered) return;
+      var input = document.getElementById("answer-input");
+      var raw = input.value.trim();
+      var v = parseInt(raw, 10);
+      if (raw === "" || isNaN(v)) {
+        setFeedback("Tulis dulu angka tebakanmu.", null);
+        return;
+      }
+      state.attempts++;
+      var ok = v === state.round.answer;
+      state.history.push({
+        level: state.level,
+        seq: state.round.seq.join(", "),
+        answer: state.round.answer,
+        guess: v,
+        ok: ok
+      });
+      renderHistory();
+
+      if (ok) {
+        state.answered = true;
+        state.correct++;
+        var pts = state.attempts === 1 ? 20 : (state.attempts === 2 ? 12 : 8);
+        state.score += pts;
+        state.levelSolved++;
+        setFeedback("Tepat! Barisannya berlanjut dengan " + state.round.answer + ". Kamu dapat " + pts + " poin.", "success");
+        renderScoreboard();
+        revealAnswer();
+        document.getElementById("submit-btn").disabled = true;
+        document.getElementById("explain-block").classList.remove("hidden");
+        document.getElementById("hint-1-btn").disabled = true;
+        document.getElementById("hint-2-btn").disabled = true;
+        document.getElementById("hint-3-btn").disabled = true;
+        renderHints();
+      } else {
+        setFeedback("Belum tepat. Coba perhatikan selisih antar sukunya. Petunjuknya ada di bawah, dan permainan belum selesai.", "error");
+        if (state.attempts === 1) {
+          document.getElementById("hint-1-btn").disabled = false;
+        }
+        renderHints();
+      }
+    }
+
+    function useHint(level) {
+      if (state.hinted >= level) return;
+      state.hinted = level;
+      renderHints();
+      var msgs = [
+        "Petunjuk 1: lihat nilai suku ke-2.",
+        "Petunjuk 2: perhatikan selisihnya.",
+        "Petunjuk 3: ini aturan lengkapnya."
+      ];
+      setFeedback(msgs[level - 1] + " Pakaiordinator jawaban di bawah untukolv.", null);
+    }
+
+    function compareExplanation() {
+      var text = document.getElementById("explain-input").value.trim();
+      var box = document.getElementById("explain-feedback");
+      var r = state.round;
+      if (text.length < 5) {
+        box.innerHTML = '<div id="explain-note" class="panel" style="border-left: 3px solid var(--warning);">Tuliskan sedikit lebih panjang, minimal beberapa kata tentang aturan yang kamu lihat.</div>';
+        return;
+      }
+      var nums = text.match(/-?\d+/g) || [];
+      var mentionsRule = false;
+      for (var i = 0; i < nums.length; i++) {
+        if (parseInt(nums[i], 10) === Math.abs(r.diff) && r.diff !== null) { mentionsRule = true; }
+      }
+      var html = '<div class="panel" style="border-left: 3px solid ' + (mentionsRule ? "var(--success)" : "var(--accent)") + ';">';
+      html += "<p><b>Aturan sebenarnya:</b> " + r.rule + "</p>";
+      html += "<p style=\"margin-top: var(--space-2);\">";
+      html += mentionsRule
+        ? "Kamu sudah menyebut angka yang cocok dengan pola. Coba sebut juga kenapa angka itu muncul dari suku sebelumnya."
+        : "Coba sebutkan lagi angka yang berubah setiap suku, lalu jelaskan dari suku mana angka itu diperoleh.";
+      html += "</p></div>";
+      box.innerHTML = html;
+    }
+
+    function nextRound() {
+      if (state.levelSolved >= PER_LEVEL) {
+        if (state.level >= MAX_LEVEL) {
+          setFeedback("Seluruh 8 tingkat selesai. Skor akhir " + state.score + ", benar " + state.correct + " dari " + state.history.length + " tebakan. Tekan Mulai ulang untuk bermain lagi dengan barisan baru.", "success");
+          document.getElementById("submit-btn").disabled = true;
+          document.getElementById("next-btn").disabled = true;
+          return;
+        }
+        state.level++;
+        state.levelSolved = 0;
+        newRound();
+        return;
+      }
+      newRound();
+    }
+
+    function resetState() {
+      if (state.anim.raf) { cancelAnimationFrame(state.anim.raf); state.anim.raf = 0; }
+      state.level = 1;
+      state.levelSolved = 0;
+      state.score = 0;
+      state.correct = 0;
+      state.attempts = 0;
+      state.round = null;
+      state.hinted = 0;
+      state.answered = false;
+      state.history = [];
+      state.revealed = false;
+      document.getElementById("next-btn").disabled = false;
+      renderHistory();
+      newRound();
+      setFeedback("Permainan dimulai dari awal: tingkat 1, skor 0. Tidak ada batasan waktu, jadi silakan berpikir perlahan.", null);
+    }
+
+    /* ---------- init ---------- */
+    document.getElementById("submit-btn").addEventListener("click", submitAnswer);
+    document.getElementById("answer-input").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") submitAnswer();
+    });
+    document.getElementById("hint-1-btn").addEventListener("click", function () { useHint(1); });
+    document.getElementById("hint-2-btn").addEventListener("click", function () { useHint(2); });
+    document.getElementById("hint-3-btn").addEventListener("click", function () { useHint(3); });
+    document.getElementById("explain-btn").addEventListener("click", compareExplanation);
+    document.getElementById("next-btn").addEventListener("click", nextRound);
+    document.getElementById("reset-btn").addEventListener("click", resetState);
+
+    renderHistory();
+    newRound();
+    setFeedback("Selamat datang. Baca barisannya, lalu tulis tebakanmu di kotak. Tidak ada batas waktu, jadi silakan berpikir sejenak.", null);
+  })();
+  </script>
+</body>
+</html>

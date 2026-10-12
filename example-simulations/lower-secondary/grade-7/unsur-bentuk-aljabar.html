@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="education_levels" content="Lower Secondary">
+  <meta name="grade" content="7">
+  <title>Unsur Bentuk Aljabar · Matematika SMP Kelas VII</title>
+  <meta name="description" content="Murid mengenali suku, konstanta, koefisien, dan variabel, lalu menyederhanakan bentuk aljabar menggunakan sifat operasi.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Unsur Bentuk Aljabar">
+  <meta property="og:description" content="Meja kerja aljabar: kenali suku, koefisien, variabel, dan konstanta, lalu sederhanakan bentuk aljabar dengan sifat komutatif, asosiatif, dan distributif.">
+  <meta property="og:locale" content="id">
+  <style>
+    :root {
+      /* Colour */
+      --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+      --surface: #14141e;     /* panels, cards, step rows */
+      --panel: rgba(20, 20, 30, 0.9);
+      --border: rgba(255, 255, 255, 0.1);
+      --border-strong: #333;
+      --text: #ffffff;
+      --text-muted: #aaa;
+      --text-dim: #888;
+      --accent: #6366f1;      /* primary action, slider thumb, active state */
+      --accent-hover: #5558e8;
+      --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+      --success: #fbbf24;     /* completion, headings, callouts */
+      --warning: #fb923c;
+      --error: #ff6b6b;
+
+      /* Spacing scale */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+
+      /* Radius scale */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-pill: 999px;
+
+      /* Type scale (system fonts only) */
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --text-base: 16px;
+      --text-sm: 14px;
+      --text-xs: 13px;
+      --text-caption: 11px;   /* uppercase control labels */
+      --text-heading: 24px;
+
+      /* Focus, motion, stacking */
+      --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+      --motion: 0.2s;
+      --motion-slow: 0.3s;
+      --z-overlay: 100;        /* panels, tooltips */
+      --z-modal: 1000;         /* loading screens, modal dialogs */
+    }
+
+    [data-theme="light"] {
+      --bg: #f7f7fb;
+      --surface: #ffffff;
+      --panel: rgba(255, 255, 255, 0.92);
+      --border: rgba(0, 0, 0, 0.12);
+      --border-strong: #d4d4d8;
+      --text: #16161d;
+      --text-muted: #52525b;
+      --text-dim: #71717a;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+      --accent-soft: rgba(79, 70, 229, 0.95);
+      --success: #b45309;
+      --warning: #c2410c;
+      --error: #dc2626;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font);
+      font-size: var(--text-base);
+      line-height: 1.5;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+    }
+
+    .panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+    .btn {
+      font-family: inherit;
+      font-size: var(--text-sm);
+      min-height: 44px;
+      min-width: 44px;
+      padding: var(--space-3) var(--space-5);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      background: var(--border-strong);
+      color: var(--text);
+      cursor: pointer;
+      transition: background var(--motion);
+    }
+    .btn:hover { background: var(--text-muted); }
+    .btn:active { transform: scale(0.95); }
+    .btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-primary { background: var(--accent); border-color: var(--accent); }
+    .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+    .btn-ghost { background: transparent; border-color: var(--border); }
+    .btn-ghost:hover { background: var(--surface); }
+
+    .control-label {
+      font-size: var(--text-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    input[type="range"] {
+      width: 100%; height: 6px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px; height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+
+/* Touch target: keep the 6px visual track, but give the control a 44px hit area. */
+input[type="range"] { height: 44px; background: transparent; }
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-moz-range-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-webkit-slider-thumb { margin-top: -7px; }
+input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; background: var(--accent); border-radius: 50%; cursor: pointer; }
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+    }
+
+    #feedback-panel {
+      background: var(--surface);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+    }
+    #feedback-panel.success { border-left-color: var(--success); }
+    #feedback-panel.error { border-left-color: var(--error); }
+
+    .progress-track {
+      height: 8px;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+    .progress-fill { height: 100%; background: var(--accent); transition: width var(--motion-slow); }
+
+    /* ---- layout khusus meja kerja aljabar ---- */
+    .wrap {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: var(--space-4);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+    h1 { font-size: var(--text-heading); }
+    .sub { color: var(--text-muted); font-size: var(--text-sm); }
+
+    .input-row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+    #expr-input {
+      flex: 1 1 220px;
+      min-height: 44px;
+      font-family: var(--font-mono);
+      font-size: var(--text-base);
+      padding: var(--space-2) var(--space-3);
+      color: var(--text);
+      background: var(--bg);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+    }
+    #expr-input:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+    .presets { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-3); }
+    .preset-btn { min-height: 44px; font-family: var(--font-mono); }
+
+    #term-stage {
+      position: relative;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: stretch;
+      justify-content: center;
+      gap: var(--space-2);
+      min-height: 150px;
+      padding: var(--space-4) var(--space-2);
+      border: 1px dashed var(--border-strong);
+      border-radius: var(--radius-lg);
+      overflow-x: hidden;
+    }
+
+    .chip {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-1);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-strong);
+      background: var(--surface);
+      will-change: transform, opacity;
+    }
+    .chip .glyph {
+      font-family: var(--font-mono);
+      font-size: var(--text-heading);
+      line-height: 1.1;
+      white-space: nowrap;
+    }
+    .chip .tags { display: flex; gap: var(--space-1); flex-wrap: wrap; justify-content: center; }
+    .chip .tag {
+      font-size: var(--text-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 2px var(--space-2);
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+    .chip[data-kind="suku"] { border-color: var(--accent); }
+    .chip[data-kind="suku"] .glyph { color: var(--accent); }
+    .chip[data-kind="suku"] .tag.variabel { color: var(--accent); border-color: var(--accent); }
+    .chip[data-kind="suku"] .tag.koefisien { color: var(--success); border-color: var(--success); }
+    .chip[data-kind="konstanta"] { border-color: var(--warning); }
+    .chip[data-kind="konstanta"] .glyph { color: var(--warning); }
+    .chip[data-kind="konstanta"] .tag.konstanta { color: var(--warning); border-color: var(--warning); }
+    .chip[data-kind="kompleks"] { border-style: dashed; }
+    .chip[data-kind="kompleks"] .glyph { color: var(--text-muted); }
+
+    .op {
+      align-self: center;
+      font-family: var(--font-mono);
+      font-size: var(--text-heading);
+      color: var(--text-dim);
+    }
+
+    .rules { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+
+    #explain {
+      font-size: var(--text-sm);
+      color: var(--text-muted);
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+    }
+
+    #step-history { list-style: none; display: flex; flex-direction: column; gap: var(--space-2); }
+    #step-history li {
+      font-size: var(--text-sm);
+      padding: var(--space-2) var(--space-3);
+      border-left: 3px solid var(--accent);
+      background: var(--surface);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+    }
+    #step-history li .who { color: var(--text-muted); font-family: var(--font); }
+    .empty { color: var(--text-dim); font-size: var(--text-sm); font-family: var(--font); }
+
+    .legend { display: flex; gap: var(--space-3); flex-wrap: wrap; font-size: var(--text-xs); color: var(--text-muted); }
+    .legend b { color: var(--text); }
+
+    @media (max-width: 420px) {
+      #term-stage { min-height: 210px; }
+      .rules .btn { flex: 1 1 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <h1>Unsur Bentuk Aljabar</h1>
+      <p class="sub">Tulis bentuk aljabarmu, lalu terapkan sifat operasi untuk menyederhanakannya.</p>
+    </header>
+
+    <section class="panel">
+      <p class="panel-heading" id="input-label">Bentuk aljabar</p>
+      <div class="input-row">
+        <input id="expr-input" type="text" value="3x + 2y - 5" aria-labelledby="input-label"
+               autocomplete="off" autocapitalize="off" spellcheck="false">
+        <button class="btn btn-primary" id="apply-btn">Terapkan</button>
+      </div>
+      <div class="presets">
+        <button class="btn btn-ghost preset-btn" data-preset="3x + 2y - 5">3x + 2y - 5</button>
+        <button class="btn btn-ghost preset-btn" data-preset="2x + 3x + y - 4">2x + 3x + y - 4</button>
+        <button class="btn btn-ghost preset-btn" data-preset="2(x + 3)">2(x + 3)</button>
+        <button class="btn btn-ghost preset-btn" data-preset="(x + 2)(x + 3)">(x + 2)(x + 3)</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <p class="panel-heading">Meja kerja: kenali setiap bagian</p>
+      <div id="term-stage" role="group" aria-label="Suku-suku bentuk aljabar"></div>
+      <div class="legend" style="margin-top: var(--space-3)">
+        <span><b>Suku</b> = bagian bertanda + atau &minus;</span>
+        <span><b>Koefisien</b> = angka di depan variabel</span>
+        <span><b>Variabel</b> = huruf yang nilainya belum pasti</span>
+        <span><b>Konstanta</b> = suku tanpa variabel</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <p class="panel-heading">Sifat operasi</p>
+      <div class="rules">
+        <button class="btn" id="komutatif-btn">Komutatif</button>
+        <button class="btn" id="asosiatif-btn">Asosiatif</button>
+        <button class="btn" id="distributif-btn">Distributif</button>
+        <button class="btn btn-ghost" id="reset-btn">Atur Ulang</button>
+      </div>
+      <div id="explain" role="status">Pilih salah satu sifat untuk menyederhanakan bentuk aljabar.</div>
+      <div id="feedback-panel" role="status">Bentuk aljabar siap diproses.</div>
+    </section>
+
+    <section class="panel">
+      <p class="panel-heading">Riwayat langkah</p>
+      <ol id="step-history"><li class="empty">Belum ada langkah.</li></ol>
+    </section>
+  </main>
+
+  <script type="application/json" id="widget-config">
+  {
+    "type": "simulation",
+    "concept": "algebra-forms",
+    "unit": "aljabar",
+    "startMode": "algebra-forms",
+    "description": "Murid mengenali suku, konstanta, koefisien, dan variabel, lalu menyederhanakan bentuk aljabar menggunakan sifat operasi.",
+    "variables": [
+      { "name": "expression", "label": "Bentuk aljabar", "default": "3x + 2y - 5" }
+    ],
+    "presets": [
+      { "name": "Pengenalan suku", "variables": { "expression": "3x + 2y - 5" } },
+      { "name": "Suku sejenis", "variables": { "expression": "2x + 3x + y - 4" } },
+      { "name": "Distributif sederhana", "variables": { "expression": "2(x + 3)" } },
+      { "name": "Distributif luas", "variables": { "expression": "(x + 2)(x + 3)" } }
+    ]
+  }
+  </script>
+
+  <script>
+  (function () {
+    'use strict';
+
+    var DEFAULT_EXPR = '3x + 2y - 5';
+    var SUP = { 2: '\u00B2', 3: '\u00B3', 4: '\u2074' };
+    var UNSUP = { '\u00B2': 2, '\u00B3': 3, '\u2074': 4 };
+
+    /* ---------------- tokenisasi & parse ---------------- */
+    function tokenize(src) {
+      var out = [], i = 0;
+      while (i < src.length) {
+        var ch = src[i];
+        if (ch === ' ' || ch === '\t') { i++; continue; }
+        if (ch >= '0' && ch <= '9') {
+          var num = '';
+          while (i < src.length && src[i] >= '0' && src[i] <= '9') num += src[i++];
+          out.push({ t: 'num', v: num });
+          continue;
+        }
+        if (/[a-zA-Z]/.test(ch)) {
+          var name = '';
+          while (i < src.length && /[a-zA-Z]/.test(src[i])) name += src[i++];
+          out.push({ t: 'id', v: name });
+          continue;
+        }
+        if (UNSUP[ch]) { out.push({ t: 'exp', v: UNSUP[ch] }); i++; continue; }
+        if (ch === '+' || ch === '-' || ch === '*' || ch === '(' || ch === ')') {
+          out.push({ t: ch }); i++; continue;
+        }
+        throw new Error('Karakter tidak dikenal: ' + ch);
+      }
+      return out;
+    }
+
+    function parse(src) {
+      var toks = tokenize(src), p = 0;
+      function peek() { return toks[p]; }
+      function isVal(tk) { return tk && (tk.t === 'num' || tk.t === 'id' || tk.t === '('); }
+
+      function parseSum() {
+        var node = parseProd();
+        while (peek() && (peek().t === '+' || peek().t === '-')) {
+          var op = toks[p++].t;
+          var rhs = parseProd();
+          node = { type: 'add', args: [node, rhs], ops: [op] };
+        }
+        return node;
+      }
+      function parseProd() {
+        var node = parseFactor();
+        for (;;) {
+          var tk = peek();
+          if (tk && tk.t === '*') { p++; node = { type: 'mul', args: [node, parseFactor()] }; continue; }
+          if (isVal(tk)) { node = { type: 'mul', args: [node, parseFactor()] }; continue; }
+          return node;
+        }
+      }
+      function parseFactor() {
+        var tk = peek();
+        if (tk && tk.t === '-') { p++; return negate(parseFactor()); }
+        if (tk && tk.t === '+') { p++; return parseFactor(); }
+        if (!tk) throw new Error('Bentuk tidak lengkap.');
+        if (tk.t === 'num') { p++; return { type: 'num', v: Number(tk.v) }; }
+        if (tk.t === 'id') {
+          p++;
+          var name = tk.v;
+          var ex = peek();
+          var power = (ex && ex.t === 'exp') ? ex.v : 1;
+          if (ex && ex.t === 'exp') p++;
+          return { type: 'var', n: name, ex: power };
+        }
+        if (tk.t === '(') {
+          p++;
+          var inner = parseSum();
+          if (!peek() || peek().t !== ')') throw new Error('Kurung belum ditutup.');
+          p++;
+          return { type: 'group', inner: inner };
+        }
+        throw new Error('Bentuk tidak lengkap.');
+      }
+      function negate(node) {
+        if (node.type === 'num') return { type: 'num', v: -node.v };
+        if (node.type === 'add') {
+          return {
+            type: 'add',
+            args: node.args.map(negate),
+            ops: node.ops.map(function (o) { return o === '+' ? '-' : '+'; })
+          };
+        }
+        return { type: 'mul', args: [{ type: 'num', v: -1 }, node] };
+      }
+      var root = parseSum();
+      if (p !== toks.length) throw new Error('Bentuk tidak lengkap.');
+      return root;
+    }
+
+    /* ---------------- model ---------------- */
+    function tNum(c) { return { c: c, vars: [] }; }
+    function tVar(c, n, e) { return { c: c, vars: [{ n: n, e: e }] }; }
+
+    function termKey(t) {
+      var v = t.vars.map(function (x) { return x.n + '^' + x.e; }).sort().join(',');
+      return t.c + '|' + v;
+    }
+    function termMul(a, b) {
+      var vars = a.vars.map(function (v) { return { n: v.n, e: v.e }; });
+      for (var i = 0; i < b.vars.length; i++) {
+        var v = b.vars[i], found = null;
+        for (var j = 0; j < vars.length; j++) if (vars[j].n === v.n) { found = vars[j]; break; }
+        if (found) found.e += v.e; else vars.push({ n: v.n, e: v.e });
+      }
+      vars.sort(function (x, y) { return x.n < y.n ? -1 : x.n > y.n ? 1 : 0; });
+      return { c: a.c * b.c, vars: vars };
+    }
+    function addTerm(a, b) {
+      return { c: a.c + b.c, vars: a.vars.slice() };
+    }
+
+    // Ratakan penjumlahan di puncak menjadi daftar suku (tanpa mengembangkan perkalian).
+    function topTerms(node) {
+      if (node.type === 'add') {
+        var out = [];
+        for (var i = 0; i < node.args.length; i++) {
+          var op = i === 0 ? 1 : (node.ops[i - 1] === '-' ? -1 : 1);
+          var parts = topTerms(node.args[i]);
+          for (var j = 0; j < parts.length; j++) out.push({ t: parts[j].t, sign: parts[j].sign * op });
+        }
+        return out;
+      }
+      if (node.type === 'group') return topTerms(node.inner);
+      if (node.type === 'mul') {
+        if (node.args.some(isAddish)) return [{ t: { kind: 'kompleks', node: node }, sign: 1 }];
+        var acc = tNum(1);
+        for (var k = 0; k < node.args.length; k++) {
+          var a = node.args[k];
+          if (a.type === 'num') acc = termMul(acc, tNum(a.v));
+          else if (a.type === 'var') acc = termMul(acc, tVar(1, a.n, a.ex || 1));
+          else if (a.type === 'group') {
+            var sub = topTerms(a.inner);
+            if (sub.length !== 1) return [{ t: { kind: 'kompleks', node: node }, sign: 1 }];
+            acc = termMul(acc, sub[0].t);
+          }
+        }
+        return [{ t: acc, sign: 1 }];
+      }
+      if (node.type === 'num') return [{ t: tNum(node.v), sign: 1 }];
+      if (node.type === 'var') return [{ t: tVar(1, node.n, node.ex || 1), sign: 1 }];
+      return [{ t: tNum(0), sign: 1 }];
+    }
+    function isAddish(node) {
+      if (node.type === 'add') return true;
+      if (node.type === 'group') return isAddish(node.inner);
+      if (node.type === 'mul') return node.args.some(isAddish);
+      return false;
+    }
+
+    function termText(term) {
+      var abs = Math.abs(term.c);
+      if (!term.vars.length) return String(abs);
+      var out = (abs === 1 ? '' : String(abs));
+      for (var i = 0; i < term.vars.length; i++) {
+        var v = term.vars[i];
+        out += v.n + (v.e > 1 ? (SUP[v.e] || '^' + v.e) : '');
+      }
+      return out;
+    }
+
+    /* ---------------- aturan ---------------- */
+    function canonicalCompare(a, b) {
+      if ((a.vars.length === 0) !== (b.vars.length === 0)) return a.vars.length ? -1 : 1;
+      var ka = termKey(a), kb = termKey(b);
+      return ka < kb ? -1 : ka > kb ? 1 : 0;
+    }
+
+    var RULES = {
+      komutatif: {
+        name: 'Komutatif',
+        can: function (terms) {
+          return terms.length > 1;
+        },
+        apply: function (terms) {
+          var pos = terms.filter(function (x) { return x.sign > 0; }).map(function (x) { return x.t; });
+          var neg = terms.filter(function (x) { return x.sign < 0; }).map(function (x) { return x.t; });
+          pos.sort(canonicalCompare);
+          neg.sort(canonicalCompare);
+          return pos.map(function (t) { return { t: t, sign: 1 }; })
+            .concat(neg.map(function (t) { return { t: t, sign: -1 }; }));
+        },
+        why: 'Sifat komutatif: urutan suku boleh ditukar, sehingga suku disusun dari koefisien terbesar dan konstanta diletakkan terakhir.'
+      },
+      asosiatif: {
+        name: 'Asosiatif',
+        can: function (terms) {
+          if (terms.some(function (x) { return x.t.kind === 'kompleks'; })) return false;
+          var buckets = groupLike(terms);
+          return buckets.length < terms.length;
+        },
+        apply: function (terms) {
+          var buckets = groupLike(terms);
+          var out = [];
+          for (var i = 0; i < buckets.length; i++) {
+            var b = buckets[i];
+            out.push({ t: b.t, sign: b.sign });
+          }
+          return out;
+        },
+        why: 'Sifat asosiatif: suku-suku sejenis dikelompokkan lalu dijumlahkan, sehingga koefisiennya bertambah.'
+      },
+      distributif: {
+        name: 'Distributif',
+        can: function (terms) { return terms.some(function (x) { return x.t.kind === 'kompleks'; }); },
+        apply: function (terms) {
+          var out = [];
+          for (var i = 0; i < terms.length; i++) {
+            var item = terms[i];
+            if (item.t.kind !== 'kompleks') { out.push(item); continue; }
+            var expanded = expand(item.t.node, item.sign);
+            for (var j = 0; j < expanded.length; j++) out.push(expanded[j]);
+          }
+          return out;
+        },
+        why: 'Sifat distributif: setiap suku di dalam kurung dikalikan dengan suku di luar kurung.'
+      }
+    };
+
+    function groupLike(terms) {
+      var map = Object.create(null);
+      var order = [];
+      for (var i = 0; i < terms.length; i++) {
+        var t = terms[i].t;
+        if (t.kind === 'kompleks') continue;
+        var sk = termKey(t).split('|')[1];
+        if (!map[sk]) { map[sk] = { c: 0, vars: t.vars }; order.push(sk); }
+        map[sk].c += t.c * terms[i].sign;
+      }
+      var out = [];
+      for (var j = 0; j < order.length; j++) {
+        var b = map[order[j]];
+        if (b.c === 0) continue;
+        out.push({ t: { c: b.c, vars: b.vars }, sign: b.c < 0 ? -1 : 1 });
+      }
+      out.sort(function (a, b) { return canonicalCompare(a.t, b.t); });
+      return out;
+    }
+
+    // Kembangkan satu tingkat perkalian yang memuat penjumlahan.
+    function expand(node, sign) {
+      var parts = factorParts(node);
+      if (parts.length === 1) {
+        var p = parts[0];
+        if (p.isSum) return expandSum(p.value, sign);
+        return [{ t: applySign(p.term, sign), sign: 1 }];
+      }
+      var acc = [tNum(1)];
+      for (var i = 0; i < parts.length; i++) {
+        var piece = parts[i];
+        var list = piece.isSum ? expandSum(piece.value, 1).map(function (e) { return e.t; }) : [piece.term];
+        var next = [];
+        for (var a = 0; a < acc.length; a++) {
+          for (var b = 0; b < list.length; b++) next.push(termMul(acc[a], list[b]));
+        }
+        acc = next;
+      }
+      var res = [];
+      for (var k = 0; k < acc.length; k++) res.push({ t: applySign(acc[k], sign), sign: 1 });
+      return res;
+    }
+    function expandSum(node, sign) {
+      var out = [];
+      for (var i = 0; i < node.args.length; i++) {
+        var arg = node.args[i];
+        var op = i === 0 ? 1 : (node.ops[i - 1] === '-' ? -1 : 1);
+        var s = sign * op;
+        if (arg.type === 'mul' && isAddish(arg)) {
+          var sub = expand(arg, s);
+          for (var j = 0; j < sub.length; j++) out.push(sub[j]);
+        } else {
+          var t = simpleTerm(arg);
+          out.push({ t: applySign(t, s), sign: 1 });
+        }
+      }
+      return out;
+    }
+    function applySign(t, s) { return { c: t.c * s, vars: t.vars }; }
+    function simpleTerm(node) {
+      if (node.type === 'group') return simpleTerm(node.inner);
+      if (node.type === 'num') return tNum(node.v);
+      if (node.type === 'var') return tVar(1, node.n, node.ex || 1);
+      if (node.type === 'mul') {
+        var acc = tNum(1);
+        for (var i = 0; i < node.args.length; i++) acc = termMul(acc, simpleTerm(node.args[i]));
+        return acc;
+      }
+      if (node.type === 'add') {
+        var r = tNum(0);
+        for (var k = 0; k < node.args.length; k++) {
+          var op = k === 0 ? 1 : (node.ops[k - 1] === '-' ? -1 : 1);
+          var t = simpleTerm(node.args[k]);
+          r = { c: r.c + t.c * op, vars: t.vars };
+        }
+        return r;
+      }
+      return tNum(0);
+    }
+    function factorParts(node) {
+      var inner = node.type === 'group' ? node.inner : node;
+      if (inner.type === 'mul') {
+        return inner.args.map(function (a) {
+          if (isAddish(a)) return { isSum: true, value: a.type === 'group' ? a.inner : a };
+          return { isSum: false, term: simpleTerm(a) };
+        });
+      }
+      if (isAddish(inner)) return [{ isSum: true, value: inner }];
+      return [{ isSum: false, term: simpleTerm(inner) }];
+    }
+
+    /* ---------------- state ---------------- */
+    var state = { expr: DEFAULT_EXPR, terms: [], node: null };
+    var stage = document.getElementById('term-stage');
+    var input = document.getElementById('expr-input');
+    var explainEl = document.getElementById('explain');
+    var fb = document.getElementById('feedback-panel');
+    var hist = document.getElementById('step-history');
+    var pool = [];            // chip DOM yang masih hidup
+    var tweens = new Map();
+
+    function renderTerms(terms, opts) {
+      opts = opts || {};
+
+      var byKey = Object.create(null);
+      pool.forEach(function (el) {
+        var k = el.dataset.key;
+        (byKey[k] = byKey[k] || []).push(el);
+      });
+
+      var chips = [];
+      var used = Object.create(null);
+
+      terms.forEach(function (item) {
+        var isKonst = item.t.kind !== 'kompleks' && item.t.vars.length === 0;
+        var base = item.t.kind === 'kompleks'
+          ? 'kompleks'
+          : (isKonst ? 'konstanta' : 'suku');
+        var label = item.t.kind === 'kompleks'
+          ? rawComplex(item.t.node)
+          : (item.sign < 0 ? '\u2212' : '') + termText(item.t);
+        var keyBase = base + '~' + label;
+        used[keyBase] = (used[keyBase] || 0) + 1;
+        var key = keyBase + '#' + used[keyBase];
+
+        var el = (byKey[key] && byKey[key].shift()) || makeChip();
+        el.dataset.key = key;
+        fillChip(el, label, base, item);
+        chips.push(el);
+      });
+
+      var leftover = [];
+      Object.keys(byKey).forEach(function (k) {
+        byKey[k].forEach(function (el) { leftover.push(el); });
+      });
+
+      stage.textContent = '';
+      chips.forEach(function (el) { stage.appendChild(el); });
+
+      if (opts.animate) {
+        var originX = leftover.length ? leftover[0].offsetLeft : stage.clientWidth / 2;
+        leftover.forEach(function (el) {
+          el.style.position = 'absolute';
+          el.style.left = el.offsetLeft + 'px';
+          el.style.top = el.offsetTop + 'px';
+          stage.appendChild(el);
+          tween(el, { fromX: 0, fromY: 0, scale: 1, opacity: 1 }, { scale: 0.4, opacity: 0 }, 260, function () {
+            if (el.parentNode) el.parentNode.removeChild(el);
+          });
+        });
+        chips.forEach(function (el, i) {
+          var to = el.offsetLeft;
+          if (el.dataset.seen !== '1') {
+            // Chip baru: muncul dari posisi suku asal (perkalian) lalu melesat ke tempatnya.
+            tween(el, { fromX: originX - to, fromY: 0, scale: 0.3, opacity: 0 },
+              { fromX: 0, fromY: 0, scale: 1, opacity: 1 }, 460, null, i * 60);
+          } else {
+            var from = Number(el.dataset.left);
+            if (Math.abs(from - to) < 1) pulse(el);
+            else tween(el, { fromX: from - to, fromY: 0, scale: 1, opacity: 1 },
+              { fromX: 0, fromY: 0, scale: 1, opacity: 1 }, 420, null, i * 28);
+            pulse(el);
+          }
+          el.dataset.left = String(to);
+          el.dataset.seen = '1';
+        });
+      } else {
+        chips.forEach(function (el) {
+          el.style.transform = '';
+          el.style.opacity = '';
+          el.dataset.left = String(el.offsetLeft);
+          el.dataset.seen = '1';
+        });
+      }
+
+      pool = chips;
+    }
+
+    function rawComplex(node) {
+      var inner = node.type === 'group' ? node.inner : node;
+      if (inner.type === 'mul') {
+        return inner.args.map(rawComplex).join(' \u00D7 ');
+      }
+      return rawSimple(inner);
+    }
+    function rawSimple(node) {
+      if (node.type === 'group') return '(' + rawSum(node.inner) + ')';
+      if (node.type === 'num') return String(node.v);
+      if (node.type === 'var') return node.n + (node.ex > 1 ? (SUP[node.ex] || '^' + node.ex) : '');
+      if (node.type === 'add') return rawSum(node);
+      if (node.type === 'mul') return node.args.map(rawSimple).join(' \u00D7 ');
+      return '0';
+    }
+    function rawSum(node) {
+      var out = '';
+      for (var i = 0; i < node.args.length; i++) {
+        if (i > 0) out += node.ops[i - 1] === '-' ? ' \u2212 ' : ' + ';
+        out += rawSimple(node.args[i]);
+      }
+      return out;
+    }
+
+    function makeChip() {
+      var el = document.createElement('div');
+      el.className = 'chip';
+      el.innerHTML = '<span class="glyph"></span><span class="tags"></span>';
+      return el;
+    }
+    function fillChip(el, label, kind, item) {
+      el.setAttribute('data-kind', kind);
+      el.querySelector('.glyph').textContent = label;
+      var tags = el.querySelector('.tags');
+      tags.textContent = '';
+      if (kind === 'kompleks') {
+        tags.appendChild(mkTag('perkalian', 'perkalian \u2014 belum dibangunkan'));
+        return;
+      }
+      tags.appendChild(mkTag('suku', 'suku'));
+      var t = item.t;
+      if (t.vars.length) {
+        var names = t.vars.map(function (v) { return v.n; }).join('');
+        tags.appendChild(mkTag('koefisien', 'koefisien ' + fmtCoeff(t.c)));
+        tags.appendChild(mkTag('variabel', 'variabel ' + names));
+      } else {
+        tags.appendChild(mkTag('konstanta', 'konstanta'));
+      }
+    }
+    function fmtCoeff(c) {
+      if (c === 1) return '1';
+      if (c === -1) return '\u22121';
+      return String(c);
+    }
+    function mkTag(cls, text) {
+      var s = document.createElement('span');
+      s.className = 'tag ' + cls;
+      s.textContent = text;
+      return s;
+    }
+
+    function pulse(el) {
+      el.animate(
+        [{ transform: 'scale(1)' }, { transform: 'scale(1.12)' }, { transform: 'scale(1)' }],
+        { duration: 380, easing: 'ease-out' }
+      );
+    }
+
+    function tween(el, from, to, dur, done, delay) {
+      var prev = tweens.get(el);
+      if (prev) cancelAnimationFrame(prev);
+      var start = performance.now() + (delay || 0);
+      var fromX = from.fromX, fromY = from.fromY;
+      function step(now) {
+        var p = (now - start) / dur;
+        if (p < 0) { tweens.set(el, requestAnimationFrame(step)); return; }
+        if (p > 1) p = 1;
+        var e = 1 - Math.pow(1 - p, 3);
+        var x = fromX + (to.fromX - fromX) * e;
+        var y = fromY + (to.fromY - fromY) * e;
+        var sc = from.scale + (to.scale - from.scale) * e;
+        var op = from.opacity + (to.opacity - from.opacity) * e;
+        el.style.transform = 'translate(' + x + 'px,' + y + 'px) scale(' + sc + ')';
+        el.style.opacity = String(op);
+        if (p < 1) { tweens.set(el, requestAnimationFrame(step)); }
+        else { tweens.delete(el); if (done) done(); }
+      }
+      tweens.set(el, requestAnimationFrame(step));
+    }
+
+    /* ---------------- aksi ---------------- */
+    function currentTerms() { return state.terms; }
+
+    function setExpression(src, opts) {
+      opts = opts || {};
+      var node;
+      try {
+        node = parse(src);
+      } catch (err) {
+        fb.className = 'error';
+        fb.textContent = 'Bentuk aljabar belum lengkap: ' + err.message;
+        return false;
+      }
+      state.node = node;
+      state.terms = topTerms(node);
+      state.expr = src;
+      renderTerms(state.terms, { animate: !!opts.animate });
+      return true;
+    }
+
+    function termsToText(terms) {
+      var out = '';
+      for (var i = 0; i < terms.length; i++) {
+        var it = terms[i];
+        var label = it.t.kind === 'kompleks' ? rawComplex(it.t.node) : termText(it.t);
+        if (i === 0) out += (it.sign < 0 ? '\u2212' : '') + label;
+        else out += (it.sign < 0 ? ' \u2212 ' : ' + ') + label;
+      }
+      return out;
+    }
+
+    function applyRule(name) {
+      var rule = RULES[name];
+      var terms = currentTerms();
+      if (!rule.can(terms)) {
+        fb.className = 'error';
+        fb.textContent = 'Sifat ' + rule.name + ' tidak bisa diterapkan pada bentuk ini. Coba bentuk lain.';
+        explainEl.textContent = 'Tidak ada perubahan: bentuk aljabar ini sudah tidak punya pola untuk sifat ' + rule.name + '.';
+        return;
+      }
+      var before = termsToText(terms);
+      var after = rule.apply(terms);
+      state.terms = after;
+      renderTerms(after, { animate: true });
+      var afterText = termsToText(after);
+      state.expr = afterText;
+      input.value = afterText;
+
+      explainEl.textContent = rule.why;
+      var same = before === afterText;
+      fb.className = same ? '' : 'success';
+      fb.textContent = same
+        ? 'Bentuk sudah paling sederhana untuk sifat ' + rule.name + '.'
+        : 'Sifat ' + rule.name + ' diterapkan: ' + before + ' menjadi ' + afterText + '.';
+
+      addHistory(rule.name, before, afterText, same);
+      syncButtons();
+    }
+
+    function addHistory(ruleName, before, after, same) {
+      var li = document.createElement('li');
+      var b = document.createElement('span');
+      b.className = 'who';
+      b.textContent = 'Langkah ' + (hist.querySelectorAll('li[data-step]').length + 1) + ' \u00B7 ' + ruleName + ': ';
+      var t = document.createElement('span');
+      t.textContent = same ? before + ' (tidak berubah)' : before + '  \u2192  ' + after;
+      li.appendChild(b);
+      li.appendChild(t);
+      li.setAttribute('data-step', '1');
+      var empty = hist.querySelector('.empty');
+      if (empty) hist.removeChild(empty);
+      hist.appendChild(li);
+      hist.scrollTop = hist.scrollHeight;
+    }
+
+    function syncButtons() {
+      var terms = state.terms;
+      document.getElementById('komutatif-btn').disabled = !RULES.komutatif.can(terms);
+      document.getElementById('asosiatif-btn').disabled = !RULES.asosiatif.can(terms);
+      document.getElementById('distributif-btn').disabled = !RULES.distributif.can(terms);
+    }
+
+    function resetAll() {
+      tweens.forEach(function (id, el) { cancelAnimationFrame(id); tweens.delete(el); });
+      pool.forEach(function (el) { el.dataset.seen = ''; el.dataset.left = ''; el.style.transform = ''; el.style.opacity = ''; });
+      pool = [];
+      stage.textContent = '';
+      state.terms = [];
+      state.expr = DEFAULT_EXPR;
+      state.node = null;
+      input.value = DEFAULT_EXPR;
+      hist.innerHTML = '<li class="empty">Belum ada langkah.</li>';
+      explainEl.textContent = 'Pilih salah satu sifat untuk menyederhanakan bentuk aljabar.';
+      fb.className = '';
+      fb.textContent = 'Bentuk aljabar siap diproses.';
+      setExpression(DEFAULT_EXPR, { animate: false });
+      syncButtons();
+    }
+
+    /* ---------------- wiring ---------------- */
+    document.getElementById('apply-btn').addEventListener('click', function () {
+      if (setExpression(input.value, { animate: true })) {
+        explainEl.textContent = 'Bentuk aljabar baru dimuat. Sekarang terapkan salah satu sifat operasi.';
+        fb.className = '';
+        fb.textContent = 'Suku-suku sudah diidentifikasi. Coba tekan salah satu tombol sifat.';
+        syncButtons();
+      }
+    });
+    input.addEventListener('input', function () {
+      if (setExpression(input.value, { animate: false })) syncButtons();
+    });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); document.getElementById('apply-btn').click(); }
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('.preset-btn'), function (btn) {
+      btn.addEventListener('click', function () {
+        input.value = btn.dataset.preset;
+        if (setExpression(input.value, { animate: true })) {
+          explainEl.textContent = 'Contoh dimuat. Perhatikan setiap suku dan labelnya.';
+          fb.className = '';
+          fb.textContent = 'Contoh: ' + btn.dataset.preset;
+          syncButtons();
+        }
+      });
+    });
+    document.getElementById('komutatif-btn').addEventListener('click', function () { applyRule('komutatif'); });
+    document.getElementById('asosiatif-btn').addEventListener('click', function () { applyRule('asosiatif'); });
+    document.getElementById('distributif-btn').addEventListener('click', function () { applyRule('distributif'); });
+    document.getElementById('reset-btn').addEventListener('click', resetAll);
+
+    document.addEventListener('keydown', function (e) {
+      if (e.target === input) return;
+      if (e.key === 'r' || e.key === 'R') { resetAll(); }
+      if (e.key === 'k' || e.key === 'K') { applyRule('komutatif'); }
+      if (e.key === 'a' || e.key === 'A') { applyRule('asosiatif'); }
+      if (e.key === 'd' || e.key === 'D') { applyRule('distributif'); }
+    });
+
+    document.fonts && document.fonts.ready.then(function () { renderTerms(state.terms, { animate: false }); });
+    resetAll();
+  })();
+  </script>
+</body>
+</html>

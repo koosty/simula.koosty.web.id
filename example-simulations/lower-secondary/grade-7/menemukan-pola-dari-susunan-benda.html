@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="education_levels" content="Lower Secondary">
+  <meta name="grade" content="7">
+  <title>Menemukan Pola dari Susunan Benda · Matematika SMP Kelas VII</title>
+  <meta name="description" content="Murid menyusun ubin, domino, atau kartu untuk menemukan pola, lalu memperkirakan suku berikutnya.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Menemukan Pola dari Susunan Benda">
+  <meta property="og:description" content="Susunan ubin, domino, dan kartu ditambahkan satu per satu. Murid menebak jumlah pada suku berikutnya dan membaca aturan polanya dalam bahasa sendiri.">
+  <meta property="og:locale" content="id">
+  <style>
+    :root {
+      /* Colour */
+      --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+      --surface: #14141e;     /* panels, cards, step rows */
+      --panel: rgba(20, 20, 30, 0.9);
+      --border: rgba(255, 255, 255, 0.1);
+      --border-strong: #333;
+      --text: #ffffff;
+      --text-muted: #aaa;
+      --text-dim: #888;
+      --accent: #6366f1;      /* primary action, slider thumb, active state */
+      --accent-hover: #5558e8;
+      --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+      --success: #fbbf24;     /* completion, headings, callouts */
+      --warning: #fb923c;
+      --error: #ff6b6b;
+
+      /* Spacing scale */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+
+      /* Radius scale */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-pill: 999px;
+
+      /* Type scale (system fonts only) */
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --text-base: 16px;
+      --text-sm: 14px;
+      --text-xs: 13px;
+      --text-caption: 11px;   /* uppercase control labels */
+      --text-heading: 24px;
+
+      /* Focus, motion, stacking */
+      --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+      --motion: 0.2s;
+      --motion-slow: 0.3s;
+      --z-overlay: 100;        /* panels, tooltips */
+      --z-modal: 1000;         /* loading screens, modal dialogs */
+    }
+
+    [data-theme="light"] {
+      --bg: #f7f7fb;
+      --surface: #ffffff;
+      --panel: rgba(255, 255, 255, 0.92);
+      --border: rgba(0, 0, 0, 0.12);
+      --border-strong: #d4d4d8;
+      --text: #16161d;
+      --text-muted: #52525b;
+      --text-dim: #71717a;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+      --accent-soft: rgba(79, 70, 229, 0.95);
+      --success: #b45309;
+      --warning: #c2410c;
+      --error: #dc2626;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font);
+      font-size: var(--text-base);
+      line-height: 1.5;
+      background: var(--bg);
+      color: var(--text);
+      padding: var(--space-4);
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+    }
+
+    .panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+    .btn {
+      font-family: inherit;
+      font-size: var(--text-sm);
+      min-height: 44px;            /* never below 44px, mobile */
+      min-width: 44px;
+      padding: var(--space-3) var(--space-5);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      background: var(--border-strong);
+      color: var(--text);
+      cursor: pointer;
+      transition: background var(--motion);
+    }
+    .btn:hover { background: var(--text-muted); }
+    .btn:active { transform: scale(0.95); }
+    .btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-primary { background: var(--accent); border-color: var(--accent); }
+    .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+    .btn-ghost { background: transparent; border-color: var(--border); }
+    .btn-ghost:hover { background: var(--surface); }
+
+    .control-label {
+      font-size: var(--text-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    input[type="range"] {
+      width: 100%; height: 6px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px; height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+/* Touch target: keep the 6px visual track, but give the control a 44px hit area. */
+input[type="range"] { height: 44px; background: transparent; }
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-moz-range-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-webkit-slider-thumb { margin-top: -7px; }
+input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; background: var(--accent); border-radius: 50%; cursor: pointer; }
+    input[type="range"]:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+    }
+
+    #feedback-panel {
+      background: var(--surface);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+    }
+    #feedback-panel.success { border-left-color: var(--success); }
+    #feedback-panel.error { border-left-color: var(--error); }
+
+    .progress-track {
+      height: 8px;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+    .progress-fill { height: 100%; background: var(--accent); transition: width var(--motion-slow); }
+
+    /* ---- layout helpers (tokens only) ---- */
+    .wrap { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-4); }
+    h1 { font-size: var(--text-heading); line-height: 1.2; }
+    h2 { font-size: var(--text-base); color: var(--success); margin: 0 0 var(--space-3); }
+    h3 { font-size: var(--text-sm); color: var(--text-muted); margin: 0 0 var(--space-2); }
+    .lead { color: var(--text-muted); font-size: var(--text-sm); }
+    .mono { font-family: var(--font-mono); }
+    .readout { font-family: var(--font-mono); font-size: var(--text-heading); }
+    .readout-sm { font-family: var(--font-mono); font-size: var(--text-sm); color: var(--text-muted); }
+    .layout { display: flex; flex-direction: column; gap: var(--space-4); }
+    @media (min-width: 860px) {
+      .layout { flex-direction: row; align-items: flex-start; }
+      #controls { width: 320px; flex: none; }
+      #stage { flex: 1 1 auto; min-width: 0; }
+    }
+    .shape-grid { display: grid; grid-template-columns: 1fr; gap: var(--space-2); }
+    .shape-grid .btn { text-align: left; }
+    .shape-grid .btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); }
+    .seq { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: var(--space-3) 0; }
+    .seq span {
+      font-family: var(--font-mono); font-size: var(--text-sm);
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: var(--space-1) var(--space-3);
+    }
+    canvas {
+      display: block; width: 100%;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-md); touch-action: manipulation; cursor: pointer;
+    }
+    .canvas-wrap { min-height: 280px; }
+    .guess-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin-top: var(--space-3); }
+    input[type="text"] {
+      font-family: var(--font-mono); font-size: var(--text-base);
+      min-height: 44px; width: 96px; text-align: center;
+      color: var(--text); background: var(--surface);
+      border: 1px solid var(--border-strong); border-radius: var(--radius-md);
+    }
+    input[type="text"]:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .btn-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .note { font-size: var(--text-xs); color: var(--text-dim); margin-top: var(--space-2); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Menemukan Pola dari Susunan Benda</h1>
+      <p class="lead">Pilih bentuk benda, lalu klik kanvas untuk menambah satu gambar. Perhatikan bertambahnya jumlah benda, lalu tebak berapa banyak pada suku berikutnya.</p>
+    </header>
+
+    <div class="layout">
+      <div id="controls" class="panel">
+        <h3>Bentuk susunan</h3>
+        <div class="shape-grid" id="shape-grid" role="group" aria-label="Pilih bentuk benda"></div>
+
+        <div style="margin-top: var(--space-4);">
+          <h3>Aturan pola</h3>
+          <p class="readout-sm" id="rule-display">tambah 3 setiap kali</p>
+          <p class="note" id="shape-note"></p>
+        </div>
+
+        <div style="margin-top: var(--space-4);">
+          <h3>Gambar yang tampil</h3>
+          <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="progress-fill" style="width: 20%"></div></div>
+          <p class="readout-sm" style="margin-top: var(--space-2);" id="figure-display">Gambar 1 dari 5</p>
+        </div>
+
+        <div class="btn-row" style="margin-top: var(--space-4);">
+          <button type="button" class="btn btn-primary" id="add-btn">Tambah satu gambar</button>
+          <button type="button" class="btn btn-ghost" id="reset-btn">Kembali ke gambar 1</button>
+        </div>
+        <p class="note">Klik kanvas atau tombol tambah untuk menambah gambar. Tekan Spasi untuk menambah, R untuk mengulang.</p>
+      </div>
+
+      <div id="stage" class="panel">
+        <h2>Susunan yang kamu lihat</h2>
+        <div class="canvas-wrap">
+          <canvas id="canvas" height="300" role="img" aria-label="Gambar-gambar susunan benda"></canvas>
+        </div>
+
+        <h3 style="margin-top: var(--space-4);">Jumlah benda per gambar</h3>
+        <div class="seq" id="seq-display"></div>
+
+        <h3>Berapa banyak pada suku berikutnya?</h3>
+        <div class="guess-row">
+          <input type="text" inputmode="numeric" id="guess-input" aria-label="Tebakan jumlah benda pada suku berikutnya">
+          <button type="button" class="btn btn-primary" id="check-btn">Periksa tebakan</button>
+          <button type="button" class="btn btn-ghost" id="reveal-btn">Tampilkan jawaban</button>
+        </div>
+
+        <div id="feedback-panel" role="status" aria-live="polite" style="margin-top: var(--space-3);">Tambah beberapa gambar dulu, lalu tebak jumlah benda pada gambar berikutnya.</div>
+      </div>
+    </div>
+  </div>
+
+  <script type="application/json" id="widget-config">
+{
+  "type": "simulation",
+  "concept": "Pola susunan benda",
+  "description": "Murid menyusun ubin, domino, atau kartu untuk menemukan pola, lalu memperkirakan suku berikutnya.",
+  "variables": [
+    { "name": "shape", "label": "Bentuk benda", "min": 0, "max": 2, "default": 0, "unit": "" },
+    { "name": "figure", "label": "Gambar yang tampil", "min": 1, "max": 5, "default": 1, "unit": "" }
+  ],
+  "presets": [
+    { "name": "Ubin", "variables": { "shape": 0, "figure": 1 } },
+    { "name": "Domino", "variables": { "shape": 1, "figure": 1 } },
+    { "name": "Kartu", "variables": { "shape": 2, "figure": 1 } }
+  ]
+}
+  </script>
+
+  <script>
+  (function () {
+    "use strict";
+
+    var MAX_FIG = 5;
+
+    var SHAPES = [
+      {
+        id: "ubin",
+        name: "Ubin",
+        step: 3,
+        rule: "tambah 3 setiap kali",
+        cols: 3,
+        note: "Setiap gambar menambah satu baris ubin yang berisi 3 ubin.",
+        count: function (n) { return 3 * n; },
+        draw: drawUbin
+      },
+      {
+        id: "domino",
+        name: "Domino",
+        step: 2,
+        rule: "tambah 2 setiap kali",
+        note: "Setiap gambar menambah satu baris domino yang berisi 2 keping.",
+        count: function (n) { return 2 * n; },
+        cols: 2,
+        draw: drawDomino
+      },
+      {
+        id: "kartu",
+        name: "Kartu",
+        step: 4,
+        rule: "tambah 4 setiap kali",
+        note: "Setiap gambar menambah satu baris kartu yang berisi 4 kartu.",
+        count: function (n) { return 4 * n; },
+        draw: drawKartu,
+        cols: 4
+      }
+    ];
+    var state = {
+      shape: 0,
+      figures: 1,
+      reveal: false,
+      checked: false,
+      anim: { active: false, t: 0, from: 0, index: 0, raf: 0 }
+    };
+
+    var canvas = document.getElementById("canvas");
+    var ctx = canvas.getContext("2d");
+    var shapeGrid = document.getElementById("shape-grid");
+
+    function token(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+    function shape() { return SHAPES[state.shape]; }
+
+    function drawUbin(x, y, w, h, fill, bg) {
+      ctx.fillStyle = fill;
+      ctx.fillRect(x, y, w, h);
+      ctx.strokeStyle = bg;
+      ctx.strokeRect(x + 1, y + 1, w - 2, h - 2);
+      ctx.strokeStyle = fill;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x + 1.5, y + 1.5, w - 3, h - 3);
+    }
+
+    function drawDomino(x, y, w, h, fill, bg) {
+      ctx.fillStyle = fill;
+      ctx.beginPath();
+      if (ctx.roundRect) { ctx.roundRect(x, y, w, h, 4); } else { ctx.rect(x, y, w, h); }
+      ctx.fill();
+      ctx.strokeStyle = bg;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x, y + h / 2);
+      ctx.lineTo(x + w, y + h / 2);
+      ctx.stroke();
+      ctx.fillStyle = bg;
+      var r = Math.max(1.5, w * 0.12);
+      [[0.28, 0.25], [0.7, 0.25], [0.28, 0.75], [0.7, 0.75]].forEach(function (p) {
+        ctx.beginPath();
+        ctx.arc(x + w * p[0], y + h * p[1], r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    function drawKartu(x, y, w, h, fill, bg) {
+      ctx.fillStyle = fill;
+      ctx.beginPath();
+      if (ctx.roundRect) { ctx.roundRect(x, y, w, h, 4); } else { ctx.rect(x, y, w, h); }
+      ctx.fill();
+      ctx.strokeStyle = bg;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x + 2, y + 2, w - 4, h - 4);
+      ctx.beginPath();
+      ctx.arc(x + w / 2, y + h / 2, Math.min(w, h) * 0.22, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    function figureLayout(W, count) {
+      var pad = 10;
+      var gap = 8;
+      var boxW = Math.max(56, (W - pad * 2 - gap * (count - 1)) / count);
+      return { pad: pad, gap: gap, boxW: boxW };
+    }
+
+    function draw() {
+      var W = canvas.clientWidth || 320;
+      var H = 300;
+      ctx.clearRect(0, 0, W, H);
+
+      var bg = token("--surface");
+      var border = token("--border-strong");
+      var dim = token("--text-dim");
+      var warn = token("--warning");
+      var muted = token("--text-muted");
+
+      var sh = shape();
+      var lay = figureLayout(W, state.figures);
+
+      ctx.textBaseline = "middle";
+      ctx.textAlign = "center";
+
+      for (var i = 1; i <= state.figures; i++) {
+        var isNewest = i === state.figures;
+
+        var scale = 1, alpha = 1, slide = 0;
+        if (state.anim.active && i === state.anim.index) {
+          var p = state.anim.t;
+          var e = 1 - Math.pow(1 - p, 3);
+          scale = 0.6 + 0.4 * e;
+          alpha = e;
+          slide = (1 - e) * 24;
+        } else if (state.anim.active && i > state.anim.index) {
+          alpha = 0;
+        }
+
+        var cx = lay.pad + (i - 1) * (lay.boxW + lay.gap) + lay.boxW / 2;
+        var boxX = cx - lay.boxW / 2;
+        var boxY = 40;
+        var boxH = H - 96;
+
+        /* figure frame */
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.translate(0, slide);
+        ctx.fillStyle = "transparent";
+        ctx.strokeStyle = isNewest ? warn : border;
+        ctx.lineWidth = isNewest ? 2 : 1;
+        if (isNewest) { ctx.setLineDash([5, 4]); }
+        ctx.strokeRect(boxX + 0.5, boxY + 0.5, lay.boxW - 1, boxH - 1);
+        ctx.setLineDash([]);
+        /* shape items, centred inside the box */
+        var n = sh.count(i);
+        var cols = sh.cols;
+        var rows = Math.ceil(n / cols);
+        var innerW = lay.boxW - 12;
+        var innerH = boxH - 40;
+        var gapX = cols > 1 ? Math.min(6, innerW * 0.04) : 0;
+        var gapY = rows > 1 ? Math.min(6, innerH * 0.04) : 0;
+        var itemW = Math.max(4, Math.min((innerW - gapX * (cols - 1)) / cols, (innerH - gapY * (rows - 1)) / rows, 30 * scale));
+        var itemH = itemW * 0.8;
+        var gridW = cols * itemW + gapX * (cols - 1);
+        var gridH = rows * itemH + gapY * (rows - 1);
+        var gx = boxX + (lay.boxW - gridW) / 2;
+        var gy = boxY + 18 + (innerH - gridH) / 2;
+        var fillCol = isNewest ? warn : token("--accent");
+
+        for (var k = 0; k < n; k++) {
+          var col = k % cols;
+          var row = Math.floor(k / cols);
+          sh.draw(gx + col * (itemW + gapX), gy + row * (itemH + gapY), itemW, itemH, fillCol, bg);
+        }
+
+        /* label */
+        ctx.fillStyle = isNewest ? warn : muted;
+        ctx.font = "700 12px " + token("--font-mono");
+        ctx.textAlign = "center";
+        ctx.fillText("Gambar " + i + ": " + n, cx, boxY + boxH + 14);
+
+        ctx.restore();
+      }
+
+      /* the "next" ghost slot */
+      var nextIndex = state.figures + 1;
+      if (state.figures < MAX_FIG && !state.reveal) {
+        var lay2 = figureLayout(W, nextIndex);
+        var nx = lay2.pad + (state.figures) * (lay2.boxW + lay2.gap);
+        var boxY2 = 40, boxH2 = H - 96;
+        ctx.save();
+        ctx.strokeStyle = border;
+        ctx.setLineDash([4, 5]);
+        ctx.lineWidth = 1;
+        ctx.strokeRect(nx + 0.5, boxY2 + 0.5, lay2.boxW - 1, boxH2 - 1);
+        ctx.restore();
+        ctx.fillStyle = dim;
+        ctx.font = "12px " + token("--font");
+        ctx.textAlign = "center";
+        ctx.fillText("?", nx + lay2.boxW / 2, boxY2 + boxH2 / 2);
+      }
+
+      ctx.textAlign = "left";
+      ctx.fillStyle = dim;
+      ctx.font = "12px " + token("--font");
+      ctx.fillText("Klik kanvas untuk menambah satu gambar", 10, 20);
+    }
+
+
+    /* ---------- animation ---------- */
+    function animateNewFigure() {
+      if (state.anim.raf) cancelAnimationFrame(state.anim.raf);
+      state.figures += 1;
+      state.anim = { active: true, t: 0, index: state.figures, raf: 0 };
+      var start = null;
+      var DUR = 460;
+      function frame(ts) {
+        if (start === null) start = ts;
+        state.anim.t = Math.min(1, (ts - start) / DUR);
+        draw();
+        if (state.anim.t < 1) {
+          state.anim.raf = requestAnimationFrame(frame);
+        } else {
+          state.anim.active = false;
+          state.anim.raf = 0;
+          draw();
+        }
+      }
+      state.anim.raf = requestAnimationFrame(frame);
+    }
+
+    /* ---------- side panel ---------- */
+    function renderPanel() {
+      var sh = shape();
+      document.getElementById("rule-display").textContent = sh.rule;
+      document.getElementById("shape-note").textContent = sh.note;
+      document.getElementById("figure-display").textContent = "Gambar " + state.figures + " dari " + MAX_FIG;
+      document.getElementById("progress-fill").style.width = (state.figures / MAX_FIG * 100) + "%";
+
+      var html = "";
+      for (var i = 1; i <= MAX_FIG; i++) {
+        var shown = i <= state.figures;
+        html += "<span>" + i + ": " + (shown ? sh.count(i) : "?") + "</span>";
+      }
+      document.getElementById("seq-display").innerHTML = html;
+
+      document.getElementById("add-btn").disabled = state.figures >= MAX_FIG;
+      if (state.figures >= MAX_FIG) {
+        document.getElementById("add-btn").textContent = "Semua gambar tampil";
+      } else {
+        document.getElementById("add-btn").textContent = "Tambah satu gambar";
+      }
+    }
+
+    function setFeedback(msg, kind) {
+      var fb = document.getElementById("feedback-panel");
+      fb.textContent = msg;
+      fb.className = kind === "success" ? "success" : (kind === "error" ? "error" : "");
+    }
+
+    function addFigure() {
+      if (state.figures >= MAX_FIG) {
+        setFeedback("Sudah lima gambar. Tebak jumlah pada gambar berikutnya, lalu tebak lagi dari gambar 1 untuk mengubah bentuk.", null);
+        return;
+      }
+      state.checked = false;
+      state.reveal = false;
+      document.getElementById("guess-input").value = "";
+      animateNewFigure();
+      renderPanel();
+      setFeedback("Gambar " + state.figures + " ditambahkan. Sekarang tebak jumlah benda pada gambar " + (state.figures + 1) + ".", null);
+    }
+
+    function checkGuess() {
+      var sh = shape();
+      var nextN = sh.count(state.figures + 1);
+      var raw = document.getElementById("guess-input").value.trim();
+      var v = parseInt(raw, 10);
+      if (raw === "" || isNaN(v)) {
+        setFeedback("Tulis dulu tebakanmu berupa angka.", null);
+        return;
+      }
+      state.checked = true;
+      if (v === nextN) {
+        setFeedback("Tepat! Gambar " + (state.figures + 1) + " berisi " + nextN + " " + sh.name.toLowerCase() + ". Aturannya " + sh.rule + ". Coba ucapkan aturan itu dengan bahasamu sendiri.", "success");
+      } else if (v === sh.count(state.figures)) {
+        setFeedback("Itu jumlah pada gambar " + state.figures + ", bukan gambar berikutnya. Karena polanya " + sh.rule + ", coba tambah " + sh.step + " lagi.", "error");
+      } else {
+        setFeedback("Belum tepat. Perhatikan selisih antar gambar: polanya " + sh.rule + ". Coba hitung lagi dari gambar " + state.figures + " ke gambar " + (state.figures + 1) + ".", "error");
+      }
+    }
+
+    function revealAnswer() {
+      var sh = shape();
+      var nextN = sh.count(state.figures + 1);
+      state.reveal = true;
+      renderPanel();
+      draw();
+      setFeedback("Jawabannya " + nextN + ". Ingat aturannya: " + sh.rule + ". Rumuskan aturan itu dengan kalimatmu sendiri, misalnya tambah berapa setiap gambar.", "success");
+    }
+
+    function setShape(i) {
+      state.shape = i;
+      state.figures = 1;
+      state.checked = false;
+      state.reveal = false;
+      state.anim.active = false;
+      if (state.anim.raf) { cancelAnimationFrame(state.anim.raf); state.anim.raf = 0; }
+      document.getElementById("guess-input").value = "";
+      Array.prototype.forEach.call(shapeGrid.children, function (b, idx) {
+        b.setAttribute("aria-pressed", idx === i ? "true" : "false");
+      });
+      renderPanel();
+      draw();
+      setFeedback("Bentuk " + SHAPES[i].name + ". Aturannya " + SHAPES[i].rule + ". Tambah gambarnya lalu tebak jumlah berikutnya.", null);
+    }
+
+    function resetState() {
+      state.figures = 1;
+      state.checked = false;
+      state.reveal = false;
+      state.anim.active = false;
+      if (state.anim.raf) { cancelAnimationFrame(state.anim.raf); state.anim.raf = 0; }
+      document.getElementById("guess-input").value = "";
+      renderPanel();
+      draw();
+      setFeedback("Kembali ke gambar 1. Jumlah pada gambar 1 adalah " + shape().count(1) + ". Tambah gambarnya dan cari polanya.", null);
+    }
+
+    /* ---------- init ---------- */
+    SHAPES.forEach(function (s, i) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "btn btn-ghost";
+      b.id = "shape-" + s.id + "-btn";
+      b.textContent = s.name;
+      b.setAttribute("aria-pressed", i === 0 ? "true" : "false");
+      b.addEventListener("click", function () { setShape(i); });
+      shapeGrid.appendChild(b);
+    });
+
+    canvas.addEventListener("click", addFigure);
+    document.getElementById("add-btn").addEventListener("click", addFigure);
+    document.getElementById("check-btn").addEventListener("click", checkGuess);
+    document.getElementById("reveal-btn").addEventListener("click", revealAnswer);
+    document.getElementById("reset-btn").addEventListener("click", resetState);
+    document.getElementById("guess-input").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") checkGuess();
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
+      if (e.key === " ") { e.preventDefault(); addFigure(); }
+      if (e.key === "r" || e.key === "R") resetState();
+    });
+
+    function resize() { draw(); }
+
+    if (window.ResizeObserver) {
+      new ResizeObserver(resize).observe(canvas.parentElement);
+    } else {
+      window.addEventListener("resize", resize);
+    }
+
+    renderPanel();
+    resize();
+  })();
+  </script>
+</body>
+</html>

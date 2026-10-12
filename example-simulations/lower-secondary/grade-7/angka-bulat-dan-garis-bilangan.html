@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="education_levels" content="Lower Secondary">
+  <meta name="grade" content="7">
+  <title>Angka Bulat dan Garis Bilangan · Matematika SMP Kelas VII</title>
+  <meta name="description" content="Murid menemukan letak bilangan bulat di garis bilangan dan bergerak ke kanan untuk menjumlah, ke kiri untuk mengurangi.">
+  <meta property="og:description" content="Murid menemukan letak bilangan bulat di garis bilangan dan bergerak ke kanan untuk menjumlah, ke kiri untuk mengurangi, lalu melihat hasilnya.">
+  <meta property="og:title" content="Angka Bulat dan Garis Bilangan">
+  <meta property="og:locale" content="id">
+  <style>
+:root {
+  /* Colour */
+  --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+  --surface: #14141e;     /* panels, cards, step rows */
+  --panel: rgba(20, 20, 30, 0.9);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: #333;
+  --text: #ffffff;
+  --text-muted: #aaa;
+  --text-dim: #888;
+  --accent: #6366f1;      /* primary action, slider thumb, active state */
+  --accent-hover: #5558e8;
+  --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+  --success: #fbbf24;     /* completion, headings, callouts */
+  --warning: #fb923c;
+  --error: #ff6b6b;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type scale (system fonts only) */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-caption: 11px;   /* uppercase control labels */
+  --text-heading: 24px;
+
+  /* Focus, motion, stacking */
+  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  --motion: 0.2s;
+  --motion-slow: 0.3s;
+  --z-overlay: 100;        /* panels, tooltips */
+  --z-modal: 1000;         /* loading screens, modal dialogs */
+}
+
+[data-theme="light"] {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-strong: #d4d4d8;
+  --text: #16161d;
+  --text-muted: #52525b;
+  --text-dim: #71717a;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.95);
+  --success: #b45309;
+  --warning: #c2410c;
+  --error: #dc2626;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+.btn {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  min-height: 44px;            /* never below 44px, mobile */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--border-strong);
+  color: var(--text);
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.btn:hover { background: var(--text-muted); }
+.btn:active { transform: scale(0.95); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); border-color: var(--accent); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); }
+
+.control-label {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+input[type="range"] {
+  width: 100%; height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+
+/* Touch target: keep the 6px visual track, but give the control a 44px hit area. */
+input[type="range"] { height: 44px; background: transparent; }
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-moz-range-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-webkit-slider-thumb { margin-top: -7px; }
+input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; background: var(--accent); border-radius: 50%; cursor: pointer; }
+/* Visually hidden but announced by screen readers. Use when a layout has no
+   room for a visible <h1> (e.g. a full-bleed canvas) — never as an excuse to
+   drop a heading. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+#feedback-panel {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+#feedback-panel.success { border-left-color: var(--success); }
+#feedback-panel.error { border-left-color: var(--error); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.progress-fill { height: 100%; background: var(--accent); transition: width var(--motion-slow); }
+
+    /* ---- layout (tokens only) ---- */
+    .wrap {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: var(--space-4) var(--space-4) var(--space-6);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+    h1 { font-size: var(--text-heading); line-height: 1.2; }
+    h2 { font-size: var(--text-base); color: var(--text-muted); font-weight: 600; }
+    h3 { font-size: var(--text-sm); color: var(--text-muted); font-weight: 600; }
+    p { font-size: var(--text-sm); color: var(--text-muted); }
+
+    .stage { min-height: 220px; }
+    #line-svg { display: block; width: 100%; height: auto; touch-action: none; }
+
+    .readouts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+    }
+    .readout {
+      flex: 1 1 140px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-3);
+    }
+    .readout .k { font-size: var(--text-caption); text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+    .readout .v { font-family: var(--font-mono); font-size: var(--text-heading); }
+
+    .field { display: flex; flex-direction: column; gap: var(--space-1); }
+    .field-row { display: flex; justify-content: space-between; align-items: baseline; }
+    .field-row .val { font-family: var(--font-mono); color: var(--text); }
+
+    .btn-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .btn-row .btn { flex: 1 1 120px; }
+
+    #op-group { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+    #op-group .btn { flex: 1 1 100px; }
+    #op-group .btn[aria-pressed="true"] {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .tick-label { font-family: var(--font-mono); fill: var(--text-muted); }
+    .axis { stroke: var(--border-strong); stroke-width: 2; }
+    .tick { stroke: var(--border-strong); stroke-width: 1.5; }
+    .tick.zero { stroke: var(--accent); stroke-width: 3; }
+    .zero-label { fill: var(--accent); }
+    .marker-body { fill: var(--accent); }
+    .marker-stem { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 4 4; }
+    .marker-value { font-family: var(--font-mono); font-size: 15px; font-weight: 700; fill: var(--text); }
+    .step-dot { fill: var(--success); }
+    .trace-line { stroke: var(--success); stroke-width: 3; }
+    .arrow-head { fill: var(--success); }
+    .zone-neg { fill: var(--border); opacity: 0.35; }
+
+    input[type="text"], input[type="number"] {
+      font-family: var(--font-mono);
+      font-size: var(--text-base);
+      min-height: 44px;
+      padding: var(--space-2) var(--space-3);
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      width: 100%;
+    }
+    input:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+    .footnote { font-size: var(--text-xs); color: var(--text-dim); }
+
+    @media (max-width: 420px) {
+      .wrap { padding: var(--space-3) var(--space-2) var(--space-5); }
+      .readout .v { font-size: var(--text-base); }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Angka Bulat dan Garis Bilangan</h1>
+      <p>Geser penanda di garis bilangan. Setelah itu tekan <strong>Jalankan</strong> untuk melihat arah dan hasil_hitunganmu langkah demi langkah.</p>
+    </header>
+
+    <section class="panel stage" aria-labelledby="stage-heading">
+      <h2 id="stage-heading" class="panel-heading">Garis bilangan dari &minus;10 sampai 10</h2>
+      <svg id="line-svg" viewBox="0 0 900 240" role="img" aria-labelledby="svg-title">
+        <title id="svg-title">Garis bilangan dengan bilangan bulat dari minus sepuluh sampai sepuluh</title>
+        <rect class="zone-neg" id="zone-neg" x="0" y="150" width="390" height="8"></rect>
+        <g id="ticks"></g>
+        <line class="axis" id="axis" x1="45" y1="154" x2="855" y2="154"></line>
+        <path class="trace-line" id="trace-line" d="" opacity="0"></path>
+        <polygon class="arrow-head" id="trace-arrow" points="0,0 0,0 0,0" opacity="0"></polygon>
+        <g id="steps"></g>
+        <g id="marker" tabindex="0" role="slider" aria-label="Penanda bilangan" aria-valuemin="-10" aria-valuemax="10" aria-valuenow="0">
+          <line class="marker-stem" id="marker-stem" x1="450" y1="154" x2="450" y2="66"></line>
+          <polygon class="marker-body" id="marker-arrow" points="450,70 438,52 462,52"></polygon>
+          <text class="marker-value" id="marker-label" x="450" y="40" text-anchor="middle">0</text>
+        </g>
+      </svg>
+      <p class="footnote">Klik atau geser penanda untuk memindahkannya sendiri. Gunakan tombol panah saat penanda terfokus.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="readout-heading">
+      <h2 id="readout-heading" class="panel-heading">Hasil perhitunganmu</h2>
+      <div class="readouts">
+        <div class="readout"><div class="k">Mulai</div><div class="v" id="start-display">5</div></div>
+        <div class="readout"><div class="k">Arah</div><div class="v" id="direction-display">—</div></div>
+        <div class="readout"><div class="k">Jarak</div><div class="v" id="distance-display">0</div></div>
+        <div class="readout"><div class="k">Hasil</div><div class="v" id="result-display">?</div></div>
+      </div>
+      <div id="feedback-panel" role="status" aria-live="polite" style="margin-top: var(--space-3);">
+        Tekan <strong>Jalankan</strong> untuk melihat perjalanan penanda di garis bilangan.
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="control-heading">
+      <h2 id="control-heading" class="panel-heading">Atur bilangan dan operasi</h2>
+
+      <div class="field" style="margin-bottom: var(--space-4);">
+        <div class="field-row">
+          <label class="control-label" for="first-slider">Bilangan pertama</label>
+          <span class="val" id="first-display">5</span>
+        </div>
+        <input type="range" id="first-slider" min="-10" max="10" step="1" value="5">
+      </div>
+
+      <div class="field" style="margin-bottom: var(--space-4);">
+        <div class="field-row">
+          <label class="control-label" for="second-slider">Bilangan kedua</label>
+          <span class="val" id="second-display">3</span>
+        </div>
+        <input type="range" id="second-slider" min="-10" max="10" step="1" value="3">
+      </div>
+
+      <h3>Operasi</h3>
+      <div id="op-group" role="group" aria-label="Pilih operasi hitung" style="margin: var(--space-2) 0 var(--space-4);">
+        <button type="button" class="btn" id="op-add-btn" data-op="add" aria-pressed="true">Jumlah (+)</button>
+        <button type="button" class="btn" id="op-sub-btn" data-op="sub" aria-pressed="false">Kurang (&minus;)</button>
+        <button type="button" class="btn" id="op-mul-btn" data-op="mul" aria-pressed="false">Kali (&times;)</button>
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-primary" id="run-btn">Jalankan</button>
+        <button type="button" class="btn btn-ghost" id="reset-btn">Atur Ulang</button>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="preset-heading">
+      <h2 id="preset-heading" class="panel-heading">Contoh yang sering muncul</h2>
+      <div class="btn-row">
+        <button type="button" class="btn btn-ghost" data-preset="5 + 3">5 + 3</button>
+        <button type="button" class="btn btn-ghost" data-preset="-4 + 7">&minus;4 + 7</button>
+        <button type="button" class="btn btn-ghost" data-preset="-3 x 2">&minus;3 &times; 2</button>
+      </div>
+      <h3 style="margin-top: var(--space-4);">Contoh soal</h3>
+      <ul style="margin-left: var(--space-4); color: var(--text-muted); font-size: var(--text-sm);">
+        <li>Bilangan positif di sebelah kanan nol, bilangan negatif di sebelah kiri nol.</li>
+        <li>Menambah berarti bergerak ke kanan, mengurangi berarti bergerak ke kiri.</li>
+        <li>Jarak dihitung dari nilai awal sampai nilai akhir, tanpa melihat arah.</li>
+      </ul>
+    </section>
+
+    <p class="footnote">Pintasan papan tik: <strong>Spasi</strong> untuk menjalankan atau menghentikan, <strong>R</strong> untuk mengatur ulang.</p>
+  </div>
+
+  <script type="application/json" id="widget-config">
+  {
+    "type": "simulation",
+    "concept": "number_line_integers",
+    "description": "Murid menemukan letak bilangan bulat di garis bilangan dan bergerak ke kanan untuk menjumlah, ke kiri untuk mengurangi.",
+    "variables": [
+      { "name": "first", "label": "Bilangan pertama", "min": -10, "max": 10, "default": 5, "unit": "" },
+      { "name": "second", "label": "Bilangan kedua", "min": -10, "max": 10, "default": 3, "unit": "" },
+      { "name": "operation", "label": "Operasi", "default": "add" }
+    ],
+    "presets": [
+      { "name": "5 + 3", "variables": { "first": 5, "second": 3, "operation": "add" } },
+      { "name": "-4 + 7", "variables": { "first": -4, "second": 7, "operation": "add" } },
+      { "name": "-3 x 2", "variables": { "first": -3, "second": 2, "operation": "mul" } }
+    ]
+  }
+  </script>
+
+  <script>
+  (function () {
+    "use strict";
+
+    var MIN = -10, MAX = 10, SPAN = MAX - MIN;
+    var SVG_MIN_X = 45, SVG_MAX_X = 855, LINE_Y = 154;
+
+    var DEFAULTS = { first: 5, second: 3, op: "add" };
+
+    var svg = document.getElementById("line-svg");
+    var ticksGroup = document.getElementById("ticks");
+    var stepsGroup = document.getElementById("steps");
+    var zoneNeg = document.getElementById("zone-neg");
+    var axis = document.getElementById("axis");
+    var marker = document.getElementById("marker");
+    var markerArrow = document.getElementById("marker-arrow");
+    var markerStem = document.getElementById("marker-stem");
+    var markerLabel = document.getElementById("marker-label");
+    var traceLine = document.getElementById("trace-line");
+    var traceArrow = document.getElementById("trace-arrow");
+    var firstSlider = document.getElementById("first-slider");
+    var secondSlider = document.getElementById("second-slider");
+    var firstDisplay = document.getElementById("first-display");
+    var secondDisplay = document.getElementById("second-display");
+    var startDisplay = document.getElementById("start-display");
+    var directionDisplay = document.getElementById("direction-display");
+    var distanceDisplay = document.getElementById("distance-display");
+    var resultDisplay = document.getElementById("result-display");
+    var feedback = document.getElementById("feedback-panel");
+    var runBtn = document.getElementById("run-btn");
+    var resetBtn = document.getElementById("reset-btn");
+    var opButtons = Array.prototype.slice.call(document.querySelectorAll("#op-group .btn"));
+
+    var state = {
+      value: DEFAULTS.first,      // current marker position on the line
+      first: DEFAULTS.first,
+      second: DEFAULTS.second,
+      op: DEFAULTS.op,
+      running: false,
+      ended: false,
+      hasRun: false,
+      rafId: 0,
+      path: [],                    // positions travelled, start..result
+      pathIndex: 0,
+      trailLen: 0                  // in pixels, grows as the marker travels
+    };
+
+    function clampToLine(v) {
+      return Math.max(MIN, Math.min(MAX, v));
+    }
+
+    function valueToX(v) {
+      return SVG_MIN_X + ((clampToLine(v) - MIN) / SPAN) * (SVG_MAX_X - SVG_MIN_X);
+    }
+
+    function xToValue(clientX) {
+      var rect = svg.getBoundingClientRect();
+      if (rect.width === 0) return state.value;
+      var svgX = ((clientX - rect.left) / rect.width) * 900;
+      var ratio = (svgX - SVG_MIN_X) / (SVG_MAX_X - SVG_MIN_X);
+      return clampToLine(Math.round(MIN + ratio * SPAN));
+    }
+
+    function buildTicks() {
+      var frag = document.createDocumentFragment();
+      var t, lab, x;
+      for (var v = MIN; v <= MAX; v++) {
+        x = valueToX(v);
+        t = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        t.setAttribute("x1", x); t.setAttribute("x2", x);
+        t.setAttribute("y1", v === 0 ? 138 : 146);
+        t.setAttribute("y2", 162);
+        t.setAttribute("class", v === 0 ? "tick zero" : "tick");
+        frag.appendChild(t);
+
+        lab = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        lab.setAttribute("x", x);
+        lab.setAttribute("y", 182);
+        lab.setAttribute("text-anchor", "middle");
+        lab.setAttribute("class", "tick-label" + (v === 0 ? " zero-label" : ""));
+        lab.textContent = String(v);
+        frag.appendChild(lab);
+      }
+      ticksGroup.appendChild(frag);
+      zoneNeg.setAttribute("x", SVG_MIN_X);
+      zoneNeg.setAttribute("width", valueToX(0) - SVG_MIN_X);
+      axis.setAttribute("x1", SVG_MIN_X);
+      axis.setAttribute("x2", SVG_MAX_X);
+    }
+
+    function drawMarker() {
+      var x = valueToX(state.value);
+      markerArrow.setAttribute("points", x + ",70 " + (x - 12) + ",52 " + (x + 12) + ",52");
+      markerStem.setAttribute("x1", x);
+      markerStem.setAttribute("x2", x);
+      markerLabel.setAttribute("x", x);
+      markerLabel.textContent = (state.value > 0 ? "+" : "") + state.value;
+      marker.setAttribute("aria-valuenow", String(state.value));
+      marker.setAttribute("aria-valuetext", String(state.value));
+    }
+
+    function drawSteps() {
+      stepsGroup.textContent = "";
+      if (!state.hasRun) return;
+      var frag = document.createDocumentFragment();
+      var limit = Math.min(state.pathIndex, state.path.length);
+      for (var i = 1; i < limit; i++) {
+        var c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        c.setAttribute("cx", valueToX(state.path[i]));
+        c.setAttribute("cy", 140);
+        c.setAttribute("r", 5);
+        c.setAttribute("class", "step-dot");
+        frag.appendChild(c);
+      }
+      stepsGroup.appendChild(frag);
+    }
+
+    function drawTrace() {
+      if (!state.hasRun || state.path.length < 2 || state.pathIndex < 2) {
+        traceLine.setAttribute("opacity", "0");
+        traceArrow.setAttribute("opacity", "0");
+        return;
+      }
+      var from = valueToX(state.path[0]);
+      var to = valueToX(state.path[state.pathIndex - 1]);
+      var y = 140;
+      traceLine.setAttribute("d", "M " + from + " " + y + " L " + to + " " + y);
+      traceLine.setAttribute("opacity", "1");
+      var dir = to >= from ? 1 : -1;
+      traceArrow.setAttribute("points",
+        to + "," + (y - 7) + " " + (to - dir * 16) + "," + y + " " + to + "," + (y + 7));
+      traceArrow.setAttribute("opacity", "1");
+    }
+
+    function render() {
+      drawMarker();
+      drawSteps();
+      drawTrace();
+    }
+
+    function sign(v) { return v < 0 ? "−" : "+"; }
+
+    function fmt(v) { return (v > 0 ? "+" : "") + v; }
+
+    function compute() {
+      var a = state.first, b = state.second, res, dir;
+      if (state.op === "add") { res = a + b; }
+      else if (state.op === "sub") { res = a - b; }
+      else { res = a * b; }
+      // For addition and subtraction the journey starts at the first number.
+      // For multiplication it starts at 0 and takes a jumps of size b.
+      var start = state.op === "mul" ? 0 : a;
+      dir = res > start ? "kanan" : (res < start ? "kiri" : "tidak bergerak");
+      return { a: a, b: b, res: res, dir: dir, start: start, dist: Math.abs(res - start) };
+    }
+
+    function buildPath(c) {
+      var path = [c.start];
+      var i, steps, jump;
+      if (state.op === "mul") {
+        steps = Math.abs(c.a);
+        jump = c.a < 0 ? -c.b : c.b;
+        if (steps === 0) return [c.start, c.start];
+        for (i = 1; i <= steps; i++) path.push(c.start + jump * i);
+      } else {
+        var delta = state.op === "add" ? c.b : -c.b;
+        steps = Math.abs(delta);
+        for (i = 1; i <= steps; i++) path.push(path[path.length - 1] + (delta > 0 ? 1 : -1));
+      }
+      return path;
+    }
+
+    function setReadouts(text) {
+      var c = compute();
+      startDisplay.textContent = fmt(c.start);
+      directionDisplay.textContent = c.dir === "tidak bergerak" ? "diam" : c.dir;
+      distanceDisplay.textContent = String(c.dist);
+      resultDisplay.textContent = state.hasRun ? fmt(c.res) : "?";
+      if (text) feedback.textContent = text;
+    }
+
+    function stopAnimation() {
+      state.running = false;
+      if (state.rafId) cancelAnimationFrame(state.rafId);
+      state.rafId = 0;
+    }
+
+    function setRunButton() {
+      if (state.running) {
+        runBtn.textContent = "Berhenti";
+      } else if (state.ended) {
+        runBtn.textContent = "Jalankan Lagi";
+      } else {
+        runBtn.textContent = "Jalankan";
+      }
+    }
+
+    function animate() {
+      var STEP_MS = 320;
+      var last = 0;
+      var perStep = function (now) {
+        if (!last) last = now;
+        if (now - last >= STEP_MS) {
+          last = now;
+          state.pathIndex++;
+          if (state.pathIndex >= state.path.length) {
+            state.value = state.path[state.path.length - 1];
+            state.running = false;
+            state.ended = true;
+            state.hasRun = true;
+            finishRun();
+            return;
+          }
+          state.value = state.path[state.pathIndex];
+          render();
+          var c = compute();
+          resultDisplay.textContent = fmt(c.res);
+          startDisplay.textContent = fmt(state.path[state.pathIndex]);
+        }
+        state.rafId = requestAnimationFrame(perStep);
+      };
+      state.rafId = requestAnimationFrame(perStep);
+    }
+
+    function finishRun() {
+      var c = compute();
+      setRunButton();
+      render();
+      setReadouts();
+      var beyond = c.res > MAX || c.res < MIN;
+      feedback.className = beyond ? "error" : "success";
+      var msg = state.op === "mul"
+        ? c.a + " " + opWord() + " " + c.b + " = " + fmt(c.res) +
+          ". Penanda mulai dari 0 dan melompat " + fmt(c.b) + " sebanyak " + Math.abs(c.a) + " kali. "
+        : c.a + " " + opWord() + " " + c.b + " = " + fmt(c.res) + ". ";
+      if (c.dir === "tidak bergerak") {
+        msg += "Penanda tidak bergerak karena hasilnya sama dengan titik awal.";
+      } else {
+        msg += "Penanda bergerak ke " + c.dir + " sejauh " + c.dist + " langkah.";
+      }
+      if (state.op === "mul" && c.a < 0 && c.b < 0) {
+        msg += " Ingat: dua bilangan negatif yang dikalikan hasilnya positif.";
+      }
+      if (beyond) {
+        msg += " Hasil " + fmt(c.res) + " berada di luar garis ini (hanya sampai " + MAX + " sampai " + MIN + ").";
+      }
+      feedback.textContent = msg;
+    }
+
+    function opWord() {
+      return state.op === "add" ? "+" : (state.op === "sub" ? "−" : "×");
+    }
+
+    function run() {
+      var c = compute();
+      if (state.running) {
+        stopAnimation();
+        state.ended = false;
+        setRunButton();
+        feedback.className = "";
+        feedback.textContent = "Perjalanan dihentikan di " + fmt(state.value) + ". Tekan Jalankan untuk melanjutkan dari awal.";
+        return;
+      }
+      stopAnimation();
+      state.path = buildPath(c);
+      state.pathIndex = 0;
+      state.value = c.start;
+      state.hasRun = true;
+      state.ended = false;
+      state.running = true;
+      feedback.className = "";
+      feedback.textContent = "Mulai dari " + fmt(c.start) + ", bergerak ke " + c.dir + ".";
+      resultDisplay.textContent = "?";
+      setReadouts("");
+      render();
+      setRunButton();
+      animate();
+    }
+
+    function setOp(op) {
+      state.op = op;
+      opButtons.forEach(function (b) {
+        b.setAttribute("aria-pressed", b.getAttribute("data-op") === op ? "true" : "false");
+      });
+      stopAnimation();
+      state.hasRun = false;
+      state.ended = false;
+      state.value = state.first;
+      clearTrace();
+      setReadouts("");
+      feedback.className = "";
+      feedback.textContent = "Operasi diubah ke " + (op === "add" ? "jumlah" : op === "sub" ? "kurang" : "kali") + ". Tekan Jalankan.";
+      render();
+      setRunButton();
+    }
+
+    function clearTrace() {
+      traceLine.setAttribute("opacity", "0");
+      traceArrow.setAttribute("opacity", "0");
+      stepsGroup.textContent = "";
+      state.path = [];
+      state.pathIndex = 0;
+    }
+
+    function resetAll() {
+      stopAnimation();
+      state.first = DEFAULTS.first;
+      state.second = DEFAULTS.second;
+      state.op = DEFAULTS.op;
+      state.value = DEFAULTS.first;
+      state.hasRun = false;
+      state.ended = false;
+      firstSlider.value = String(DEFAULTS.first);
+      secondSlider.value = String(DEFAULTS.second);
+      firstDisplay.textContent = String(DEFAULTS.first);
+      secondDisplay.textContent = String(DEFAULTS.second);
+      opButtons.forEach(function (b) {
+        b.setAttribute("aria-pressed", b.getAttribute("data-op") === DEFAULTS.op ? "true" : "false");
+      });
+      clearTrace();
+      setReadouts("");
+      feedback.className = "";
+      feedback.textContent = "Semua dikembalikan ke awal: 5, 3, dan operasi jumlah. Garis bilangan juga kembali ke posisi semula.";
+      render();
+      setRunButton();
+    }
+
+    firstSlider.addEventListener("input", function () {
+      stopAnimation();
+      state.first = parseInt(firstSlider.value, 10);
+      firstDisplay.textContent = String(state.first);
+      state.value = state.first;
+      state.hasRun = false;
+      state.ended = false;
+      clearTrace();
+      setReadouts("");
+      feedback.className = "";
+      feedback.textContent = "Bilangan pertama " + sign(state.first) + " " + Math.abs(state.first) + ".";
+      render();
+      setRunButton();
+    });
+
+    secondSlider.addEventListener("input", function () {
+      stopAnimation();
+      state.second = parseInt(secondSlider.value, 10);
+      secondDisplay.textContent = String(state.second);
+      state.hasRun = false;
+      state.ended = false;
+      clearTrace();
+      setReadouts("");
+      feedback.className = "";
+      feedback.textContent = "Bilangan kedua " + sign(state.second) + " " + Math.abs(state.second) + ".";
+      render();
+      setRunButton();
+    });
+
+    opButtons.forEach(function (b) {
+      b.addEventListener("click", function () { setOp(b.getAttribute("data-op")); });
+    });
+
+    runBtn.addEventListener("click", run);
+    resetBtn.addEventListener("click", resetAll);
+
+    var presetButtons = Array.prototype.slice.call(document.querySelectorAll("[data-preset]"));
+    presetButtons.forEach(function (b) {
+      b.addEventListener("click", function () {
+        var raw = b.getAttribute("data-preset").replace("−", "-").replace(/\s+/g, "");
+        var parts = raw.split(/(?=[+x×-])/);
+        var first = parseInt(parts[0], 10);
+        var rest = raw.slice(String(first).length);
+        var opKey = rest.indexOf("x") >= 0 || rest.indexOf("×") >= 0 ? "mul" : (rest[0] === "-" ? "sub" : "add");
+        var second = parseInt(rest.slice(1), 10);
+        state.first = clampToLine(first);
+        state.second = clampToLine(second);
+        firstSlider.value = String(state.first);
+        secondSlider.value = String(state.second);
+        firstDisplay.textContent = String(state.first);
+        secondDisplay.textContent = String(state.second);
+        stopAnimation();
+        state.hasRun = false;
+        state.ended = false;
+        state.value = state.first;
+        clearTrace();
+        opButtons.forEach(function (btn) {
+          btn.setAttribute("aria-pressed", btn.getAttribute("data-op") === opKey ? "true" : "false");
+        });
+        state.op = opKey;
+        setReadouts("");
+        feedback.className = "";
+        feedback.textContent = "Contoh dimuat: " + b.getAttribute("data-preset") + ". Tekan Jalankan untuk melihat perjalanannya.";
+        render();
+        setRunButton();
+      });
+    });
+
+    // Drag / tap the marker along the line.
+    var dragging = false;
+    function pick(clientX) {
+      stopAnimation();
+      state.value = xToValue(clientX);
+      state.first = state.value;
+      firstSlider.value = String(state.value);
+      firstDisplay.textContent = String(state.value);
+      state.hasRun = false;
+      state.ended = false;
+      clearTrace();
+      setReadouts("");
+      render();
+      setRunButton();
+    }
+    marker.addEventListener("pointerdown", function (e) {
+      dragging = true;
+      marker.setPointerCapture(e.pointerId);
+      pick(e.clientX);
+      e.preventDefault();
+    });
+    marker.addEventListener("pointermove", function (e) {
+      if (dragging) pick(e.clientX);
+    });
+    marker.addEventListener("pointerup", function (e) {
+      dragging = false;
+      if (marker.hasPointerCapture(e.pointerId)) marker.releasePointerCapture(e.pointerId);
+    });
+    marker.addEventListener("keydown", function (e) {
+      var step = e.shiftKey ? 5 : 1;
+      if (e.key === "ArrowRight" || e.key === "ArrowUp") {
+        state.value = clampToLine(state.value + step);
+      } else if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
+        state.value = clampToLine(state.value - step);
+      } else {
+        return;
+      }
+      e.preventDefault();
+      stopAnimation();
+      state.first = state.value;
+      firstSlider.value = String(state.value);
+      firstDisplay.textContent = String(state.value);
+      state.hasRun = false;
+      state.ended = false;
+      clearTrace();
+      setReadouts("");
+      feedback.className = "";
+      feedback.textContent = "Penanda digeser ke " + fmt(state.value) + ".";
+      render();
+      setRunButton();
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.target && /INPUT|BUTTON|TEXTAREA/.test(e.target.tagName)) {
+        if (e.key !== "r" && e.key !== "R") return;
+      }
+      if (e.key === " ") { e.preventDefault(); run(); }
+      else if (e.key === "r" || e.key === "R") { e.preventDefault(); resetAll(); }
+    });
+
+    // Keep the marker reachable if the page is resized mid-drag.
+    if (typeof ResizeObserver !== "undefined") {
+      new ResizeObserver(function () { render(); }).observe(svg);
+    }
+
+    buildTicks();
+    render();
+    setRunButton();
+  })();
+  </script>
+</body>
+</html>

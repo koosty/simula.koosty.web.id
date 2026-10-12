@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="education_levels" content="Lower Secondary">
+  <meta name="grade" content="7">
+  <title>Menabung dan Anggaran: Literasi Finansial · Matematika SMP Kelas VII</title>
+  <meta name="description" content="Murid mengelola uang saku: menentukan kebutuhan, membandingkan pilihan, dan menghitung sisa uang.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Menabung dan Anggaran: Literasi Finansial">
+  <meta property="og:description" content="Murid mengelola uang saku: menyusun rencana pengeluaran dari uang saku, menghitung sisa uang, dan menilai pilihan menabung atau langsung dipakai.">
+  <meta property="og:locale" content="id">
+  <style>
+:root {
+  /* Colour */
+  --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+  --surface: #14141e;     /* panels, cards, step rows */
+  --panel: rgba(20, 20, 30, 0.9);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: #333;
+  --text: #ffffff;
+  --text-muted: #aaa;
+  --text-dim: #888;
+  --accent: #6366f1;      /* primary action, slider thumb, active state */
+  --accent-hover: #5558e8;
+  --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+  --success: #fbbf24;     /* completion, headings, callouts */
+  --warning: #fb923c;
+  --error: #ff6b6b;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type scale (system fonts only) */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-caption: 11px;   /* uppercase control labels */
+  --text-heading: 24px;
+
+  /* Focus, motion, stacking */
+  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  --motion: 0.2s;
+  --motion-slow: 0.3s;
+  --z-overlay: 100;        /* panels, tooltips */
+  --z-modal: 1000;         /* loading screens, modal dialogs */
+}
+
+[data-theme="light"] {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-strong: #d4d4d8;
+  --text: #16161d;
+  --text-muted: #52525b;
+  --text-dim: #71717a;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.95);
+  --success: #b45309;
+  --warning: #c2410c;
+  --error: #dc2626;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+.btn {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  min-height: 44px;            /* never below 44px, mobile */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--border-strong);
+  color: var(--text);
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.btn:hover { background: var(--text-muted); }
+.btn:active { transform: scale(0.95); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); border-color: var(--accent); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); }
+
+.control-label {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+input[type="range"] {
+  width: 100%; height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+
+/* Touch target: keep the 6px visual track, but give the control a 44px hit area. */
+input[type="range"] { height: 44px; background: transparent; }
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-moz-range-track {
+  height: 6px; background: var(--border-strong); border-radius: var(--radius-pill);
+}
+input[type="range"]::-webkit-slider-thumb { margin-top: -7px; }
+input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; background: var(--accent); border-radius: 50%; cursor: pointer; }
+/* Visually hidden but announced by screen readers. Use when a layout has no
+   room for a visible <h1> (e.g. a full-bleed canvas) — never as an excuse to
+   drop a heading. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+#feedback-panel {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+#feedback-panel.success { border-left-color: var(--success); }
+#feedback-panel.error { border-left-color: var(--error); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.progress-fill { height: 100%; background: var(--accent); transition: width var(--motion-slow); }
+
+    /* ---- layout (tokens only) ---- */
+    .wrap {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: var(--space-4) var(--space-4) var(--space-6);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+    h1 { font-size: var(--text-heading); line-height: 1.2; }
+    h2 { font-size: var(--text-base); color: var(--text-muted); font-weight: 600; }
+    h3 { font-size: var(--text-sm); color: var(--text-muted); font-weight: 600; }
+    p { font-size: var(--text-sm); color: var(--text-muted); }
+
+    #chart-svg { display: block; width: 100%; height: auto; }
+    .bar-track { fill: var(--border); }
+    .seg-jajan { fill: var(--accent); }
+    .seg-transport { fill: var(--accent-soft); }
+    .seg-alat { fill: var(--success); }
+    .seg-tabung { fill: var(--warning); }
+    .seg-over { fill: var(--error); }
+    .chart-label { font-family: var(--font-mono); font-size: 14px; fill: var(--text); }
+    .chart-dim { font-size: 12px; fill: var(--text-muted); }
+
+    .readouts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: var(--space-3);
+      margin-top: var(--space-4);
+    }
+    .readout {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-3);
+    }
+    .readout .k { font-size: var(--text-caption); text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+    .readout .v { font-family: var(--font-mono); font-size: var(--text-base); word-break: break-all; }
+    #total-display, #sisa-display { font-size: var(--text-heading); }
+    #sisa-box.over { border-color: var(--error); }
+    #sisa-box.over .v { color: var(--error); }
+    #sisa-box.ok .v { color: var(--success); }
+
+    .field { display: flex; flex-direction: column; gap: var(--space-1); margin-bottom: var(--space-4); }
+    .field-row { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); }
+    .field-row .val { font-family: var(--font-mono); font-size: var(--text-sm); text-align: right; }
+
+    .btn-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .btn-row .btn { flex: 1 1 140px; }
+
+    .verdict-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      margin-top: var(--space-3);
+    }
+    .verdict-list li {
+      font-size: var(--text-sm);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: var(--space-2) var(--space-3);
+    }
+
+    .footnote { font-size: var(--text-xs); color: var(--text-dim); }
+
+    @media (max-width: 420px) {
+      .wrap { padding: var(--space-3) var(--space-2) var(--space-5); }
+      #total-display, #sisa-display { font-size: var(--text-base); }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Menabung dan Anggaran: Literasi Finansial</h1>
+      <p>Geser pengatur untuk menyusun rencana belanja mingguan. Perhatikan bagaimana grafik dan sisa uangmu berubah.</p>
+    </header>
+
+    <section class="panel" aria-labelledby="chart-heading">
+      <h2 id="chart-heading" class="panel-heading">Pembagian uang saku mingguan</h2>
+      <svg id="chart-svg" viewBox="0 0 640 220" role="img" aria-labelledby="chart-title">
+        <title id="chart-title">Diagram batang bertumpuk untuk rencana pengeluaran mingguan</title>
+        <rect id="chart-bg" x="20" y="20" width="600" height="60" rx="8" class="bar-track"></rect>
+        <g id="segments"></g>
+        <line id="chart-axis" x1="20" y1="96" x2="620" y2="96" stroke="var(--border-strong)" stroke-width="2"></line>
+        <text id="chart-scale-label" x="20" y="118" class="chart-dim">0</text>
+        <text id="chart-over-label" x="620" y="160" text-anchor="end" class="chart-dim"></text>
+        <g id="chart-total"></g>
+      </svg>
+
+      <div class="readouts">
+        <div class="readout"><div class="k">Uang saku</div><div class="v" id="allowance-display">Rp50.000</div></div>
+        <div class="readout"><div class="k">Jajan</div><div class="v" id="jajan-display">Rp20.000</div></div>
+        <div class="readout"><div class="k">Transportasi</div><div class="v" id="transport-display">Rp10.000</div></div>
+        <div class="readout"><div class="k">Alat tulis</div><div class="v" id="stationery-display">Rp8.000</div></div>
+        <div class="readout"><div class="k">Menabung</div><div class="v" id="save-display">Rp12.000</div></div>
+        <div class="readout" id="total-box"><div class="k">Total keluar</div><div class="v" id="total-display">Rp50.000</div></div>
+        <div class="readout" id="sisa-box"><div class="k">Sisa uang</div><div class="v" id="sisa-display">Rp0</div></div>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="controls-heading">
+      <h2 id="controls-heading" class="panel-heading">Atur rencanamu</h2>
+
+      <div class="field">
+        <div class="field-row">
+          <label class="control-label" for="allowance-slider">Uang saku per minggu</label>
+          <span class="val" id="allowance-value">Rp50.000</span>
+        </div>
+        <input type="range" id="allowance-slider" min="20000" max="100000" step="1000" value="50000">
+      </div>
+
+      <div class="field">
+        <div class="field-row">
+          <label class="control-label" for="jajan-slider">Jajan</label>
+          <span class="val" id="jajan-value">Rp20.000</span>
+        </div>
+        <input type="range" id="jajan-slider" min="0" max="100000" step="1000" value="20000">
+      </div>
+
+      <div class="field">
+        <div class="field-row">
+          <label class="control-label" for="transport-slider">Transportasi</label>
+          <span class="val" id="transport-value">Rp10.000</span>
+        </div>
+        <input type="range" id="transport-slider" min="0" max="100000" step="1000" value="10000">
+      </div>
+
+      <div class="field">
+        <div class="field-row">
+          <label class="control-label" for="stationery-slider">Alat tulis</label>
+          <span class="val" id="stationery-value">Rp8.000</span>
+        </div>
+        <input type="range" id="stationery-slider" min="0" max="100000" step="1000" value="8000">
+      </div>
+
+      <div class="field">
+        <div class="field-row">
+          <label class="control-label" for="save-slider">Menabung</label>
+          <span class="val" id="save-value">Rp12.000</span>
+        </div>
+        <input type="range" id="save-slider" min="0" max="100000" step="1000" value="12000">
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-ghost" data-preset="jajan">Uang jajan mingguan</button>
+        <button type="button" class="btn btn-ghost" data-preset="buku">Hemat untuk buku</button>
+        <button type="button" class="btn btn-ghost" id="reset-btn">Atur Ulang</button>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="verdict-heading">
+      <h2 id="verdict-heading" class="panel-heading">Penilaian rencana</h2>
+      <div id="feedback-panel" role="status" aria-live="polite">
+        Geser pengatur untuk melihat penilaian berubah.
+      </div>
+      <ul class="verdict-list" id="verdict-list"></ul>
+    </section>
+
+    <p class="footnote">Pintasan papan tik: <strong>R</strong> untuk mengembalikan semua pengatur ke nilai bawaan.</p>
+  </div>
+
+  <script type="application/json" id="widget-config">
+  {
+    "type": "simulation",
+    "concept": "pocket_money_budget",
+    "description": "Murid mengelola uang saku: menentukan kebutuhan, membandingkan pilihan, dan menghitung sisa uang.",
+    "variables": [
+      { "name": "allowance", "label": "Uang saku per minggu", "min": 20000, "max": 100000, "default": 50000, "unit": "IDR" },
+      { "name": "jajan", "label": "Jajan", "min": 0, "max": 100000, "default": 20000, "unit": "IDR" },
+      { "name": "transport", "label": "Transportasi", "min": 0, "max": 100000, "default": 10000, "unit": "IDR" },
+      { "name": "stationery", "label": "Alat tulis", "min": 0, "max": 100000, "default": 8000, "unit": "IDR" },
+      { "name": "save", "label": "Menabung", "min": 0, "max": 100000, "default": 12000, "unit": "IDR" }
+    ],
+    "presets": [
+      { "name": "Uang jajan mingguan", "variables": { "allowance": 50000, "jajan": 20000, "transport": 10000, "stationery": 8000, "save": 12000 } },
+      { "name": "Hemat untuk buku", "variables": { "allowance": 60000, "jajan": 12000, "transport": 12000, "stationery": 23000, "save": 10000 } }
+    ]
+  }
+  </script>
+
+  <script>
+  (function () {
+    "use strict";
+
+    var DEFAULTS = { allowance: 50000, jajan: 20000, transport: 10000, stationery: 8000, save: 12000 };
+    var PRESETS = {
+      jajan: { allowance: 50000, jajan: 20000, transport: 10000, stationery: 8000, save: 12000 },
+      buku: { allowance: 60000, jajan: 12000, transport: 12000, stationery: 23000, save: 10000 }
+    };
+    var CATS = ["jajan", "transport", "stationery", "save"];
+
+    var state = {
+      allowance: DEFAULTS.allowance,
+      jajan: DEFAULTS.jajan,
+      transport: DEFAULTS.transport,
+      stationery: DEFAULTS.stationery,
+      save: DEFAULTS.save,
+      shown: { jajan: 0, transport: 0, stationery: 0, save: 0 },  // animated widths
+      rafId: 0
+    };
+
+    var svg = document.getElementById("chart-svg");
+    var chartBg = document.getElementById("chart-bg");
+    var segments = document.getElementById("segments");
+    var chartAxis = document.getElementById("chart-axis");
+    var chartScaleLabel = document.getElementById("chart-scale-label");
+    var chartOverLabel = document.getElementById("chart-over-label");
+    var chartTotal = document.getElementById("chart-total");
+    var allowanceDisplay = document.getElementById("allowance-display");
+    var jajanDisplay = document.getElementById("jajan-display");
+    var transportDisplay = document.getElementById("transport-display");
+    var stationeryDisplay = document.getElementById("stationery-display");
+    var saveDisplay = document.getElementById("save-display");
+    var totalDisplay = document.getElementById("total-display");
+    var sisaBox = document.getElementById("sisa-box");
+    var sisaDisplay = document.getElementById("sisa-display");
+    var feedback = document.getElementById("feedback-panel");
+    var verdictList = document.getElementById("verdict-list");
+
+    var SVG_NS = "http://www.w3.org/2000/svg";
+    var CHART_X = 20, CHART_W = 600, CHART_Y = 20, CHART_H = 60;
+
+    function rupiah(n) {
+      var neg = n < 0;
+      var s = String(Math.abs(Math.round(n)));
+      var out = "", c = 0;
+      for (var i = s.length - 1; i >= 0; i--) {
+        out = s.charAt(i) + out;
+        c++;
+        if (c % 3 === 0 && i > 0) out = "." + out;
+      }
+      return (neg ? "−" : "") + "Rp" + out;
+    }
+
+    function el(tag, attrs, text) {
+      var node = document.createElementNS(SVG_NS, tag);
+      if (attrs) {
+        for (var k in attrs) {
+          if (Object.prototype.hasOwnProperty.call(attrs, k)) node.setAttribute(k, attrs[k]);
+        }
+      }
+      if (text !== undefined && text !== null) node.textContent = text;
+      return node;
+    }
+
+    function totalOut() {
+      return state.jajan + state.transport + state.stationery + state.save;
+    }
+
+    function sisa() {
+      return state.allowance - totalOut();
+    }
+
+    /* Animate each stacked segment toward its target width. */
+    function animateChart() {
+      if (state.rafId) cancelAnimationFrame(state.rafId);
+      var from = {};
+      CATS.forEach(function (c) { from[c] = state.shown[c]; });
+      var target = {};
+      CATS.forEach(function (c) { target[c] = state[c]; });
+      var start = performance.now();
+      var DUR = 260;
+
+      function step(now) {
+        var t = Math.min(1, (now - start) / DUR);
+        // ease-out
+        var e = 1 - Math.pow(1 - t, 3);
+        CATS.forEach(function (c) {
+          state.shown[c] = from[c] + (target[c] - from[c]) * e;
+        });
+        drawChart();
+        if (t < 1) {
+          state.rafId = requestAnimationFrame(step);
+        } else {
+          state.rafId = 0;
+        }
+      }
+      state.rafId = requestAnimationFrame(step);
+    }
+
+    function drawChart() {
+      var allowance = state.allowance;
+      var out = totalOut();
+      // scale so that either the allowance or the total always fits
+      var scaleMax = Math.max(allowance, out, 1);
+      var x = CHART_X;
+      segments.textContent = "";
+      chartTotal.textContent = "";
+
+      // allowance marker band
+      chartBg.setAttribute("width", Math.max(2, CHART_W));
+      chartBg.setAttribute("x", String(CHART_X));
+
+      CATS.forEach(function (c) {
+        var w = (state.shown[c] / scaleMax) * CHART_W;
+        if (w <= 0.4) { x += w; return; }
+        var r = el("rect", {
+          x: String(x),
+          y: String(CHART_Y),
+          width: String(w),
+          height: String(CHART_H),
+          rx: "4",
+          "class": "seg-" + c
+        });
+        var t = el("title", null, c + ": " + rupiah(state[c]));
+        r.appendChild(t);
+        segments.appendChild(r);
+        var lab = el("text", {
+          x: String(x + w / 2),
+          y: String(CHART_Y + CHART_H / 2 + 5),
+          "text-anchor": "middle",
+          "class": "chart-label"
+        }, rupiah(state[c]));
+        segments.appendChild(lab);
+        x += w;
+      });
+
+      // overshoot marker
+      if (out > allowance) {
+        var overW = ((out - allowance) / scaleMax) * CHART_W;
+        var ox = CHART_X + CHART_W - overW;
+        var o = el("rect", {
+          x: String(ox), y: String(CHART_Y - 10), width: String(Math.max(2, overW)),
+          height: String(CHART_H + 20), rx: "4", "class": "seg-over", opacity: "0.35"
+        });
+        segments.appendChild(o);
+        chartOverLabel.textContent = "kelebihan " + rupiah(out - allowance);
+      } else {
+        chartOverLabel.textContent = "";
+      }
+
+      // allowance tick on the scale
+      var ax = CHART_X + (allowance / scaleMax) * CHART_W;
+      chartAxis.setAttribute("x1", String(ax));
+      chartAxis.setAttribute("x2", String(ax));
+      chartScaleLabel.textContent = "uang saku " + rupiah(allowance);
+      chartScaleLabel.setAttribute("x", String(Math.min(CHART_X + CHART_W, ax + 6)));
+
+      // total readout above the bar
+      var totalText = el("text", {
+        x: String(CHART_X),
+        y: String(CHART_Y - 18),
+        "class": "chart-dim"
+      }, "total keluar " + rupiah(out));
+      chartTotal.appendChild(totalText);
+    }
+
+    function updateReadouts() {
+      allowanceDisplay.textContent = rupiah(state.allowance);
+      jajanDisplay.textContent = rupiah(state.jajan);
+      transportDisplay.textContent = rupiah(state.transport);
+      stationeryDisplay.textContent = rupiah(state.stationery);
+      saveDisplay.textContent = rupiah(state.save);
+      var out = totalOut();
+      var s = sisa();
+      totalDisplay.textContent = rupiah(out);
+      sisaDisplay.textContent = rupiah(s);
+      sisaBox.className = s < 0 ? "readout over" : (s === 0 ? "readout ok" : "readout");
+    }
+
+    function buildVerdicts() {
+      verdictList.textContent = "";
+      var out = totalOut();
+      var s = sisa();
+      var items = [];
+
+      if (s < 0) {
+        feedback.className = "error";
+        items.push("Rencana kamu melebihi uang saku sebesar " + rupiah(-s) +
+          ". Kurangi salah satu pengeluaran atau tambahkan uang sakumu.");
+      } else if (s === 0) {
+        feedback.className = "success";
+        items.push("Semua uang saku terpakai tepat. Coba sisakan sedikit untuk hal tak terduga.");
+      } else {
+        feedback.className = "success";
+        items.push("Rencana mu muat. Sisa uang " + rupiah(s) + " bisa disimpan sebagai cadangan.");
+      }
+
+      if (state.save >= state.allowance * 0.2) {
+        items.push("Menabung " + rupiah(state.save) + " sudah minimal seperlima dari uang saku. Bagus, cita-cita masa depanmu terpenuhi.");
+      } else {
+        items.push("Menabung baru " + rupiah(state.save) + ". Coba sisakan sedikit lebih banyak untuk keinginan nanti.");
+      }
+
+      if (state.jajan > state.allowance * 0.4) {
+        items.push("Jajan " + rupiah(state.jajan) + " terasa besar. Kebanyakan jajan bikin uang cepat habis.");
+      } else if (state.jajan > 0) {
+        items.push("Jajan " + rupiah(state.jajan) + " masih wajar dari uang saku " + rupiah(state.allowance) + ".");
+      } else {
+        items.push("Kamu mengeset jajan jadi nol. Pastikan kamu tetap makan dan tidak kelaparan.");
+      }
+
+      var pct = state.allowance > 0 ? Math.round((out / state.allowance) * 100) : 0;
+      items.push("Pengeluaranmu memakai " + pct + " persen dari uang saku.");
+
+      items.forEach(function (text) {
+        var li = document.createElement("li");
+        li.textContent = text;
+        verdictList.appendChild(li);
+      });
+    }
+
+    function apply(preset, label) {
+      state.allowance = preset.allowance;
+      state.jajan = preset.jajan;
+      state.transport = preset.transport;
+      state.stationery = preset.stationery;
+      state.save = preset.save;
+      document.getElementById("allowance-slider").value = String(state.allowance);
+      document.getElementById("jajan-slider").value = String(state.jajan);
+      document.getElementById("transport-slider").value = String(state.transport);
+      document.getElementById("stationery-slider").value = String(state.stationery);
+      document.getElementById("save-slider").value = String(state.save);
+      sync();
+      feedback.className = "";
+      feedback.textContent = "Contoh dimuat: " + label + ". Geser pengatur untuk melihat perubahannya.";
+    }
+
+    function sync() {
+      document.getElementById("allowance-value").textContent = rupiah(state.allowance);
+      document.getElementById("jajan-value").textContent = rupiah(state.jajan);
+      document.getElementById("transport-value").textContent = rupiah(state.transport);
+      document.getElementById("stationery-value").textContent = rupiah(state.stationery);
+      document.getElementById("save-value").textContent = rupiah(state.save);
+      updateReadouts();
+      animateChart();
+      buildVerdicts();
+    }
+
+    function bindSlider(id, key) {
+      var input = document.getElementById(id);
+      input.addEventListener("input", function () {
+        state[key] = parseInt(input.value, 10);
+        sync();
+      });
+    }
+
+    bindSlider("allowance-slider", "allowance");
+    bindSlider("jajan-slider", "jajan");
+    bindSlider("transport-slider", "transport");
+    bindSlider("stationery-slider", "stationery");
+    bindSlider("save-slider", "save");
+
+    document.getElementById("reset-btn").addEventListener("click", function () {
+      // collapse the chart to zero first, then rebuild it up to the defaults
+      state.shown = { jajan: 0, transport: 0, stationery: 0, save: 0 };
+      apply(DEFAULTS, "nilai bawaan");
+      feedback.className = "";
+      feedback.textContent = "Semua pengatur dikembalikan ke nilai bawaan: uang saku " +
+        rupiah(DEFAULTS.allowance) + " dan rencana bawaan. Grafik juga kembali ke awal.";
+    });
+
+    Array.prototype.forEach.call(document.querySelectorAll("[data-preset]"), function (b) {
+      b.addEventListener("click", function () {
+        var key = b.getAttribute("data-preset");
+        apply(PRESETS[key], b.textContent);
+      });
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.target && /INPUT|TEXTAREA|BUTTON/.test(e.target.tagName)) return;
+      if (e.key === "r" || e.key === "R") {
+        e.preventDefault();
+        document.getElementById("reset-btn").click();
+      }
+    });
+
+    // start from the default budget, animated in from zero
+    state.shown = { jajan: 0, transport: 0, stationery: 0, save: 0 };
+    updateReadouts();
+    animateChart();
+    buildVerdicts();
+    feedback.className = "";
+    feedback.textContent = "Mulai dengan rencana bawaan. Geser pengatur untuk melihat grafik dan sisa uang berubah.";
+  })();
+  </script>
+</body>
+</html>
