@@ -1,4 +1,7 @@
 ---
+import { loadCatalog } from '../lib/loadCatalog';
+import { navLinksFor } from '../lib/nav';
+
 interface Props {
   title: string;
   description: string;
@@ -8,6 +11,13 @@ interface Props {
 
 const { title, description, noindex = false } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
+
+// Every page carries the same navigation, so it is built once here rather than
+// in each one. The catalog is read again per page rather than cached: Astro
+// already holds the content collection for the build, and a cache here would
+// only add a path that cannot be exercised by a test.
+const catalog = (await loadCatalog()).map(({ fileLevel: _fileLevel, ...entry }) => entry);
+const navLinks = navLinksFor(catalog, Astro.url.pathname);
 ---
 
 <!doctype html>
@@ -21,6 +31,20 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     {noindex && <meta name="robots" content="noindex" />}
   </head>
   <body>
+    <nav class="site-nav" aria-label="Navigasi utama">
+      <p class="site-name"><a href="/">Simula</a></p>
+      <ul>
+        {
+          navLinks.map((link) => (
+            <li>
+              <a href={link.path} aria-current={link.current ? 'page' : undefined}>
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
     <slot />
   </body>
 </html>
@@ -41,5 +65,43 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     max-width: 960px;
     margin: 0 auto;
     padding: 24px 16px;
+  }
+
+  .site-nav {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .site-name {
+    margin: 0 0 8px;
+    font-weight: 600;
+  }
+
+  .site-name a {
+    color: #eeeeee;
+    text-decoration: none;
+    font-size: 1.125rem;
+  }
+
+  .site-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+  }
+
+  .site-nav a {
+    color: #cfe3ff;
+  }
+
+  /* The page the reader is on is marked rather than dimmed alone, so the state
+     is available to a screen reader as well as visible. */
+  .site-nav a[aria-current='page'] {
+    color: #eeeeee;
+    font-weight: 600;
   }
 </style>
