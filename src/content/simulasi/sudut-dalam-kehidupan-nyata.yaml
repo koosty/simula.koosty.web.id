@@ -1,0 +1,12 @@
+# One catalog entry per simulation. Keys are English identifiers; values are
+# Bahasa Indonesia because they become URL segments.
+# The catalog is authoritative over the simulation's own metadata (docs/adr/0004);
+# the build warns when the two disagree.
+title: "Sudut dalam Kehidupan Nyata"
+description: >-
+  Tantangan berjenjang: hitung sudut nyata seperti sudut jalan, tangga, kemiringan
+  jalan, dan atap rumah dengan menggeser busur sudut.
+level: smp
+grade: 7
+subject: matematika
+order: 13

@@ -1,5 +1,8 @@
 ---
 import Base from '../layouts/Base.astro';
+import { loadCatalog } from '../lib/loadCatalog';
+
+const catalog = await loadCatalog();
 ---
 
 <Base
@@ -14,10 +17,18 @@ import Base from '../layouts/Base.astro';
       dapat langsung dibuka di peramban tanpa memasang aplikasi apa pun.
     </p>
 
-    <p class="status">
-      Katalog ini sedang disiapkan. Belum ada simulasi yang dipublikasikan; simulasinya
-      akan segera hadir.
-    </p>
+    {
+      catalog.length === 0 ? (
+        <p class="status">
+          Katalog ini sedang disiapkan. Belum ada simulasi yang dipublikasikan;
+          simulasinya akan segera hadir.
+        </p>
+      ) : (
+        <p class="status">
+          {catalog.length} simulasi sudah tersedia, disusun per tingkat dan kelas.
+        </p>
+      )
+    }
   </main>
 </Base>
 

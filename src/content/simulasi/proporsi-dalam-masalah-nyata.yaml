@@ -1,0 +1,12 @@
+# One catalog entry per simulation. Keys are English identifiers; values are
+# Bahasa Indonesia because they become URL segments.
+# The catalog is authoritative over the simulation's own metadata (docs/adr/0004);
+# the build warns when the two disagree.
+title: "Proporsi dalam Masalah Nyata"
+description: >-
+  Murid menyelesaikan masalah proporsi seperti harga per kg, takaran resep, cat
+  tembok, iuran kelas, dan porsi buffet dengan Operand silang.
+level: smp
+grade: 7
+subject: matematika
+order: 16

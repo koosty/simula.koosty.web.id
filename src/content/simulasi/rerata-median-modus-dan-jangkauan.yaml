@@ -1,0 +1,11 @@
+# One catalog entry per simulation. Keys are English identifiers; values are
+# Bahasa Indonesia because they become URL segments.
+# The catalog is authoritative over the simulation's own metadata (docs/adr/0004);
+# the build warns when the two disagree.
+title: "Rerata, Median, Modus, dan Jangkauan"
+description: >-
+  Murid menghitung ukuran pemusatan dan melihat dampaknya saat data berubah.
+level: smp
+grade: 7
+subject: matematika
+order: 21

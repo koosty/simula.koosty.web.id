@@ -1,0 +1,94 @@
+---
+import type { GetStaticPaths } from 'astro';
+import Base from '../../../../layouts/Base.astro';
+import { simulasiFileUrl } from '../../../../lib/catalog';
+import { loadCatalog } from '../../../../lib/loadCatalog';
+
+// The URL segments are the site's Bahasa path (docs/adr/0003): level first,
+// then class, then subject, then the slug. simulasiUrl is the single place that
+// composes them, so the page and the catalog can never disagree about a URL.
+export const getStaticPaths = (async () => {
+  const catalog = await loadCatalog();
+
+  return catalog.map((entry) => ({
+    params: {
+      // The class segment is "kelas-7", not a bare "7", so a URL reads as a
+      // sentence to someone who has never seen the site.
+      kelas: `kelas-${entry.grade}`,
+      tingkat: entry.level,
+      mataPelajaran: entry.subject,
+      slug: entry.slug,
+    },
+    props: { entry },
+  }));
+}) satisfies GetStaticPaths;
+
+const { entry } = Astro.props;
+const rawFileUrl = simulasiFileUrl(entry);
+
+const LEVEL_LABELS: Record<string, string> = {
+  sd: 'Sekolah Dasar',
+  smp: 'SMP',
+  sma: 'SMA',
+};
+---
+
+<Base title={`${entry.title} · Simula`} description={entry.description}>
+  <main class="wrap">
+    <article>
+      <header>
+        <h1>{entry.title}</h1>
+        <p class="description">{entry.description}</p>
+        <p class="meta">
+          {LEVEL_LABELS[entry.level] ?? entry.level} · Kelas {entry.grade}
+        </p>
+      </header>
+
+      <iframe src={rawFileUrl} title={entry.title} loading="lazy"></iframe>
+
+      <p class="fallback">
+        <a href={rawFileUrl}>Buka simulasi ini di tab baru</a> jika simulasi tidak
+        muncul di atas.
+      </p>
+    </article>
+  </main>
+</Base>
+
+<style>
+  h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    margin: 0 0 12px;
+  }
+
+  .description {
+    font-size: 1.0625rem;
+    color: #c8c8c8;
+    max-width: 65ch;
+    margin: 0 0 8px;
+  }
+
+  .meta {
+    color: #9a9a9a;
+    font-size: 0.875rem;
+    margin: 0 0 32px;
+  }
+
+  iframe {
+    display: block;
+    width: 100%;
+    /* A fixed fallback height. Measuring the simulation's real height, and
+       letting the frame grow to it, is the next ticket's work
+       (docs/adr/0005). */
+    height: 80vh;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    background: #0a0a1a;
+  }
+
+  .fallback {
+    margin-top: 16px;
+    font-size: 0.9375rem;
+    color: #9a9a9a;
+  }
+</style>

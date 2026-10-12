@@ -1,0 +1,12 @@
+# One catalog entry per simulation. Keys are English identifiers; values are
+# Bahasa Indonesia because they become URL segments.
+# The catalog is authoritative over the simulation's own metadata (docs/adr/0004);
+# the build warns when the two disagree.
+title: "Kesebangunan Segitiga"
+description: >-
+  Murid menentukan syarat dua segitiga sebangun dan mencari panjang sisi yang belum
+  diketahui.
+level: smp
+grade: 7
+subject: matematika
+order: 19

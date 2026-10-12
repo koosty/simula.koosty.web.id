@@ -1,0 +1,12 @@
+# One catalog entry per simulation. Keys are English identifiers; values are
+# Bahasa Indonesia because they become URL segments.
+# The catalog is authoritative over the simulation's own metadata (docs/adr/0004);
+# the build warns when the two disagree.
+title: "Bilangan Bulat dalam Kehidupan Sehari-hari"
+description: >-
+  Murid menyelesaikan masalah nyata dengan bilangan bulat: suhu, tinggi, saldo, dan
+  hutang, semuanya memakai konteks Indonesia.
+level: smp
+grade: 7
+subject: matematika
+order: 3

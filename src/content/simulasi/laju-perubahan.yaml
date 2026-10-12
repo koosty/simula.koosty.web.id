@@ -1,0 +1,12 @@
+# One catalog entry per simulation. Keys are English identifiers; values are
+# Bahasa Indonesia because they become URL segments.
+# The catalog is authoritative over the simulation's own metadata (docs/adr/0004);
+# the build warns when the two disagree.
+title: "Laju Perubahan"
+description: >-
+  Murid menghitung laju perubahan, kecepatan rata-rata, dan mengaitkannya dengan waktu
+  dan jarak lewat animasi perjalanan dan grafik jarak terhadap waktu.
+level: smp
+grade: 7
+subject: matematika
+order: 17

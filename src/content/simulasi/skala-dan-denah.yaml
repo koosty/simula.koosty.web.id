@@ -1,0 +1,12 @@
+# One catalog entry per simulation. Keys are English identifiers; values are
+# Bahasa Indonesia because they become URL segments.
+# The catalog is authoritative over the simulation's own metadata (docs/adr/0004);
+# the build warns when the two disagree.
+title: "Skala dan Denah"
+description: >-
+  Murid membuat denah dengan skala tertentu dan mengukur jarak sebenarnya di lapangan
+  lewat denah ligandaster dengan rute animasi dan kuis skala.
+level: smp
+grade: 7
+subject: matematika
+order: 15

@@ -36,13 +36,13 @@ describe('the built home page', () => {
     expect(title).toContain('Simula');
   });
 
-  it('says in Bahasa Indonesia what the site is and that the catalogue is coming', () => {
+  it('says in Bahasa Indonesia what the site is and how much is published', () => {
     // Asserting whole sentences, not keywords. A keyword check passes on
     // "Katalog Lorem ipsum", which is a page nobody should be able to ship.
     // The page has to be a real page, not a 404 stub: it says what the site is,
-    // and it says plainly that there is nothing here yet.
+    // and it says how many simulations are available.
     expect(text).toContain('Katalog simulasi pembelajaran interaktif untuk murid dan guru');
-    expect(text).toContain('Belum ada simulasi yang dipublikasikan');
+    expect(text).toMatch(/\d+ simulasi sudah tersedia/);
   });
 
   it('loads no client-side framework runtime', () => {
