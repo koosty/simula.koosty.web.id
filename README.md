@@ -16,10 +16,11 @@ site's shape.
 | `npm run build` | Build static output into `dist/` |
 | `npm run preview` | Serve the built output locally |
 | `npm run check` | Typecheck the Astro and TypeScript sources |
-| `npm test` | Run the build-output tests (run `npm run build` first) |
+| `npm test` | Build, then run the tests against the built output |
 
-`npm test` reads the emitted HTML in `dist/` rather than the source, so a build must
-run before the tests.
+The tests read the emitted HTML in `dist/` rather than the source, because what
+ships is what matters. `npm test` builds first, so a stale `dist/` cannot make
+them pass. Node 22.12 or newer is required, which is what Astro needs.
 
 ## Deploying
 
@@ -34,6 +35,7 @@ main branch.
    - Framework preset: `Astro`
    - Build command: `npm run build`
    - Build output directory: `dist`
+   - Node version: `22` or newer, set under Settings, since Astro requires it
 
 3. **Attach the custom domain.** Add `simula.koosty.web.id` to the project's
    Custom Domains. Cloudflare adds the required DNS record automatically when the
@@ -45,6 +47,9 @@ main branch.
 4. **Verify.** The home page should answer over HTTPS at
    `https://simula.koosty.web.id/`, with `lang="id"` in the served markup.
 
+   `npm test` runs the same build the deploy does, so running it locally first
+   catches a broken build before it reaches the dashboard.
+
 ## Deploy hook
 
 `docs/adr/0002` also records that the external tool triggers a rebuild by POSTing to
@@ -54,3 +59,10 @@ configuration rather than in this repository, since it is a credential.
 
 This is not wired up yet; it arrives with the ticket that makes the tool publish
 itself.
+
+## Current status
+
+The site builds and the home page has been verified in a browser, but **the site
+is not live yet**. There is no DNS record for `simula.koosty.web.id` and no
+Cloudflare project yet, both of which need dashboard access. Steps 1 to 4 above
+are what remains.

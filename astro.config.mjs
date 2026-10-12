@@ -9,8 +9,7 @@ import { defineConfig } from 'astro/config';
 export default defineConfig({
   site: 'https://simula.koosty.web.id',
   output: 'static',
+  // Every URL ends in a slash, so /smp/kelas-7/matematika/ and
+  // /smp/kelas-7/matematika are one address rather than two.
   trailingSlash: 'always',
-  build: {
-    format: 'directory',
-  },
 });

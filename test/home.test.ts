@@ -9,12 +9,20 @@ const DIST = resolve(import.meta.dirname, '..', 'dist');
 
 describe('the built home page', () => {
   let html: string;
+  // The visible text with tags stripped, so a claim about wording is checked
+  // against what a reader actually sees.
+  let text: string;
 
   beforeAll(() => {
     if (!existsSync(resolve(DIST, 'index.html'))) {
       throw new Error('dist/index.html is missing. Run `npm run build` before `npm test`.');
     }
     html = readFileSync(resolve(DIST, 'index.html'), 'utf8');
+    text = html
+      .replace(/<style[\s\S]*?<\/style>/g, ' ')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
   });
 
   it('declares Bahasa Indonesia as its language', () => {
@@ -28,11 +36,13 @@ describe('the built home page', () => {
     expect(title).toContain('Simula');
   });
 
-  it('tells a visitor the catalogue is still coming, in Bahasa Indonesia', () => {
-    // The page is a real page, not a 404 stub: it has to say what this is and
-    // what is not here yet.
-    expect(html).toMatch(/Katalog/);
-    expect(html).toMatch(/segera|datang|belum/i);
+  it('says in Bahasa Indonesia what the site is and that the catalogue is coming', () => {
+    // Asserting whole sentences, not keywords. A keyword check passes on
+    // "Katalog Lorem ipsum", which is a page nobody should be able to ship.
+    // The page has to be a real page, not a 404 stub: it says what the site is,
+    // and it says plainly that there is nothing here yet.
+    expect(text).toContain('Katalog simulasi pembelajaran interaktif untuk murid dan guru');
+    expect(text).toContain('Belum ada simulasi yang dipublikasikan');
   });
 
   it('loads no client-side framework runtime', () => {
