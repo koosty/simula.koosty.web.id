@@ -22,6 +22,20 @@ export interface SimulationScan {
  * The tool writes English folders; the site serves Indonesian URLs
  * (docs/adr/0003). This is the one place that knows the mapping.
  */
+
+/** The Indonesian segment for a tool's folder, keyed by that folder's name. */
+
+/**
+ * The same mapping keyed by the wording a simulation uses in its own metadata,
+ * which is different from the folder name it arrives in.
+ */
+export const LEVEL_BY_SIMULATION_NAME: Record<string, string> = {
+  primary: 'sd',
+  'lower secondary': 'smp',
+  'middle school': 'smp',
+  uppersecondary: 'sma',
+  'upper secondary': 'sma',
+};
 const SOURCE_LEVEL: Record<string, string> = {
   primary: 'sd',
   'lower-secondary': 'smp',

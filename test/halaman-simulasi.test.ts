@@ -56,6 +56,15 @@ describe('the first Halaman Simulasi', () => {
     expect(raw).toBe('/simulasi/smp/sudut-dalam-segitiga.html');
   });
 
+
+  it('frames a file the build actually wrote', () => {
+    // The frame points at the level the simulation file lives under, not the
+    // one the catalog entry claims, so a level disagreement cannot publish a
+    // page whose simulation 404s.
+    const frameSrc = html.match(/<iframe[^>]+src="([^"]*)"/)?.[1];
+    expect(frameSrc).toBe('/simulasi/smp/sudut-dalam-segitiga.html');
+    expect(existsSync(resolve(DIST, 'simulasi/smp/sudut-dalam-segitiga.html'))).toBe(true);
+  });
   it('does not load a client-side framework runtime', () => {
     expect(html).not.toMatch(/astro-island/);
   });

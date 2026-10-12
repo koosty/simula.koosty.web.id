@@ -1,45 +1,59 @@
 import type { CatalogEntry, SimulationMeta, ValidationResult } from './types';
+import { LEVEL_BY_SIMULATION_NAME } from './simulations';
 
 /**
- * The path a simulation is served at, in Bahasa segments.
+ * The path segments of a simulation's URL, in the site's Bahasa order
+ * (docs/adr/0003): level, then class, then subject, then the slug.
  *
- * The source folder layout is English (`lower-secondary/grade-7/`), so this is
- * the one place that translates it. Level is the first segment, then class, then
- * subject, then the slug. Trailing slash is required: the site is built with
- * `trailingSlash: 'always'`, so a URL without one is a different address.
+ * Astro wants these as a route's params and simulasiUrl wants the whole path,
+ * so both are built from here rather than written out twice.
+ */
+export function simulasiUrlSegments(
+  entry: Pick<CatalogEntry, 'level' | 'grade' | 'subject' | 'slug'>,
+): { tingkat: string; kelas: string; mataPelajaran: string; slug: string } {
+  return {
+    tingkat: entry.level,
+    // The class segment is "kelas-7", not a bare "7", so a URL reads as a
+    // sentence to someone who has never seen the site.
+    kelas: `kelas-${entry.grade}`,
+    mataPelajaran: entry.subject,
+    slug: entry.slug,
+  };
+}
+
+/**
+ * The full path a simulation is served at.
+ *
+ * The trailing slash is required: the site builds with `trailingSlash: 'always'`,
+ * so a URL without one is a different address.
  */
 export function simulasiUrl(entry: Pick<CatalogEntry, 'level' | 'grade' | 'subject' | 'slug'>): string {
-  return `/${entry.level}/kelas-${entry.grade}/${entry.subject}/${entry.slug}/`;
+  const s = simulasiUrlSegments(entry);
+  return `/${s.tingkat}/${s.kelas}/${s.mataPelajaran}/${s.slug}/`;
 }
 
 /**
  * Where the simulation's raw file is served from.
  *
- * It must match exactly what src/integrations/copySimulations.ts writes:
- * /simulasi/<tingkat>/<slug>.html. Keeping the same path shape means the raw
- * file has no class or subject in it, which is fine, since it is noindex and
- * only ever linked from its Halaman Simulasi.
+ * `level` is passed in rather than read off the catalog entry on purpose. The
+ * build hook writes each file under the level its source folder implies, so
+ * deriving the path from the same place is what keeps the iframe from pointing
+ * at a file that was never written.
  */
-export function simulasiFileUrl(entry: Pick<CatalogEntry, 'level' | 'slug'>): string {
-  return `/simulasi/${entry.level}/${entry.slug}.html`;
+export function simulasiFileUrl(entry: Pick<CatalogEntry, 'slug'>, level: string): string {
+  return `/simulasi/${level}/${entry.slug}.html`;
 }
-
-
-const LEVEL_NAMES: Record<string, string> = {
-  'lower secondary': 'smp',
-  uppersecondary: 'sma',
-  primary: 'sd',
-  'middle school': 'smp',
-};
 
 /**
  * Map a simulation's own English level onto its Bahasa segment, for comparing a
- * catalog entry against the simulation it describes. Unknown levels return the
- * original so a mismatch is reported rather than silently passing.
+ * catalog entry against the simulation it describes. An unknown level comes
+ * back unchanged, so a mismatch is reported rather than quietly passing.
  */
 function levelToSegment(level: string): string {
-  return LEVEL_NAMES[level.trim().toLowerCase()] ?? level.trim().toLowerCase();
+  const key = level.trim().toLowerCase();
+  return LEVEL_BY_SIMULATION_NAME[key] ?? key;
 }
+
 
 /**
  * Cross-check the catalog against the simulation files.
@@ -75,8 +89,14 @@ export function validateCatalog(
     }
   }
 
+
   // Two entries at one URL would make the site publish two pages at the same
-  // address, and only one could ever be the real one.
+  // address, and only one could ever be the real one. Today the loader makes
+  // this unreachable: entries are files named <slug>.yaml, so two files mean two
+  // slugs. The check stays because the guarantee belongs to the catalog, not to
+  // one loader's behaviour, and ADR 0006 records that a separate slug field was
+  // dropped. If a slug field ever comes back, or the loader changes, this is
+  // what catches the site publishing two pages at one URL.
   const bySlug = new Map<string, CatalogEntry[]>();
   for (const entry of entries) {
     const seen = bySlug.get(entry.slug);

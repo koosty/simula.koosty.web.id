@@ -38,6 +38,9 @@ describe('catalog validation: hard failures', () => {
   });
 
   it('fails when two entries produce the same slug', () => {
+    // The loader cannot produce this state today, since entry files are named
+    // after their slug. This pins the rule the catalog promises, so it still
+    // holds if a slug field returns or the loader changes.
     const dupe = [entry({ order: 1 }), entry({ order: 2, title: 'Versi lain' })];
     const result = validateCatalog(dupe, SIM_META);
     expect(result.errors.some((e) => e.includes('slug'))).toBe(true);

@@ -16,14 +16,21 @@ export type SimulasiEntry = CollectionEntry<'simulasi'>;
 export const SIMULATION_ROOT = resolve(process.cwd(), 'example-simulations');
 
 /**
- * Turn a collection entry into the flat record the rest of the site uses.
+ * A catalog entry plus the one thing the catalog does not own: the level of the
+ * source folder the simulation file actually came from.
  *
- * The entry's id is the slug: the glob loader keys entries by filename without
- * its extension, and the entry's filename is its slug (docs/adr/0006). A file
- * named `sudut-dalam-segitiga.yaml` therefore describes the simulation at
- * `sudut-dalam-segitiga.html`, and the two cannot drift apart.
+ * The build hook writes each simulation under the level its folder implies, so
+ * the iframe path must be built from that same level. Deriving it from the
+ * catalog entry instead would mean an entry naming the wrong level publishes a
+ * page whose simulation 404s, since a level disagreement is only a warning.
  */
-export function toCatalogEntry(entry: SimulasiEntry): CatalogEntry {
+export interface CatalogItem extends CatalogEntry {
+  /** The Indonesian level of the folder the simulation file was found in. */
+  fileLevel: string;
+}
+
+/** The catalog entry as authored, before the file's own level is attached. */
+function toCatalogEntry(entry: SimulasiEntry): CatalogEntry {
   return {
     slug: entry.id,
     title: entry.data.title,
@@ -43,7 +50,7 @@ export function toCatalogEntry(entry: SimulasiEntry): CatalogEntry {
  * continues, because the catalog is authoritative (docs/adr/0004) and a
  * disagreement is a signal to look, not a reason to block a publish.
  */
-export async function loadCatalog(): Promise<CatalogEntry[]> {
+export async function loadCatalog(): Promise<CatalogItem[]> {
   const entries = (await getCollection('simulasi')).map(toCatalogEntry);
   const { found, unknownFolders } = discoverSimulations(SIMULATION_ROOT);
 
@@ -55,12 +62,12 @@ export async function loadCatalog(): Promise<CatalogEntry[]> {
   }
 
   const simulations: Record<string, SimulationMeta> = {};
+  const fileLevels: Record<string, string> = {};
   for (const sim of found) {
-    const meta = simulationMetaOf(sim.html);
-    // A simulation in a folder the site does not serve has no page, so it must
-    // not quietly count as catalogued.
-    if (!levelForSourceFolder(sim.sourceFolder.split('/')[0])) continue;
-    simulations[sim.filename] = meta;
+    const level = levelForSourceFolder(sim.sourceFolder.split('/')[0]);
+    if (!level) continue;
+    simulations[sim.filename] = simulationMetaOf(sim.html);
+    fileLevels[sim.filename] = level;
   }
 
   const { errors, warnings } = validateCatalog(entries, simulations);
@@ -76,5 +83,8 @@ export async function loadCatalog(): Promise<CatalogEntry[]> {
     );
   }
 
-  return entries;
+  return entries.map((entry) => ({
+    ...entry,
+    fileLevel: fileLevels[`${entry.slug}.html`],
+  }));
 }
