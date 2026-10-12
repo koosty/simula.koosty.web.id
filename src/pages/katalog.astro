@@ -1,0 +1,315 @@
+---
+import Base from '../layouts/Base.astro';
+import { simulasiUrl } from '../lib/catalog';
+import { loadCatalog } from '../lib/loadCatalog';
+import { buildFilterFields, groupByKelas, subjectLabel } from '../lib/katalogFilter';
+import { tingkatLabel } from '../lib/tingkat';
+import type { CatalogEntry } from '../lib/types';
+
+// The Katalog is the whole catalog, always. Every simulation is in the HTML in
+// display order, and the script below only hides what is already there, which is
+// what lets the page work with scripting unavailable. Display order is applied
+// by groupByKelas below, which owns it; sorting here as well would be a second
+// pass over the same data that could disagree with it.
+const catalog = (await loadCatalog()).map(({ fileLevel: _fileLevel, ...entry }) => entry);
+
+const filterFields = buildFilterFields(catalog);
+
+// The filter hides and shows cards by these attributes, so the catalog travels
+// with the page and filtering needs no fetch and no framework runtime. The
+// title and description are not copied in: the script reads them back out of
+// the card text, so there is one copy of each rather than two that could drift.
+const cardAttributes = (entry: CatalogEntry) => ({
+  'data-slug': entry.slug,
+  'data-level': entry.level,
+  'data-grade': String(entry.grade),
+  'data-subject': entry.subject,
+});
+
+const groups = groupByKelas(catalog);
+---
+
+<Base
+  title="Katalog Simulasi · Simula"
+  description="Daftar seluruh simulasi pembelajaran di Simula, dapat disaring menurut tingkat, kelas, dan mata pelajaran."
+>
+  <main class="wrap">
+    <h1>Katalog Simulasi</h1>
+    <p class="lead">
+      Seluruh simulasi di Simula, disusun dalam urutan materi. Saring menurut
+      tingkat, kelas, atau mata pelajaran, atau ketik sebagian judul untuk
+      mencari.
+    </p>
+
+    <!-- Filtering is done by the script below, so this form is never submitted. -->
+    <form class="filters" id="filters">
+      <p class="filters-heading">Saring dan cari</p>
+
+      {
+        filterFields.map((field) => (
+          <p class="filter">
+            <label for={`filter-${field.field}`}>{field.label}</label>
+            <select id={`filter-${field.field}`} name={field.field} data-filter={field.field}>
+              <option value="">Semua</option>
+              {field.choices.map((choice) => (
+                <option value={String(choice.value)}>{choice.label}</option>
+              ))}
+            </select>
+          </p>
+        ))
+      }
+
+      <p class="filter">
+        <label for="search">Cari simulasi</label>
+        <input id="search" name="search" type="search" placeholder="misal: segitiga" />
+      </p>
+
+      <p class="result-count" id="result-count" role="status"></p>
+    </form>
+
+    {
+      catalog.length === 0 ? (
+        <p class="empty">
+          Katalog ini sedang disiapkan. Belum ada simulasi yang dipublikasikan;
+          simulasinya akan segera hadir.
+        </p>
+      ) : (
+        <div id="results">
+          {groups.map((group) => (
+            <section class="kelas">
+              <h2>{group.label}</h2>
+              <ul class="cards">
+                {group.simulations.map((entry) => (
+                  <li class="card" {...cardAttributes(entry)}>
+                    <h3>
+                      <a href={simulasiUrl(entry)}>{entry.title}</a>
+                    </h3>
+                    <p class="card-meta">
+                      {tingkatLabel(entry.level)} · Kelas {entry.grade} ·{' '}
+                      {subjectLabel(entry.subject)}
+                    </p>
+                    <p class="card-description">{entry.description}</p>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
+      )
+    }
+
+    <p class="no-match" id="no-match" hidden>
+      Tidak ada simulasi yang cocok. Coba kata lain, atau kosongkan saringan.
+    </p>
+  </main>
+</Base>
+
+<script>
+  import { filterCatalog, searchCatalog } from '../lib/katalogFilter';
+  import type { CatalogEntry } from '../lib/types';
+
+  // Filtering runs in the browser over markup that is already in the page.
+  // Nothing here is required to read the Katalog: without it the full list stays
+  // visible, and the controls are hidden by the noscript style below.
+  const results = document.getElementById('results');
+  const noMatch = document.getElementById('no-match');
+  const count = document.getElementById('result-count');
+  const controls = document.getElementById('filters');
+
+  if (results && noMatch && count && controls) {
+    // The catalog is read back off the rendered cards, so there is one list of
+    // simulations rather than two that could disagree.
+    const cardList = [...results.querySelectorAll<HTMLElement>('.card')];
+    const catalog: CatalogEntry[] = cardList.map((card) => ({
+      slug: card.dataset.slug ?? '',
+      title: card.querySelector('a')?.textContent ?? '',
+      description: card.querySelector('.card-description')?.textContent ?? '',
+      level: card.dataset.level ?? '',
+      grade: Number(card.dataset.grade),
+      subject: card.dataset.subject ?? '',
+      order: 0,
+    }));
+
+    const selects = [...controls.querySelectorAll<HTMLSelectElement>('[data-filter]')];
+    const searchBox = controls.querySelector<HTMLInputElement>('#search');
+
+    const apply = () => {
+      const selection: { level?: string; grade?: number; subject?: string } = {};
+      for (const select of selects) {
+        if (select.value === '') continue;
+        if (select.dataset.filter === 'grade') selection.grade = Number(select.value);
+        else if (select.dataset.filter === 'level') selection.level = select.value;
+        else if (select.dataset.filter === 'subject') selection.subject = select.value;
+      }
+
+      const term = searchBox?.value ?? '';
+      const matches = new Set(
+        searchCatalog(filterCatalog(catalog, selection), term).map((entry) => entry.slug),
+      );
+
+      let visible = 0;
+      for (const [index, card] of cardList.entries()) {
+        const show = matches.has(catalog[index].slug);
+        card.hidden = !show;
+        if (show) visible += 1;
+      }
+
+      // A class whose simulations are all filtered out must not keep its heading.
+      for (const section of results.querySelectorAll<HTMLElement>('.kelas')) {
+        section.hidden = ![...section.querySelectorAll<HTMLElement>('.card')].some(
+          (card) => !card.hidden,
+        );
+      }
+
+      count.textContent =
+        visible === catalog.length ? `${visible} simulasi` : `${visible} dari ${catalog.length} simulasi`;
+      noMatch.hidden = visible !== 0;
+    };
+
+    for (const select of selects) select.addEventListener('change', apply);
+
+    // Pressing Enter in the search box would otherwise submit this form and
+    // reload the page, discarding the search term and every chosen filter.
+    controls.addEventListener('submit', (event) => event.preventDefault());
+    searchBox?.addEventListener('input', apply);
+    apply();
+  }
+</script>
+
+<noscript>
+  <style>
+    /* Without scripting the filters cannot work, so they are removed rather
+       than left on screen as controls that do nothing. */
+    #filters {
+      display: none;
+    }
+  </style>
+</noscript>
+
+<style>
+  h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    margin: 0 0 12px;
+  }
+
+  .lead {
+    font-size: 1.0625rem;
+    color: #c8c8c8;
+    max-width: 65ch;
+    margin: 0 0 24px;
+  }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: end;
+    padding: 16px;
+    margin-bottom: 32px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    background: #1b1b1b;
+  }
+
+  .filters-heading {
+    width: 100%;
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #9a9a9a;
+  }
+
+  .filter {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+  }
+
+  .filter label {
+    font-size: 0.8125rem;
+    color: #9a9a9a;
+  }
+
+  .filter select,
+  .filter input {
+    min-height: 44px;
+    padding: 6px 10px;
+    font: inherit;
+    font-size: 0.9375rem;
+    color: #eeeeee;
+    background: #111111;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 6px;
+  }
+
+  .result-count {
+    margin: 0 0 0 auto;
+    font-size: 0.875rem;
+    color: #9a9a9a;
+  }
+
+  .kelas {
+    margin-bottom: 40px;
+  }
+
+  .kelas h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+
+  .cards {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+
+  .card {
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    background: #1b1b1b;
+  }
+
+  .card h3 {
+    margin: 0 0 4px;
+    font-size: 1.0625rem;
+    font-weight: 600;
+  }
+
+  .card a {
+    color: #cfe3ff;
+    text-decoration: none;
+  }
+
+  .card a:hover,
+  .card a:focus-visible {
+    color: #ffffff;
+    text-decoration: underline;
+  }
+
+  .card-meta {
+    margin: 0 0 8px;
+    font-size: 0.8125rem;
+    color: #9a9a9a;
+  }
+
+  .card-description {
+    margin: 0;
+    font-size: 0.9375rem;
+    color: #c8c8c8;
+  }
+
+  .empty,
+  .no-match {
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    background: #1b1b1b;
+  }
+</style>

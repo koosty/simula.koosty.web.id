@@ -2,6 +2,7 @@
 import type { GetStaticPaths } from 'astro';
 import Base from '../../../../layouts/Base.astro';
 import { simulasiFileUrl, simulasiUrlSegments } from '../../../../lib/catalog';
+import { tingkatLabel } from '../../../../lib/tingkat';
 import { loadCatalog } from '../../../../lib/loadCatalog';
 
 // The route params and the full URL are both composed by simulasiUrlSegments,
@@ -21,12 +22,6 @@ const { entry } = Astro.props;
 // the level the catalog entry claims, so a level disagreement can never turn
 // into a dead link.
 const rawFileUrl = simulasiFileUrl(entry, entry.fileLevel);
-
-const LEVEL_LABELS: Record<string, string> = {
-  sd: 'Sekolah Dasar',
-  smp: 'SMP',
-  sma: 'SMA',
-};
 ---
 
 <Base title={`${entry.title} · Simula`} description={entry.description}>
@@ -36,7 +31,7 @@ const LEVEL_LABELS: Record<string, string> = {
         <h1>{entry.title}</h1>
         <p class="description">{entry.description}</p>
         <p class="meta">
-          {LEVEL_LABELS[entry.level] ?? entry.level} · Kelas {entry.grade}
+          {tingkatLabel(entry.level)} · Kelas {entry.grade}
         </p>
       </header>
 

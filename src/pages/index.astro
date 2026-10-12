@@ -29,6 +29,11 @@ const catalog = await loadCatalog();
         </p>
       )
     }
+
+    <p class="katalog-link">
+      <a href="/katalog/">Lihat seluruh simulasi di Katalog</a>, atau saring
+      menurut tingkat, kelas, dan mata pelajaran.
+    </p>
   </main>
 </Base>
 
@@ -51,5 +56,14 @@ const catalog = await loadCatalog();
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 8px;
     background: #1b1b1b;
+  }
+
+  .katalog-link {
+    margin-top: 24px;
+    font-size: 1rem;
+  }
+
+  .katalog-link a {
+    color: #cfe3ff;
   }
 </style>
