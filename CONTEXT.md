@@ -33,5 +33,5 @@ The single knowledge idea a simulation teaches, as declared by the simulation's 
 _Avoid_: topic, chapter, unit, learning objective
 
 **Slug**:
-The Bahasa Indonesia URL segment for a simulation, derived from its title. Carries meaning for humans and crawlers, unlike the source filename.
-_Avoid_: permalink segment, filename
+The Bahasa Indonesia URL segment for a simulation, derived from its title. The simulation file is named after it, so the slug and the filename are the same thing.
+_Avoid_: permalink segment
