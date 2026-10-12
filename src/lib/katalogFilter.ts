@@ -61,9 +61,18 @@ const SUBJECT_ABBREVIATIONS: Record<string, string> = {
  * Exported so a card and the filter that narrows to it read the same word: a
  * reader must not see "matematika" on the card and "Matematika" in the list
  * beside it.
+ *
+ * A subject that arrives hyphenated, as a new one in this open set may, has
+ * its hyphens read as word breaks rather than reaching a heading as a slug.
  */
 export function subjectLabel(subject: string): string {
-  return SUBJECT_ABBREVIATIONS[subject] ?? subject.charAt(0).toUpperCase() + subject.slice(1);
+  if (subject in SUBJECT_ABBREVIATIONS) return SUBJECT_ABBREVIATIONS[subject];
+  return subject.split('-').map(capitalise).join(' ');
+}
+
+/** Upper-case a segment's first letter, leaving the rest as authored. */
+function capitalise(word: string): string {
+  return word.charAt(0).toUpperCase() + word.slice(1);
 }
 
 /**

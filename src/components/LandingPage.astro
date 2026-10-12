@@ -1,0 +1,187 @@
+---
+import Base from '../layouts/Base.astro';
+import { simulasiUrl } from '../lib/catalog';
+import { landingDescription, landingHeading, landingTitle, type LandingPage } from '../lib/landing';
+import { subjectLabel } from '../lib/katalogFilter';
+import { tingkatLabel } from '../lib/tingkat';
+
+interface Props {
+  page: LandingPage;
+  /** Every landing page at the same stage, this one included. */
+  siblings: LandingPage[];
+}
+
+const { page, siblings } = Astro.props;
+
+const kelasSiblings = siblings.filter((sibling) => sibling.kind === 'kelas');
+const subjectSiblings = siblings.filter((sibling) => sibling.kind === 'mataPelajaran');
+
+// A stage, a class and a subject are three different things to look for, so the
+// links beside this page are grouped by what they lead to rather than listed as
+// one run the reader has to sort out.
+const stagePath = `/${page.level}/`;
+---
+
+<Base title={landingTitle(page)} description={landingDescription(page)}>
+  <main class="wrap">
+    <nav class="breadcrumb" aria-label="Lokasi">
+      <a href="/">Beranda</a> <span aria-hidden="true">/</span>
+      <a href="/katalog/">Katalog</a> <span aria-hidden="true">/</span>
+      {
+        page.kind === 'tingkat' ? (
+          <span aria-current="page">{landingHeading(page)}</span>
+        ) : (
+          <>
+            <a href={stagePath}>{tingkatLabel(page.level)}</a>{' '}
+            <span aria-hidden="true">/</span> <span aria-current="page">{landingHeading(page)}</span>
+          </>
+        )
+      }
+    </nav>
+
+    <h1>{landingHeading(page)}</h1>
+    <p class="lead">{landingDescription(page)}</p>
+
+    {
+      page.sections.map((section) => (
+        <section class="kelas" id={section.key}>
+          {/* On a class page the heading is the page's own, so repeating it as a
+              subheading would say the same thing twice. */}
+          {page.kind === 'kelas' ? null : <h2>{section.label}</h2>}
+          <ul class="cards">
+            {section.simulations.map((entry) => (
+              <li class="card">
+                <h3>
+                  <a href={simulasiUrl(entry)}>{entry.title}</a>
+                </h3>
+                <p class="card-description">{entry.description}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+
+    {
+      (page.kind === 'tingkat' || kelasSiblings.length > 0) && (
+        <nav class="siblings" aria-labelledby="sibling-kelas">
+          <h2 id="sibling-kelas">
+            {page.kind === 'tingkat'
+              ? `Kelas di ${tingkatLabel(page.level)}`
+              : `Kelas lain di ${tingkatLabel(page.level)}`}
+          </h2>
+          <ul>
+            {/* A class page links up to its stage as well as sideways, since the
+                stage is where a reader goes to find every class at once. */}
+            {page.kind === 'tingkat' ? null : (
+              <li>
+                <a href={stagePath}>Semua kelas di {tingkatLabel(page.level)}</a>
+              </li>
+            )}
+            {kelasSiblings.map((sibling) => (
+              <li>
+                <a href={sibling.path}>{sibling.sections[0]?.label ?? sibling.segment}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )
+    }
+
+    {
+      subjectSiblings.length > 0 && (
+        <nav class="siblings" aria-labelledby="sibling-mapel">
+          <h2 id="sibling-mapel">Mata pelajaran di {tingkatLabel(page.level)}</h2>
+          <ul>
+            {subjectSiblings.map((sibling) => (
+              <li>
+                <a href={sibling.path}>{subjectLabel(sibling.segment)}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )
+    }
+  </main>
+</Base>
+
+<style>
+  .breadcrumb {
+    margin-bottom: 16px;
+    font-size: 0.875rem;
+    color: #a8a8a8;
+  }
+
+  .breadcrumb a {
+    color: #cfe3ff;
+  }
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+
+  .lead {
+    color: #c8c8c8;
+    max-width: 60ch;
+    margin-top: 0;
+  }
+
+  .kelas {
+    margin-top: 32px;
+  }
+
+  .cards {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 12px;
+  }
+
+  .card {
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    background: #1b1b1b;
+  }
+
+  .card h3 {
+    margin: 0 0 8px;
+    font-size: 1.125rem;
+  }
+
+  .card a {
+    color: #cfe3ff;
+  }
+
+  .card-description {
+    margin: 0;
+    color: #c8c8c8;
+  }
+
+  .siblings {
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .siblings h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0 0 12px;
+  }
+
+  .siblings ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 8px;
+  }
+
+  .siblings a {
+    color: #cfe3ff;
+  }
+</style>

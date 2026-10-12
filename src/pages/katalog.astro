@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro';
 import { simulasiUrl } from '../lib/catalog';
 import { loadCatalog } from '../lib/loadCatalog';
 import { buildFilterFields, groupByKelas, subjectLabel } from '../lib/katalogFilter';
+import { landingHeading, landingPages } from '../lib/landing';
 import { tingkatLabel } from '../lib/tingkat';
 import type { CatalogEntry } from '../lib/types';
 
@@ -27,6 +28,12 @@ const cardAttributes = (entry: CatalogEntry) => ({
 });
 
 const groups = groupByKelas(catalog);
+
+// The filters narrow the list in place, which answers "which of these match"
+// but not "show me everything for this class". The landing pages below are that
+// other half, at addresses a teacher can bookmark. They are built from the same
+// catalog the filters read, so a link cannot point at a page that does not exist.
+const landing = landingPages(catalog);
 ---
 
 <Base
@@ -95,6 +102,26 @@ const groups = groupByKelas(catalog);
             </section>
           ))}
         </div>
+      )
+    }
+
+    <!-- Outside the filtered region, because these are pages rather than
+         results: narrowing the list must not hide the way into them. -->
+    {
+      landing.length > 0 && (
+        <nav class="landing" aria-labelledby="landing-heading">
+          <h2 id="landing-heading">Telusuri per kelas dan mata pelajaran</h2>
+          <p class="landing-lead">
+            Alamat halaman ini tidak berubah, jadi bisa disimpan untuk kembali lagi.
+          </p>
+          {landing.map((page) => (
+            <ul class="landing-list">
+              <li>
+                <a href={page.path}>{landingHeading(page)}</a>
+              </li>
+            </ul>
+          ))}
+        </nav>
       )
     }
 
@@ -311,5 +338,34 @@ const groups = groupByKelas(catalog);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 8px;
     background: #1b1b1b;
+  }
+
+  .landing {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .landing h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+
+  .landing-lead {
+    color: #c8c8c8;
+    margin: 0 0 16px;
+  }
+
+  .landing-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 8px;
+  }
+
+  .landing-list a {
+    color: #cfe3ff;
   }
 </style>

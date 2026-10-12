@@ -1,0 +1,182 @@
+import { describe, it, expect } from 'vitest';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { parse } from 'yaml';
+import { landingPages, landingPath } from '../src/lib/landing';
+import type { CatalogEntry } from '../src/lib/types';
+
+const ROOT = resolve(import.meta.dirname, '..');
+const DIST = resolve(ROOT, 'dist');
+const CATALOG_DIR = resolve(ROOT, 'src/content/simulasi');
+
+/**
+ * The catalog as the build read it.
+ *
+ * Read from the catalog files rather than written down, since simulations arrive
+ * through the deploy hook with nobody in the middle. A test that pinned today's
+ * number would fail on the next delivery looking like a rendering bug.
+ */
+const CATALOG: CatalogEntry[] = readdirSync(CATALOG_DIR)
+  .filter((name) => name.endsWith('.yaml'))
+  .map((name) => {
+    const data = parse(readFileSync(resolve(CATALOG_DIR, name), 'utf8'));
+    return { ...data, slug: name.replace(/\.yaml$/, '') };
+  });
+
+const PAGES = landingPages(CATALOG);
+
+/** The built HTML at a landing page's address. */
+function htmlAt(path: string): string {
+  return readFileSync(resolve(DIST, path.slice(1), 'index.html'), 'utf8');
+}
+
+/** The <title> of a built page. */
+function titleOf(html: string): string {
+  return html.match(/<title>([^<]*)<\/title>/)?.[1] ?? '';
+}
+
+/** The meta description of a built page. */
+function descriptionOf(html: string): string {
+  return html.match(/<meta name="description" content="([^"]*)"/)?.[1] ?? '';
+}
+
+describe('a landing page is built for every Tingkat, Kelas and Mata Pelajaran', () => {
+  it('builds a page at every address the catalog calls for', () => {
+    expect(PAGES.length).toBeGreaterThan(0);
+    for (const page of PAGES) {
+      expect(existsSync(resolve(DIST, page.path.slice(1), 'index.html'))).toBe(true);
+    }
+  });
+
+  it('publishes a landing page for every distinct level in the catalog', () => {
+    for (const level of new Set(CATALOG.map((entry) => entry.level))) {
+      expect(existsSync(resolve(DIST, landingPath(level, level).slice(1), 'index.html'))).toBe(true);
+    }
+  });
+
+  it('publishes a landing page for every class in the catalog', () => {
+    const classes = new Set(CATALOG.map((entry) => `${entry.level}/kelas-${entry.grade}`));
+    for (const key of classes) {
+      const [level, segment] = key.split('/');
+      expect(existsSync(resolve(DIST, landingPath(level, segment).slice(1), 'index.html'))).toBe(true);
+    }
+  });
+
+  it('publishes a landing page for every subject in the catalog', () => {
+    const subjects = new Set(CATALOG.map((entry) => `${entry.level}/${entry.subject}`));
+    for (const key of subjects) {
+      const [level, segment] = key.split('/');
+      expect(existsSync(resolve(DIST, landingPath(level, segment).slice(1), 'index.html'))).toBe(true);
+    }
+  });
+
+  it('publishes no landing page for a level, class or subject the catalog lacks', () => {
+    // These three are the open set's failure mode: a page with nothing on it.
+    for (const path of ['/sma/', '/smp/kelas-9/', '/smp/ipa/']) {
+      expect(existsSync(resolve(DIST, path.slice(1), 'index.html'))).toBe(false);
+    }
+  });
+});
+
+describe('a landing page lists the right simulations', () => {
+  it('lists every simulation of a Tingkat exactly once', () => {
+    const html = htmlAt('/smp/');
+    const links = [...html.matchAll(/<a href="\/smp\/kelas-7\/matematika\/([^/"]+)\/"/g)].map((m) => m[1]);
+    expect(new Set(links).size).toBe(links.length);
+    expect(new Set(links)).toEqual(new Set(CATALOG.map((entry) => entry.slug)));
+  });
+
+  it('lists a class page’s simulations in display order', () => {
+    const html = htmlAt('/smp/kelas-7/');
+    const links = [...html.matchAll(/<a href="\/smp\/kelas-7\/matematika\/([^/"]+)\/"/g)].map((m) => m[1]);
+    const expected = [...CATALOG]
+      .sort((a, b) => a.order - b.order)
+      .map((entry) => entry.slug);
+    expect(links).toEqual(expected);
+  });
+
+  it('links every card on a landing page to a Halaman Simulasi that exists', () => {
+    for (const page of PAGES) {
+      const html = htmlAt(page.path);
+      const hrefs = [...html.matchAll(/<a href="(\/smp\/kelas-7\/matematika\/[^/"]+\/)"/g)].map((m) => m[1]);
+      expect(hrefs.length).toBeGreaterThan(0);
+      for (const href of hrefs) {
+        expect(existsSync(resolve(DIST, href.slice(1), 'index.html'))).toBe(true);
+      }
+    }
+  });
+
+  it('gives every card a title and a description to choose from', () => {
+    const cards = [...htmlAt('/smp/kelas-7/').matchAll(/<li class="card"[\s\S]*?<\/li>/g)].map((m) => m[0]);
+    expect(cards).toHaveLength(CATALOG.length);
+    for (const card of cards) {
+      expect(card).toMatch(/<a href="\/smp\/kelas-7\/matematika\/[^"]+"[^>]*>[^<]+<\/a>/);
+      expect(card).toMatch(/<p class="card-description"[^>]*>.{20,}<\/p>/);
+    }
+  });
+});
+
+describe('landing pages are reachable', () => {
+  it('links to every other landing page at the same stage', () => {
+    // A teacher who bookmarks one class page has to be able to reach the rest
+    // of their stage without going back through the Katalog.
+    for (const page of PAGES) {
+      const html = htmlAt(page.path);
+      const siblings = PAGES.filter(
+        (candidate) => candidate.level === page.level && candidate.path !== page.path,
+      );
+      for (const sibling of siblings) {
+        expect(html).toContain(`href="${sibling.path}"`);
+      }
+    }
+  });
+
+  it('shows where the reader is on a landing page', () => {
+    const html = htmlAt('/smp/kelas-7/');
+    // Astro adds data-astro-cid-* to every element, so each assertion matches
+    // the attribute and the text rather than the whole tag.
+    expect(html).toMatch(/aria-current="page"[^>]*>SMP — Kelas 7</);
+    expect(html).toMatch(/<a href="\/katalog\/"[^>]*>Katalog<\/a>/);
+    // A class page is two steps from the Katalog: the stage, then the class.
+    expect(html).toMatch(/<a href="\/smp\/"[^>]*>SMP<\/a>/);
+  });
+
+  it('links every landing page from the Katalog filters', () => {
+    // The filters are the route a reader already uses to narrow by level, class
+    // or subject, so each choice has to lead somewhere, not filter in place only.
+    const katalog = readFileSync(resolve(DIST, 'katalog/index.html'), 'utf8');
+    for (const page of PAGES) {
+      expect(katalog).toContain(`href="${page.path}"`);
+    }
+  });
+});
+
+describe('landing pages are indexable', () => {
+  it('gives every landing page a title of its own', () => {
+    const titles = PAGES.map((page) => titleOf(htmlAt(page.path)));
+    expect(titles.every((title) => title !== '')).toBe(true);
+    expect(new Set(titles).size).toBe(titles.length);
+  });
+
+  it('gives every landing page a description of its own', () => {
+    const descriptions = PAGES.map((page) => descriptionOf(htmlAt(page.path)));
+    expect(descriptions.every((description) => description.length > 40)).toBe(true);
+    expect(new Set(descriptions).size).toBe(descriptions.length);
+  });
+
+  it('names the class in a class page’s title', () => {
+    expect(titleOf(htmlAt('/smp/kelas-7/'))).toContain('Kelas 7');
+  });
+
+  it('points each landing page at itself as canonical', () => {
+    expect(htmlAt('/smp/kelas-7/')).toContain(
+      '<link rel="canonical" href="https://simula.koosty.web.id/smp/kelas-7/"',
+    );
+  });
+
+  it('does not ask a crawler to skip a landing page', () => {
+    // Only the raw simulation files are noindex; a landing page is how a class
+    // is found, so it has to stay indexable.
+    expect(htmlAt('/smp/kelas-7/')).not.toContain('name="robots"');
+  });
+});

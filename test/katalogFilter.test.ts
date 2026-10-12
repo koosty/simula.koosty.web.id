@@ -265,4 +265,14 @@ describe('subjectLabel', () => {
   it('shows an unknown subject rather than hiding it', () => {
     expect(subjectLabel('informatika')).toBe('Informatika');
   });
+
+  it('turns a hyphenated segment into readable words', () => {
+    // Subjects are an open set, so a new one may arrive hyphenated. A URL
+    // segment reaching a heading unaltered would read as a slug, not a subject.
+    expect(subjectLabel('ilmu-pengetahuan-alam')).toBe('Ilmu Pengetahuan Alam');
+  });
+
+  it('still abbreviates a hyphenated subject that is an abbreviation', () => {
+    expect(subjectLabel('ipa-terpadu')).toBe('Ipa Terpadu');
+  });
 });

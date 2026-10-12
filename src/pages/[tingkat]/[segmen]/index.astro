@@ -1,0 +1,40 @@
+---
+import type { GetStaticPaths } from 'astro';
+import LandingPage from '../../../components/LandingPage.astro';
+import { loadCatalog } from '../../../lib/loadCatalog';
+import { landingPages, type LandingPage as LandingPageData } from '../../../lib/landing';
+
+// A class and a subject are both one segment below a stage, so this route serves
+// both and landingKindOf tells them apart by the shape of the segment. The
+// param is named "segmen" rather than "kelas" because a subject segment reaches
+// it too, and a name that lies about half its callers misleads whoever adds a
+// route beside this one.
+//
+// Neither kind is listed here in advance. A page exists because a simulation in
+// the catalog named that class or subject, which is what keeps the set open.
+export const getStaticPaths = (async () => {
+  const items = await loadCatalog();
+  const catalog = items.map(({ fileLevel: _fileLevel, ...entry }) => entry);
+  const pages = landingPages(catalog);
+
+  return pages
+    .filter((page) => page.kind !== 'tingkat')
+    .map((page) => ({
+      params: { tingkat: page.level, segmen: page.segment },
+      props: {
+        page,
+        // Every landing page at the same stage, this one included, so the page
+        // can link to its stage as well as to the classes and subjects beside
+        // it. The component is what decides which of those to show.
+        siblings: pages.filter((sibling) => sibling.level === page.level),
+      },
+    }));
+}) satisfies GetStaticPaths;
+
+const { page, siblings } = Astro.props as {
+  page: LandingPageData;
+  siblings: LandingPageData[];
+};
+---
+
+<LandingPage {page} {siblings} />
