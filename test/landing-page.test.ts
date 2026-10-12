@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { resolve, sep as pathSep } from 'node:path';
 import { parse } from 'yaml';
 import { landingPages, landingPath } from '../src/lib/landing';
 import type { CatalogEntry } from '../src/lib/types';
@@ -25,6 +25,19 @@ const CATALOG: CatalogEntry[] = readdirSync(CATALOG_DIR)
 
 const PAGES = landingPages(CATALOG);
 
+/**
+ * The addresses the catalog alone calls for, worked out without landing.ts.
+ *
+ * Built from the catalog files directly so that a fault in landing.ts cannot
+ * move this expectation and the built output together, which would let both
+ * agree on something wrong.
+ */
+const CATALOG_ADDRESSES = new Set<string>([
+  ...new Set(CATALOG.map((entry) => landingPath(entry.level, entry.level))),
+  ...new Set(CATALOG.map((entry) => landingPath(entry.level, `kelas-${entry.grade}`))),
+  ...new Set(CATALOG.map((entry) => landingPath(entry.level, entry.subject))),
+]);
+
 /** The built HTML at a landing page's address. */
 function htmlAt(path: string): string {
   return readFileSync(resolve(DIST, path.slice(1), 'index.html'), 'utf8');
@@ -40,11 +53,36 @@ function descriptionOf(html: string): string {
   return html.match(/<meta name="description" content="([^"]*)"/)?.[1] ?? '';
 }
 
-describe('a landing page is built for every Tingkat, Kelas and Mata Pelajaran', () => {
+describe('the set of landing pages follows the catalog', () => {
   it('builds a page at every address the catalog calls for', () => {
     expect(PAGES.length).toBeGreaterThan(0);
     for (const page of PAGES) {
       expect(existsSync(resolve(DIST, page.path.slice(1), 'index.html'))).toBe(true);
+    }
+  });
+
+  it('builds no page that the catalog does not call for', () => {
+    // The routes generate from the catalog, so a page can only appear by being
+    // asked for. This is the other half of that: nothing extra is published.
+    const expected = new Set(
+      [...CATALOG_ADDRESSES].map((address) => resolve(DIST, address.slice(1), 'index.html')),
+    );
+    const built = readdirSync(DIST, { recursive: true })
+      .filter((name): name is string => typeof name === 'string' && name.endsWith('index.html'))
+      .map((name) => name.split(pathSep).join('/'))
+      // Pages that are not landing pages, so their presence says nothing about
+      // whether the landing routes follow the catalog.
+      .filter(
+        (name) =>
+          name !== 'index.html' &&
+          name !== 'katalog/index.html' &&
+          !name.startsWith('simulasi/') &&
+          // A simulation page is four segments deep; a landing page is one or two.
+          !/^smp\/kelas-\d+\/\w+\/[^/]+\/index\.html$/.test(name),
+      );
+    expect(built.length).toBeGreaterThan(0);
+    for (const name of built) {
+      expect(expected.has(resolve(DIST, name))).toBe(true);
     }
   });
 

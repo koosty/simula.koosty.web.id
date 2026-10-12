@@ -308,3 +308,45 @@ describe('landingHeading', () => {
     expect(landingHeading(page)).toBe('SMP — Kelas 7');
   });
 });
+
+describe('a landing page cannot be confused with another kind', () => {
+  it('reads a subject named after a class as the subject it is', () => {
+    // Subjects are an open set, so one may be named "kelas-9". No simulation
+    // here is a Kelas 9 one, so that address is the subject's page and must not
+    // be headed as a class the reader would look for grade-9 material in.
+    const catalog = [entry({ slug: 'a', subject: 'kelas-9' })];
+    const page = landingPages(catalog).find((p) => p.path === '/smp/kelas-9/');
+    expect(page?.kind).toBe('mataPelajaran');
+    expect(landingHeading(page!)).toBe('Kelas 9 untuk SMP');
+    expect(page?.sections.flatMap((s) => s.simulations.map((e) => e.slug))).toEqual(['a']);
+  });
+
+  it('lets a real class win the address when a subject claims the same one', () => {
+    // The collision only stays harmless while the two never both exist. When
+    // they do, /smp/kelas-9/ has to mean the class, because that is what a
+    // reader following a class link expects to find there.
+    const catalog = [
+      entry({ slug: 'kelas-satu', subject: 'kelas-9', order: 1 }),
+      entry({ slug: 'kelas-sembilan', grade: 9, subject: 'matematika', order: 2 }),
+    ];
+    const page = landingPages(catalog).find((p) => p.path === '/smp/kelas-9/');
+    expect(page?.kind).toBe('kelas');
+    // Both simulations belong to a class, so both appear on it: the subject's
+    // simulations are not lost by the subject yielding the address.
+    expect(page?.sections.flatMap((s) => s.simulations.map((e) => e.slug)).sort()).toEqual([
+      'kelas-satu',
+      'kelas-sembilan',
+    ]);
+  });
+
+  it('still finds every simulation a mis-named subject has', () => {
+    // Yielding the address must not cost the subject its own material: the
+    // simulation stays on the stage page and the class page it belongs to.
+    const catalog = [
+      entry({ slug: 'a', subject: 'kelas-9', order: 1 }),
+      entry({ slug: 'b', grade: 9, subject: 'matematika', order: 2 }),
+    ];
+    const onClass = landingPages(catalog).find((p) => p.path === '/smp/kelas-9/');
+    expect(onClass?.sections.flatMap((s) => s.simulations.map((e) => e.slug))).toContain('a');
+  });
+});

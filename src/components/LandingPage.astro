@@ -45,8 +45,9 @@ const stagePath = `/${page.level}/`;
     {
       page.sections.map((section) => (
         <section class="kelas" id={section.key}>
-          {/* On a class page the heading is the page's own, so repeating it as a
-              subheading would say the same thing twice. */}
+          {/* A class page's own heading is already the h1, so its one section
+              gets no subheading. Every other page groups its cards under the
+              class they belong to, and that heading is what the h3s sit below. */}
           {page.kind === 'kelas' ? null : <h2>{section.label}</h2>}
           <ul class="cards">
             {section.simulations.map((entry) => (

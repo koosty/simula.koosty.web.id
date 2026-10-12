@@ -12,7 +12,7 @@ import { tingkatLabel } from './tingkat';
 export type LandingKind = 'tingkat' | 'kelas' | 'mataPelajaran';
 
 /** One headed run of simulations on a page, which is always one Kelas. */
-export interface LandingSection {
+interface LandingSection {
   /** 'smp/kelas-7': usable as an element id, and unique within the page. */
   key: string;
   /** The heading a reader sees, e.g. 'SMP — Kelas 7'. */
@@ -58,20 +58,6 @@ export function kelasSegment(grade: number): string {
   return `kelas-${grade}`;
 }
 
-/**
- * What the second path segment means.
- *
- * All three kinds are served by one dynamic route, so the segment alone has to
- * say which kind is being asked for. A class is the one kind whose segment is
- * not free text: it is always 'kelas-' followed by the grade, which is what
- * keeps the three shapes from overlapping. A subject is any other segment, and
- * a stage is the one whose segment is its own level.
- */
-export function landingKindOf(level: string, segment: string): LandingKind {
-  if (segment === level) return 'tingkat';
-  return /^kelas-\d+$/.test(segment) ? 'kelas' : 'mataPelajaran';
-}
-
 /** The grade inside a class segment, e.g. 7 from 'kelas-7'. */
 function kelasGrade(segment: string): string {
   return segment.replace(/^kelas-/, '');
@@ -92,35 +78,50 @@ function kelasHeading(segment: string): string {
  * has thought of yet gets its page by being added as content.
  */
 export function landingPages(entries: CatalogEntry[]): LandingPage[] {
-  const byPath = new Map<string, CatalogEntry[]>();
+  // The kind is recorded while collecting rather than guessed from the segment
+  // afterwards. A subject is an open set, so one may be named "kelas-9"; only
+  // this loop knows whether that address was asked for as a class or as a
+  // subject, which a later reader of the segment could not tell.
+  //
+  // A stage and a class sit at addresses the catalog composes, so a subject
+  // landing on one yields to it: /smp/kelas-9/ has to keep meaning the class.
+  const KIND_PRIORITY: Record<LandingKind, number> = {
+    mataPelajaran: 0,
+    tingkat: 1,
+    kelas: 2,
+  };
 
-  const collect = (level: string, segment: string, entry: CatalogEntry): void => {
+  const byPath = new Map<string, { kind: LandingKind; entries: CatalogEntry[] }>();
+
+  const collect = (kind: LandingKind, level: string, segment: string, entry: CatalogEntry): void => {
     const path = landingPath(level, segment);
-    const collected = byPath.get(path);
-    if (collected) collected.push(entry);
-    else byPath.set(path, [entry]);
+    const existing = byPath.get(path);
+    if (!existing) {
+      byPath.set(path, { kind, entries: [entry] });
+      return;
+    }
+    existing.entries.push(entry);
+    if (KIND_PRIORITY[kind] > KIND_PRIORITY[existing.kind]) existing.kind = kind;
   };
 
   for (const entry of entries) {
-    collect(entry.level, entry.level, entry);
-    collect(entry.level, kelasSegment(entry.grade), entry);
-    collect(entry.level, entry.subject, entry);
+    collect('tingkat', entry.level, entry.level, entry);
+    collect('kelas', entry.level, kelasSegment(entry.grade), entry);
+    collect('mataPelajaran', entry.level, entry.subject, entry);
   }
 
-  return [...byPath.keys()]
-    .sort((a, b) => a.localeCompare(b, 'id'))
-    .map((path) => {
-      // A stage's own page is one segment deep and its only segment is the
-      // stage, which is also how landingKindOf recognises it.
+  return [...byPath.entries()]
+    .sort(([a], [b]) => a.localeCompare(b, 'id'))
+    .map(([path, { kind, entries: pageEntries }]) => {
       const [level, segment = level] = path.split('/').filter(Boolean);
       return {
-        kind: landingKindOf(level, segment),
+        kind,
         level,
         segment,
         path,
         // Grouped by Kelas rather than listed flat, so a page spanning more than
         // one class reads in the same order the Katalog does.
-        sections: groupByKelas(byPath.get(path) ?? []).map(({ key, label, simulations }) => ({
+        sections: groupByKelas(pageEntries).map(({ key, label, simulations }) => ({
           key,
           label,
           simulations,

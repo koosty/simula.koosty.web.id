@@ -5,7 +5,7 @@ import { loadCatalog } from '../../../lib/loadCatalog';
 import { landingPages, type LandingPage as LandingPageData } from '../../../lib/landing';
 
 // A class and a subject are both one segment below a stage, so this route serves
-// both and landingKindOf tells them apart by the shape of the segment. The
+// both, and landingPages records which kind each address was asked for. The
 // param is named "segmen" rather than "kelas" because a subject segment reaches
 // it too, and a name that lies about half its callers misleads whoever adds a
 // route beside this one.
