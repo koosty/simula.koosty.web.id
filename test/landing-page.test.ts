@@ -76,6 +76,7 @@ describe('the set of landing pages follows the catalog', () => {
         (name) =>
           name !== 'index.html' &&
           name !== 'katalog/index.html' &&
+          name !== 'sitemap/index.html' &&
           !name.startsWith('simulasi/') &&
           // A simulation page is four segments deep; a landing page is one or two.
           !/^smp\/kelas-\d+\/\w+\/[^/]+\/index\.html$/.test(name),

@@ -1,0 +1,151 @@
+---
+import Base from '../layouts/Base.astro';
+import { simulasiUrl } from '../lib/catalog';
+import { loadCatalog } from '../lib/loadCatalog';
+import { sitemapEntries, SITEMAP_PATH, DEFAULT_SITE, type SitemapEntry } from '../lib/sitemap';
+import { groupByKelas, subjectLabel } from '../lib/katalogFilter';
+
+const catalog = (await loadCatalog()).map(({ fileLevel: _fileLevel, ...entry }) => entry);
+
+const site = String(Astro.site ?? DEFAULT_SITE);
+const entries = sitemapEntries(catalog, site);
+
+// The absolute address of a path. Built with URL rather than by gluing the
+// host and the path together: Astro.site is a URL, so its string form ends in
+// a slash, and concatenation would produce "https://host//smp/".
+const absolute = (path: string): string => new URL(path, site).href;
+
+// The entry carrying a simulation's own words. Every catalog entry has one,
+// because sitemapEntries is built from that same list, so this is narrowed
+// rather than defaulted: a missing match would be a fault worth seeing, not a
+// silent blank on the page.
+const wordsFor = (path: string): SitemapEntry => {
+  const found = entries.find((e) => e.loc === absolute(path));
+  if (!found) throw new Error(`Entri sitemap tidak ditemukan untuk ${path}`);
+  return found;
+};
+
+// Grouped by class so the page reads in the order a pupil moves through school,
+// the order groupByKelas already establishes elsewhere on the site.
+const byClass = groupByKelas(catalog).map((group) => ({
+  key: group.key,
+  label: group.label,
+  simulations: group.simulations.map((entry) => {
+    const path = simulasiUrl(entry);
+    const words = wordsFor(path);
+    return {
+      path,
+      subject: subjectLabel(entry.subject),
+      title: words.title,
+      description: words.description,
+    };
+  }),
+}));
+
+// Everything that is not a simulation: the Katalog, the landing pages, and this
+// page. The home page is left out because a reader who opened the site map is
+// already on the way in, and a link back to where they started is noise.
+const simulationPaths = new Set(byClass.flatMap((group) => group.simulations.map((s) => s.path)));
+const other = entries.filter(
+  (entry) => !simulationPaths.has(new URL(entry.loc).pathname) && entry.loc !== absolute('/'),
+);
+---
+
+<Base
+  title="Peta Situs · Simula"
+  description="Daftar seluruh halaman di Simula, untuk pembaca maupun mesin pencari."
+>
+  <main class="wrap">
+    <h1>Peta Situs</h1>
+    <p class="lead">
+      Seluruh halaman yang ada di Simula. Daftar ini juga tersedia sebagai
+      <a href={SITEMAP_PATH}>sitemap.xml</a> untuk mesin pencari.
+    </p>
+
+    {
+      other.length > 0 && (
+        <nav aria-labelledby="other-heading">
+          <h2 id="other-heading">Halaman umum</h2>
+          <ul class="links">
+            {other.map((page) => (
+              <li>
+                <a href={new URL(page.loc).pathname}>{page.title}</a>
+                <p class="description">{page.description}</p>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )
+    }
+
+    {
+      byClass.map((group) => (
+        <section aria-labelledby={`group-${group.key.replace('/', '-')}`}>
+          <h2 id={`group-${group.key.replace('/', '-')}`}>{group.label}</h2>
+          <ul class="links">
+            {group.simulations.map((sim) => (
+              <li>
+                <a href={sim.path}>{sim.title}</a>
+                <p class="meta">{sim.subject}</p>
+                <p class="description">{sim.description}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+  </main>
+</Base>
+
+<style>
+  h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    margin: 0 0 16px;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 48px 0 16px;
+  }
+
+  .lead {
+    color: #c8c8c8;
+    font-size: 1.125rem;
+    max-width: 60ch;
+  }
+
+  .lead a,
+  .links a {
+    color: #cfe3ff;
+  }
+
+  .links {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .links li {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    background: #1b1b1b;
+    padding: 16px;
+  }
+
+  .meta {
+    margin: 0 0 6px;
+    color: #9a9a9a;
+    font-size: 0.8125rem;
+  }
+
+  .description {
+    margin: 0;
+    color: #c8c8c8;
+    font-size: 0.9375rem;
+  }
+</style>

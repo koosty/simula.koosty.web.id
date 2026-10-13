@@ -34,7 +34,9 @@ export default [
   ...astro.configs.recommended,
 
   {
-    files: ['**/*.astro'],
+    // Applies to `.ts` and `.astro` alike: the convention is a project-wide one,
+    // and the sitemap endpoints drop fileLevel the same way the pages do.
+    files: ['**/*.astro', '**/*.ts'],
     rules: {
       // Destructuring a field away to drop it, as in
       // `({ fileLevel: _fileLevel, ...entry }) => entry`, otherwise reads as an
