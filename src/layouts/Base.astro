@@ -1,6 +1,6 @@
 ---
 import { loadCatalogEntries } from '../lib/loadCatalog';
-import { tokenCustomProperties, TOKENS } from '../lib/theme';
+import { themeCustomProperties } from '../lib/theme';
 import { navLinksFor } from '../lib/nav';
 
 interface Props {
@@ -32,7 +32,7 @@ const navLinks = navLinksFor(catalog, Astro.url.pathname);
         build fails with "Invalid empty selector". Ticket 06 hit this the same
         way, writing {FALLBACK_HEIGHT}px into a <style> block and finding it
         silently dropped rather than caught. */}
-    <style set:html={`:root {\n${tokenCustomProperties(TOKENS)}\n}`}></style>
+    <style set:html={themeCustomProperties()}></style>
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />

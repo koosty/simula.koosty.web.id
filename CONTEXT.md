@@ -39,3 +39,7 @@ _Avoid_: permalink segment
 **Daftar Cetak**:
 The printable list of every simulation one Kelas has, in teaching order, at `/smp/kelas-7/cetak/`. Meant for paper: it prints black on white, without the site navigation, and each entry shows its address as text so a teacher holding the sheet can type it back in.
 _Avoid_: handout, worksheet, print view, PDF
+
+**Palet**:
+The set of colours the site's chrome and the simulations both paint with, named as the simulations name them: `--bg`, `--surface`, `--text`, `--text-muted`, `--link`, `--accent`. Declared once in `src/lib/theme.ts`; a page writes `var(--text-muted)` and never a literal.
+_Avoid_: theme, colour scheme, skin, design tokens

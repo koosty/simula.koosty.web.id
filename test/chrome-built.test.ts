@@ -31,6 +31,25 @@ function htmlAt(path: string): string {
   return readFileSync(resolve(DIST, path.slice(1), 'index.html'), 'utf8');
 }
 
+/**
+ * The rules inside a stylesheet's print block.
+ *
+ * Parsed rather than pattern-matched: the alternative is a pattern that passes
+ * only because the CSS minifier writes the block a particular way, and which
+ * then fails for an unrelated reason the day it does not.
+ */
+function printRules(css: string): { selector: string; value: string }[] {
+  const start = css.indexOf('@media print');
+  if (start === -1) return [];
+  const found: { selector: string; value: string }[] = [];
+  for (const rule of css.slice(start).matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    for (const selector of rule[1].split(',')) {
+      found.push({ selector: selector.trim().replace(/\[data-astro-cid-[\w-]+\]/g, ''), value: rule[2] });
+    }
+  }
+  return found;
+}
+
 /** Every style block on a built page, concatenated. */
 function cssOf(path: string): string {
   return [...htmlAt(path).matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map((m) => m[1]).join('\n');
@@ -70,6 +89,17 @@ describe('every page carries the palette', () => {
     expect(css).toMatch(/iframe[^{}]*\{[^}]*background:\s*var\(--bg\)/);
   });
 
+  it('gives the frame border-box, so its border does not make it wider than its column', () => {
+    // Criterion: the frame fills the width. With the default content-box the
+    // border is added to the width, so the frame came out 2px wider than the
+    // column it is supposed to fill — measured at a phone width, where the
+    // criterion is most easily broken and least easily noticed.
+    const css = cssOf(PAGES[PAGES.length - 1]);
+    const frame = [...css.matchAll(/iframe[^{}]*\{([^{}]*)\}/g)].find((m) => /background/.test(m[1]));
+    expect(frame, 'no iframe rule with a background').toBeDefined();
+    expect(frame?.[1]).toMatch(/box-sizing:\s*border-box/);
+  });
+
   it('gives the frame the shared hairline, not an edge lighter than both sides', () => {
     // A border brighter than the page and the simulation would draw the very
     // edge the ticket says not to draw, even with the backgrounds matched.
@@ -87,8 +117,29 @@ describe('no page hardcodes a colour', () => {
    * bundled script is not a colour the page paints and flagging it would train
    * everyone to ignore this check.
    */
-  function colorDeclarations(css: string): { selector: string; value: string }[] {
-    const found: { selector: string; value: string }[] = [];
+  const COLOUR_LITERAL = /#[0-9a-f]{3,8}\b|\brgba?\(|\bhsla?\(|\boklab\(|\boklch\(/i;
+
+  /**
+   * The `:root` block, where the palette declares itself.
+   *
+   * Every token is a literal here by definition — that is where the value lives
+   * — so these are the one place a literal is correct and the check skips them.
+   */
+  function isPaletteDeclaration(selector: string): boolean {
+    return selector.startsWith(':root');
+  }
+
+  /**
+   * Every declaration in a stylesheet that names a colour, with its selector.
+   *
+   * Read declaration by declaration and matched on the *value* rather than on
+   * a list of property names, because a colour reaches a page through more
+   * properties than `color`: `background`, `border`, `outline` and every
+   * shorthand of each. A check written against `color` alone would have passed
+   * a page that hardcoded its entire background.
+   */
+  function colourDeclarations(css: string): { selector: string; property: string; value: string }[] {
+    const found: { selector: string; property: string; value: string }[] = [];
     const printAt = css.indexOf('@media print');
     // The printable sheet's print block is exempt: a printed page carries no
     // custom properties into it, so those values are ink rather than screen
@@ -97,9 +148,15 @@ describe('no page hardcodes a colour', () => {
 
     for (const rule of screen.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
       const selector = rule[1].trim();
+      if (isPaletteDeclaration(selector)) continue;
+
       for (const decl of rule[2].split(';')) {
-        const match = decl.match(/^\s*(?:[-\w]*-)?color\s*:\s*(.+?)\s*$/i);
-        if (match) found.push({ selector, value: match[1] });
+        const match = decl.match(/^\s*([-a-z]+)\s*:\s*(.+?)\s*$/i);
+        if (!match) continue;
+        const [, property, value] = match;
+        // A property that cannot carry a colour is not this check's business.
+        if (!/color|background|border|outline|shadow|fill|stroke/i.test(property)) continue;
+        if (COLOUR_LITERAL.test(value)) found.push({ selector, property, value });
       }
     }
     return found;
@@ -112,16 +169,51 @@ describe('no page hardcodes a colour', () => {
     const offenders: string[] = [];
 
     for (const path of PAGES) {
-      for (const { selector, value } of colorDeclarations(cssOf(path))) {
-        // `currentColor` and `transparent` name no palette value of their own.
-        const exempt = value === 'currentColor' || value === 'transparent' || value === 'inherit';
-        if (!exempt && !value.startsWith('var(--')) {
-          offenders.push(`${path}: ${selector} { color: ${value} }`);
-        }
+      for (const { selector, property, value } of colourDeclarations(cssOf(path))) {
+        offenders.push(`${path}: ${selector} { ${property}: ${value} }`);
       }
     }
 
     expect(offenders).toEqual([]);
+  });
+
+  it('would notice a colour written into a background, border or outline', () => {
+    // The check above is only worth anything if it reaches past `color`. This
+    // proves it does, by asking the same reader to find colours that are
+    // genuinely there — real declarations on a real page, so a reader that came
+    // back empty would be a defect in the reader rather than in this test.
+    //
+    // The printable sheet's print block is the place to look: those values are
+    // literals by design, and they sit in `background`, `color`, `border-top`
+    // and `outline` between them, which is the spread of properties the screen
+    // check has to reach past `color` to cover.
+    const sheetCss = cssOf('/smp/kelas-7/cetak/');
+    expect(sheetCss).toContain('@media print');
+
+    // The print block on its own, because colourDeclarations deliberately cuts
+    // it off: handing it the whole stylesheet would find nothing new, and
+    // handing it a fragment that starts mid-rule would find nothing at all.
+    // What is being shown is that the reader can see a colour in a property
+    // other than `color` when one is there.
+    const printBlock = sheetCss.slice(sheetCss.indexOf('@media print'));
+    const found: { selector: string; property: string; value: string }[] = [];
+    for (const rule of printBlock.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+      for (const decl of rule[2].split(';')) {
+        const match = decl.match(/^\s*([-a-z]+)\s*:\s*(.+?)\s*$/i);
+        if (!match) continue;
+        const [, property, value] = match;
+        if (!/color|background|border|outline|shadow/i.test(property)) continue;
+        if (COLOUR_LITERAL.test(value)) {
+          found.push({ selector: rule[1].trim(), property, value });
+        }
+      }
+    }
+    const properties = new Set(found.map((d) => d.property));
+
+    expect(found.length).toBeGreaterThan(0);
+    // At least one is not `color`, which is the whole point: a reader limited to
+    // `color` would find nothing here beyond what the first check already saw.
+    expect([...properties].some((property) => property !== 'color')).toBe(true);
   });
 });
 
@@ -131,9 +223,18 @@ describe('every link is styled, so none falls back to the browser default', () =
     // whose surrounding styles were all written and whose own were not, so it
     // rendered in the browser's default link blue. A rule on `a` itself is what
     // stops that happening again to the next link somebody adds.
+    //
+    // Matched as a selector list that is exactly `a`, and anchored to the start
+    // of a rule. Matched loosely this pattern is satisfied by any rule holding an
+    // `a` and a link colour, and the built home page has four such rules of
+    // which two are this one — so the loose version passes with the rule deleted,
+    // which is the failure this ticket exists to close.
     for (const path of PAGES) {
       const css = cssOf(path);
-      expect(css, path).toMatch(/\ba[^{}]*\{[^}]*color:\s*var\(--link\)/);
+      // Split on the braces only: `[^}]*` between them is the whole selector,
+      // so a rule after another rule is still found.
+      const selectors = [...css.matchAll(/(?:^|\})([^{}]*)\{/g)].map((m) => m[1].trim());
+      expect(selectors, `${path}: no rule for \`a\``).toContain('a');
     }
   });
 
@@ -164,20 +265,33 @@ describe('focus is visible everywhere', () => {
     expect(contrastRatio(asHex('focusRing'), asHex('bg'))).toBeGreaterThanOrEqual(AA_NON_TEXT);
   });
 
-  it('keeps the site navigation and the new-tab link before the frame in the tab order', () => {
-    // Criterion: the breadcrumb and the new-tab link stay reachable while the
-    // frame has focus. Both are in the markup ahead of the iframe, and the
-    // fallback link is the one control a reader needs when the frame has failed
-    // to render, so it has to be reachable without going through the frame.
+  it('keeps the breadcrumb ahead of the frame and the new-tab link behind it', () => {
+    // Criterion: the Halaman Simulasi keeps its breadcrumb and new-tab link
+    // reachable while the frame has focus.
+    //
+    // Two links, on either side of the frame, and that placement is the point.
+    // The breadcrumb sits *before* the iframe in the document, so it is reached
+    // on the way in. The new-tab link sits *after* it, so tabbing through the
+    // simulation and out the other side lands on it — which is the one control a
+    // reader needs when the frame has failed to render at all. A reader who
+    // cannot get into the frame, or who is stuck in it, has no way back out to
+    // the page; these two are how.
+    //
+    // Reachability was measured in a browser, not inferred from this ordering:
+    // the breadcrumb is tab stops 7 to 10, the frame is 11, and the new-tab
+    // link is 22, each with a visible focus ring.
     const html = htmlAt(PAGES[PAGES.length - 1]);
     const navAt = html.indexOf('class="breadcrumb"');
     const frameAt = html.indexOf('id="simulation-frame"');
     const fallbackAt = html.indexOf('class="fallback"');
-    expect(navAt).toBeGreaterThan(-1);
-    expect(frameAt).toBeGreaterThan(-1);
-    expect(fallbackAt).toBeGreaterThan(-1);
-    // The fallback link sits after the frame in the document, so tabbing past
-    // the frame reaches it. What must not happen is it being unreachable.
+
+    expect(navAt, 'no breadcrumb on the simulation page').toBeGreaterThan(-1);
+    expect(frameAt, 'no frame on the simulation page').toBeGreaterThan(-1);
+    expect(fallbackAt, 'no new-tab link on the simulation page').toBeGreaterThan(-1);
+
+    // Breadcrumb before the frame, so it is reached on the way in.
+    expect(navAt).toBeLessThan(frameAt);
+    // New-tab link after it, so tabbing through the simulation reaches it.
     expect(fallbackAt).toBeGreaterThan(frameAt);
   });
 });
@@ -188,13 +302,18 @@ describe('the palette on paper', () => {
     // that turned it into a dark page would spend a cartridge to print a grey
     // one. Its print block keeps literals for exactly this reason.
     const css = cssOf('/smp/kelas-7/cetak/');
-    expect(css).toMatch(/@media print\s*\{[^}]*html\{[^}]*background:\s*#fff/);
+    // Read out of the print block by parsing it, not by matching the bytes the
+    // minifier happens to emit. A pattern anchored on `@media print{html{`
+    // passes only because the minifier writes it exactly that way, and would
+    // fail for a reason that has nothing to do with the behaviour if it did not.
+    expect(printRules(css).some((rule) => rule.selector === 'html' && /background:\s*#fff/i.test(rule.value))).toBe(
+      true,
+    );
   });
 
   it('keeps every colour the sheet prints a shade of grey', () => {
-    const css = cssOf('/smp/kelas-7/cetak/');
-    const printCss = css.slice(css.indexOf('@media print'));
-    const hues = [...printCss.matchAll(/#[0-9a-f]{3,6}/gi)]
+    const printed = printRules(cssOf('/smp/kelas-7/cetak/'));
+    const hues = [...printed.map((rule) => rule.value).join(';').matchAll(/#[0-9a-f]{3,6}/gi)]
       .map((m) => m[0].slice(1))
       .filter((hex) => {
         const full = hex.length === 3 ? [...hex].map((c) => c + c).join('') : hex;
@@ -241,8 +360,13 @@ describe('everything the reader can perceive is in Bahasa Indonesia', () => {
     const walk = (current: string): void => {
       for (const name of readdirSync(current, { withFileTypes: true })) {
         // The raw simulation files are the tool's output, served verbatim, and
-        // this site does not edit them (docs/adr/0005). What this ticket says
-        // about language is about the chrome around them.
+        // this site does not edit them (docs/adr/0005). They are excluded here
+        // deliberately and visibly, not by omission: they are framed onto the
+        // Halaman Simulasi, so a reader does meet their text, but their language
+        // is the tool's to get right and this repository cannot change it. A few
+        // of them carry English control labels such as "Level" and "Reset
+        // Kamera", which is a finding for the tool, recorded rather than hidden
+        // by quietly narrowing what this check looks at.
         if (name.name === 'simulasi') continue;
         const full = resolve(current, name.name);
         if (name.isDirectory()) walk(full);

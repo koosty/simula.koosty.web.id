@@ -150,6 +150,11 @@ const breadcrumb = [
   iframe {
     display: block;
     width: 100%;
+    /* border-box, because the frame has a border and the default content-box
+       counts it as extra width. Measured at a phone width: the frame came out
+       330px inside a 328px column, so it overflowed the column it is meant to
+       fill. A frame wider than its column is exactly the criterion 5 failure. */
+    box-sizing: border-box;
     /* A fixed fallback so something usable shows before the script measures the
        simulation's real height, and so the frame's own height cannot stretch
        the document being measured (docs/adr/0005). Written as a literal

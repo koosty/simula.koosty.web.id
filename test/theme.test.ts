@@ -14,29 +14,39 @@ import {
   ratioRequiredFor,
   AA_NORMAL_TEXT,
   AA_NON_TEXT,
-  tokenCustomProperties,
+  themeCustomProperties,
 } from '../src/lib/theme';
 
 const ROOT = resolve(import.meta.dirname, '..');
 const SIM_DIR = resolve(ROOT, 'example-simulations/lower-secondary/grade-7');
 
 /**
- * The dark colour tokens a simulation declares.
+ * The dark colour tokens one simulation declares.
  *
  * Read out of the `:root` block specifically. Every simulation also carries a
  * `[data-theme="light"]` block, and reading the whole stylesheet picks up the
  * light values too — which is how this first matched the light background and
  * failed against a palette that is dark on purpose.
  */
-function simulationPalette(): Record<string, string> {
-  const file = join(SIM_DIR, readdirSync(SIM_DIR)[0]);
-  const html = readFileSync(file, 'utf8');
-  const root = html.slice(html.indexOf(':root'));
+function simulationPalette(name: string): Record<string, string> {
+  const html = readFileSync(join(SIM_DIR, name), 'utf8');
+  const start = html.indexOf(':root');
+  const root = html.slice(start, html.indexOf('}', start));
   const found: Record<string, string> = {};
-  for (const match of root.slice(0, root.indexOf('}')).matchAll(/(--[a-z-]+)\s*:\s*([^;]+);/g)) {
+  for (const match of root.matchAll(/(--[a-z-]+)\s*:\s*([^;]+);/g)) {
     found[match[1]] = match[2].trim();
   }
   return found;
+}
+
+/** A colour with its internal whitespace removed, for comparing as written. */
+function normalise(value: string): string {
+  return value.replace(/\s+/g, '');
+}
+
+/** Every simulation the tool has produced. */
+function simulationFiles(): string[] {
+  return readdirSync(SIM_DIR).filter((name) => name.endsWith('.html'));
 }
 
 /**
@@ -63,30 +73,71 @@ describe('the palette', () => {
     // Criterion: the chrome and the simulations share one surface, so an
     // embedded simulation is not a black rectangle punched into a lighter
     // page. These three are the ones the eye compares across that edge.
-    const sim = simulationPalette();
-    expect(sameColour(TOKENS.bg, sim['--bg'])).toBe(true);
-    expect(sameColour(TOKENS.surface, sim['--surface'])).toBe(true);
-    expect(TOKENS.border).toBe(sim['--border']);
+    //
+    // Checked against every simulation, not one of them: reading a single file
+    // would let a second simulation drift away from the chrome without anything
+    // noticing, and the chrome is meant to match all of them at once.
+    const files = simulationFiles();
+    expect(files.length).toBeGreaterThan(1);
+    for (const name of files) {
+      const sim = simulationPalette(name);
+      expect(sameColour(TOKENS.bg, sim['--bg']), name).toBe(true);
+      expect(sameColour(TOKENS.surface, sim['--surface']), name).toBe(true);
+      // The border is translucent, so the arithmetic below cannot read it.
+      // Compared as written, with whitespace normalised: the simulations write
+      // it as `rgba(255, 255, 255, 0.1)` in some files and
+      // `rgba(255,255,255,0.1)` in others, which are the same colour.
+      expect(normalise(TOKENS.border), name).toBe(normalise(sim['--border']));
+    }
   });
 
   it('takes the text colours from the simulations', () => {
-    const sim = simulationPalette();
-    expect(sameColour(TOKENS.text, sim['--text'])).toBe(true);
-    expect(sameColour(TOKENS.textMuted, sim['--text-muted'])).toBe(true);
-    expect(sameColour(TOKENS.textDim, sim['--text-dim'])).toBe(true);
+    for (const name of simulationFiles()) {
+      const sim = simulationPalette(name);
+      expect(sameColour(TOKENS.text, sim['--text']), name).toBe(true);
+      expect(sameColour(TOKENS.textMuted, sim['--text-muted']), name).toBe(true);
+      expect(sameColour(TOKENS.textDim, sim['--text-dim']), name).toBe(true);
+    }
   });
 
   it('keeps the accent the simulations use', () => {
     // The accent is what makes the two look like one product. The simulations
     // use it on borders and never on running text, and neither does the chrome.
-    const sim = simulationPalette();
-    expect(sameColour(TOKENS.accent, sim['--accent'])).toBe(true);
+    for (const name of simulationFiles()) {
+      expect(sameColour(TOKENS.accent, simulationPalette(name)['--accent']), name).toBe(true);
+    }
   });
 
-  it('is the set the ticket asked for, and no more', () => {
-    // A token nothing uses is a second source of truth waiting to drift. The
-    // list is written out so adding one is a decision rather than a side effect.
-    expect(Object.keys(TOKENS).sort()).toEqual([...Object.keys(SIMULATION_TOKENS)].sort());
+  it('names exactly the roles the palette is for, and no more', () => {
+    // A token nothing paints with is a second source of truth waiting to drift.
+    // Written out rather than derived: TOKENS is SIMULATION_TOKENS under a
+    // second name, so comparing the two to each other compares an object with
+    // itself and passes for any value at all. The list is the decision.
+    expect(Object.keys(TOKENS).sort()).toEqual(
+      [
+        'accent',
+        'bg',
+        'border',
+        'borderStrong',
+        'focusRing',
+        'link',
+        'linkHover',
+        'panel',
+        'radius',
+        'radiusSmall',
+        'surface',
+        'text',
+        'textDim',
+        'textMuted',
+      ].sort(),
+    );
+  });
+
+  it('is the one object, not a copy of it', () => {
+    // Two names for one object is a trap for exactly the reason the test above
+    // fell into: they always agree, so comparing them proves nothing. Asserted
+    // so the alias is a deliberate one rather than an accident of ordering.
+    expect(TOKENS).toBe(SIMULATION_TOKENS);
   });
 });
 
@@ -147,7 +198,7 @@ describe('every colour the chrome puts on a surface', () => {
     // so a failure says which text on which surface went unreadable.
     const failures: string[] = [];
 
-    for (const [name, surface] of Object.entries(textSurfaces)) {
+    for (const [name, surface] of Object.entries(textSurfaces())) {
       for (const role of ['text', 'textMuted', 'textDim', 'link'] as const) {
         const required = ratioRequiredFor(role);
         const actual = contrastRatio(asHex(role), surface);
@@ -174,7 +225,7 @@ describe('the non-text colours', () => {
   it('separate a surface from its background enough to be seen', () => {
     // A border at 1.5 is decoration nobody can find. The focus ring is held to
     // the same bar as any other non-text element.
-    for (const surface of Object.values(textSurfaces)) {
+    for (const surface of Object.values(textSurfaces())) {
       expect(contrastRatio(asHex('focusRing'), surface), surface).toBeGreaterThanOrEqual(AA_NON_TEXT);
     }
   });
@@ -207,24 +258,41 @@ describe('ratioRequiredFor', () => {
   });
 });
 
-describe('tokenCustomProperties', () => {
+describe('themeCustomProperties', () => {
   it('emits one custom property per token', () => {
-    const css = tokenCustomProperties(TOKENS);
+    const css = themeCustomProperties(TOKENS);
     expect(css).toContain('--bg: #0a0a1a;');
     expect(css).toContain('--text-muted: #aaa;');
   });
 
   it('emits nothing that is not a token', () => {
-    const css = tokenCustomProperties(TOKENS);
+    const css = themeCustomProperties(TOKENS);
     const properties = [...css.matchAll(/(--[a-z-]+):/g)].map((m) => m[1]);
     expect(new Set(properties).size).toBe(properties.length);
     expect(properties.length).toBe(Object.keys(TOKENS).length);
   });
 
+  it('can write a second theme under a different selector', () => {
+    // Reversible by choice, not by accident. The simulations select a theme by
+    // setting data-theme on their own <html> and already ship a complete light
+    // palette, so the day they honour a preference the chrome needs this to
+    // write a `[data-theme="light"]` block beside the `:root` one. That block is
+    // deliberately not written today — all 23 are hardcoded dark — so this is
+    // what proves adding it is a call rather than a restructuring.
+    const light = themeCustomProperties({ ...TOKENS, bg: '#f7f7fb', text: '#16161d' }, "[data-theme='light']");
+    expect(light).toContain("[data-theme='light'] {");
+    expect(light).toContain('--bg: #f7f7fb;');
+    expect(light).toContain('--text: #16161d;');
+  });
+
+  it('writes the dark palette under :root by default', () => {
+    expect(themeCustomProperties()).toContain(':root {');
+  });
+
   it('keeps the accent out of the text roles', () => {
     // The two are separate tokens on purpose. Merging them would put a 4.2
     // colour behind body text the first time someone reached for the accent.
-    expect(tokenCustomProperties(TOKENS)).not.toContain('--link: #6366f1');
+    expect(themeCustomProperties(TOKENS)).not.toContain('--link: #6366f1');
   });
 });
 

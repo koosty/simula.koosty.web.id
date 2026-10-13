@@ -81,6 +81,31 @@ export const SIMULATION_TOKENS = {
 export const TOKENS: Record<TokenName, string> = SIMULATION_TOKENS;
 
 /**
+ * The palette as CSS custom properties, ready for a second theme.
+ *
+ * Two arguments rather than one, so the light half the simulations already ship
+ * can be added without restructuring anything: the simulations select a theme by
+ * setting `data-theme` on their own <html>, and this is shaped to be written
+ * into a `[data-theme='light']` block beside the `:root` one when they honour a
+ * preference. No such block is emitted today — all 23 are hardcoded dark — so
+ * adding one is a matter of calling this again under a different selector and
+ * giving it the other half of their palette.
+ *
+ * Reversible by choice rather than by accident: the point at which the chrome
+ * has to be *edited* is when the simulations change, and the ticket asks that the
+ * chrome follow them then, not that it anticipate them now.
+ */
+export function themeCustomProperties(
+  tokens: Record<TokenName, string> = TOKENS,
+  selector = ':root',
+): string {
+  const declarations = Object.entries(tokens)
+    .map(([name, value]) => `  --${name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}: ${value};`)
+    .join('\n');
+  return `${selector} {\n${declarations}\n}`;
+}
+
+/**
  * The ratios WCAG 2.1 asks for, named by what they are checked against.
  *
  * There is no large-text bar here. The chrome uses large type only for the
