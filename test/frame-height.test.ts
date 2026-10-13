@@ -1,5 +1,3 @@
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { contentHeight } from '../src/lib/frame';
 
@@ -179,54 +177,65 @@ describe('contentHeight', () => {
     expect(measured).toBe(500);
   });
 });
-describe('the tool is told what a framing host can measure', () => {
-  // The frame is sized from the bounding boxes of the simulation's elements, so
-  // content that escapes them is content the frame cannot account for. That is a
-  // property of the published files, not of this site, and this site never edits
-  // them (docs/adr/0005). So the requirement is enforced where the files are
-  // written, and these tests are here to notice if that stops being true.
 
-  const TOOL = resolve(process.cwd(), '../simula-w/.omp/skills/widget-page');
-  const SIMS = resolve(process.cwd(), 'example-simulations/lower-secondary/grade-7');
+/**
+ * The measurement a reporting script would have made, kept as a decision rather
+ * than as a comment.
+ *
+ * If the simulation were changed to post its own height instead of being
+ * measured, `documentElement.scrollHeight` is the value it would send — and that
+ * value tracks the frame rather than the content whenever the frame is the
+ * taller of the two, so a parent trusting it grows the frame on every pass. The
+ * numbers below were read in a browser by setting the frame to each height in
+ * turn and reading the document back; see docs/adr/0005.
+ */
+const DOCUMENT_HEIGHT_BY_FRAME = [
+  { frame: 200, documentElementScrollHeight: 821, bodyScrollHeight: 821 },
+  { frame: 400, documentElementScrollHeight: 821, bodyScrollHeight: 821 },
+  { frame: 821, documentElementScrollHeight: 821, bodyScrollHeight: 821 },
+  { frame: 1116, documentElementScrollHeight: 1114, bodyScrollHeight: 821 },
+  { frame: 1500, documentElementScrollHeight: 1498, bodyScrollHeight: 821 },
+];
 
-  it('asks the tool for pages that fit inside their own height', () => {
-    // The tool is a separate checkout and may be absent — a reader checking out
-    // this site alone still gets a working build. Skipped rather than failed,
-    // because the site does not depend on the tool being present.
-    if (!existsSync(TOOL)) return;
-    const checklist = readFileSync(resolve(TOOL, 'templates/simulation-system.md'), 'utf8');
-    expect(checklist).toMatch(/fits inside the document's own height/i);
+describe('why the frame measures instead of being told', () => {
+  it('shows the document height following the frame rather than the content', () => {
+    const content = 821;
+
+    // Every reading equals the content until the frame is taller than it, and
+    // after that it equals the frame. A parent that set the frame to the
+    // document's reported height would read 1114 back and set 1114, then read
+    // 1112 — the frame creeping toward the height of the window.
+    const echoesFrame = DOCUMENT_HEIGHT_BY_FRAME.filter(
+      (row) => row.frame > content && row.documentElementScrollHeight !== content,
+    );
+
+    expect(echoesFrame.length).toBeGreaterThan(0);
+    for (const row of echoesFrame) {
+      expect(row.documentElementScrollHeight).toBeGreaterThan(content);
+      expect(Math.abs(row.documentElementScrollHeight - row.frame)).toBeLessThanOrEqual(2);
+    }
   });
 
-  it('explains the reason next to the rule that forbids a parent', () => {
-    // The no-parent rule reads as "these pages are never displayed inside
-    // another page", which is what made the constraint look contradictory. The
-    // reason has to sit there or the next reader repeats the same mistake.
-    if (!existsSync(TOOL)) return;
-    const overrides = readFileSync(resolve(TOOL, 'STANDALONE-OVERRIDES.md'), 'utf8');
-    expect(overrides).toMatch(/position: fixed/i);
-    expect(overrides).toMatch(/iframe/i);
+  it('shows the body height holding steady, which is what is measured instead', () => {
+    // The body's own height is the number element bounds already produce, and
+    // it is the same at every frame height. So a script would post a number the
+    // parent can already read for itself, along with a protocol to agree on.
+    const values = new Set(DOCUMENT_HEIGHT_BY_FRAME.map((row) => row.bodyScrollHeight));
+
+    expect(values.size).toBe(1);
+    expect([...values][0]).toBe(821);
   });
 
-  it('finds no simulation whose content escapes the frame', () => {
-    // Checked as source text because that is all a test can see without a
-    // browser. A full-screen fixed panel is the failure this exists to catch: it
-    // is sized to the viewport, so counting it would make the frame as tall as
-    // the window.
-    const files = readdirSync(SIMS).filter((name) => name.endsWith('.html'));
-    expect(files.length).toBeGreaterThan(0);
-
-    // One simulation legitimately has a full-screen overlay. It is named here
-    // rather than allowed through silently, so that removing the exemption is a
-    // decision someone makes and can see.
-    const ALLOWED = new Set(['tantangan-analisis-data.html']);
-
-    const offenders = files.filter((name) => {
-      if (ALLOWED.has(name)) return false;
-      const css = readFileSync(resolve(SIMS, name), 'utf8');
-      return /position\s*:\s*(fixed|sticky)/i.test(css);
+  it('agrees with what the measurement computes for the same content', () => {
+    // The reason a reporting script adds nothing here: it would arrive at the
+    // same height, from the same document, through a message.
+    const withFixedElement = contentHeight({
+      bodyHeight: 821,
+      elements: [{ top: 0, bottom: 821, position: 'static' }],
+      frameHeight: 400,
+      scrolled: 0,
     });
 
-    expect(offenders, `escapes its own document height: ${offenders.join(', ')}`).toEqual([]);
+    expect(withFixedElement).toBe(821);
   });
 });

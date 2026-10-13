@@ -51,40 +51,61 @@ now cover the geometry, all confirmed to fail when the property they guard is
 removed, and the frame's height was checked against its content across four
 viewport widths and three simulations in a browser.
 
-## Why no height-reporting script, reconsidered
+## Why no height-reporting script, reconsidered twice
 
 The obvious way to size a frame is to ask the child: the simulation posts its
-height to the parent, which sets the frame to match. This was rejected because
-the tool that writes the simulations instructs them not to speak to a parent at
-all — `STANDALONE-OVERRIDES.md` strips every `postMessage` requirement, on the
-grounds that these pages have no parent and no score channel.
+height to the parent, which sets the frame to match. That was rejected on the
+grounds that the tool which writes the simulations instructs them not to speak to
+a parent at all, so a reporting script would contradict its contract.
 
-That reason was wrong when first written, and the tool owner has since made
-clear the tool is theirs to adjust. So the objection was re-examined on the
-merits, and the answer did not change, but for a different reason.
+That reason does not hold. `STANDALONE-OVERRIDES.md` describes what these pages
+assume — no state channel, no score channel — and its owner is free to change it.
+A line added to a template that already tells generated pages to use a
+`ResizeObserver` is cheap, and the tool can be regenerated at will. Cost was
+never the deciding factor here.
 
-What decided it is not cost. Adding a script to the tool is one line in a
-template that already tells generated pages to use a `ResizeObserver`, and the
-tool can be regenerated at will. What decided it is failure. The parent
-measures unconditionally, on every load, for every simulation, including the 23
-already published; a reporting protocol only helps simulations rebuilt since it
-was added, and a simulation that never sends a message leaves the frame at its
-fallback with nothing in the log. The parent-side measurement cannot be
-forgotten, because there is nothing to opt into.
+The decision survives anyway, on a measurement rather than a rule.
 
-The limit is real and worth stating: element bounds do not describe painted
-pixels, so content drawn outside its box — a canvas, a fixed full-screen panel —
-is invisible to this measurement. Measured across the current batch, no
-simulation is affected. The 8 that use a canvas all size it from its container,
-and the one with a full-screen `position: fixed` overlay sits at exactly the
-content height, so excluding it changes nothing today. That is a property of
-these 23 files, not a guarantee, which is why the constraint is now enforced at
-the source: the tool's Quality Checklist requires every page to fit inside its
-own document height, and `STANDALONE-OVERRIDES.md` explains why a framed host
-needs it.
+A reporting child has to choose what to send, and the obvious choice sends the
+fault this project just spent a commit fixing. Reading a simulation's document
+height while the frame is resized, by setting the frame to 200, 400, 821, 1116
+and 1500px and reading `documentElement.scrollHeight` each time:
 
-So the requirement is written down where the files are generated, rather than
-discovered here later as a frame that is quietly too short.
+| frame set to | `documentElement.scrollHeight` | `body.scrollHeight` |
+|---|---|---|
+| 200px | 821 | 821 |
+| 400px | 821 | 821 |
+| 821px | 821 | 821 |
+| 1116px | **1114** | 821 |
+| 1500px | **1498** | 821 |
+
+A document stretched to a container larger than its content reports the
+container's height, so `documentElement.scrollHeight` tracks the frame upward
+and a parent that trusted it would grow the frame a little further on every
+measurement — 1116, then 1114, converging on the window. That is the same
+feedback loop that made the frame report 1116px for 821px of content.
+
+`body.scrollHeight` is stable at the content height in every row, so a script
+*could* report it and be correct. But note what that reports: the height of the
+body. Element bounds measure the same thing, from the parent, with no protocol,
+no message, and nothing that can be forgotten. The measurement has to know the
+frame's own height anyway to add back how far the simulation has been scrolled,
+so it already reads the document — the reporting version reads more of it and
+arrives at the same number.
+
+So the deciding factor is not the tool's rule and not the cost. It is that the
+child has nothing to report that the parent cannot already measure, and the
+obvious thing for it to report is wrong.
+
+The real limit of the current approach is stated rather than assumed: element
+bounds do not describe painted pixels, so content drawn outside its box — a
+canvas, a fixed full-screen panel — is invisible to it. Measured across the
+batch, no simulation is affected. The 8 that use a canvas all size it from its
+container, and the one full-screen fixed overlay sits exactly at the content
+height, so excluding it changes nothing today. That is a property of these 23
+files, not a guarantee, and it is the one case where a reporting script would
+genuinely win: a child that could measure its own painted area has information
+the parent cannot reach.
 
 ## Isolation, measured rather than assumed
 
