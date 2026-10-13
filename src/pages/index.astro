@@ -1,8 +1,18 @@
 ---
 import Base from '../layouts/Base.astro';
+import { simulasiUrl } from '../lib/catalog';
 import { loadCatalog } from '../lib/loadCatalog';
+import { subjectLabel } from '../lib/katalogFilter';
+import { homeBatch, homeClassSections, homeStages } from '../lib/home';
 
-const catalog = await loadCatalog();
+// The Katalog is the whole catalog, always. The home page is an entrance into
+// it, so it reads the same data rather than a filtered copy that could disagree.
+const catalog = (await loadCatalog()).map(({ fileLevel: _fileLevel, ...entry }) => entry);
+
+const batch = homeBatch(catalog);
+const classes = homeClassSections(catalog);
+const stages = homeStages(catalog);
+const total = catalog.length;
 ---
 
 <Base
@@ -13,27 +23,100 @@ const catalog = await loadCatalog();
     <h1>Simula</h1>
 
     <p class="lead">
-      Katalog simulasi pembelajaran interaktif untuk murid dan guru. Setiap simulasi
-      dapat langsung dibuka di peramban tanpa memasang aplikasi apa pun.
+      Simula menyimpan simulasi pembelajaran yang bisa langsung dibuka di peramban.
+      Setiap simulasi berjalan seperti exercise biasa: murid mengubah angka atau
+      menggerakkan titik, lalu langsung melihat hasilnya, tanpa memasang aplikasi
+      apa pun.
     </p>
 
     {
-      catalog.length === 0 ? (
+      total === 0 ? (
         <p class="status">
           Katalog ini sedang disiapkan. Belum ada simulasi yang dipublikasikan;
           simulasinya akan segera hadir.
         </p>
       ) : (
         <p class="status">
-          {catalog.length} simulasi sudah tersedia, disusun per tingkat dan kelas.
+          Saat ini ada <strong>{total} simulasi</strong>, disusun sesuai urutan materi
+          setiap kelas.
         </p>
       )
     }
 
-    <p class="katalog-link">
-      <a href="/katalog/">Lihat seluruh simulasi di Katalog</a>, atau saring
-      menurut tingkat, kelas, dan mata pelajaran.
-    </p>
+    <!-- Both sections are built from the catalog, so a site with nothing in it
+         renders neither rather than a heading over an empty list. -->
+    {
+      batch.length > 0 && (
+        <section class="batch" aria-labelledby="batch-heading">
+          <h2 id="batch-heading">Mulailah dari sini</h2>
+          <p class="section-lead">
+            Simulasi yang sedang dipakai di kelas, dari materi paling akhir.
+          </p>
+          <ul class="cards">
+            {batch.map((entry) => (
+              <li class="card">
+                <h3>
+                  <a href={simulasiUrl(entry)}>{entry.title}</a>
+                </h3>
+                <p class="card-meta">
+                  Kelas {entry.grade} · {subjectLabel(entry.subject)}
+                </p>
+                <p class="card-description">{entry.description}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    {
+      stages.length > 0 && (
+        <nav class="stages" aria-labelledby="stages-heading">
+          <h2 id="stages-heading">Telusuri per tingkat</h2>
+          <ul class="stage-list">
+            {stages.map((stage) => (
+              <li>
+                <a href={stage.path}>{stage.label}</a>{' '}
+                <span class="stage-count">{stage.count} simulasi</span>
+              </li>
+            ))}
+          </ul>
+          <p class="stage-more">
+            <a href="/katalog/">Lihat seluruh simulasi di Katalog</a>, atau saring
+            menurut tingkat, kelas, dan mata pelajaran.
+          </p>
+        </nav>
+      )
+    }
+
+    {
+      classes.map((section) => (
+        <section class="kelas" aria-labelledby={`kelas-${section.key.replace('/', '-')}`}>
+          <h2 id={`kelas-${section.key.replace('/', '-')}`}>{section.label}</h2>
+          <ul class="cards">
+            {section.simulations.map((entry) => (
+              <li class="card">
+                <h3>
+                  <a href={simulasiUrl(entry)}>{entry.title}</a>
+                </h3>
+                <p class="card-description">{entry.description}</p>
+              </li>
+            ))}
+          </ul>
+          <p class="kelas-more">
+            <a href={section.path}>Lihat {section.total} simulasi di {section.label}</a>
+          </p>
+        </section>
+      ))
+    }
+
+    {
+      total === 0 && (
+        <p class="katalog-link">
+          <a href="/katalog/">Lihat seluruh simulasi di Katalog</a>.
+        </p>
+      )
+    }
   </main>
 </Base>
 
@@ -42,6 +125,12 @@ const catalog = await loadCatalog();
     font-size: 2rem;
     font-weight: 600;
     margin: 0 0 16px;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 4px;
   }
 
   .lead {
@@ -58,12 +147,97 @@ const catalog = await loadCatalog();
     background: #1b1b1b;
   }
 
+  .section-lead {
+    margin: 0 0 16px;
+    color: #9a9a9a;
+    font-size: 0.9375rem;
+  }
+
+  .batch,
+  .kelas {
+    margin-top: 48px;
+  }
+
+  .cards {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .card {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    background: #1b1b1b;
+    padding: 16px;
+  }
+
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 6px;
+  }
+
+  .card a {
+    color: #cfe3ff;
+  }
+
+  .card-meta {
+    margin: 0 0 8px;
+    color: #9a9a9a;
+    font-size: 0.8125rem;
+  }
+
+  .card-description {
+    margin: 0;
+    color: #c8c8c8;
+    font-size: 0.9375rem;
+  }
+
+  .stages {
+    margin-top: 48px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    background: #1b1b1b;
+    padding: 20px;
+  }
+
+  .stage-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 28px;
+    list-style: none;
+    margin: 12px 0 16px;
+    padding: 0;
+  }
+
+  .stage-list a,
+  .stage-more a,
+  .kelas-more a,
+  .katalog-link a {
+    color: #cfe3ff;
+  }
+
+  .stage-count {
+    color: #9a9a9a;
+    font-size: 0.875rem;
+  }
+
+  .stage-more,
+  .kelas-more {
+    margin: 0;
+    color: #9a9a9a;
+    font-size: 0.9375rem;
+  }
+
+  .kelas-more {
+    margin-top: 16px;
+  }
+
   .katalog-link {
     margin-top: 24px;
     font-size: 1rem;
-  }
-
-  .katalog-link a {
-    color: #cfe3ff;
   }
 </style>
