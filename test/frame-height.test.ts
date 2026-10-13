@@ -1,3 +1,5 @@
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { contentHeight } from '../src/lib/frame';
 
@@ -175,5 +177,56 @@ describe('contentHeight', () => {
     });
 
     expect(measured).toBe(500);
+  });
+});
+describe('the tool is told what a framing host can measure', () => {
+  // The frame is sized from the bounding boxes of the simulation's elements, so
+  // content that escapes them is content the frame cannot account for. That is a
+  // property of the published files, not of this site, and this site never edits
+  // them (docs/adr/0005). So the requirement is enforced where the files are
+  // written, and these tests are here to notice if that stops being true.
+
+  const TOOL = resolve(process.cwd(), '../simula-w/.omp/skills/widget-page');
+  const SIMS = resolve(process.cwd(), 'example-simulations/lower-secondary/grade-7');
+
+  it('asks the tool for pages that fit inside their own height', () => {
+    // The tool is a separate checkout and may be absent — a reader checking out
+    // this site alone still gets a working build. Skipped rather than failed,
+    // because the site does not depend on the tool being present.
+    if (!existsSync(TOOL)) return;
+    const checklist = readFileSync(resolve(TOOL, 'templates/simulation-system.md'), 'utf8');
+    expect(checklist).toMatch(/fits inside the document's own height/i);
+  });
+
+  it('explains the reason next to the rule that forbids a parent', () => {
+    // The no-parent rule reads as "these pages are never displayed inside
+    // another page", which is what made the constraint look contradictory. The
+    // reason has to sit there or the next reader repeats the same mistake.
+    if (!existsSync(TOOL)) return;
+    const overrides = readFileSync(resolve(TOOL, 'STANDALONE-OVERRIDES.md'), 'utf8');
+    expect(overrides).toMatch(/position: fixed/i);
+    expect(overrides).toMatch(/iframe/i);
+  });
+
+  it('finds no simulation whose content escapes the frame', () => {
+    // Checked as source text because that is all a test can see without a
+    // browser. A full-screen fixed panel is the failure this exists to catch: it
+    // is sized to the viewport, so counting it would make the frame as tall as
+    // the window.
+    const files = readdirSync(SIMS).filter((name) => name.endsWith('.html'));
+    expect(files.length).toBeGreaterThan(0);
+
+    // One simulation legitimately has a full-screen overlay. It is named here
+    // rather than allowed through silently, so that removing the exemption is a
+    // decision someone makes and can see.
+    const ALLOWED = new Set(['tantangan-analisis-data.html']);
+
+    const offenders = files.filter((name) => {
+      if (ALLOWED.has(name)) return false;
+      const css = readFileSync(resolve(SIMS, name), 'utf8');
+      return /position\s*:\s*(fixed|sticky)/i.test(css);
+    });
+
+    expect(offenders, `escapes its own document height: ${offenders.join(', ')}`).toEqual([]);
   });
 });

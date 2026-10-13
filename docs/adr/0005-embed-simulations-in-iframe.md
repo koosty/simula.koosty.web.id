@@ -51,6 +51,41 @@ now cover the geometry, all confirmed to fail when the property they guard is
 removed, and the frame's height was checked against its content across four
 viewport widths and three simulations in a browser.
 
+## Why no height-reporting script, reconsidered
+
+The obvious way to size a frame is to ask the child: the simulation posts its
+height to the parent, which sets the frame to match. This was rejected because
+the tool that writes the simulations instructs them not to speak to a parent at
+all — `STANDALONE-OVERRIDES.md` strips every `postMessage` requirement, on the
+grounds that these pages have no parent and no score channel.
+
+That reason was wrong when first written, and the tool owner has since made
+clear the tool is theirs to adjust. So the objection was re-examined on the
+merits, and the answer did not change, but for a different reason.
+
+What decided it is not cost. Adding a script to the tool is one line in a
+template that already tells generated pages to use a `ResizeObserver`, and the
+tool can be regenerated at will. What decided it is failure. The parent
+measures unconditionally, on every load, for every simulation, including the 23
+already published; a reporting protocol only helps simulations rebuilt since it
+was added, and a simulation that never sends a message leaves the frame at its
+fallback with nothing in the log. The parent-side measurement cannot be
+forgotten, because there is nothing to opt into.
+
+The limit is real and worth stating: element bounds do not describe painted
+pixels, so content drawn outside its box — a canvas, a fixed full-screen panel —
+is invisible to this measurement. Measured across the current batch, no
+simulation is affected. The 8 that use a canvas all size it from its container,
+and the one with a full-screen `position: fixed` overlay sits at exactly the
+content height, so excluding it changes nothing today. That is a property of
+these 23 files, not a guarantee, which is why the constraint is now enforced at
+the source: the tool's Quality Checklist requires every page to fit inside its
+own document height, and `STANDALONE-OVERRIDES.md` explains why a framed host
+needs it.
+
+So the requirement is written down where the files are generated, rather than
+discovered here later as a frame that is quietly too short.
+
 ## Isolation, measured rather than assumed
 
 A frame's styles are isolated from the host page: measured in a browser, a
