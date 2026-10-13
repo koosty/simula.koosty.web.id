@@ -3,6 +3,7 @@ import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { resolve, sep as pathSep } from 'node:path';
 import { parse } from 'yaml';
 import { landingPages, landingPath } from '../src/lib/landing';
+import { sheetPages } from '../src/lib/sheet';
 import type { CatalogEntry } from '../src/lib/types';
 
 const ROOT = resolve(import.meta.dirname, '..');
@@ -24,6 +25,9 @@ const CATALOG: CatalogEntry[] = readdirSync(CATALOG_DIR)
   });
 
 const PAGES = landingPages(CATALOG);
+
+/** Where the printable sheets are served, as dist/ reports them. */
+const SHEET_PATHS = new Set(sheetPages(CATALOG).map((sheet) => `${sheet.path}index.html`));
 
 /**
  * The addresses the catalog alone calls for, worked out without landing.ts.
@@ -79,7 +83,14 @@ describe('the set of landing pages follows the catalog', () => {
           name !== 'sitemap/index.html' &&
           !name.startsWith('simulasi/') &&
           // A simulation page is four segments deep; a landing page is one or two.
-          !/^smp\/kelas-\d+\/\w+\/[^/]+\/index\.html$/.test(name),
+          !/^smp\/kelas-\d+\/\w+\/[^/]+\/index\.html$/.test(name) &&
+          // A printable sheet sits under a class page. It is built from the
+          // catalog too, but by the sheet route, and whether it follows the
+          // catalog is the sheet's own test to answer. The addresses come
+          // from the sheet module rather than a path pattern written out
+          // here, so a segment renamed in one place does not quietly match
+          // nothing in the other.
+          !SHEET_PATHS.has(`/${name}`),
       );
     expect(built.length).toBeGreaterThan(0);
     for (const name of built) {

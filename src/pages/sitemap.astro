@@ -1,11 +1,11 @@
 ---
 import Base from '../layouts/Base.astro';
 import { simulasiUrl } from '../lib/catalog';
-import { loadCatalog } from '../lib/loadCatalog';
+import { loadCatalogEntries } from '../lib/loadCatalog';
 import { sitemapEntries, SITEMAP_PATH, DEFAULT_SITE, type SitemapEntry } from '../lib/sitemap';
 import { groupByKelas, subjectLabel } from '../lib/katalogFilter';
 
-const catalog = (await loadCatalog()).map(({ fileLevel: _fileLevel, ...entry }) => entry);
+const catalog = await loadCatalogEntries();
 
 const site = String(Astro.site ?? DEFAULT_SITE);
 const entries = sitemapEntries(catalog, site);

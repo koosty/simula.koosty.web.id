@@ -152,7 +152,7 @@ export function landingPageAt(
  * Built from the page's own level and segment rather than read off its first
  * section, so the heading survives a page whose simulations are all gone.
  */
-export function landingHeading(page: LandingPage): string {
+export function landingHeading(page: Pick<LandingPage, 'kind' | 'level' | 'segment'>): string {
   switch (page.kind) {
     case 'tingkat':
       return tingkatLabel(page.level);

@@ -1,0 +1,201 @@
+---
+import Base from '../layouts/Base.astro';
+import { sheetDescription, sheetTitle, type SheetPage } from '../lib/sheet';
+import { kelasSegment, landingHeading, landingPath } from '../lib/landing';
+
+interface Props {
+  page: SheetPage;
+}
+
+const { page } = Astro.props;
+
+// The class page this sheet sits under, so a reader who opened it by mistake
+// can find the interactive version. Both the address and the label come from
+// the landing module, so the sheet cannot name the class differently from the
+// page that lists it.
+const classPath = landingPath(page.level, kelasSegment(page.grade));
+const classLabel = landingHeading({
+  kind: 'kelas',
+  level: page.level,
+  segment: kelasSegment(page.grade),
+});
+---
+
+{/* noindex: the sheet repeats the class page's content at a second address,
+    and two URLs serving the same words split the ranking between them. The
+    sheet is linked from the class page, so it is reachable without being
+    indexed. This is the reasoning ADR 0005 used for the raw simulation files. */}
+<Base title={sheetTitle(page)} description={sheetDescription(page)} noindex={true}>
+  <main class="wrap">
+    <p class="origin">
+      <a href={classPath}>← {classLabel}</a>
+    </p>
+
+    <header>
+      <h1>Daftar Cetak {classLabel}</h1>
+      {/* The count and the ordering are the sheet's job, so they are said once,
+          in the description. What is left here is what the paper cannot state
+          about itself: what to do with it. */}
+      <p class="lead">Cetak halaman ini dan kerjakan bersama-sama dari atas ke bawah.</p>
+    </header>
+
+    <ol class="entries">
+      {
+        page.items.map((item) => (
+          <li class="entry">
+            <h2 class="entry-title">{item.title}</h2>
+            <p class="entry-meta">Mata pelajaran: {item.subject}</p>
+            <p class="entry-description">{item.description}</p>
+            {/* The address is printed as text, not left to the link colour. A
+                teacher holding the paper cannot click it, and a link printed in
+                black-on-white with no underline is a word, not an address. */}
+            <p class="entry-url">
+              <a href={item.url}>{item.url}</a>
+            </p>
+          </li>
+        ))
+      }
+    </ol>
+
+    <footer class="sheet-foot">
+      <p>Simula · simula.koosty.web.id</p>
+    </footer>
+  </main>
+</Base>
+
+<style>
+  /* The sheet is read on paper as often as on a screen, so the layout is built
+     for a sheet of paper first and the screen only inherits it. Nothing here
+     carries meaning in colour alone: the order is a numbered list, the subject
+     is a labelled line, and the address is text. */
+  .wrap {
+    max-width: 720px;
+  }
+
+  .origin {
+    margin: 0 0 24px;
+    font-size: 0.875rem;
+  }
+
+  .origin a {
+    color: #cfe3ff;
+  }
+
+  h1 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+
+  .lead {
+    color: #c8c8c8;
+    max-width: 60ch;
+    margin: 0;
+  }
+
+  /* An ordered list rather than a styled div stack: the browser's own numbers
+     are what a teacher ticks off on the sheet, and they survive being printed
+     in black and white and copied out of sight of the page. */
+  .entries {
+    margin: 28px 0 0;
+    padding-left: 28px;
+    display: grid;
+    gap: 18px;
+  }
+
+  .entry {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .entry-title {
+    margin: 0 0 2px;
+    font-size: 1.0625rem;
+    font-weight: 600;
+  }
+
+  .entry-meta {
+    margin: 0 0 6px;
+    font-size: 0.8125rem;
+    color: #a8a8a8;
+  }
+
+  .entry-description {
+    margin: 0 0 6px;
+    color: #c8c8c8;
+  }
+
+  /* The address is set in a monospace face because it is a URL and is meant to
+     be read character by character when a teacher types it back in. */
+  .entry-url {
+    margin: 0;
+    font-size: 0.8125rem;
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    word-break: break-all;
+  }
+
+  .entry-url a {
+    color: #cfe3ff;
+  }
+
+  .sheet-foot {
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    font-size: 0.8125rem;
+    color: #a8a8a8;
+  }
+
+  .sheet-foot p {
+    margin: 0;
+  }
+
+  /* Printing. The sheet is the one page on this site whose printed form is the
+     point, so everything the reader uses on screen is removed rather than
+     shrunk: the site navigation, and the link back to the class page, which
+     is dead weight on paper. Ink is set to black on white, because a dark
+     background spends a cartridge to print a grey page. */
+  @media print {
+    :global(html) {
+      background: #ffffff;
+      color: #000000;
+    }
+
+    :global(.site-nav),
+    .origin {
+      display: none;
+    }
+
+    h1,
+    .entry-title {
+      color: #000000;
+    }
+
+    .lead,
+    .entry-description {
+      color: #1a1a1a;
+    }
+
+    .entry-meta,
+    .sheet-foot {
+      color: #3a3a3a;
+    }
+
+    .entry-url a {
+      color: #000000;
+      text-decoration: underline;
+    }
+
+    .sheet-foot {
+      border-top-color: #999999;
+    }
+
+    /* Headings repeated by the browser at the top of each page would print
+       "Daftar Cetak SMP Kelas 7" above a continuation the teacher cannot tell
+       from the first. The count and title already appear once, at the top. */
+    .entry-title {
+      break-after: avoid;
+      page-break-after: avoid;
+    }
+  }
+</style>

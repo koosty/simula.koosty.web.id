@@ -1,5 +1,5 @@
 ---
-import { loadCatalog } from '../lib/loadCatalog';
+import { loadCatalogEntries } from '../lib/loadCatalog';
 import { navLinksFor } from '../lib/nav';
 
 interface Props {
@@ -16,7 +16,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 // in each one. The catalog is read again per page rather than cached: Astro
 // already holds the content collection for the build, and a cache here would
 // only add a path that cannot be exercised by a test.
-const catalog = (await loadCatalog()).map(({ fileLevel: _fileLevel, ...entry }) => entry);
+const catalog = await loadCatalogEntries();
 const navLinks = navLinksFor(catalog, Astro.url.pathname);
 ---
 

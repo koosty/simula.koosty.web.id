@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import { simulasiUrl } from '../lib/catalog';
+import { sheetPath } from '../lib/sheet';
 import { landingDescription, landingHeading, landingTitle, type LandingPage } from '../lib/landing';
 import { subjectLabel } from '../lib/katalogFilter';
 import { tingkatLabel } from '../lib/tingkat';
@@ -20,6 +21,11 @@ const subjectSiblings = siblings.filter((sibling) => sibling.kind === 'mataPelaj
 // links beside this page are grouped by what they lead to rather than listed as
 // one run the reader has to sort out.
 const stagePath = `/${page.level}/`;
+
+// The address of this class's printable sheet, built by the same module the
+// sheet route uses. Concatenating a segment onto the page path here would leave
+// one callsite that a renamed segment silently breaks.
+const sheetHref = page.kind === 'kelas' ? sheetPath(page.level, page.segment) : null;
 ---
 
 <Base title={landingTitle(page)} description={landingDescription(page)}>
@@ -40,6 +46,15 @@ const stagePath = `/${page.level}/`;
     </nav>
 
     <h1>{landingHeading(page)}</h1>
+    {
+      /* Only a class has a sheet. A stage or a subject page has no one term's
+         list to print, so it offers nothing here. */
+      sheetHref && (
+        <p class="sheet-link">
+          <a href={sheetHref}>Daftar cetak — satu daftar per semester, untuk dikerjakan bersama di kelas</a>
+        </p>
+      )
+    }
     <p class="lead">{landingDescription(page)}</p>
 
     {
@@ -134,6 +149,14 @@ const stagePath = `/${page.level}/`;
     color: #c8c8c8;
     max-width: 60ch;
     margin-top: 0;
+  }
+
+  .sheet-link {
+    margin: 0 0 16px;
+  }
+
+  .sheet-link a {
+    color: #cfe3ff;
   }
 
   .kelas {

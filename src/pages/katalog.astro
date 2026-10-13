@@ -1,7 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import { simulasiUrl } from '../lib/catalog';
-import { loadCatalog } from '../lib/loadCatalog';
+import { loadCatalogEntries } from '../lib/loadCatalog';
 import { buildFilterFields, groupByKelas, subjectLabel } from '../lib/katalogFilter';
 import { landingHeading, landingPages } from '../lib/landing';
 import { tingkatLabel } from '../lib/tingkat';
@@ -12,7 +12,7 @@ import type { CatalogEntry } from '../lib/types';
 // what lets the page work with scripting unavailable. Display order is applied
 // by groupByKelas below, which owns it; sorting here as well would be a second
 // pass over the same data that could disagree with it.
-const catalog = (await loadCatalog()).map(({ fileLevel: _fileLevel, ...entry }) => entry);
+const catalog = await loadCatalogEntries();
 
 const filterFields = buildFilterFields(catalog);
 

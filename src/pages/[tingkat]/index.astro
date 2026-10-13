@@ -1,15 +1,14 @@
 ---
 import type { GetStaticPaths } from 'astro';
 import LandingPage from '../../components/LandingPage.astro';
-import { loadCatalog } from '../../lib/loadCatalog';
+import { loadCatalogEntries } from '../../lib/loadCatalog';
 import { landingPages, type LandingPage as LandingPageData } from '../../lib/landing';
 
 // Every stage the catalog names gets a page. There is no list to maintain: a
 // stage appears here because a simulation was catalogued under it, so adding a
 // simulation for a new stage adds this page with no other change.
 export const getStaticPaths = (async () => {
-  const items = await loadCatalog();
-  const catalog = items.map(({ fileLevel: _fileLevel, ...entry }) => entry);
+  const catalog = await loadCatalogEntries();
   const pages = landingPages(catalog);
 
   return pages

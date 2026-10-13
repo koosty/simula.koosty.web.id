@@ -1,0 +1,28 @@
+---
+import type { GetStaticPaths } from 'astro';
+import Sheet from "../../../../components/Sheet.astro";
+import { loadCatalogEntries } from '../../../../lib/loadCatalog';
+import { sheetPages, type SheetPage } from '../../../../lib/sheet';
+import { kelasSegment } from '../../../../lib/landing';
+
+// A sheet lives one segment below a class page, so this route sits under the
+// same [tingkat]/[segmen] pair the landing route uses. Only classes get a
+// sheet, so the paths come from sheetPages rather than from landingPages: a
+// subject segment reaches the pair above this one and must not get a sheet
+// listing every subject's simulations as though it were a class.
+export const getStaticPaths = (async () => {
+  const catalog = await loadCatalogEntries();
+
+  return sheetPages(catalog).map((page) => ({
+    // The class segment comes from the same helper the catalog labels use, so
+    // this route cannot answer at one class address while the rest of the site
+    // calls the same class something else.
+    params: { tingkat: page.level, segmen: kelasSegment(page.grade) },
+    props: { page },
+  }));
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props as { page: SheetPage };
+---
+
+<Sheet {page} />

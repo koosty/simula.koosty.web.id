@@ -33,7 +33,32 @@ function addressOf(path: string): string {
   return `https://simula.koosty.web.id${path}`;
 }
 
-/** Every page the build emits, excluding the raw simulation files. */
+/**
+ * Whether a page asks a crawler to leave it alone.
+ *
+ * The name and the content are read separately, so this keeps working if the
+ * attributes are ever written in another order or the content gains a space. An
+ * exact substring match on the whole tag would quietly stop matching after
+ * such a change, and every noindex page would then be expected in the sitemap.
+ */
+function asksNotToBeIndexed(html: string): boolean {
+  return [...html.matchAll(/<meta\b[^>]*>/g)]
+    .map((m) => m[0])
+    .some((tag) => {
+      const isRobots = /\bname=["']robots["']/.test(tag);
+      const content = tag.match(/\bcontent=["']([^"']*)["']/)?.[1];
+      return isRobots && content?.toLowerCase().includes('noindex') === true;
+    });
+}
+
+/**
+ * Every page the build emits that a crawler is allowed to see: not the raw
+ * simulation files, and not a page that asks not to be indexed.
+ *
+ * The noindex pages are read out of the markup rather than matched by name,
+ * because a page that asks not to be indexed and still appears in the sitemap
+ * is a contradiction, and a path list would have to be kept in step by hand.
+ */
 function servedPaths(): string[] {
   const paths: string[] = [];
   const walk = (dir: string): void => {
@@ -42,6 +67,7 @@ function servedPaths(): string[] {
       const full = resolve(dir, entry);
       if (statSync(full).isDirectory()) walk(full);
       else if (entry === 'index.html') {
+        if (asksNotToBeIndexed(readFileSync(full, 'utf8'))) continue;
         const rel = relative(DIST, dir).replace(/\\/g, '/');
         paths.push(rel === '' ? '/' : `/${rel}/`);
       }

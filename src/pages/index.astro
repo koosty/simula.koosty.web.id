@@ -1,13 +1,13 @@
 ---
 import Base from '../layouts/Base.astro';
 import { simulasiUrl } from '../lib/catalog';
-import { loadCatalog } from '../lib/loadCatalog';
+import { loadCatalogEntries } from '../lib/loadCatalog';
 import { subjectLabel } from '../lib/katalogFilter';
 import { homeBatch, homeClassSections, homeStages } from '../lib/home';
 
 // The Katalog is the whole catalog, always. The home page is an entrance into
 // it, so it reads the same data rather than a filtered copy that could disagree.
-const catalog = (await loadCatalog()).map(({ fileLevel: _fileLevel, ...entry }) => entry);
+const catalog = await loadCatalogEntries();
 
 const batch = homeBatch(catalog);
 const classes = homeClassSections(catalog);

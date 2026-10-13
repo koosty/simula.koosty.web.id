@@ -1,0 +1,13 @@
+# A printable sheet under each class page, kept out of the search index
+
+Each class page is joined by a printable sheet at `/smp/kelas-7/cetak/`: every simulation that class has, numbered, with its title, Mata Pelajaran, description and address, in the order the material is taught. It is the one thing the site offers that a search box cannot give — the whole term's list on one page, in order, on a sheet of paper.
+
+The sheet sits **under** the class page rather than beside it, at the top level, or at an address named after printing. A teacher who has the class page open has the sheet one click away, and the sheet is never mistaken for the class page itself. The segment is `cetak` because every other segment in a URL here is Indonesian (ADR 0003) and a teacher looking for it types what they would say for it.
+
+The sheet is **noindex and absent from the sitemap**. It repeats the class page's content — the same titles, the same descriptions, the same order — at a second address, and two URLs serving the same words split the ranking between them and leave a searcher with a choice to make between identical results. This is the reasoning ADR 0005 applied to the raw simulation files, and it applies here for the same reason. The sheet is linked from the class page, so it stays reachable; it is a print tool, not a search target. The sitemap's coverage test reads the noindex flag out of the built markup rather than keeping a list of excluded paths, because a page that asks not to be indexed and still appears in the sitemap is a contradiction.
+
+Only classes get a sheet. A stage page or a subject page has no single term's list to print, and a sheet listing every simulation of a subject as though it were one class would read as a promise the page cannot keep. A class with no simulations gets no sheet either: an empty sheet is a page a teacher prints, finds blank, and reads as a broken site.
+
+The sheet prints black on white with no hue in the print rules at all, because nothing on it is distinguished by colour: the order is an ordered list's own numbers, the Mata Pelajaran is a labelled line, and the address is underlined text as well as a link, so it still reads as an address to a teacher holding the paper who cannot click it. Printing a dark page spends a cartridge to produce a grey one.
+
+A printed sheet was considered and rejected in favour of a downloadable PDF, because the catalog holds nothing a reader could open the file with: a teacher wanting paper is served paper by the same browser that has the catalog, with no build step between them and no file to keep track of.

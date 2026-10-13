@@ -88,3 +88,15 @@ export async function loadCatalog(): Promise<CatalogItem[]> {
     fileLevel: fileLevels[`${entry.slug}.html`],
   }));
 }
+
+/**
+ * The catalog as the pages want it: the authored entries, without the build-only
+ * level.
+ *
+ * Pages that have no use for the folder a simulation file came from should not
+ * each repeat the destructure that drops it, because a second build-only field
+ * would then mean editing every one of them.
+ */
+export async function loadCatalogEntries(): Promise<CatalogEntry[]> {
+  return (await loadCatalog()).map(({ fileLevel: _fileLevel, ...entry }) => entry);
+}

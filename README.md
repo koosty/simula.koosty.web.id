@@ -120,6 +120,17 @@ commit and push it by hand instead.
 The script never commits or pushes. Whoever runs it decides what goes into
 git — a hook on another host may do that part itself.
 
+## Printing a class's list
+
+Every class page carries a printable sheet at `/smp/kelas-7/cetak/`: the whole
+term's simulations in syllabus order, numbered, with title, Mata Pelajaran,
+description and address. Open the sheet and use the browser's own print
+dialog — it needs no settings changed, because the page already prints black on
+white without the site navigation.
+
+The sheet is `noindex` and is not listed in the sitemap, since it repeats the
+class page's content at a second address. See `docs/adr/0008`.
+
 ## Current status
 
 The site builds and the home page has been verified in a browser, but **the site

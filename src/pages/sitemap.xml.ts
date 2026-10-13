@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { loadCatalog } from '../lib/loadCatalog';
+import { loadCatalogEntries } from '../lib/loadCatalog';
 import { renderSitemapXml, DEFAULT_SITE } from '../lib/sitemap';
 
 /**
@@ -13,7 +13,7 @@ import { renderSitemapXml, DEFAULT_SITE } from '../lib/sitemap';
  * A static endpoint needs no parameters, so Astro emits it once at the root.
  */
 export const GET: APIRoute = async ({ site }) => {
-  const catalog = (await loadCatalog()).map(({ fileLevel: _fileLevel, ...entry }) => entry);
+  const catalog = await loadCatalogEntries();
   const body = renderSitemapXml(catalog, String(site ?? DEFAULT_SITE));
 
   return new Response(body, {

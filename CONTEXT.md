@@ -35,3 +35,7 @@ _Avoid_: topic, chapter, unit, learning objective
 **Slug**:
 The Bahasa Indonesia URL segment for a simulation, derived from its title. The simulation file is named after it, so the slug and the filename are the same thing.
 _Avoid_: permalink segment
+
+**Daftar Cetak**:
+The printable list of every simulation one Kelas has, in teaching order, at `/smp/kelas-7/cetak/`. Meant for paper: it prints black on white, without the site navigation, and each entry shows its address as text so a teacher holding the sheet can type it back in.
+_Avoid_: handout, worksheet, print view, PDF
