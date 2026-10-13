@@ -27,7 +27,7 @@ function requestTo(urlPath: string): string | null {
  * from the real batch when a file the batch happens not to contain exists.
  *
  * Nothing here writes to example-simulations: those files are the tool's output
- * and this site never edits them (docs/adr/0005).
+ * and this site does not reshape them (docs/adr/0005).
  */
 function fixtureWith(...files: string[]): string {
   const root = mkdtempSync(join(tmpdir(), 'simulasi-'));

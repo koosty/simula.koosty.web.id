@@ -327,9 +327,13 @@ describe('the palette on paper', () => {
 describe('no simulation file was touched to make the chrome match', () => {
   it('leaves every simulation still declaring the palette the chrome copied', () => {
     // The whole point of this ticket is that the chrome moved to the
-    // simulations, not the other way round. The site never edits a simulation's
-    // contents (docs/adr/0005), and a palette match achieved by editing them
-    // would break that and every link to the file behind them.
+    // simulations, not the other way round. A palette match achieved by editing
+    // them would break that and every link to the file behind them.
+    //
+    // This is about the palette specifically. A simulation that is broken on
+    // its own terms does get fixed — the boundary is intent, not provenance
+    // (docs/adr/0005): nothing is reshaped to suit the site, but a defect a
+    // reader can see is fixed in the file it lives in.
     const dir = resolve(import.meta.dirname, '..', 'example-simulations/lower-secondary/grade-7');
     const files = readdirSync(dir).filter((name) => name.endsWith('.html'));
     expect(files.length).toBeGreaterThan(0);
@@ -424,5 +428,108 @@ describe('everything the reader can perceive is in Bahasa Indonesia', () => {
       const withoutName = title.replace(/\s*·\s*Simula\s*$/, '');
       expect(english.test(withoutName), `${path}: ${title}`).toBe(false);
     }
+  });
+});
+
+describe('a canvas bitmap is at least as wide as the box it is drawn into', () => {
+  // Found by measurement, not by reading the code: this simulation's drawing
+  // reached only the left 42% of its canvas and the rest appeared cut off.
+  //
+  // `canvas { width: 100% }` sizes the *box*, while the bitmap behind it keeps
+  // whatever the element says — and a <canvas> with a height but no width
+  // defaults to a 300px-wide bitmap. So the drawing code measured the box
+  // (554px), laid the figures out for 554px, and drew them into 300 pixels of
+  // bitmap; everything past x=300 was discarded. The upscale then made it look
+  // soft rather than obviously wrong.
+  //
+  // Read from the source because that is all a test can see without a browser.
+  // The browser check that backs this up lives in the commit message: the
+  // painted extent went from 232px of CSS width to 534px in a 554px box.
+  const SIMS = resolve(import.meta.dirname, '..', 'example-simulations/lower-secondary/grade-7');
+
+  it('never sizes a canvas from CSS alone', () => {
+    // The rule for every canvas in the batch: if it is stretched to fill its
+    // container, something has to set the bitmap to match, or the drawing is
+    // silently clipped. A canvas the tool never touches is left alone.
+    const offenders: string[] = [];
+
+    for (const name of readdirSync(SIMS)) {
+      if (!name.endsWith('.html')) continue;
+      const html = readFileSync(resolve(SIMS, name), 'utf8');
+      const canvasRule = html.match(/(?:^|[}\s])canvas\s*(?:,[^{]*)?\{([^}]*)\}/);
+      if (!canvasRule) continue;
+      if (!/width\s*:\s*(100%|100vw)/.test(canvasRule[1])) continue;
+      if (!/canvas\.width\s*=/.test(html) && !/\.width\s*=\s*Math\.round/.test(html)) {
+        offenders.push(name);
+      }
+    }
+
+    expect(offenders, `canvas stretched with no bitmap sizing: ${offenders.join(', ')}`).toEqual([]);
+  });
+
+  it('sets every stretched canvas bitmap from the box it is drawn into', () => {
+    // The specific shape of the fault: a canvas element carrying a height but
+    // no width starts from the HTML default of 300px, while the CSS stretches
+    // the box to fill the column. The two disagree, and any drawing laid out
+    // for the box is cut off at the bitmap's edge.
+    //
+    // The bitmap may be set by a width attribute or from script — two of the
+    // batch do the latter — so what is required is that the bitmap ends up
+    // matching the box, not that a particular line exists. Measured in a
+    // browser, all three of these hold their bitmap to their client width.
+    const offenders: string[] = [];
+
+    for (const name of readdirSync(SIMS)) {
+      if (!name.endsWith('.html')) continue;
+      const html = readFileSync(resolve(SIMS, name), 'utf8');
+      const script = Array.from(html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))
+        .map((m) => m[1])
+        .join('\n');
+      const sizesBitmap = /\.width\s*=\s*(?!\s*\d)/.test(script)
+        || /canvas\.width\s*=/.test(script)
+        || Array.from(html.matchAll(/<canvas\b[^>]*>/g)).every((t) => /\bwidth\s*=/.test(t[0]));
+
+      for (const tag of html.match(/<canvas\b[^>]*>/g) ?? []) {
+        if (/\bwidth\s*=/.test(tag)) continue;
+        const id = tag.match(/\bid\s*=\s*["']([^"']+)["']/)?.[1];
+        const stretches = id
+          ? new RegExp(`${id}\\s*(?:,[^{]*)?\\{[^}]*width\\s*:\\s*(?:100%|100vw)`).test(html)
+          : false;
+        if (stretches && !sizesBitmap) offenders.push(`${name} (${id})`);
+      }
+    }
+
+    expect(offenders, `canvas stretched without a bitmap to match: ${offenders.join(', ')}`)
+      .toEqual([]);
+  });
+
+  it('resizes this simulation\'s bitmap from its own box', () => {
+    const html = readFileSync(resolve(SIMS, 'menemukan-pola-dari-susunan-benda.html'), 'utf8');
+
+    // Both halves of the fix: the bitmap follows the box, and the context is
+    // scaled to match so the drawing is not squashed.
+    expect(html).toMatch(/canvas\.width\s*=\s*pixelW/);
+    expect(html).toMatch(/canvas\.height\s*=\s*pixelH/);
+    expect(html).toMatch(/ctx\.setTransform\(dpr,\s*0,\s*0,\s*dpr,\s*0,\s*0\)/);
+
+    // The bitmap is written before the drawing maths runs. In the original the
+    // first statement read canvas.clientWidth, which is exactly the value that
+    // disagreed with the bitmap.
+    // Before the drawing maths, not merely somewhere in the function: the whole
+    // fault was the layout reading a width the bitmap did not have yet.
+    // Reading the box comes first — there is nothing to size the bitmap from
+    // until you have measured it. What has to come before everything else is the
+    // layout that consumes the measurement.
+    const draw = html.slice(html.indexOf('function draw()'));
+    const sized = draw.indexOf('canvas.width = pixelW');
+    expect(sized).toBeLessThan(draw.indexOf('ctx.clearRect'));
+    expect(sized, 'the figures are laid out before the bitmap matches them')
+      .toBeLessThan(draw.indexOf('figureLayout(W,'));
+
+    // And the box itself: without a CSS height the bitmap and the box disagree
+    // again, so the guard above would stop firing and the bug would return.
+    const css = html.match(/(?:^|[}\s])canvas\s*(?:,[^{]*)?\{([^}]*)\}/);
+    expect(css?.[1], 'canvas rule not found').toMatch(/width\s*:\s*100%/);
+    expect(css?.[1]).toMatch(/height\s*:\s*300px/);
   });
 });

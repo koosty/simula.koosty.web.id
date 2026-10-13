@@ -3,7 +3,8 @@
 A static, Bahasa Indonesia catalogue of interactive learning simulations.
 
 Simulations are produced by an external tool as self-contained HTML files and are
-copied into the site verbatim. This repository never edits their contents. See
+copied into the site verbatim. This repository does not reshape them to suit the
+site, though a simulation that is broken on its own terms is fixed in place. See
 `CONTEXT.md` for the domain vocabulary and `docs/adr/` for the decisions behind the
 site's shape.
 
@@ -31,7 +32,7 @@ Linting is ESLint with `eslint-plugin-astro`, which reads a whole `.astro` file:
 frontmatter, template and `<script>` together. That is the reason for choosing
 it, since a linter that reads only the frontmatter calls every variable the
 template uses unused. Simulation files under `example-simulations/` are skipped,
-because the external tool produces them and this repository never edits them.
+because the external tool produces them and this repository does not reshape them.
 
 ## Colour
 
@@ -104,8 +105,9 @@ writes nothing, which is what to run first.
 
 For each scene the tool marks `ready` in its outline, the script writes:
 
-- `example-simulations/<stage>/<grade>/<slug>.html`, copied byte for byte. This
-  site never edits a simulation's contents.
+- `example-simulations/<stage>/<grade>/<slug>.html`, copied byte for byte. The
+  site does not reshape a simulation to suit itself; a simulation broken on its
+  own terms is fixed where it lives. `docs/adr/0005` draws that line.
 - `src/content/simulasi/<slug>.yaml`, the catalog entry.
 
 The slug is the scene title reduced to lowercase with hyphens, dropping the

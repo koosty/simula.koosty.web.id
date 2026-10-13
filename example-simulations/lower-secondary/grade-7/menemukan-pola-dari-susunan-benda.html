@@ -203,11 +203,13 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       border-radius: var(--radius-md); padding: var(--space-1) var(--space-3);
     }
     canvas {
-      display: block; width: 100%;
+      display: block; width: 100%; height: 300px;
       background: var(--surface); border: 1px solid var(--border);
       border-radius: var(--radius-md); touch-action: manipulation; cursor: pointer;
     }
-    .canvas-wrap { min-height: 280px; }
+    /* Matches the canvas height: the wrapper grows with the canvas rather than
+       stretching it, so the box is the same on both sides of the rounding. */
+    .canvas-wrap { min-height: 302px; }
     .guess-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin-top: var(--space-3); }
     input[type="text"] {
       font-family: var(--font-mono); font-size: var(--text-base);
@@ -395,8 +397,22 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     }
 
     function draw() {
+      // The bitmap has to match the box before anything is drawn. Without this,
+      // `width: 100%` sizes the box while the bitmap stays at the element's own
+      // 300px default, so the layout below measures 554px and the figures past
+      // 300px are drawn into pixels that do not exist and vanish.
       var W = canvas.clientWidth || 320;
+      var dpr = window.devicePixelRatio || 1;
+      var pixelW = Math.round(W * dpr);
+      if (canvas.width !== pixelW) canvas.width = pixelW;
+
+      // The figures are laid out against the CSS width, so the drawing height
+      // has to scale by the same factor as the width or they come out stretched.
       var H = 300;
+      var pixelH = Math.round(H * dpr);
+      if (canvas.height !== pixelH) canvas.height = pixelH;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
       ctx.clearRect(0, 0, W, H);
 
       var bg = token("--surface");

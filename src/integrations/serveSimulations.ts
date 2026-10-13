@@ -17,7 +17,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   const file = resolveSimulationRequest(url);
   if (!file) return next();
 
-  // The same bytes the build copies, untouched: this site never edits a
+  // The same bytes the build copies, untouched: this site does not reshape a
   // simulation's contents (docs/adr/0005). The noindex matches the header the
   // deployed site sends through `_headers`, so a dev server exposed beyond
   // localhost is as unindexable as production.

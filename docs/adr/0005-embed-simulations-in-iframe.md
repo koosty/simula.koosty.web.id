@@ -8,13 +8,41 @@ The frame grows to the simulation's measured content height instead of scrolling
 
 The measurement is taken from the rendered bounds of the child's elements. The child's own reported scroll height cannot be used, because a frame set to a height makes the document inside it report exactly that height, so the reading is circular and reports a page as always exactly as tall as the frame. A `ResizeObserver` on the child follows content changes, and a second observer on the frame re-measures when the width changes. The frame starts small so it cannot stretch the document it is measuring, and at a fixed fallback height so something usable shows before the first measurement lands.
 
-A library such as `@iframe-resizer` was rejected: it is GPL-3.0 and requires a script injected into the child page, and this project never edits the simulation files.
+A library such as `@iframe-resizer` was rejected: it is GPL-3.0 and requires a script injected into the child page, which this project does not do.
 
 Inlining the simulation into the page instead of framing it was tested and rejected. Splitting a simulation into its css, script, and body markup and injecting them into the Halaman Simulasi removes the height measurement entirely and renders the simulation at full size, but containment becomes a per-simulation problem rather than a solved one. All 23 simulations style the bare `body` and `h1` elements and use the generic class names `btn`, `panel`, and `wrap`, so unwrapped css restyles the site's own headings and navigation. Prefixing every selector with the simulation's host element does contain the cascade, verified against deliberately loud site styles, but it does not re-scope `position: fixed`: the one simulation using it, which opens a full-screen overlay, rendered 6086px tall instead of 968px because the overlay stopped being an overlay and joined normal flow. Any future simulation using `position: fixed`, viewport units, or absolute positioning against a positioned ancestor would break the same way, and nothing in the build detects it before rendering. Shadow DOM contains the cascade perfectly but breaks the simulations outright, because their script cannot reach elements inside the shadow tree and fails with a null-reference error before rendering anything.
 
 The deciding factor is what a bad simulation can cost. Framed, a simulation is confined: the worst case is an ugly frame that we notice in review. Inlined, its css reaches the site navigation and headings, so a single bad file can break pages it does not belong to. Framing costs a small amount of script that the height measurements justify; inlining costs attention per simulation, forever, on a class of breakage the build cannot detect.
 
 The frame carries a `title` naming the simulation, sits under a breadcrumb, and is followed by a visible link to open the simulation in a new tab as a fallback for devices that block iframes.
+
+## When a simulation file may be edited, and when it may not
+
+This project holds that the simulation files are the tool's output and are not
+edited to suit the site. That rule did the work it was written for: the site's
+dark palette was matched to the simulations rather than the reverse, so nothing
+was restyled and no simulation stopped being its original bytes.
+
+The rule is not, however, that a defect in a simulation goes unfixed because the
+file came from elsewhere. A reader who cannot see the figures is not helped by the
+provenance of the file, and regenerating to fix it costs more than the fix.
+
+So the boundary is drawn at intent. The site does not reshape a simulation to
+make the site better — no restyling, no instrumentation, no script that talks to
+the parent. It does fix a simulation that is wrong on its own terms, and the fix
+belongs to the simulation, not to the host.
+
+The first exercise of that boundary was a canvas whose bitmap was 300 pixels
+wide while `width: 100%` stretched its box to 556, so the figures laid out for
+556 were cut off at 300 and the rest appeared missing. It was broken for anyone
+who opened the file directly, not only when framed. The fix sets the bitmap from
+the box it is measured into, which is the same change a reader would make at the
+console.
+
+The cost of not regenerating is that this fix will be overwritten if the tool is
+run again, and the fault will return. That is accepted for now and made visible
+by a test rather than a note, so the next person to see the canvas clipped
+learns what happened instead of rediscovering it.
 
 ## The measurement was circular anyway, until it was tested
 
