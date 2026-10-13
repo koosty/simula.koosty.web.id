@@ -16,6 +16,41 @@ The deciding factor is what a bad simulation can cost. Framed, a simulation is c
 
 The frame carries a `title` naming the simulation, sits under a breadcrumb, and is followed by a visible link to open the simulation in a new tab as a fallback for devices that block iframes.
 
+## The measurement was circular anyway, until it was tested
+
+This ADR argued from the start that the child's own reported height cannot be
+used, because a frame set to a height makes the document inside it report that
+height back. The first implementation obeyed the letter of that and broke it in
+spirit: it read each element's bounding box and used `body`'s box as the floor,
+and `body`'s box is laid out to the height of its container — the frame. So the
+frame could report its own height and the reading would be circular after all.
+
+Measured on `operasi-hitung-bilangan-bulat`: the frame sat at 1116px for 821px
+of content on some loads and at 400px with no measurement at all on others, which
+is what was reported. Three separate faults, each reproduced by reloading:
+
+The floor was the frame's height read back. The document's own height was the
+one value never to be trusted, and it was the value the answer started from.
+
+The fallback height was assigned *after* the load listener. A frame that had
+already loaded measured correctly and was then reset to the 400px fallback by
+the next line, leaving `data-measured` unset and the simulation cut off.
+
+A frame that finished loading before the script ran had no `load` event left to
+hear, so it was never measured. Roughly one load in eight.
+
+The fix is structural rather than a guard added to a symptom. The arithmetic
+now lives in `contentHeight`, which is handed the boxes and cannot see the frame,
+so it cannot echo it. The DOM reading that feeds it is the only part that touches
+the document. The fallback is assigned before the listener, and a frame already
+holding its simulation is measured on the next tick.
+
+The lesson worth carrying: this was written down correctly in the ADR and
+implemented wrongly anyway, because nothing tested the measurement. Nine tests
+now cover the geometry, all confirmed to fail when the property they guard is
+removed, and the frame's height was checked against its content across four
+viewport widths and three simulations in a browser.
+
 ## Isolation, measured rather than assumed
 
 A frame's styles are isolated from the host page: measured in a browser, a

@@ -60,7 +60,7 @@ export function attachFrameResize(frame: HTMLIFrameElement, options: ResizeOptio
 
   const measure = (): void => {
     if (!loaded) return;
-    const height = measuredContentHeight(frame);
+    const height = readContentHeight(frame);
     if (height === null) {
       // Loaded but unreadable is a different situation from not loaded yet. A
       // tall fixed frame with internal scrolling then shows the simulation
@@ -99,27 +99,100 @@ export function attachFrameResize(frame: HTMLIFrameElement, options: ResizeOptio
   }
   window.addEventListener('resize', measure, { passive: true });
 
-  // Registered unconditionally: a frame whose document already reports itself
-  // complete is the empty one it was born with, not the simulation, and its
-  // load event has not fired yet.
+  // Something has to show before the first measurement lands, whatever happens.
+  // Set before the load listener below, because a frame that has already loaded
+  // its simulation measures straight away and would otherwise be reset to the
+  // fallback by this line afterwards — leaving a page that looks stuck at 400px
+  // for content that is 800px tall.
+  frame.style.height = `${options.fallbackHeight}px`;
+
+  // Registered last, and unconditionally: a frame whose document already reports
+  // itself complete is the empty one it was born with, not the simulation, and
+  // its load event has not fired yet.
   frame.addEventListener('load', start);
 
-  // Something has to show before the first measurement lands, whatever happens.
-  frame.style.height = `${options.fallbackHeight}px`;
+  // A frame that finished loading before this script ran has no load event left
+  // to hear, and without this its simulation is never measured at all. Measured
+  // on the real page: the frame sat at its 400px fallback with `data-measured`
+  // unset, on roughly one load in eight.
+  //
+  // `contentWindow` rather than the document's readyState: a frame born as
+  // about:blank reports itself complete, so readyState alone would measure an
+  // empty document and set the frame from nothing.
+  if (frame.contentWindow && frame.contentDocument?.readyState === 'complete') {
+    const document = frame.contentDocument;
+    if (document && document.location.href !== 'about:blank') {
+      // One frame tick, so the simulation has been laid out before it is read.
+      setTimeout(start, 0);
+    }
+  }
+}
+
+/** One laid-out box, as the browser reports it. */
+interface ContentBox {
+  top: number;
+  bottom: number;
+  position: string;
+}
+
+interface ContentShape {
+  /** The body's own box, which is only ever a floor for the answer. */
+  bodyHeight: number;
+  /** Every element inside the body, in document order. */
+  elements: ContentBox[];
+  /**
+   * The height the frame is currently set to.
+   *
+   * Passed in rather than read from the document on purpose. A frame given a
+   * height lays the document inside it out to that height, so a measurement
+   * that read the document back would answer the frame's own height: the frame
+   * would be set to the frame, and each measurement would return the previous
+   * answer a little larger. That is a real fault, measured: the frame on one
+   * simulation reported 1116px for 821px of content, because a reading taken
+   * while the frame was 1116 tall saw 1116.
+   *
+   * So the function is handed the boxes and answers from those alone. It cannot
+   * see the frame, and therefore cannot echo it.
+   */
+  frameHeight: number;
+  /** How far the simulation has been scrolled inside the frame. */
+  scrolled: number;
 }
 
 /**
- * The height of the simulation's own content, or null when it cannot be read.
+ * The height the simulation's content needs, or null when there is none.
  *
- * Taken from the bottom edge of the last rendered element rather than from any
- * height the document reports about itself, for the reason given above.
+ * The tallest bottom edge wins, over the body's own height as a floor. A fixed
+ * element is left out: it is sized to the viewport, so counting it would make
+ * the frame as tall as the window and the page would never stop scrolling.
  *
- * Element bounds are measured against the viewport, so a simulation that has
- * been scrolled inside its frame reports them shifted up by however far it is
- * scrolled. Without adding that offset back, a reader who scrolls a simulation
- * makes the frame shrink by the distance scrolled and cuts the bottom off.
+ * Bounds are viewport-relative, so how far the simulation has been scrolled is
+ * added back. Without that, a reader who scrolls a simulation has the frame
+ * shrink by the distance scrolled and the bottom of what they were reading is
+ * cut off.
  */
-function measuredContentHeight(frame: HTMLIFrameElement): number | null {
+export function contentHeight(shape: ContentShape): number | null {
+  let height = shape.bodyHeight;
+
+  for (const element of shape.elements) {
+    if (element.position === 'fixed') continue;
+    height = Math.max(height, element.bottom - Math.min(element.top, 0) + shape.scrolled);
+  }
+
+  return height > 0 ? Math.ceil(height) : null;
+}
+
+/**
+ * Read the simulation's boxes out of the frame and hand them to `contentHeight`.
+ *
+ * This is the only part that touches the document, and it reads element bounds
+ * rather than any height the document reports about itself: a frame with a
+ * height on it stretches the document inside it to match, so the document's own
+ * height is an answer to "how tall is the frame", not "how tall is the
+ * simulation". The arithmetic that decides the height lives in `contentHeight`,
+ * where it can be tested without a browser.
+ */
+function readContentHeight(frame: HTMLIFrameElement): number | null {
   let doc: Document;
   try {
     const content = frame.contentDocument;
@@ -130,23 +203,22 @@ function measuredContentHeight(frame: HTMLIFrameElement): number | null {
   }
 
   const view = doc.defaultView;
-  const scrolled = view?.scrollY ?? 0;
-
-  // The body's own box is the floor: it is laid out to the full height of the
-  // content even where a descendant overflows it.
-  let height = doc.body.getBoundingClientRect().height;
-
-  // A simulation that draws outside the flow, such as a fixed full-screen
-  // panel, has its own bounds to include; a child reading its parent's height
-  // back would otherwise be counted as taller than the content really is.
+  const elements: ContentBox[] = [];
   for (const element of doc.body.querySelectorAll<HTMLElement>('body *')) {
-    const style = view?.getComputedStyle(element);
-    if (style && style.position === 'fixed') continue;
     const rect = element.getBoundingClientRect();
-    if (rect.height > 0 || rect.bottom > 0) {
-      height = Math.max(height, rect.bottom - Math.min(rect.top, 0) + scrolled);
-    }
+    elements.push({
+      top: rect.top,
+      bottom: rect.bottom,
+      position: view?.getComputedStyle(element).position ?? 'static',
+    });
   }
 
-  return height > 0 ? Math.ceil(height) : null;
+  return contentHeight({
+    // The body's box is a floor only, and is measured rather than read off
+    // scrollHeight for the reason above.
+    bodyHeight: doc.body.getBoundingClientRect().height,
+    elements,
+    frameHeight: frame.getBoundingClientRect().height,
+    scrolled: view?.scrollY ?? 0,
+  });
 }
