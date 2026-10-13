@@ -13,7 +13,9 @@
     "check": "astro check",
     "lint": "eslint .",
     "test": "npm run build && vitest run",
-    "verify": "npm run check && npm run lint && npm test"
+    "verify": "npm run check && npm run lint && npm test",
+    "publish:check": "vite-node scripts/publish-batch.mjs",
+    "publish": "vite-node scripts/publish-batch.mjs --trigger"
   },
   "dependencies": {
     "astro": "^7.3.8"

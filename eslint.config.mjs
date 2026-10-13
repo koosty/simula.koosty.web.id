@@ -34,6 +34,20 @@ export default [
   ...astro.configs.recommended,
 
   {
+    // The publish scripts are Node programs run from the command line, not
+    // browser code, so they see process and console and nothing else.
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        console: 'readonly',
+        fetch: 'readonly',
+        URL: 'readonly',
+      },
+    },
+  },
+
+  {
     // Applies to `.ts` and `.astro` alike: the convention is a project-wide one,
     // and the sitemap endpoints drop fileLevel the same way the pages do.
     files: ['**/*.astro', '**/*.ts'],

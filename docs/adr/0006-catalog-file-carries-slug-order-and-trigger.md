@@ -11,3 +11,18 @@ The number of cards on the Katalog is not capped for the same reason. A cap woul
 Naming files after their title has one accepted consequence: rewording a title changes its URL and breaks existing links. The filename is treated as the stable identity from that point on, and the tool is asked not to rename a file once it is published.
 
 New simulations reach the site through the deploy hook ADR 0002 records, so the site rebuilds without a person in the middle; the initial pipeline is proven with manual commits first.
+
+Amended by the publishing pipeline: the tool is still asked not to rename a file,
+but it is no longer the only thing standing between a reworded title and a moved
+URL. Each catalog entry now records the tool's scene id as `scene`, and the
+pipeline matches an incoming scene to a published entry by that id rather than
+by its title. A scene whose title the tool has completely reworded is therefore
+recognised as the same simulation and keeps its slug, entry and URL. Entries
+published before the field existed have no scene id and fall back to matching on
+the slug their own title produces; they can be backfilled with
+`scripts/backfill-scene-ids.mjs`, which reports what it cannot match instead of
+guessing.
+
+Matching by title alone was tried first and is wrong: the pipeline saw a reworded
+title as a brand-new simulation and published it at a new address, which is
+precisely the loss ADR 0007 rules out.

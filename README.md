@@ -61,15 +61,64 @@ main branch.
    `npm test` runs the same build the deploy does, so running it locally first
    catches a broken build before it reaches the dashboard.
 
+## Publishing a batch of simulations
+
+Simulations arrive from the external tool as its own HTML files. `npm run publish`
+copies them in and writes their catalog entries. Nothing is edited by hand, and
+nothing is renamed.
+
+```
+SIMULA_TOOL_REPO=/path/to/simula-w npm run publish
+```
+
+The path may be the tool's repository root or the course directory inside it;
+`--tool` overrides it for one run. `--check` reports what would change and
+writes nothing, which is what to run first.
+
+### What it does
+
+For each scene the tool marks `ready` in its outline, the script writes:
+
+- `example-simulations/<stage>/<grade>/<slug>.html`, copied byte for byte. This
+  site never edits a simulation's contents.
+- `src/content/simulasi/<slug>.yaml`, the catalog entry.
+
+The slug is the scene title reduced to lowercase with hyphens, dropping the
+course name the tool appends (`· Matematika SMP Kelas VII`).
+
+### What it will not do
+
+- **Rename or delete.** A simulation whose content the tool rewrote keeps its
+  filename, its catalog entry and its URL, so a published link and its search
+  ranking survive the correction (`docs/adr/0007`). Matching is on the tool's
+  scene id, recorded as `scene` in each catalog entry, so even a completely
+  reworded title keeps its address.
+- **Renumber.** A new simulation is placed after everything already published.
+  An existing order is already in the search index and does not move.
+- **Overwrite a published address.** Two scenes whose titles reduce to the same
+  slug, or a new scene whose slug a published one already holds, stops the
+  batch with an explanation instead of one silently taking the other's place.
+
+Renaming a simulation file by hand fails the build, since its catalog entry
+would point at a file that is not there.
+
 ## Deploy hook
 
-`docs/adr/0002` also records that the external tool triggers a rebuild by POSTing to
-a deploy hook, so a finished batch of simulations publishes without a person in the
-middle. Create the hook under the project's Settings, and keep the URL in the tool's
-configuration rather than in this repository, since it is a credential.
+`docs/adr/0002` records that the tool triggers a rebuild by POSTing to a deploy
+hook. Create the hook under the project's Settings in the Cloudflare dashboard,
+then set it where the script runs:
 
-This is not wired up yet; it arrives with the ticket that makes the tool publish
-itself.
+```
+SIMULA_DEPLOY_HOOK=https://api.cloudflare.com/client/v4/pages/.../deploys
+```
+
+That URL is a credential, so it belongs in the environment and not in this
+repository. With it set, `npm run publish` writes the batch and asks Cloudflare
+Pages to rebuild. Without it the batch is still written and the script says so;
+commit and push it by hand instead.
+
+The script never commits or pushes. Whoever runs it decides what goes into
+git — a hook on another host may do that part itself.
 
 ## Current status
 

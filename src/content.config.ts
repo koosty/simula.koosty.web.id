@@ -24,6 +24,17 @@ const simulasi = defineCollection({
     grade: z.number().int().min(1).max(12),
     subject: z.string().min(1),
     order: z.number().int().min(1),
+    /**
+     * The tool's scene id this simulation was published from, e.g. 's9'.
+     *
+     * This is what ties a published URL to a scene rather than to a title. The
+     * tool rewrites a title when it corrects a simulation, and re-slugifying
+     * that would move an address search results already point at (ADR 0007).
+     * Matching on the scene id is what keeps the address. Optional, because the
+     * entries written before this field existed do not have one; those fall
+     * back to matching on the slug their own title produces.
+     */
+    scene: z.string().min(1).optional(),
   }),
 });
 
