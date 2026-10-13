@@ -78,7 +78,7 @@ const classLabel = landingHeading({
   }
 
   .origin a {
-    color: #cfe3ff;
+    color: var(--link);
   }
 
   h1 {
@@ -88,7 +88,7 @@ const classLabel = landingHeading({
   }
 
   .lead {
-    color: #c8c8c8;
+    color: var(--text-muted);
     max-width: 60ch;
     margin: 0;
   }
@@ -117,12 +117,12 @@ const classLabel = landingHeading({
   .entry-meta {
     margin: 0 0 6px;
     font-size: 0.8125rem;
-    color: #a8a8a8;
+    color: var(--text-dim);
   }
 
   .entry-description {
     margin: 0 0 6px;
-    color: #c8c8c8;
+    color: var(--text-muted);
   }
 
   /* The address is set in a monospace face because it is a URL and is meant to
@@ -135,15 +135,15 @@ const classLabel = landingHeading({
   }
 
   .entry-url a {
-    color: #cfe3ff;
+    color: var(--link);
   }
 
   .sheet-foot {
     margin-top: 32px;
     padding-top: 16px;
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    border-top: 1px solid var(--border);
     font-size: 0.8125rem;
-    color: #a8a8a8;
+    color: var(--text-dim);
   }
 
   .sheet-foot p {

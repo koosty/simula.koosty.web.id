@@ -121,11 +121,11 @@ const breadcrumb = [
   .breadcrumb {
     margin-bottom: 16px;
     font-size: 0.875rem;
-    color: #9a9a9a;
+    color: var(--text-dim);
   }
 
   .breadcrumb a {
-    color: #cfe3ff;
+    color: var(--link);
   }
 
   h1 {
@@ -136,13 +136,13 @@ const breadcrumb = [
 
   .description {
     font-size: 1.0625rem;
-    color: #c8c8c8;
+    color: var(--text-muted);
     max-width: 65ch;
     margin: 0 0 8px;
   }
 
   .meta {
-    color: #9a9a9a;
+    color: var(--text-dim);
     font-size: 0.875rem;
     margin: 0 0 32px;
   }
@@ -157,21 +157,54 @@ const breadcrumb = [
        frontmatter, so {FALLBACK_HEIGHT} was silently dropped here. A test
        asserts this equals the constant the script starts from. */
     height: 400px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 8px;
-    background: #0a0a1a;
+    /* The frame is painted the simulation's own background, so the seam between
+       the chrome and the thing it frames carries no contrast of its own. A
+       border that is lighter than both sides would draw the edge the ticket
+       asks not to be drawn, so it is the shared hairline instead: the only edge
+       a reader sees is the one the simulation itself draws. */
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color-scheme: dark;
+  }
+
+  /* The frame holds a whole application, so a reader tabbing into it has to be
+     able to see where they went, and has to be able to get back out.
+
+     The ring is drawn on :focus-visible rather than :focus because the keyboard
+     ends up *inside* the simulation, not on this element: tabbing in moves the
+     caret into the frame's own document, so the host stops matching :focus and
+     a ring bound to it would never appear. What the reader sees instead is the
+     simulation's own focus indicator, which is the right one to trust — it is
+     the thing that actually has focus.
+
+     Measured before this rule was written: after eleven tabs the host was
+     document.activeElement but matched neither :focus nor :focus-visible, and
+     the focused element was a node inside the simulation's document. Offset
+     further than the links because the frame is a large target and a ring tight
+     against its edge reads as a change in the simulation rather than as focus. */
+  iframe:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 3px;
   }
 
   .fallback {
     margin-top: 16px;
     font-size: 0.9375rem;
-    color: #9a9a9a;
+    color: var(--text-dim);
+  }
+
+  /* This link had no colour of its own, so it rendered in the browser's default
+     link blue: a dark blue on a dark background, at 1.4:1. That was the one
+     contrast failure on any page of this site. */
+  .fallback a {
+    color: var(--link);
   }
 
   .related {
     margin-top: 48px;
     padding-top: 24px;
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    border-top: 1px solid var(--border);
   }
 
   .related h2 {
@@ -189,6 +222,6 @@ const breadcrumb = [
   }
 
   .related a {
-    color: #cfe3ff;
+    color: var(--link);
   }
 </style>

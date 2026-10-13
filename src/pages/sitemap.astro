@@ -111,14 +111,14 @@ const other = entries.filter(
   }
 
   .lead {
-    color: #c8c8c8;
+    color: var(--text-muted);
     font-size: 1.125rem;
     max-width: 60ch;
   }
 
   .lead a,
   .links a {
-    color: #cfe3ff;
+    color: var(--link);
   }
 
   .links {
@@ -131,21 +131,21 @@ const other = entries.filter(
   }
 
   .links li {
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid var(--border);
     border-radius: 8px;
-    background: #1b1b1b;
+    background: var(--surface);
     padding: 16px;
   }
 
   .meta {
     margin: 0 0 6px;
-    color: #9a9a9a;
+    color: var(--text-dim);
     font-size: 0.8125rem;
   }
 
   .description {
     margin: 0;
-    color: #c8c8c8;
+    color: var(--text-muted);
     font-size: 0.9375rem;
   }
 </style>

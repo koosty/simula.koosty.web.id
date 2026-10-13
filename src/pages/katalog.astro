@@ -222,7 +222,7 @@ const landing = landingPages(catalog);
 
   .lead {
     font-size: 1.0625rem;
-    color: #c8c8c8;
+    color: var(--text-muted);
     max-width: 65ch;
     margin: 0 0 24px;
   }
@@ -234,9 +234,9 @@ const landing = landingPages(catalog);
     align-items: end;
     padding: 16px;
     margin-bottom: 32px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid var(--border);
     border-radius: 8px;
-    background: #1b1b1b;
+    background: var(--surface);
   }
 
   .filters-heading {
@@ -244,7 +244,7 @@ const landing = landingPages(catalog);
     margin: 0;
     font-size: 0.875rem;
     font-weight: 600;
-    color: #9a9a9a;
+    color: var(--text-dim);
   }
 
   .filter {
@@ -256,7 +256,7 @@ const landing = landingPages(catalog);
 
   .filter label {
     font-size: 0.8125rem;
-    color: #9a9a9a;
+    color: var(--text-dim);
   }
 
   .filter select,
@@ -265,16 +265,16 @@ const landing = landingPages(catalog);
     padding: 6px 10px;
     font: inherit;
     font-size: 0.9375rem;
-    color: #eeeeee;
-    background: #111111;
-    border: 1px solid rgba(255, 255, 255, 0.24);
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
     border-radius: 6px;
   }
 
   .result-count {
     margin: 0 0 0 auto;
     font-size: 0.875rem;
-    color: #9a9a9a;
+    color: var(--text-dim);
   }
 
   .kelas {
@@ -298,9 +298,9 @@ const landing = landingPages(catalog);
 
   .card {
     padding: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid var(--border);
     border-radius: 8px;
-    background: #1b1b1b;
+    background: var(--surface);
   }
 
   .card h3 {
@@ -310,40 +310,40 @@ const landing = landingPages(catalog);
   }
 
   .card a {
-    color: #cfe3ff;
+    color: var(--link);
     text-decoration: none;
   }
 
   .card a:hover,
   .card a:focus-visible {
-    color: #ffffff;
+    color: var(--text);
     text-decoration: underline;
   }
 
   .card-meta {
     margin: 0 0 8px;
     font-size: 0.8125rem;
-    color: #9a9a9a;
+    color: var(--text-dim);
   }
 
   .card-description {
     margin: 0;
     font-size: 0.9375rem;
-    color: #c8c8c8;
+    color: var(--text-muted);
   }
 
   .empty,
   .no-match {
     padding: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid var(--border);
     border-radius: 8px;
-    background: #1b1b1b;
+    background: var(--surface);
   }
 
   .landing {
     margin-top: 48px;
     padding-top: 24px;
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    border-top: 1px solid var(--border);
   }
 
   .landing h2 {
@@ -353,7 +353,7 @@ const landing = landingPages(catalog);
   }
 
   .landing-lead {
-    color: #c8c8c8;
+    color: var(--text-muted);
     margin: 0 0 16px;
   }
 
@@ -366,6 +366,6 @@ const landing = landingPages(catalog);
   }
 
   .landing-list a {
-    color: #cfe3ff;
+    color: var(--link);
   }
 </style>

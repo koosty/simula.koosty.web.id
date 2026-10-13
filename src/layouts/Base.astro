@@ -1,5 +1,6 @@
 ---
 import { loadCatalogEntries } from '../lib/loadCatalog';
+import { tokenCustomProperties, TOKENS } from '../lib/theme';
 import { navLinksFor } from '../lib/nav';
 
 interface Props {
@@ -25,6 +26,13 @@ const navLinks = navLinksFor(catalog, Astro.url.pathname);
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {/* The palette goes through set:html rather than into the stylesheet below.
+        An Astro <style> block is not a template expression site: a {call()} in
+        one is not evaluated, it reaches the CSS minifier as literal text and the
+        build fails with "Invalid empty selector". Ticket 06 hit this the same
+        way, writing {FALLBACK_HEIGHT}px into a <style> block and finding it
+        silently dropped rather than caught. */}
+    <style set:html={`:root {\n${tokenCustomProperties(TOKENS)}\n}`}></style>
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
@@ -51,14 +59,49 @@ const navLinks = navLinksFor(catalog, Astro.url.pathname);
 
 <style is:global>
   html {
-    background: #111111;
-    color: #eeeeee;
+    background: var(--bg);
+    color: var(--text);
   }
 
   body {
     margin: 0;
     font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
     line-height: 1.6;
+  }
+
+  /* Links take the palette's link colour rather than the browser's default.
+     The default is a blue chosen against a white page, and on this background it
+     is both the wrong colour and unreadable: it was the one contrast failure
+     this site had. Declared once here so a link in a component that styles
+     nothing else still reads as a link. */
+  a {
+    color: var(--link);
+  }
+
+  a:hover {
+    color: var(--link-hover);
+  }
+
+  /* The focus ring, once, for everything on the site.
+     A browser's own outline is drawn in a colour chosen for whatever the
+     browser thinks the page looks like, which on this background is a grey
+     that fails the same 3:1 the rest of the non-text colours have to meet.
+     An outline rather than a box-shadow, because an outline does not move the
+     layout and so cannot make a control jump as it is focused. */
+  :focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible,
+  iframe:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
   }
 
   .wrap {
@@ -71,7 +114,7 @@ const navLinks = navLinksFor(catalog, Astro.url.pathname);
     max-width: 960px;
     margin: 0 auto;
     padding: 16px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    border-bottom: 1px solid var(--border);
   }
 
   .site-name {
@@ -80,7 +123,7 @@ const navLinks = navLinksFor(catalog, Astro.url.pathname);
   }
 
   .site-name a {
-    color: #eeeeee;
+    color: var(--text);
     text-decoration: none;
     font-size: 1.125rem;
   }
@@ -95,13 +138,13 @@ const navLinks = navLinksFor(catalog, Astro.url.pathname);
   }
 
   .site-nav a {
-    color: #cfe3ff;
+    color: var(--link);
   }
 
   /* The page the reader is on is marked rather than dimmed alone, so the state
      is available to a screen reader as well as visible. */
   .site-nav a[aria-current='page'] {
-    color: #eeeeee;
+    color: var(--text);
     font-weight: 600;
   }
 </style>

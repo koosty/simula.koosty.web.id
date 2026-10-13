@@ -132,11 +132,11 @@ const sheetHref = page.kind === 'kelas' ? sheetPath(page.level, page.segment) : 
   .breadcrumb {
     margin-bottom: 16px;
     font-size: 0.875rem;
-    color: #a8a8a8;
+    color: var(--text-dim);
   }
 
   .breadcrumb a {
-    color: #cfe3ff;
+    color: var(--link);
   }
 
   h1 {
@@ -146,7 +146,7 @@ const sheetHref = page.kind === 'kelas' ? sheetPath(page.level, page.segment) : 
   }
 
   .lead {
-    color: #c8c8c8;
+    color: var(--text-muted);
     max-width: 60ch;
     margin-top: 0;
   }
@@ -156,7 +156,7 @@ const sheetHref = page.kind === 'kelas' ? sheetPath(page.level, page.segment) : 
   }
 
   .sheet-link a {
-    color: #cfe3ff;
+    color: var(--link);
   }
 
   .kelas {
@@ -173,9 +173,9 @@ const sheetHref = page.kind === 'kelas' ? sheetPath(page.level, page.segment) : 
 
   .card {
     padding: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid var(--border);
     border-radius: 8px;
-    background: #1b1b1b;
+    background: var(--surface);
   }
 
   .card h3 {
@@ -184,18 +184,18 @@ const sheetHref = page.kind === 'kelas' ? sheetPath(page.level, page.segment) : 
   }
 
   .card a {
-    color: #cfe3ff;
+    color: var(--link);
   }
 
   .card-description {
     margin: 0;
-    color: #c8c8c8;
+    color: var(--text-muted);
   }
 
   .siblings {
     margin-top: 40px;
     padding-top: 24px;
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    border-top: 1px solid var(--border);
   }
 
   .siblings h2 {
@@ -213,6 +213,6 @@ const sheetHref = page.kind === 'kelas' ? sheetPath(page.level, page.segment) : 
   }
 
   .siblings a {
-    color: #cfe3ff;
+    color: var(--link);
   }
 </style>
