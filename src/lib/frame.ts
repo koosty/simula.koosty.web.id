@@ -119,7 +119,7 @@ export function attachFrameResize(frame: HTMLIFrameElement, options: ResizeOptio
  * scrolled. Without adding that offset back, a reader who scrolls a simulation
  * makes the frame shrink by the distance scrolled and cuts the bottom off.
  */
-export function measuredContentHeight(frame: HTMLIFrameElement): number | null {
+function measuredContentHeight(frame: HTMLIFrameElement): number | null {
   let doc: Document;
   try {
     const content = frame.contentDocument;

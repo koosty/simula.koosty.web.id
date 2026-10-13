@@ -152,7 +152,10 @@ const breadcrumb = [
     width: 100%;
     /* A fixed fallback so something usable shows before the script measures the
        simulation's real height, and so the frame's own height cannot stretch
-       the document being measured (docs/adr/0005). */
+       the document being measured (docs/adr/0005). Written as a literal
+       because an Astro <style> block does not interpolate a constant from the
+       frontmatter, so {FALLBACK_HEIGHT} was silently dropped here. A test
+       asserts this equals the constant the script starts from. */
     height: 400px;
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 8px;

@@ -58,6 +58,14 @@ describe('the frame is set up to be measured, not to be a fixed size', () => {
     // the declaration itself is matched rather than the whole rule.
     expect(html).toMatch(/iframe[^{]*\{[^}]*height:\s*\d+px/);
   });
+
+  it('starts at the same height the script starts from', () => {
+    // The stylesheet height is a literal, because an Astro <style> block does
+    // not interpolate a constant, so the two could drift apart. A frame that
+    // jumps on load is the visible symptom.
+    const declared = html.match(/iframe[^{]*\{[^}]*height:\s*(\d+)px/)?.[1];
+    expect(declared).toBe(String(FALLBACK_HEIGHT));
+  });
   it('gives the frame an id the script can find', () => {
     expect(frameOf(html)).toContain('id="simulation-frame"');
   });

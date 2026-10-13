@@ -43,24 +43,31 @@ const stagePath = `/${page.level}/`;
     <p class="lead">{landingDescription(page)}</p>
 
     {
-      page.sections.map((section) => (
-        <section class="kelas" id={section.key}>
-          {/* A class page's own heading is already the h1, so its one section
-              gets no subheading. Every other page groups its cards under the
-              class they belong to, and that heading is what the h3s sit below. */}
-          {page.kind === 'kelas' ? null : <h2>{section.label}</h2>}
-          <ul class="cards">
-            {section.simulations.map((entry) => (
-              <li class="card">
-                <h3>
-                  <a href={simulasiUrl(entry)}>{entry.title}</a>
-                </h3>
-                <p class="card-description">{entry.description}</p>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))
+      page.sections.map((section) => {
+        // A class page's only section is already named by the h1, so it gets no
+        // subheading. Every other page groups its cards under the class they
+        // belong to, and that heading is what the cards sit below.
+        const hasSectionHeading = page.kind !== 'kelas';
+        // The card heading must be one level below whatever precedes it, or a
+        // screen reader announces a jump from h1 straight to h3.
+        const CardHeading = hasSectionHeading ? 'h3' : 'h2';
+        const SectionHeading = hasSectionHeading ? 'h2' : null;
+        return (
+          <section class="kelas" id={section.key}>
+            {SectionHeading && <SectionHeading>{section.label}</SectionHeading>}
+            <ul class="cards">
+              {section.simulations.map((entry) => (
+                <li class="card">
+                  <CardHeading>
+                    <a href={simulasiUrl(entry)}>{entry.title}</a>
+                  </CardHeading>
+                  <p class="card-description">{entry.description}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        );
+      })
     }
 
     {

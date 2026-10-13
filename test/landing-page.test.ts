@@ -218,3 +218,33 @@ describe('landing pages are indexable', () => {
     expect(htmlAt('/smp/kelas-7/')).not.toContain('name="robots"');
   });
 });
+
+describe('landing pages use heading levels a screen reader can follow', () => {
+  it('never skips a level on its way down the page', () => {
+    // A jump from h1 to h3 leaves a screen reader user with no sense of where
+    // they are in the structure. It happened on class pages, where the only
+    // section is named by the h1 and so has no subheading of its own.
+    for (const page of PAGES) {
+      const levels = [...htmlAt(page.path).matchAll(/<(h[1-6])[^>]*>/g)].map((m) =>
+        Number(m[1][1]),
+      );
+      expect(levels.length).toBeGreaterThan(0);
+      expect(levels[0]).toBe(1);
+      for (const [index, level] of levels.entries()) {
+        const previous = levels[index - 1];
+        if (previous === undefined) continue;
+        expect(level - previous).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
+  it('names each simulation as a heading on every landing page', () => {
+    // The cards are the page's content, so a reader scanning headings has to
+    // find them there rather than only as links in a list.
+    for (const page of PAGES) {
+      const headings = [...htmlAt(page.path).matchAll(/<h[23][^>]*>[^<]*<a href=/g)];
+      const expected = page.sections.reduce((total, s) => total + s.simulations.length, 0);
+      expect(headings).toHaveLength(expected);
+    }
+  });
+});
