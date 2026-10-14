@@ -1,9 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
-  homeBatch,
   homeClassSections,
+  homeFeatured,
   homeStages,
-  HOME_BATCH_SIZE,
   HOME_CLASS_PREVIEW_SIZE,
 } from '../src/lib/home';
 import type { CatalogEntry } from '../src/lib/types';
@@ -27,46 +26,32 @@ function catalogOf(count: number, overrides: Partial<CatalogEntry> = {}): Catalo
   );
 }
 
-describe('homeBatch', () => {
-  it('offers a handful, not the whole catalog', () => {
-    // The home page is an entrance, not a second Katalog. The Katalog is one
-    // link away and this one has to stay short enough to read on a phone.
-    const result = homeBatch(catalogOf(23));
-    expect(result).toHaveLength(HOME_BATCH_SIZE);
+describe('homeFeatured', () => {
+  it('opens with the first simulation in syllabus order', () => {
+    // A class works through the syllabus front to back, so the start is where a
+    // pupil begins. The home page says so, so it has to be the true first one.
+    expect(homeFeatured(catalogOf(10))?.slug).toBe('sim-1');
   });
 
-  it('never offers more than the catalog holds', () => {
-    // Asking for six from a catalog of two must show two, not throw and not
-    // pad: a catalog smaller than the batch is a site that is simply early.
-    expect(homeBatch(catalogOf(2))).toHaveLength(2);
+  it('takes the first class in school order, not the first in the array', () => {
+    // The catalog file order is not the school order: a Kelas 8 entry listed
+    // before a Kelas 7 entry must not win.
+    const catalog = [
+      entry({ slug: 'kelas-8', grade: 8, order: 1 }),
+      entry({ slug: 'kelas-7', grade: 7, order: 1 }),
+    ];
+    expect(homeFeatured(catalog)?.slug).toBe('kelas-7');
   });
 
-  it('offers nothing from an empty catalog', () => {
-    // The home page has to build before anything is published.
-    expect(homeBatch([])).toEqual([]);
+  it('returns the loaded item itself, so the page can read its file level', () => {
+    // The frame is built from the folder the file lives in, which only the
+    // loaded item carries. A copy without the field would lose it.
+    const loaded = [{ ...entry({ slug: 'sim-1' }), fileLevel: 'smp' }];
+    expect(homeFeatured(loaded)).toBe(loaded[0]);
   });
 
-  it('keeps display order inside the batch', () => {
-    const result = homeBatch(catalogOf(10));
-    const orders = result.map((e) => e.order);
-    expect(orders).toEqual([...orders].sort((a, b) => a - b));
-  });
-
-  it('takes the end of the syllabus, not the beginning', () => {
-    // The catalog holds no date, so "the latest simulations" cannot be answered
-    // honestly by any date field. Display order is the one recency signal the
-    // site has: the last material reached is what a class is working on now.
-    // Taking the head instead would put the batch and the per-class previews on
-    // the same simulations, since the previews start at the beginning.
-    const result = homeBatch(catalogOf(10));
-    expect(result.map((e) => e.slug)).toEqual([
-      'sim-5',
-      'sim-6',
-      'sim-7',
-      'sim-8',
-      'sim-9',
-      'sim-10',
-    ]);
+  it('returns nothing from an empty catalog, so no frame is drawn', () => {
+    expect(homeFeatured([])).toBeNull();
   });
 });
 

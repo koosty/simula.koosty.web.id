@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { describe, it, expect, beforeAll } from 'vitest';
 
 const DIST = resolve(import.meta.dirname, '..', 'dist');
-const SIMS = resolve(import.meta.dirname, '..', 'example-simulations/lower-secondary/grade-7');
+const SIMS = resolve(import.meta.dirname, '..', 'simulations/lower-secondary/grade-7');
 const PAGE = 'smp/kelas-7/matematika/sudut-dalam-segitiga/index.html';
 
 describe('the first Halaman Simulasi', () => {

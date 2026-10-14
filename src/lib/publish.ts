@@ -251,11 +251,11 @@ export function catalogPathFor(slug: string): string {
  * Where a simulation's file is written, relative to the site root.
  *
  * Under the tool's own English folder rather than the Indonesian segment: the
- * scanner walks example-simulations/<stage>/<grade>/ and maps the stage to its
+ * scanner walks simulations/<stage>/<grade>/ and maps the stage to its
  * Indonesian segment at build time (docs/adr/0003), so writing under "smp"
  * would put the file where the scanner never looks and the build would report
  * a catalog entry with no file.
  */
 export function simulationPathFor(sourceFolder: string, slug: string): string {
-  return `example-simulations/${sourceFolder}/${slug}.html`;
+  return `simulations/${sourceFolder}/${slug}.html`;
 }

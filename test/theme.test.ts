@@ -1,10 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
-import { resolve, join } from 'node:path';
 import {
   asHex,
   TOKENS,
-  SIMULATION_TOKENS,
   contrastRatio,
   isHexColour,
   surfaceTokens,
@@ -17,102 +14,10 @@ import {
   themeCustomProperties,
 } from '../src/lib/theme';
 
-const ROOT = resolve(import.meta.dirname, '..');
-const SIM_DIR = resolve(ROOT, 'example-simulations/lower-secondary/grade-7');
-
-/**
- * The dark colour tokens one simulation declares.
- *
- * Read out of the `:root` block specifically. Every simulation also carries a
- * `[data-theme="light"]` block, and reading the whole stylesheet picks up the
- * light values too — which is how this first matched the light background and
- * failed against a palette that is dark on purpose.
- */
-function simulationPalette(name: string): Record<string, string> {
-  const html = readFileSync(join(SIM_DIR, name), 'utf8');
-  const start = html.indexOf(':root');
-  const root = html.slice(start, html.indexOf('}', start));
-  const found: Record<string, string> = {};
-  for (const match of root.matchAll(/(--[a-z-]+)\s*:\s*([^;]+);/g)) {
-    found[match[1]] = match[2].trim();
-  }
-  return found;
-}
-
-/** A colour with its internal whitespace removed, for comparing as written. */
-function normalise(value: string): string {
-  return value.replace(/\s+/g, '');
-}
-
-/** Every simulation the tool has produced. */
-function simulationFiles(): string[] {
-  return readdirSync(SIM_DIR).filter((name) => name.endsWith('.html'));
-}
-
-/**
- * Whether two hex colours are the same colour.
- *
- * Compared as numbers rather than as strings, because the simulations write
- * `#888` where the palette would naturally be written `#888888`, and a string
- * comparison would report those as different colours when they are the same
- * one. A test that fails on shorthand would train everyone to stop trusting it.
- */
-function sameColour(a: string, b: string): boolean {
-  const one: HexColour = isHexColour(a) ? a : fail(`${a} bukan warna hex`);
-  const two: HexColour = isHexColour(b) ? b : fail(`${b} bukan warna hex`);
-  return contrastRatio(one, two) === 1;
-}
-
-/** Narrowing failed. Said out loud rather than cast past. */
-function fail(message: string): never {
-  throw new Error(message);
-}
-
 describe('the palette', () => {
-  it('takes the surface colours from the simulations', () => {
-    // Criterion: the chrome and the simulations share one surface, so an
-    // embedded simulation is not a black rectangle punched into a lighter
-    // page. These three are the ones the eye compares across that edge.
-    //
-    // Checked against every simulation, not one of them: reading a single file
-    // would let a second simulation drift away from the chrome without anything
-    // noticing, and the chrome is meant to match all of them at once.
-    const files = simulationFiles();
-    expect(files.length).toBeGreaterThan(1);
-    for (const name of files) {
-      const sim = simulationPalette(name);
-      expect(sameColour(TOKENS.bg, sim['--bg']), name).toBe(true);
-      expect(sameColour(TOKENS.surface, sim['--surface']), name).toBe(true);
-      // The border is translucent, so the arithmetic below cannot read it.
-      // Compared as written, with whitespace normalised: the simulations write
-      // it as `rgba(255, 255, 255, 0.1)` in some files and
-      // `rgba(255,255,255,0.1)` in others, which are the same colour.
-      expect(normalise(TOKENS.border), name).toBe(normalise(sim['--border']));
-    }
-  });
-
-  it('takes the text colours from the simulations', () => {
-    for (const name of simulationFiles()) {
-      const sim = simulationPalette(name);
-      expect(sameColour(TOKENS.text, sim['--text']), name).toBe(true);
-      expect(sameColour(TOKENS.textMuted, sim['--text-muted']), name).toBe(true);
-      expect(sameColour(TOKENS.textDim, sim['--text-dim']), name).toBe(true);
-    }
-  });
-
-  it('keeps the accent the simulations use', () => {
-    // The accent is what makes the two look like one product. The simulations
-    // use it on borders and never on running text, and neither does the chrome.
-    for (const name of simulationFiles()) {
-      expect(sameColour(TOKENS.accent, simulationPalette(name)['--accent']), name).toBe(true);
-    }
-  });
-
   it('names exactly the roles the palette is for, and no more', () => {
     // A token nothing paints with is a second source of truth waiting to drift.
-    // Written out rather than derived: TOKENS is SIMULATION_TOKENS under a
-    // second name, so comparing the two to each other compares an object with
-    // itself and passes for any value at all. The list is the decision.
+    // The list is written out here, since it is the decision the palette makes.
     expect(Object.keys(TOKENS).sort()).toEqual(
       [
         'accent',
@@ -133,11 +38,10 @@ describe('the palette', () => {
     );
   });
 
-  it('is the one object, not a copy of it', () => {
-    // Two names for one object is a trap for exactly the reason the test above
-    // fell into: they always agree, so comparing them proves nothing. Asserted
-    // so the alias is a deliberate one rather than an accident of ordering.
-    expect(TOKENS).toBe(SIMULATION_TOKENS);
+  it('keeps the accent visible against the page without using it for text', () => {
+    // The accent marks the featured rule and the focus outline. A non-text
+    // colour still has to be seen, so it must meet the 3:1 bar against the page.
+    expect(contrastRatio(asHex('accent'), asHex('bg'))).toBeGreaterThanOrEqual(AA_NON_TEXT);
   });
 });
 
@@ -210,15 +114,6 @@ describe('every colour the chrome puts on a surface', () => {
 
     expect(failures).toEqual([]);
   });
-
-  it('keeps running text clear of the ratio large text gets', () => {
-    // The simulation's own accent is a border colour and fails as body text at
-    // 4.2 on the site's background. Nothing in the chrome is allowed to reach
-    // for it as text, or the chrome would be less readable than the thing it
-    // frames.
-    const worst = contrastRatio(asHex('accent'), asHex('bg'));
-    expect(worst).toBeLessThan(AA_NORMAL_TEXT);
-  });
 });
 
 describe('the non-text colours', () => {
@@ -261,8 +156,8 @@ describe('ratioRequiredFor', () => {
 describe('themeCustomProperties', () => {
   it('emits one custom property per token', () => {
     const css = themeCustomProperties(TOKENS);
-    expect(css).toContain('--bg: #0a0a1a;');
-    expect(css).toContain('--text-muted: #aaa;');
+    expect(css).toContain(`--bg: ${TOKENS.bg};`);
+    expect(css).toContain(`--text-muted: ${TOKENS.textMuted};`);
   });
 
   it('emits nothing that is not a token', () => {

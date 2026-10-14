@@ -40,7 +40,7 @@ describe('level mapping', () => {
 });
 
 describe('simulationMetaOf', () => {
-  const SIMS = resolve(import.meta.dirname, '..', 'example-simulations/lower-secondary/grade-7');
+  const SIMS = resolve(import.meta.dirname, '..', 'simulations/lower-secondary/grade-7');
 
   it('reads level, grade and title out of a real simulation file', () => {
     const meta = simulationMetaOf(readFileSync(resolve(SIMS, 'sudut-dalam-segitiga.html'), 'utf8'));

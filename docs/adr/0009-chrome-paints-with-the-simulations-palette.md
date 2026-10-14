@@ -1,4 +1,6 @@
-# The site's chrome paints with the simulations' own palette
+# The site's chrome paints with the simulations' own palette (palette superseded by 0010)
+
+> The palette in this ADR was replaced by `docs/adr/0010`. The rules about tokens and the printable sheet still hold.
 
 The site's own pages take their colours from the simulations, under the names the simulations already use: `--bg`, `--surface`, `--text`, `--text-muted`, `--link`, and so on. The chrome and the thing it frames are one surface, so an embedded simulation is not a rectangle punched through the page. Before this the chrome was `#111111` and the simulations `#0a0a1a` — both dark, close enough to pass unnoticed and different enough to draw a seam exactly where the reader is looking.
 

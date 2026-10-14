@@ -31,7 +31,7 @@ fix what it reports rather than expecting a tool to settle the layout.
 Linting is ESLint with `eslint-plugin-astro`, which reads a whole `.astro` file:
 frontmatter, template and `<script>` together. That is the reason for choosing
 it, since a linter that reads only the frontmatter calls every variable the
-template uses unused. Simulation files under `example-simulations/` are skipped,
+template uses unused. Simulation files under `simulations/` are skipped,
 because the external tool produces them and this repository does not reshape them.
 
 ## Colour
@@ -105,7 +105,7 @@ writes nothing, which is what to run first.
 
 For each scene the tool marks `ready` in its outline, the script writes:
 
-- `example-simulations/<stage>/<grade>/<slug>.html`, copied byte for byte. The
+- `simulations/<stage>/<grade>/<slug>.html`, copied byte for byte. The
   site does not reshape a simulation to suit itself; a simulation broken on its
   own terms is fixed where it lives. `docs/adr/0005` draws that line.
 - `src/content/simulasi/<slug>.yaml`, the catalog entry.

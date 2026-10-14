@@ -1,15 +1,17 @@
 ---
 import Base from '../layouts/Base.astro';
-import { simulasiUrl } from '../lib/catalog';
-import { loadCatalogEntries } from '../lib/loadCatalog';
+import { simulasiFileUrl, simulasiUrl } from '../lib/catalog';
+import { loadCatalog } from '../lib/loadCatalog';
 import { subjectLabel } from '../lib/katalogFilter';
-import { homeBatch, homeClassSections, homeStages } from '../lib/home';
+import { homeClassSections, homeFeatured, homeStages } from '../lib/home';
 
 // The Katalog is the whole catalog, always. The home page is an entrance into
 // it, so it reads the same data rather than a filtered copy that could disagree.
-const catalog = await loadCatalogEntries();
+// loadCatalog rather than loadCatalogEntries: the opening simulation is framed
+// from the folder its file lives in, which only loadCatalog knows.
+const catalog = await loadCatalog();
 
-const batch = homeBatch(catalog);
+const featured = homeFeatured(catalog);
 const classes = homeClassSections(catalog);
 const stages = homeStages(catalog);
 const total = catalog.length;
@@ -19,55 +21,67 @@ const total = catalog.length;
   title="Simula — Katalog Simulasi Pembelajaran"
   description="Katalog simulasi pembelajaran interaktif untuk murid dan guru, disusun per tingkat dan kelas."
 >
-  <main class="wrap">
-    <h1>Simula</h1>
+  <main class="wrap home">
+    <section class="bench" aria-labelledby="home-heading">
+      <div class="intro">
+        <h1 id="home-heading">Simula</h1>
 
-    <p class="lead">
-      Simula menyimpan simulasi pembelajaran yang bisa langsung dibuka di peramban.
-      Setiap simulasi berjalan seperti exercise biasa: murid mengubah angka atau
-      menggerakkan titik, lalu langsung melihat hasilnya, tanpa memasang aplikasi
-      apa pun.
-    </p>
-
-    {
-      total === 0 ? (
-        <p class="status">
-          Katalog ini sedang disiapkan. Belum ada simulasi yang dipublikasikan;
-          simulasinya akan segera hadir.
+        <p class="lead">
+          Simula menyimpan simulasi pembelajaran yang bisa langsung dibuka di peramban.
+          Setiap simulasi berjalan seperti exercise biasa: murid mengubah angka atau
+          menggerakkan titik, lalu langsung melihat hasilnya, tanpa memasang aplikasi
+          apa pun.
         </p>
-      ) : (
-        <p class="status">
-          Saat ini ada <strong>{total} simulasi</strong>, disusun sesuai urutan materi
-          setiap kelas.
-        </p>
-      )
-    }
 
-    <!-- Both sections are built from the catalog, so a site with nothing in it
-         renders neither rather than a heading over an empty list. -->
-    {
-      batch.length > 0 && (
-        <section class="batch" aria-labelledby="batch-heading">
-          <h2 id="batch-heading">Mulailah dari sini</h2>
-          <p class="section-lead">
-            Simulasi yang sedang dipakai di kelas, dari materi paling akhir.
-          </p>
-          <ul class="cards">
-            {batch.map((entry) => (
-              <li class="card">
-                <h3>
-                  <a href={simulasiUrl(entry)}>{entry.title}</a>
-                </h3>
-                <p class="card-meta">
-                  Kelas {entry.grade} · {subjectLabel(entry.subject)}
-                </p>
-                <p class="card-description">{entry.description}</p>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )
-    }
+        {
+          total === 0 ? (
+            <p class="status">
+              Katalog ini sedang disiapkan. Belum ada simulasi yang dipublikasikan;
+              simulasinya akan segera hadir.
+            </p>
+          ) : (
+            <p class="status">
+              Saat ini ada <strong>{total} simulasi</strong>, disusun sesuai urutan materi
+              setiap kelas.
+            </p>
+          )
+        }
+
+        {
+          featured && (
+            <section class="featured" aria-labelledby="featured-heading">
+              <h2 id="featured-heading">Mulai di sini</h2>
+              <p class="featured-title">
+                <a href={simulasiUrl(featured)}>{featured.title}</a>
+              </p>
+              <p class="meta">
+                Kelas {featured.grade} · {subjectLabel(featured.subject)}
+              </p>
+              <p class="description">{featured.description}</p>
+            </section>
+          )
+        }
+      </div>
+
+      {
+        featured && (
+          <div class="bench-frame">
+            <iframe
+              src={simulasiFileUrl(featured, featured.fileLevel)}
+              title={featured.title}
+            ></iframe>
+            <p class="fallback">
+              <a
+                href={simulasiFileUrl(featured, featured.fileLevel)}
+                target="_blank"
+                rel="noopener"
+              >Buka simulasi ini di tab baru</a>
+              {' '}jika simulasi tidak muncul di atas.
+            </p>
+          </div>
+        )
+      }
+    </section>
 
     {
       stages.length > 0 && (
@@ -76,7 +90,7 @@ const total = catalog.length;
           <ul class="stage-list">
             {stages.map((stage) => (
               <li>
-                <a href={stage.path}>{stage.label}</a>{' '}
+                <a href={stage.path}>{stage.label}</a>
                 <span class="stage-count">{stage.count} simulasi</span>
               </li>
             ))}
@@ -91,19 +105,19 @@ const total = catalog.length;
 
     {
       classes.map((section) => (
-        <section class="kelas" aria-labelledby={`kelas-${section.key.replace('/', '-')}`}>
+        <section class="band" aria-labelledby={`kelas-${section.key.replace('/', '-')}`}>
           <h2 id={`kelas-${section.key.replace('/', '-')}`}>{section.label}</h2>
-          <ul class="cards">
+          <ul class="rows">
             {section.simulations.map((entry) => (
-              <li class="card">
+              <li class="row">
                 <h3>
                   <a href={simulasiUrl(entry)}>{entry.title}</a>
                 </h3>
-                <p class="card-description">{entry.description}</p>
+                <p class="row-description">{entry.description}</p>
               </li>
             ))}
           </ul>
-          <p class="kelas-more">
+          <p class="band-more">
             <a href={section.path}>Lihat {section.total} simulasi di {section.label}</a>
           </p>
         </section>
@@ -121,9 +135,27 @@ const total = catalog.length;
 </Base>
 
 <style>
+  /* The opening screen: the words on the left, the working simulation on the
+     right, framed as an object on the bench. Stacked below 760px so the frame
+     keeps the full width of a phone. */
+  .bench {
+    display: grid;
+    grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
+    gap: 32px;
+    align-items: start;
+    padding-top: 16px;
+  }
+
+  @media (max-width: 760px) {
+    .bench {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
   h1 {
-    font-size: 2rem;
+    font-size: 2.5rem;
     font-weight: 600;
+    line-height: 1.1;
     margin: 0 0 16px;
   }
 
@@ -133,91 +165,116 @@ const total = catalog.length;
     margin: 0 0 4px;
   }
 
+  h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+
   .lead {
-    font-size: 1.125rem;
+    font-size: 1.0625rem;
     color: var(--text-muted);
-    max-width: 60ch;
+    margin: 0 0 24px;
   }
 
   .status {
-    margin-top: 32px;
-    padding: 16px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--surface);
-  }
-
-  .section-lead {
-    margin: 0 0 16px;
+    margin: 0 0 32px;
     color: var(--text-dim);
     font-size: 0.9375rem;
   }
 
-  .batch,
-  .kelas {
-    margin-top: 48px;
+  .featured {
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
   }
 
-  .cards {
-    display: grid;
-    gap: 16px;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  .card {
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--surface);
-    padding: 16px;
-  }
-
-  .card h3 {
-    font-size: 1rem;
+  .featured h2 {
+    font-size: 0.875rem;
     font-weight: 600;
-    margin: 0 0 6px;
+    color: var(--text-dim);
+    margin: 0 0 8px;
   }
 
-  .card a {
-    color: var(--link);
+  .featured-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 4px;
   }
 
-  .card-meta {
+  .featured-title a {
+    color: var(--text);
+    text-decoration-color: var(--accent);
+    text-underline-offset: 4px;
+  }
+
+  .meta {
     margin: 0 0 8px;
     color: var(--text-dim);
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
   }
 
-  .card-description {
+  .description {
     margin: 0;
     color: var(--text-muted);
     font-size: 0.9375rem;
   }
 
-  .stages {
-    margin-top: 48px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--surface);
-    padding: 20px;
+  /* The frame is the simulation's own object on the bench. Its border is the
+     stronger hairline, so the edge between the two palettes is drawn on purpose.
+     The height is fixed to the first screen; the simulation scrolls inside it,
+     and the open link gives the full page. */
+  .bench-frame iframe {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    height: clamp(420px, 70vh, 680px);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color-scheme: dark;
+  }
+
+  iframe:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 3px;
+  }
+
+  .fallback {
+    margin: 12px 0 0;
+    font-size: 0.9375rem;
+    color: var(--text-dim);
+  }
+
+  .fallback a,
+  .stage-list a,
+  .stage-more a,
+  .band-more a,
+  .katalog-link a,
+  .row h3 a,
+  .featured-title a {
+    color: var(--link);
+  }
+
+  .stages,
+  .band {
+    margin-top: 56px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
   }
 
   .stage-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px 28px;
+    gap: 12px 32px;
     list-style: none;
     margin: 12px 0 16px;
     padding: 0;
   }
 
-  .stage-list a,
-  .stage-more a,
-  .kelas-more a,
-  .katalog-link a {
-    color: var(--link);
+  .stage-list li {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
   }
 
   .stage-count {
@@ -226,18 +283,39 @@ const total = catalog.length;
   }
 
   .stage-more,
-  .kelas-more {
-    margin: 0;
+  .band-more {
+    margin: 12px 0 0;
     color: var(--text-dim);
     font-size: 0.9375rem;
   }
 
-  .kelas-more {
-    margin-top: 16px;
+  /* A band is a bench row, not a card grid: one line of hairlines per simulation,
+     so the page reads as a list to work through in syllabus order. */
+  .rows {
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0;
+  }
+
+  .row {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .row-description {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.9375rem;
   }
 
   .katalog-link {
-    margin-top: 24px;
+    margin-top: 32px;
     font-size: 1rem;
+  }
+
+  @media (max-width: 760px) {
+    h1 {
+      font-size: 2rem;
+    }
   }
 </style>

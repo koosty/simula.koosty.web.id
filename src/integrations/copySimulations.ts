@@ -19,7 +19,7 @@ import { discoverSimulations, levelForSourceFolder } from '../lib/simulations';
  * bundles this integration, so its own directory at run time is the emitted
  * chunk, not src/integrations. The build runs from the project root.
  */
-const SIMULATION_ROOT = resolve(process.cwd(), 'example-simulations');
+const SIMULATION_ROOT = resolve(process.cwd(), 'simulations');
 
 /**
  * Cloudflare Pages reads static response headers from `_headers`. A simulation

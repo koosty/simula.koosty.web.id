@@ -3,32 +3,19 @@ import { groupByKelas } from './katalogFilter';
 import { tingkatLabel, tingkatProgression } from './tingkat';
 import { kelasSegment, landingPath } from './landing';
 
-/**
- * How many simulations the home page's opening batch shows.
- *
- * Six is what fits on a phone screen without the reader having to scroll past
- * the batch to reach anything else.
- */
-export const HOME_BATCH_SIZE = 6;
-
 /** How many simulations one class is previewed by on the home page. */
 export const HOME_CLASS_PREVIEW_SIZE = 4;
 
 /**
- * The opening batch of simulations.
+ * The simulation the home page opens with, live, on the first screen.
  *
- * The catalog records no date, so the latest simulations cannot be identified
- * by one and calling any set of them "the newest" would be a claim the build
- * cannot support. Display order is the only recency signal the site has, and it
- * is a real one: a class works through the syllabus front to back, so the last
- * material is what is being taught now.
- *
- * The end of the syllabus rather than the beginning, because each class's
- * previews below start at its beginning. Taking the head here too would put the
- * same simulations on screen twice under two different headings.
+ * The first in display order: a class works through the syllabus front to back,
+ * so the start is where a pupil begins, and the page can say so plainly. Null
+ * when the catalog is empty, so the page shows no frame rather than a broken one.
  */
-export function homeBatch(entries: CatalogEntry[]): CatalogEntry[] {
-  return displayOrder(entries).slice(-HOME_BATCH_SIZE);
+export function homeFeatured<T extends CatalogEntry>(entries: T[]): T | null {
+  const first = displayOrder(entries)[0];
+  return entries.find((entry) => entry.slug === first?.slug) ?? null;
 }
 
 /** One class previewed on the home page, with the way into the full class. */

@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { describe, it, expect } from 'vitest';
 import { parse } from 'yaml';
 import { simulasiUrl } from '../src/lib/catalog';
-import { homeBatch, homeClassSections, homeStages } from '../src/lib/home';
+import { homeClassSections, homeFeatured, homeStages } from '../src/lib/home';
 import type { CatalogEntry } from '../src/lib/types';
 
 const ROOT = resolve(import.meta.dirname, '..');
@@ -69,13 +69,17 @@ describe('the built home page', () => {
 describe('the built home page lists what exists', () => {
   const html = homeHtml;
 
-  it('shows a batch of simulations as cards linking to their page', () => {
-    // Checked against the catalog, not a number written here: simulations
-    // arrive through the deploy hook with nobody in the middle.
-    for (const entry of homeBatch(CATALOG)) {
-      expect(html).toMatch(new RegExp(`href="${simulasiUrl(entry)}"`));
-      expect(text).toContain(entry.title);
-    }
+  it('opens with the first simulation, framed live above everything else', () => {
+    // The first screen is the simulation itself, so the frame must come before
+    // any list on the page, and it must be the first simulation in syllabus order.
+    const first = homeFeatured(CATALOG);
+    expect(first, 'the catalog has no simulations to open with').not.toBeNull();
+    const frameAt = html.indexOf('<iframe');
+    expect(frameAt).toBeGreaterThan(-1);
+    expect(html.slice(frameAt, frameAt + 200)).toMatch(
+      new RegExp(`src="/simulasi/[^"]+/${first?.slug}\\.html"`),
+    );
+    expect(frameAt).toBeLessThan(html.indexOf('Telusuri per tingkat'));
   });
 
   it('shows a few simulations from every populated class', () => {

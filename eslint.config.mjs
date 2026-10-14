@@ -18,7 +18,7 @@ export default [
     ignores: [
       // The simulation files are produced by an external tool and are never
       // edited here, so they are not ours to lint.
-      'example-simulations/**',
+      'simulations/**',
       '.scratch/**',
       // Generated output, none of it written by hand.
       'dist/**',

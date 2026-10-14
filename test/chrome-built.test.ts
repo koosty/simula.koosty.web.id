@@ -1,14 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
-import {
-  TOKENS,
-  asHex,
-  contrastRatio,
-  isHexColour,
-  AA_NON_TEXT,
-  type HexColour,
-} from '../src/lib/theme';
+import { TOKENS, asHex, contrastRatio, AA_NON_TEXT } from '../src/lib/theme';
 
 /**
  * The built pages the ticket names, plus one simulation page because that is
@@ -69,24 +62,12 @@ describe('every page carries the palette', () => {
     }
   });
 
-  it('paints the page background with the simulation background', () => {
-    // Criterion: the chrome and the simulations are one surface. The page is
-    // what surrounds the frame, so this is the colour the eye compares across
-    // that edge.
+  it('paints the page background from the palette token', () => {
+    // Every page is built on this one colour, so each must paint it from the
+    // palette rather than a value of its own.
     for (const path of PAGES) {
       expect(cssOf(path), path).toMatch(/html\{[^}]*background:\s*var\(--bg\)/);
     }
-  });
-
-  it('paints the frame with the same background as the page', () => {
-    // Criterion: no embedded simulation reads as a hard-edged black rectangle
-    // against white. Against the chrome it is the same value, so the seam has
-    // no contrast of its own.
-    // Matched on the selector's own name rather than anchored to `iframe{`:
-    // Astro scopes a page's rules with a data attribute, so the built
-    // selector reads iframe[data-astro-cid-...].
-    const css = cssOf(PAGES[PAGES.length - 1]);
-    expect(css).toMatch(/iframe[^{}]*\{[^}]*background:\s*var\(--bg\)/);
   });
 
   it('gives the frame border-box, so its border does not make it wider than its column', () => {
@@ -98,13 +79,6 @@ describe('every page carries the palette', () => {
     const frame = [...css.matchAll(/iframe[^{}]*\{([^{}]*)\}/g)].find((m) => /background/.test(m[1]));
     expect(frame, 'no iframe rule with a background').toBeDefined();
     expect(frame?.[1]).toMatch(/box-sizing:\s*border-box/);
-  });
-
-  it('gives the frame the shared hairline, not an edge lighter than both sides', () => {
-    // A border brighter than the page and the simulation would draw the very
-    // edge the ticket says not to draw, even with the backgrounds matched.
-    const css = cssOf(PAGES[PAGES.length - 1]);
-    expect(css).toMatch(/iframe[^{}]*\{[^}]*border:\s*1px solid var\(--border\)/);
   });
 });
 
@@ -323,37 +297,6 @@ describe('the palette on paper', () => {
     expect(hues).toEqual([]);
   });
 });
-
-describe('no simulation file was touched to make the chrome match', () => {
-  it('leaves every simulation still declaring the palette the chrome copied', () => {
-    // The whole point of this ticket is that the chrome moved to the
-    // simulations, not the other way round. A palette match achieved by editing
-    // them would break that and every link to the file behind them.
-    //
-    // This is about the palette specifically. A simulation that is broken on
-    // its own terms does get fixed — the boundary is intent, not provenance
-    // (docs/adr/0005): nothing is reshaped to suit the site, but a defect a
-    // reader can see is fixed in the file it lives in.
-    const dir = resolve(import.meta.dirname, '..', 'example-simulations/lower-secondary/grade-7');
-    const files = readdirSync(dir).filter((name) => name.endsWith('.html'));
-    expect(files.length).toBeGreaterThan(0);
-    for (const name of files) {
-      const html = readFileSync(resolve(dir, name), 'utf8');
-      // Read from the file's own :root block, not by searching the whole
-      // document: every simulation also carries a light-theme block and its
-      // inline scripts, and a match anywhere in those would pass for a palette
-      // that had been edited away.
-      const root = html.slice(html.indexOf(':root'), html.indexOf('}', html.indexOf(':root')));
-      const declared = root.match(/--bg\s*:\s*(#[0-9a-f]{3,6})/i)?.[1];
-      // Compared as colours rather than as strings: the simulations write
-      // `--bg: #0a0a1a` in some files and `--bg:#0a0a1a` in others, and a string
-      // comparison would fail on the spacing while the palette was identical.
-      expect(declared, `${name} declares no --bg`).toBeDefined();
-      expect(isHexColour(declared as string), name).toBe(true);
-      expect(contrastRatio(declared as HexColour, asHex('bg')), name).toBe(1);
-    }
-  });
-});
 describe('everything the reader can perceive is in Bahasa Indonesia', () => {
   const SITE_PAGES = PAGES;
 
@@ -445,7 +388,7 @@ describe('a canvas bitmap is at least as wide as the box it is drawn into', () =
   // Read from the source because that is all a test can see without a browser.
   // The browser check that backs this up lives in the commit message: the
   // painted extent went from 232px of CSS width to 534px in a 554px box.
-  const SIMS = resolve(import.meta.dirname, '..', 'example-simulations/lower-secondary/grade-7');
+  const SIMS = resolve(import.meta.dirname, '..', 'simulations/lower-secondary/grade-7');
 
   it('never sizes a canvas from CSS alone', () => {
     // The rule for every canvas in the batch: if it is stretched to fill its

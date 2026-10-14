@@ -13,7 +13,7 @@ export type SimulasiEntry = CollectionEntry<'simulasi'>;
  * build bundles this module, so its own directory at run time is the emitted
  * chunk, not src/lib. Every build and dev command runs from the project root.
  */
-export const SIMULATION_ROOT = resolve(process.cwd(), 'example-simulations');
+export const SIMULATION_ROOT = resolve(process.cwd(), 'simulations');
 
 /**
  * A catalog entry plus the one thing the catalog does not own: the level of the

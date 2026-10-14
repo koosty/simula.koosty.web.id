@@ -1,11 +1,10 @@
 /**
  * The site's palette, and the arithmetic that holds it readable.
  *
- * The colours are the ones the simulations already use, copied rather than
- * invented: an embedded simulation sitting in this chrome should read as part
- * of the same surface rather than as a rectangle punched through the page
- * (docs/adr/0009). All 23 simulations declare the same values, and a test
- * checks these against the files themselves so the two cannot drift apart.
+ * A dark palette of the site's own, chosen for the home page's bench layout
+ * (docs/adr/0010). It does not match the simulations' navy, so the frame an
+ * embedded simulation sits in is a visible edge by design. The test suite
+ * checks every text role against the ratio its use needs.
  */
 
 /** A colour this module can do contrast arithmetic on. */
@@ -53,32 +52,27 @@ export type SurfaceToken = Extract<TokenName, 'bg' | 'surface'>;
 export type ForegroundToken = Extract<TokenName, 'text' | 'textMuted' | 'textDim' | 'link'>;
 
 /**
- * The colours, as the simulations declare them under their own names.
+ * The site's colours, under the names the rest of the site paints with.
  *
- * Written out here in the same values rather than parsed out of a simulation at
- * build time: a simulation file is content this site does not own and does not
- * edit, so reading its stylesheet to paint the chrome would make the site's
- * appearance depend on a file that is replaced without notice. The test asserts
- * the two still agree, which is the check that would notice.
+ * Written as literal values here and checked by test/theme.test.ts. There is
+ * no link to the simulations' palette any more (docs/adr/0010 supersedes 0009).
  */
-export const SIMULATION_TOKENS = {
-  bg: '#0a0a1a',
-  surface: '#14141e',
-  panel: 'rgba(20, 20, 30, 0.9)',
-  border: 'rgba(255, 255, 255, 0.1)',
-  borderStrong: '#333333',
-  text: '#ffffff',
-  textMuted: '#aaa',
-  textDim: '#888888',
-  link: '#cfe3ff',
+export const TOKENS: Record<TokenName, string> = {
+  bg: '#0e1311',
+  surface: '#161d1a',
+  panel: 'rgba(22, 29, 26, 0.9)',
+  border: 'rgba(241, 238, 228, 0.12)',
+  borderStrong: '#3b4742',
+  text: '#f1eee4',
+  textMuted: '#c2beb0',
+  textDim: '#9b9789',
+  link: '#9ed9c2',
   linkHover: '#ffffff',
-  accent: '#6366f1',
-  focusRing: '#a5b4fc',
+  accent: '#e3b451',
+  focusRing: '#ffd98a',
   radius: '12px',
   radiusSmall: '8px',
 } as const satisfies Record<TokenName, string>;
-
-export const TOKENS: Record<TokenName, string> = SIMULATION_TOKENS;
 
 /**
  * The palette as CSS custom properties, ready for a second theme.

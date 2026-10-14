@@ -11,7 +11,7 @@ import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { resolveSimulationRequest } from '../src/integrations/copySimulations';
 
-const ROOT = resolve(process.cwd(), 'example-simulations');
+const ROOT = resolve(process.cwd(), 'simulations');
 
 /**
  * A simulation is served from /simulasi/<level>/<file>.html, but the files
@@ -26,7 +26,7 @@ function requestTo(urlPath: string): string | null {
  * A throwaway tree in the tool's folder layout, for the guards that only differ
  * from the real batch when a file the batch happens not to contain exists.
  *
- * Nothing here writes to example-simulations: those files are the tool's output
+ * Nothing here writes to simulations: those files are the tool's output
  * and this site does not reshape them (docs/adr/0005).
  */
 function fixtureWith(...files: string[]): string {
