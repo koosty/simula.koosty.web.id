@@ -27,6 +27,9 @@ export default [
       // Generated output, none of it written by hand.
       'dist/**',
       'node_modules/**',
+      // Wrangler's build scratch space, written by `wrangler dev`. It holds
+      // generated middleware and worker bundles, not project code.
+      '.wrangler/**',
       // Astro regenerates this on every sync, so linting it only reports the
       // tool's own generated type definitions.
       '.astro/**',

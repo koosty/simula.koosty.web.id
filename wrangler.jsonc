@@ -1,0 +1,26 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "simula",
+  "compatibility_date": "2026-10-15",
+
+  // The site is static: Astro writes every page into dist/ and there is no
+  // server code, so this Worker exists only to serve those files.
+  //
+  // html_handling and not_found_handling are left at their defaults on purpose.
+  // The default "auto-trailing-slash" is what Cloudflare documents for a static
+  // site: a file like simulasi/smp/x.html is answered with a redirect to the
+  // same path without the extension, and a folder index is served with the
+  // trailing slash Astro already emits. Pages does the same clean-URL redirect,
+  // so the raw simulation URLs behave identically on either host.
+  //
+  // Setting it to "none" was tried and is wrong: it disables folder index
+  // resolution too, and every page URL on the site then returns 404.
+  //
+  // Wrangler falls back to .gitignore when an assets directory carries no
+  // .assetsignore, so a pattern added to .gitignore that matches a built file
+  // would delete it from the deploy with no warning. Nothing there may gain a
+  // pattern like "*.html" for that reason.
+  "assets": {
+    "directory": "./dist"
+  }
+}

@@ -61,28 +61,32 @@ checked against the ratio its use needs before it reaches a page.
 
 ## Deploying
 
-Hosting is Cloudflare Pages, per `docs/adr/0002`. The site builds on push to the
-main branch.
+Hosting is Cloudflare Workers serving static assets, per `docs/adr/0014`. The
+site builds on push to the main branch.
 
 1. **Push this repository to GitHub.** There is no remote configured yet:
 
    ```
    git remote add origin <url>
-   git push -u origin master
+   git push -u origin main
    ```
 
    A push also runs `.github/workflows/verify.yml`, which is `npm run verify`:
    check, lint, tests. It gates nothing on its own, but it is the same work the
    deploy does, so a red run is a build that would have failed.
 
-2. **Create the Cloudflare Pages project.** In the Cloudflare dashboard, under
-   Workers & Pages, create a Pages project connected to the repository:
+2. **Create the Cloudflare project.** In the Cloudflare dashboard, under
+   Workers & Pages, create a **Workers** project connected to the repository:
 
-   - Framework preset: `Astro`
    - Build command: `npm run build`
-   - Build output directory: `dist`
+   - Deploy command: `npx wrangler deploy`
    - Node version: read from `.nvmrc`, which pins what `package.json` asks for.
      Set it under Settings only if the build log disagrees
+
+   `wrangler.jsonc` names the assets directory, so wrangler uploads `dist/` and
+   nothing needs saying about an output directory. Do not set
+   `html_handling` to `none` in that file: it also disables folder index
+   resolution, and every page URL on the site then returns 404.
 
 3. **Attach the custom domain.** Add `simula.koosty.web.id` to the project's
    Custom Domains. Cloudflare adds the required DNS record automatically when the
@@ -154,11 +158,12 @@ would point at a file that is not there.
 ## Deploy hook
 
 `docs/adr/0002` records that the tool triggers a rebuild by POSTing to a deploy
-hook. Create the hook under the project's Settings in the Cloudflare dashboard,
-then set it where the script runs:
+hook, and `docs/adr/0014` keeps that working on Workers. Create the hook under
+the project's Settings in the Cloudflare dashboard, then set it where the script
+runs:
 
 ```
-SIMULA_DEPLOY_HOOK=https://api.cloudflare.com/client/v4/pages/.../deploys
+SIMULA_DEPLOY_HOOK=https://api.cloudflare.com/client/v4/workers/builds/deploy_hooks/<uuid>
 ```
 
 That URL is a credential, so it belongs in the environment and not in this
@@ -169,9 +174,9 @@ check is reported and the script exits; the batch is already written either
 way, so nothing is lost. The request gives up after 30 seconds rather than
 hanging the publish.
 
-With it set, `npm run publish` writes the batch and asks Cloudflare Pages to
-rebuild. Without it the batch is still written and the script says so; commit
-and push it by hand instead.
+With it set, `npm run publish` writes the batch and asks Cloudflare to rebuild.
+Without it the batch is still written and the script says so; commit and push
+it by hand instead.
 
 The script never commits or pushes. Whoever runs it decides what goes into
 git — a hook on another host may do that part itself.
@@ -194,7 +199,7 @@ the response headers and the deploy hook are in place. What remains needs
 account access and cannot be done from this repository:
 
 - Create the GitHub repository and add the remote.
-- Create the Cloudflare Pages project and connect it to that repository.
+- Create the Cloudflare Workers project and connect it to that repository.
 - Attach the custom domain and let the DNS record resolve.
 - Create the deploy hook and export `SIMULA_DEPLOY_HOOK`.
 
