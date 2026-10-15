@@ -64,7 +64,16 @@ checked against the ratio its use needs before it reaches a page.
 Hosting is Cloudflare Pages, per `docs/adr/0002`. The site builds on push to the
 main branch.
 
-1. **Push this repository to a Git host** (GitHub, GitLab, or Bitbucket).
+1. **Push this repository to GitHub.** There is no remote configured yet:
+
+   ```
+   git remote add origin <url>
+   git push -u origin master
+   ```
+
+   A push also runs `.github/workflows/verify.yml`, which is `npm run verify`:
+   check, lint, tests. It gates nothing on its own, but it is the same work the
+   deploy does, so a red run is a build that would have failed.
 
 2. **Create the Cloudflare Pages project.** In the Cloudflare dashboard, under
    Workers & Pages, create a Pages project connected to the repository:
@@ -72,7 +81,8 @@ main branch.
    - Framework preset: `Astro`
    - Build command: `npm run build`
    - Build output directory: `dist`
-   - Node version: `22` or newer, set under Settings, since Astro requires it
+   - Node version: read from `.nvmrc`, which pins what `package.json` asks for.
+     Set it under Settings only if the build log disagrees
 
 3. **Attach the custom domain.** Add `simula.koosty.web.id` to the project's
    Custom Domains. Cloudflare adds the required DNS record automatically when the
@@ -152,9 +162,16 @@ SIMULA_DEPLOY_HOOK=https://api.cloudflare.com/client/v4/pages/.../deploys
 ```
 
 That URL is a credential, so it belongs in the environment and not in this
-repository. With it set, `npm run publish` writes the batch and asks Cloudflare
-Pages to rebuild. Without it the batch is still written and the script says so;
-commit and push it by hand instead.
+repository. It is also checked before anything is sent: it must be `https` on
+`api.cloudflare.com`, since the URL is what authorises the rebuild and posting
+it elsewhere would hand that authority to another host. A URL that fails the
+check is reported and the script exits; the batch is already written either
+way, so nothing is lost. The request gives up after 30 seconds rather than
+hanging the publish.
+
+With it set, `npm run publish` writes the batch and asks Cloudflare Pages to
+rebuild. Without it the batch is still written and the script says so; commit
+and push it by hand instead.
 
 The script never commits or pushes. Whoever runs it decides what goes into
 git — a hook on another host may do that part itself.
@@ -172,7 +189,12 @@ class page's content at a second address. See `docs/adr/0008`.
 
 ## Current status
 
-The site builds and the home page has been verified in a browser, but **the site
-is not live yet**. There is no DNS record for `simula.koosty.web.id` and no
-Cloudflare project yet, both of which need dashboard access. Steps 1 to 4 above
-are what remains.
+The in-repo work is done and verified: the site builds, `npm run verify` passes,
+the response headers and the deploy hook are in place. What remains needs
+account access and cannot be done from this repository:
+
+- Create the GitHub repository and add the remote.
+- Create the Cloudflare Pages project and connect it to that repository.
+- Attach the custom domain and let the DNS record resolve.
+- Create the deploy hook and export `SIMULA_DEPLOY_HOOK`.
+

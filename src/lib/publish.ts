@@ -94,9 +94,13 @@ export function planPublish(scenes: SceneSource[], existing: CatalogEntry[]): Pu
   // title when it corrects the simulation, so matching on the title alone would
   // publish the correction under a new slug and strand the address that search
   // results already point at (docs/adr/0007).
+  //
+  // The key carries the subject because a scene id counts one course's scenes:
+  // two subjects each have an s2, and keying on the id alone would keep only
+  // one of them, so the other would be published a second time on every run.
   const byScene = new Map<string, CatalogEntry>();
   for (const entry of existing) {
-    if (entry.scene) byScene.set(entry.scene, entry);
+    if (entry.scene) byScene.set(`${entry.subject}/${entry.scene}`, entry);
   }
   const bySlug = new Map(existing.map((entry) => [entry.slug, entry]));
   const matched = new Set<string>();
@@ -130,14 +134,13 @@ export function planPublish(scenes: SceneSource[], existing: CatalogEntry[]): Pu
     }
 
     // Scene ids are only unique inside a course: every course numbers its
-    // scenes from s1. An entry is therefore only the same simulation when it is
-    // the same subject as well, or IPA's s15 reads as a correction of
-    // Matematika's s15 and publishes IPA's HTML under the Matematika title.
-    const sameScene = byScene.get(scene.id);
+    // scenes from s1. The subject is part of the lookup for that reason, so
+    // IPA's s15 is never read as a correction of Matematika's s15 and IPA's own
+    // s15 is not lost to it (docs/adr/0012).
+    const sameScene = byScene.get(`${subject}/${scene.id}`);
     const sameSlug = bySlug.get(slugFromTitle);
     const entry =
-      (sameScene?.subject === subject ? sameScene : undefined) ??
-      (sameSlug && !sameSlug.scene && sameSlug.subject === subject ? sameSlug : undefined);
+      sameScene ?? (sameSlug && !sameSlug.scene && sameSlug.subject === subject ? sameSlug : undefined);
 
     if (entry && !matched.has(entry.slug)) {
       // The same simulation, corrected. Its slug, catalog entry and URL all stand.

@@ -141,6 +141,22 @@ describe('planPublish', () => {
     expect(problems.join(' ')).toMatch(/lama/);
   });
 
+  it('finds every subject its own entry for a shared scene id', () => {
+    // Both subjects number their scenes from s1, so both have an s1. Looking
+    // them up by id alone keeps only one of them, and the other is published a
+    // second time on every run, which is a slug collision the batch refuses.
+    const other = publishedToEntry(published({ slug: 'lama', scene: 's1', subject: 'ipa' }));
+    const math = publishedToEntry(published({ slug: 'lama', scene: 's1' }));
+    const ipaScene = scene({
+      id: 's1',
+      title: 'Lama',
+      courseFolder: 'ipa-smp-kelas-vii',
+      sourceFolder: 'lower-secondary/grade-7/ipa',
+      subject: 'ipa',
+    });
+    expect(planPublish([ipaScene], [math, other]).updated.map((s) => s.slug)).toEqual(['lama']);
+  });
+
   it('records the scene id on a simulation it adds', () => {
     // Without this the next batch cannot recognise the simulation and would
     // treat a reworded title as a new one.

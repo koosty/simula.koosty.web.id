@@ -34,6 +34,17 @@ import {
   simulationPathFor,
   subjectOf,
 } from '../src/lib/publish.ts';
+import { checkDeployHook } from '../src/lib/deployHook.ts';
+
+/**
+ * How long to wait for the hook to acknowledge a rebuild request.
+ *
+ * The hook answers as soon as the build is queued, not when it finishes, so
+ * this only has to cover the round trip. It is here so that a hook which never
+ * answers fails the publish instead of hanging it, with the batch already
+ * written and nothing to show for the wait.
+ */
+const DEPLOY_HOOK_TIMEOUT_MS = 30_000;
 
 const args = process.argv.slice(2);
 
@@ -250,18 +261,41 @@ if (TRIGGER) await triggerDeploy();
  * has already been written and can still be pushed by hand.
  */
 async function triggerDeploy() {
-  const hook = process.env.SIMULA_DEPLOY_HOOK;
-  if (!hook) {
-    console.warn(
-      '\nSIMULA_DEPLOY_HOOK belum disetel, jadi rebuild tidak dipicu. ' +
-        'Commit hasil batch lalu push, atau setel hook tersebut.',
-    );
-    return;
+  const checked = checkDeployHook(process.env.SIMULA_DEPLOY_HOOK);
+  if ('error' in checked) {
+    // Unset is a normal run and only needs a warning, because the batch is on
+    // disk and can be pushed by hand. A bad URL is a mistake and needs a person.
+    if (!process.env.SIMULA_DEPLOY_HOOK) {
+      console.warn(
+        `\n${checked.error} Rebuild tidak dipicu. ` +
+          'Commit hasil batch lalu push, atau setel hook tersebut.',
+      );
+      return;
+    }
+    console.error(`${checked.error} Batch sudah tertulis; push manual.`);
+    process.exit(1);
   }
 
-  const response = await fetch(hook, { method: 'POST' });
-  if (!response.ok) {
-    console.error(`Deploy hook menjawab ${response.status}. Batch sudah tertulis; push manual.`);
+  // A rebuild that never answers would hang the publish forever with the batch
+  // already on disk and no explanation, so the wait is bounded. Cloudflare
+  // answers a deploy hook in well under this; the timeout is not a budget for
+  // the build itself, which keeps running after this returns.
+  try {
+    const response = await fetch(checked.url, {
+      method: 'POST',
+      signal: AbortSignal.timeout(DEPLOY_HOOK_TIMEOUT_MS),
+    });
+    if (!response.ok) {
+      console.error(
+        `Deploy hook menjawab ${response.status}. Batch sudah tertulis; push manual.`,
+      );
+      process.exit(1);
+ }
+  } catch (error) {
+    console.error(
+      `Deploy hook tidak menjawab: ${error instanceof Error ? error.message : String(error)}. ` +
+        'Batch sudah tertulis; push manual.',
+    );
     process.exit(1);
   }
   console.log('\nDeploy hook dipicu. Cloudflare Pages akan membangun ulang situs.');

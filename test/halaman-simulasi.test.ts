@@ -86,4 +86,18 @@ describe('the copied simulation files', () => {
     expect(headers).toContain('/simulasi/*');
     expect(headers).toContain('X-Robots-Tag: noindex');
   });
+
+  it('sends the site-wide security headers to every page', () => {
+    // Only headers that cannot change what a reader sees. A Halaman Simulasi
+    // frames its own simulation, so SAMEORIGIN has to permit that; a
+    // Content-Security-Policy is deliberately absent because the simulations
+    // carry their own inline scripts and styles.
+    const headers = readFileSync(resolve(DIST, '_headers'), 'utf8');
+    const siteWide = headers.slice(0, headers.indexOf('/simulasi/*'));
+    expect(siteWide).toContain('X-Content-Type-Options: nosniff');
+    expect(siteWide).toContain('Referrer-Policy:');
+    expect(siteWide).toContain('Strict-Transport-Security:');
+    expect(siteWide).toContain('X-Frame-Options: SAMEORIGIN');
+    expect(headers).not.toContain('Content-Security-Policy');
+  });
 });

@@ -1,0 +1,34 @@
+# Check the site the way a contributor does, before Cloudflare builds it.
+#
+# This runs `npm run verify`, which is check, lint and the test suite. It does
+# not deploy: Cloudflare Pages builds and publishes on push (docs/adr/0002), so
+# a second deploy path here would be one more thing that can disagree.
+name: verify
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+# A newer push to the same branch makes a running check pointless.
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # The version package.json asks for, pinned by .nvmrc.
+          node-version-file: .nvmrc
+          cache: npm
+
+      # `npm ci` installs exactly package-lock.json and fails if the lockfile
+      # and package.json disagree, which a plain install would not.
+      - run: npm ci
+
+      - run: npm run verify

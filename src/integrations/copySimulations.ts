@@ -22,11 +22,30 @@ import { discoverSimulations, levelForSourceFolder } from '../lib/simulations';
 const SIMULATION_ROOT = resolve(process.cwd(), 'simulations');
 
 /**
- * Cloudflare Pages reads static response headers from `_headers`. A simulation
- * must stay byte-identical to what the tool produced, so its `noindex` is
- * delivered as a header rather than by editing the file (docs/adr/0005).
+ * Cloudflare Pages reads static response headers from `_headers`.
+ *
+ * The first block applies to the whole site and holds only headers that cannot
+ * change what a reader sees: nosniff, a referrer policy, and HSTS. SAMEORIGIN
+ * still lets a Halaman Simulasi frame its own simulation, because both are
+ * served from this one origin. No Content-Security-Policy: the simulations ship
+ * their own inline scripts and styles, so a policy strict enough to be worth
+ * having would blank all 71 of them until each was given a nonce or a hash.
+ *
+ * The second block is per-path. A simulation must stay byte-identical to what
+ * the tool produced, so its `noindex` is delivered as a header rather than by
+ * editing the file (docs/adr/0005).
  */
-const HEADERS = '/simulasi/*\n  X-Robots-Tag: noindex\n';
+const HEADERS = [
+  '/*',
+  '  X-Content-Type-Options: nosniff',
+  '  Referrer-Policy: strict-origin-when-cross-origin',
+  '  X-Frame-Options: SAMEORIGIN',
+  '  Strict-Transport-Security: max-age=31536000; includeSubDomains',
+  '',
+  '/simulasi/*',
+  '  X-Robots-Tag: noindex',
+  '',
+].join('\n');
 
 const NOINDEX_STUB =
   '<!doctype html><html lang="id"><head><meta charset="utf-8">' +
