@@ -120,7 +120,7 @@ const navLinks = navLinksFor(catalog, Astro.url.pathname);
   .site-nav {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 16px;
+    padding: 12px 16px 0;
     border-bottom: 1px solid var(--border);
   }
 
@@ -133,25 +133,101 @@ const navLinks = navLinksFor(catalog, Astro.url.pathname);
     color: var(--text);
     text-decoration: none;
     font-size: 1.125rem;
+    font-family: var(--font-display);
   }
 
+  /* Navigation is a row of tabs along the bottom edge of the bar, the way a
+     cabinet menu is laid out. The current tab is lit with the accent line. */
   .site-nav ul {
     list-style: none;
     padding: 0;
     margin: 0;
     display: flex;
     flex-wrap: wrap;
-    gap: 8px 16px;
+    gap: 0 4px;
   }
 
   .site-nav a {
+    display: inline-block;
+    padding: 10px 12px 8px;
     color: var(--link);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-bottom: 2px solid var(--bg);
+  }
+
+  .site-nav a:hover {
+    color: var(--text);
+    border-bottom-color: var(--border-strong);
   }
 
   /* The page the reader is on is marked rather than dimmed alone, so the state
      is available to a screen reader as well as visible. */
   .site-nav a[aria-current='page'] {
     color: var(--text);
+    border-bottom-color: var(--accent);
+  }
+
+  /* One card style for every grid of simulations, so a card looks the same on
+     the home page, in the catalogue and on a class page. */
+  .cards {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+
+  .card {
+    position: relative;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+
+  /* The lit marquee bar along the top edge of a panel. */
+  .card::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    right: -1px;
+    height: 2px;
+    border-radius: var(--radius) var(--radius) 0 0;
+    background: var(--accent);
+  }
+
+  .card h3 {
+    margin: 0 0 8px;
+    font-size: 1.0625rem;
     font-weight: 600;
+  }
+
+  .card a {
+    color: var(--link);
+    text-decoration: none;
+  }
+
+  .card a:hover,
+  .card a:focus-visible {
+    color: var(--text);
+    text-decoration: underline;
+  }
+
+  .card-meta {
+    margin: 0 0 8px;
+    font-size: 0.8125rem;
+    color: var(--text-dim);
+  }
+
+  .card-description {
+    margin: 0;
+    font-size: 0.9375rem;
+    color: var(--text-muted);
   }
 </style>

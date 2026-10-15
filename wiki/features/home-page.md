@@ -83,9 +83,9 @@ Sources: [src/lib/home.ts:44-53](), [src/lib/home.ts:7](), [src/lib/home.ts:29-4
 | Element | Content | Sources |
 |---|---|---|
 | Section heading | `section.label`, id `kelas-${key.replace('/', '-')}` | [src/pages/index.astro:108-109]() |
-| Row title | Link to `simulasiUrl(entry)` | [src/pages/index.astro:112-115]() |
-| Row description | `entry.description` | [src/pages/index.astro:116]() |
-| Band footer | `Lihat {total} simulasi di {label}` linking to `section.path` | [src/pages/index.astro:120-122]() |
+| Card title | Link to `simulasiUrl(entry)` | [src/pages/index.astro:112-115]() |
+| Card description | `entry.description` | [src/pages/index.astro:116]() |
+| Section footer | `Lihat {total} simulasi di {label}` linking to `section.path` | [src/pages/index.astro:120-122]() |
 
 ## Empty catalog
 

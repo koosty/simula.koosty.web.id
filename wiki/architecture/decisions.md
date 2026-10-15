@@ -39,18 +39,19 @@ Each record is a single Markdown file numbered from `0001`. Where an ADR is cite
 | 0007 | [Replacing a simulation keeps its URL](../../docs/adr/0007-replacement-keeps-the-url.md) | Current | [src/lib/publish.ts](../../src/lib/publish.ts), `scene` in the catalog schema |
 | 0008 | [A printable sheet per class, kept out of the index](../../docs/adr/0008-printable-sheet-per-class.md) | Current | [src/lib/sheet.ts](../../src/lib/sheet.ts), [src/components/Sheet.astro](../../src/components/Sheet.astro) |
 | 0009 | [The chrome paints with the simulations' palette](../../docs/adr/0009-chrome-paints-with-the-simulations-palette.md) | **Superseded by 0010** for the palette | [src/lib/theme.ts](../../src/lib/theme.ts) |
-| 0010 | [The site keeps its own dark palette](../../docs/adr/0010-site-keeps-its-own-dark-palette.md) | **Superseded by 0015** for the palette | [src/lib/theme.ts](../../src/lib/theme.ts) |
+| 0010 | [The site keeps its own dark palette](../../docs/adr/0010-site-keeps-its-own-dark-palette.md) | **Superseded by 0015** for the palette, **by 0016** for layout | [src/lib/theme.ts](../../src/lib/theme.ts) |
 | 0011 | [Simulations are grouped by subject on disk](../../docs/adr/0011-simulations-are-grouped-by-subject-on-disk.md) | Current | [src/lib/simulations.ts](../../src/lib/simulations.ts), [src/integrations/copySimulations.ts](../../src/integrations/copySimulations.ts) |
 | 0012 | [A scene id names one simulation within its subject](../../docs/adr/0012-a-scene-id-names-one-simulation-within-its-subject.md) | Current | [src/lib/publish.ts](../../src/lib/publish.ts) |
 | 0013 | [Security headers that cannot break a simulation](../../docs/adr/0013-security-headers-that-cannot-break-a-simulation.md) | Current | [src/integrations/copySimulations.ts](../../src/integrations/copySimulations.ts) |
 | 0014 | [Serve the static site from a Worker](../../docs/adr/0014-serve-the-static-site-from-a-worker.md) | Current | [wrangler.jsonc](../../wrangler.jsonc) |
 | 0015 | [The site and simulations use the Neo-Arcade STEM palette](../../docs/adr/0015-neo-arcade-stem-palette.md) | Current | [src/lib/theme.ts](../../src/lib/theme.ts), [public/fonts/](../../public/fonts/) |
+| 0016 | [The site uses tab navigation and card grids](../../docs/adr/0016-tab-navigation-and-card-grids.md) | Current | [src/layouts/Base.astro](../../src/layouts/Base.astro), [src/pages/index.astro](../../src/pages/index.astro) |
 
 Sources: [docs/adr/](), [docs/adr/0009-chrome-paints-with-the-simulations-palette.md:1-3](), [docs/adr/0010-site-keeps-its-own-dark-palette.md:1-3]()
 
 ## Superseded decisions
 
-ADR 0010 supersedes ADR 0009 for the palette, and ADR 0015 supersedes ADR 0010 for the palette. The rest of 0009 and 0010 still holds: the site builds its chrome from `src/lib/theme.ts`, and a page writes `var(--text-muted)` rather than a literal.
+ADR 0010 supersedes ADR 0009 for the palette. ADR 0015 supersedes ADR 0010 for the palette. ADR 0016 supersedes ADR 0010 for layout: the home page's list of rows and the plain navigation list. The rest of 0009 and 0010 still holds: the site builds its chrome from `src/lib/theme.ts`, and a page writes `var(--text-muted)` rather than a literal.
 
 Sources: [docs/adr/0009-chrome-paints-with-the-simulations-palette.md:1-3](), [docs/adr/0010-site-keeps-its-own-dark-palette.md:1-3](), [CONTEXT.md:43-45]()
 

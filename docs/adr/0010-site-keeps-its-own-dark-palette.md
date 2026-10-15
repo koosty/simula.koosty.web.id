@@ -1,6 +1,6 @@
 # The site keeps its own dark palette
 
-Supersedes `0009` for the palette, and is itself superseded by `0015` for the palette. The rest of 0009 still holds: the site builds its chrome from `src/lib/theme.ts`, and a page writes `var(--text-muted)` rather than a literal.
+Supersedes `0009` for the palette, and is itself superseded by `0015` for the palette. Its layout choices are superseded by `0016`: the list of rows on the home page and the plain navigation. The lab bench opening, with the framed simulation, still holds.
 
 ## Decision
 

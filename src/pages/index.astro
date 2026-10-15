@@ -107,13 +107,13 @@ const total = catalog.length;
       classes.map((section) => (
         <section class="band" aria-labelledby={`kelas-${section.key.replace('/', '-')}`}>
           <h2 id={`kelas-${section.key.replace('/', '-')}`}>{section.label}</h2>
-          <ul class="rows">
+          <ul class="cards">
             {section.simulations.map((entry) => (
-              <li class="row">
+              <li class="card">
                 <h3>
                   <a href={simulasiUrl(entry)}>{entry.title}</a>
                 </h3>
-                <p class="row-description">{entry.description}</p>
+                <p class="card-description">{entry.description}</p>
               </li>
             ))}
           </ul>
@@ -250,7 +250,7 @@ const total = catalog.length;
   .stage-more a,
   .band-more a,
   .katalog-link a,
-  .row h3 a,
+  .card h3 a,
   .featured-title a {
     color: var(--link);
   }
@@ -289,24 +289,6 @@ const total = catalog.length;
     font-size: 0.9375rem;
   }
 
-  /* A band is a bench row, not a card grid: one line of hairlines per simulation,
-     so the page reads as a list to work through in syllabus order. */
-  .rows {
-    list-style: none;
-    margin: 12px 0 0;
-    padding: 0;
-  }
-
-  .row {
-    padding: 12px 0;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .row-description {
-    margin: 0;
-    color: var(--text-muted);
-    font-size: 0.9375rem;
-  }
 
   .katalog-link {
     margin-top: 32px;
