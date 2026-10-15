@@ -44,14 +44,15 @@ Each record is a single Markdown file numbered from `0001`. Where an ADR is cite
 | 0012 | [A scene id names one simulation within its subject](../../docs/adr/0012-a-scene-id-names-one-simulation-within-its-subject.md) | Current | [src/lib/publish.ts](../../src/lib/publish.ts) |
 | 0013 | [Security headers that cannot break a simulation](../../docs/adr/0013-security-headers-that-cannot-break-a-simulation.md) | Current | [src/integrations/copySimulations.ts](../../src/integrations/copySimulations.ts) |
 | 0014 | [Serve the static site from a Worker](../../docs/adr/0014-serve-the-static-site-from-a-worker.md) | Current | [wrangler.jsonc](../../wrangler.jsonc) |
-| 0015 | [The site and simulations use the Neo-Arcade STEM palette](../../docs/adr/0015-neo-arcade-stem-palette.md) | Current | [src/lib/theme.ts](../../src/lib/theme.ts), [public/fonts/](../../public/fonts/) |
-| 0016 | [The site uses tab navigation and card grids](../../docs/adr/0016-tab-navigation-and-card-grids.md) | Current | [src/layouts/Base.astro](../../src/layouts/Base.astro), [src/pages/index.astro](../../src/pages/index.astro) |
+| 0015 | [The site and simulations use the Neo-Arcade STEM palette](../../docs/adr/0015-neo-arcade-stem-palette.md) | **Values superseded by 0017** | [src/lib/theme.ts](../../src/lib/theme.ts), [public/fonts/](../../public/fonts/) |
+| 0016 | [The site uses tab navigation and card grids](../../docs/adr/0016-tab-navigation-and-card-grids.md) | **Superseded by 0017** | [src/layouts/Base.astro](../../src/layouts/Base.astro), [src/pages/index.astro](../../src/pages/index.astro) |
+| 0017 | [The Stitch arcade prototype is the v1.0.0 design](../../docs/adr/0017-stitch-arcade-prototype-is-the-v1-design.md) | Current | [src/lib/theme.ts](../../src/lib/theme.ts), [src/layouts/Base.astro](../../src/layouts/Base.astro), [src/pages/index.astro](../../src/pages/index.astro) |
 
 Sources: [docs/adr/](), [docs/adr/0009-chrome-paints-with-the-simulations-palette.md:1-3](), [docs/adr/0010-site-keeps-its-own-dark-palette.md:1-3]()
 
 ## Superseded decisions
 
-ADR 0010 supersedes ADR 0009 for the palette. ADR 0015 supersedes ADR 0010 for the palette. ADR 0016 supersedes ADR 0010 for layout: the home page's list of rows and the plain navigation list. The rest of 0009 and 0010 still holds: the site builds its chrome from `src/lib/theme.ts`, and a page writes `var(--text-muted)` rather than a literal.
+ADR 0016 supersedes ADR 0010 for layout: the home page's list of rows and the plain navigation list. ADR 0017 supersedes 0016 for layout and 0015 for the palette values: the arcade bar, the hero with stat cards, and the card grids follow the Stitch prototype. Figures that look like live game data (credits, streaks, leaderboard) are not used, because the site has no accounts or scores.
 
 Sources: [docs/adr/0009-chrome-paints-with-the-simulations-palette.md:1-3](), [docs/adr/0010-site-keeps-its-own-dark-palette.md:1-3](), [CONTEXT.md:43-45]()
 

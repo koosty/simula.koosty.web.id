@@ -15,6 +15,10 @@ const featured = homeFeatured(catalog);
 const classes = homeClassSections(catalog);
 const stages = homeStages(catalog);
 const total = catalog.length;
+// Every figure in the stat cards is counted from the catalogue. The Stitch
+// prototype shows made-up numbers for credits and streaks; the site has no
+// accounts or scores, so those are left out rather than invented.
+const subjects = new Set(catalog.map((entry) => entry.subject)).size;
 ---
 
 <Base
@@ -24,14 +28,31 @@ const total = catalog.length;
   <main class="wrap home">
     <section class="bench" aria-labelledby="home-heading">
       <div class="intro">
-        <h1 id="home-heading">Simula</h1>
+        <p class="eyebrow">Katalog simulasi</p>
+        <h1 id="home-heading">Pilih simulasi dan mulai belajar</h1>
 
         <p class="lead">
           Simula menyimpan simulasi pembelajaran yang bisa langsung dibuka di peramban.
-          Setiap simulasi berjalan seperti exercise biasa: murid mengubah angka atau
-          menggerakkan titik, lalu langsung melihat hasilnya, tanpa memasang aplikasi
-          apa pun.
+          Murid mengubah angka atau menggerakkan titik, lalu langsung melihat hasilnya,
+          tanpa memasang aplikasi apa pun.
         </p>
+
+        <a class="insert-coin" href="/katalog/">Mulai belajar</a>
+
+        <ul class="stats" aria-label="Isi katalog">
+          <li class="stat">
+            <span class="stat-label">Simulasi</span>
+            <span class="stat-value">{total}</span>
+          </li>
+          <li class="stat">
+            <span class="stat-label">Kelas</span>
+            <span class="stat-value">{classes.length}</span>
+          </li>
+          <li class="stat">
+            <span class="stat-label">Mata pelajaran</span>
+            <span class="stat-value">{subjects}</span>
+          </li>
+        </ul>
 
         {
           total === 0 ? (
@@ -113,6 +134,7 @@ const total = catalog.length;
                 <h3>
                   <a href={simulasiUrl(entry)}>{entry.title}</a>
                 </h3>
+                <p class="card-meta">{subjectLabel(entry.subject)}</p>
                 <p class="card-description">{entry.description}</p>
               </li>
             ))}
@@ -135,12 +157,12 @@ const total = catalog.length;
 </Base>
 
 <style>
-  /* The opening screen: the words on the left, the working simulation on the
-     right, framed as an object on the bench. Stacked below 760px so the frame
+  /* The opening screen: the heading and the stat cards on the left, the working
+     simulation on the right, in a framed panel. Stacked below 760px so the frame
      keeps the full width of a phone. */
   .bench {
     display: grid;
-    grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
     gap: 32px;
     align-items: start;
     padding-top: 16px;
@@ -152,10 +174,26 @@ const total = catalog.length;
     }
   }
 
+  .eyebrow {
+    display: inline-block;
+    margin: 0 0 16px;
+    padding: 4px 10px;
+    border: 1px solid var(--secondary);
+    border-radius: var(--radius-small);
+    color: var(--secondary);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
   h1 {
-    font-size: 2.5rem;
-    font-weight: 600;
-    line-height: 1.1;
+    font-family: var(--font-display);
+    font-size: 2.75rem;
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
     margin: 0 0 16px;
   }
 
@@ -177,8 +215,62 @@ const total = catalog.length;
     margin: 0 0 24px;
   }
 
+  /* The main call to action, styled as the arcade's coin button. */
+  .insert-coin {
+    display: inline-block;
+    padding: 12px 22px;
+    background: var(--accent);
+    color: var(--bg);
+    border-radius: var(--radius);
+    font-family: var(--font-display);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    box-shadow: 0 0 16px rgba(0, 240, 255, 0.35);
+  }
+
+  .insert-coin:hover {
+    color: var(--bg);
+    background: var(--link-hover);
+  }
+
+  .stats {
+    list-style: none;
+    margin: 28px 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .stat {
+    padding: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .stat-label {
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .stat-value {
+    color: var(--tertiary);
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
   .status {
-    margin: 0 0 32px;
+    margin: 24px 0 32px;
     color: var(--text-dim);
     font-size: 0.9375rem;
   }
@@ -189,8 +281,11 @@ const total = catalog.length;
   }
 
   .featured h2 {
-    font-size: 0.875rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
     font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: var(--text-dim);
     margin: 0 0 8px;
   }
@@ -219,16 +314,16 @@ const total = catalog.length;
     font-size: 0.9375rem;
   }
 
-  /* The frame is the simulation's own object on the bench. Its border is the
-     stronger hairline, so the edge between the two palettes is drawn on purpose.
-     The height is fixed to the first screen; the simulation scrolls inside it,
-     and the open link gives the full page. */
+  /* The frame is the simulation's own panel. Its border is the strong outline
+     colour and it has a lit top edge, as the Stitch workspace does. The height
+     is fixed to the first screen (ADR 0005); the open link gives the full page. */
   .bench-frame iframe {
     display: block;
     width: 100%;
     box-sizing: border-box;
     height: clamp(420px, 70vh, 680px);
     border: 1px solid var(--border-strong);
+    border-top: 3px solid var(--accent);
     border-radius: var(--radius);
     background: var(--bg);
     color-scheme: dark;
@@ -288,7 +383,6 @@ const total = catalog.length;
     color: var(--text-dim);
     font-size: 0.9375rem;
   }
-
 
   .katalog-link {
     margin-top: 32px;

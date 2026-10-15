@@ -30,6 +30,8 @@ export type TokenName =
   | 'link'
   | 'linkHover'
   | 'accent'
+  | 'secondary'
+  | 'tertiary'
   | 'focusRing'
   | 'radius'
   | 'radiusSmall';
@@ -58,17 +60,19 @@ export type ForegroundToken = Extract<TokenName, 'text' | 'textMuted' | 'textDim
  * values are written into the :root block of every simulation.
  */
 export const TOKENS: Record<TokenName, string> = {
-  bg: '#0b0c16',
-  surface: '#1a1b32',
-  panel: 'rgba(18, 19, 36, 0.92)',
-  border: 'rgba(138, 43, 226, 0.4)',
-  borderStrong: '#8a2be2',
+  bg: '#12131d',
+  surface: '#1a1b25',
+  panel: '#1e1f2a',
+  border: '#3b494b',
+  borderStrong: '#849495',
   text: '#e2e1f0',
   textMuted: '#b9cacb',
   textDim: '#849495',
   link: '#00f0ff',
   linkHover: '#dbfcff',
   accent: '#00f0ff',
+  secondary: '#ff4a8d',
+  tertiary: '#f3db00',
   focusRing: '#00f0ff',
   radius: '8px',
   radiusSmall: '4px',

@@ -1,6 +1,6 @@
 # The site uses tab navigation and card grids
 
-Supersedes `0010` for layout: the list of rows on the home page and the plain navigation list. The palette stays with `0015`. The lab bench opening on the home page, with text on the left and the framed simulation on the right, is kept.
+Superseded by `0017` for layout. Supersedes `0010` for layout: the list of rows on the home page and the plain navigation list. The palette stays with `0015` for its roles, but its values are replaced by `0017`. The lab bench opening on the home page, with text on the left and the framed simulation on the right, is kept.
 
 ## Decision
 

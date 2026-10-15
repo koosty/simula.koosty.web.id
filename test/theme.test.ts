@@ -30,6 +30,8 @@ describe('the palette', () => {
         'panel',
         'radius',
         'radiusSmall',
+        'secondary',
+        'tertiary',
         'surface',
         'text',
         'textDim',

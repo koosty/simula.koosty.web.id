@@ -41,7 +41,15 @@ const navLinks = navLinksFor(catalog, Astro.url.pathname);
   </head>
   <body>
     <nav class="site-nav" aria-label="Navigasi utama">
-      <p class="site-name"><a href="/">Simula</a></p>
+      <p class="site-name">
+        <a href="/">
+          <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <rect x="3" y="3" width="18" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2" />
+            <path d="M8 15 L12 8 L16 15" fill="none" stroke="currentColor" stroke-width="2" />
+          </svg>
+          Simula
+        </a>
+      </p>
       <ul>
         {
           navLinks.map((link) => (
@@ -117,58 +125,100 @@ const navLinks = navLinksFor(catalog, Astro.url.pathname);
     padding: 24px 16px;
   }
 
+  /* The arcade bar: a full-width band with the site name on the left and the
+     subject tabs on the right. Tabs are uppercase and monospace, like the
+     lobby of the Stitch prototype. The current tab is filled with the accent. */
   .site-nav {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 12px 16px 0;
-    border-bottom: 1px solid var(--border);
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px max(16px, calc((100% - 1200px) / 2));
+    background: var(--surface);
+    border-bottom: 2px solid var(--border-strong);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 24px;
   }
 
   .site-name {
-    margin: 0 0 8px;
+    margin: 0;
     font-weight: 600;
   }
 
   .site-name a {
-    color: var(--text);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--accent);
     text-decoration: none;
-    font-size: 1.125rem;
+    font-size: 1.25rem;
     font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
   }
 
-  /* Navigation is a row of tabs along the bottom edge of the bar, the way a
-     cabinet menu is laid out. The current tab is lit with the accent line. */
+  .brand-mark {
+    width: 24px;
+    height: 24px;
+    flex: none;
+  }
+
   .site-nav ul {
     list-style: none;
     padding: 0;
     margin: 0;
     display: flex;
     flex-wrap: wrap;
-    gap: 0 4px;
+    gap: 4px;
   }
 
   .site-nav a {
     display: inline-block;
-    padding: 10px 12px 8px;
-    color: var(--link);
+    padding: 8px 14px;
+    color: var(--text-muted);
     font-family: var(--font-mono);
     font-size: 0.8125rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     text-decoration: none;
-    border-bottom: 2px solid var(--bg);
+    border: 1px solid var(--surface);
+    border-radius: var(--radius-small);
   }
 
   .site-nav a:hover {
     color: var(--text);
-    border-bottom-color: var(--border-strong);
+    border-color: var(--secondary);
   }
 
-  /* The page the reader is on is marked rather than dimmed alone, so the state
-     is available to a screen reader as well as visible. */
+  /* The page the reader is on is filled with the accent, so the state is
+     visible without relying on colour alone: the text inverts to dark. */
   .site-nav a[aria-current='page'] {
-    color: var(--text);
-    border-bottom-color: var(--accent);
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg);
+    font-weight: 700;
+  }
+
+  /* On a phone the tabs stay on one scrolling row, so the header does not
+     grow to three or four lines before the page starts. */
+  @media (max-width: 760px) {
+    .site-nav ul {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      width: 100%;
+      scrollbar-width: none;
+    }
+
+    .site-nav a {
+      padding: 6px 10px;
+      font-size: 0.75rem;
+      white-space: nowrap;
+    }
+
+    .site-name a {
+      font-size: 1.0625rem;
+    }
   }
 
   /* One card style for every grid of simulations, so a card looks the same on
