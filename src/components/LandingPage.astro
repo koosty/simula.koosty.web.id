@@ -140,8 +140,11 @@ const sheetHref = page.kind === 'kelas' ? sheetPath(page.level, page.segment) : 
   }
 
   h1 {
-    font-size: 2rem;
-    font-weight: 600;
+    font-family: var(--font-display);
+    font-size: 2.25rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
     margin: 0 0 8px;
   }
 
@@ -171,9 +174,14 @@ const sheetHref = page.kind === 'kelas' ? sheetPath(page.level, page.segment) : 
   }
 
   .siblings h2 {
+    font-family: var(--font-display);
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
     margin: 0 0 12px;
+    padding-left: 12px;
+    border-left: 4px solid var(--secondary);
   }
 
   .siblings ul {

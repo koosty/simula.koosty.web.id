@@ -19,6 +19,8 @@ The following files were used as context for generating or updating this documen
 
 Every page on the site renders through [`src/layouts/Base.astro`](../../src/layouts/Base.astro), which owns the document head, the site navigation and the global palette. The navigation itself is built from the Katalog rather than written out, so a new stage, class or subject reaches it by being added as content. See [Architecture Overview](../architecture/overview.md) for the shape of the whole site.
 
+The header is an arcade bar: the site name on the left and subject tabs on the right. The current tab is filled with the accent colour. On a phone the tabs become one row that scrolls sideways, so the header stays short (`docs/adr/0017`).
+
 ## Layout props
 
 ```ts

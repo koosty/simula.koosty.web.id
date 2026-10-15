@@ -38,7 +38,7 @@ because the external tool produces them and this repository does not reshape the
 
 ## Colour
 
-The site and all 71 simulations use the Neo-Arcade STEM palette (`docs/adr/0015`).
+The site and all 71 simulations use the Neo-Arcade STEM palette (`docs/adr/0015`), with the values from the Stitch prototype (`docs/adr/0017`).
 The site's values live in `src/lib/theme.ts` and are emitted once as CSS custom
 properties; a page writes `var(--text-muted)` and never a literal. Each
 simulation carries the same values in its own `:root` block, because a

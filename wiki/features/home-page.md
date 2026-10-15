@@ -19,7 +19,7 @@ The following files were used as context for generating or updating this documen
 
 # Home Page
 
-The home page at `/` is the only page that opens with a live simulation. It is laid out as a lab bench: a featured simulation framed on the right, the words on the left, then a link per school stage and a preview of each class. See [Site Navigation](site-navigation.md) for the shared layout and [Katalog Page](katalog-page.md) for the full list.
+The home page at `/` is the only page that opens with a live simulation. It opens with a hero: an eyebrow label, a large uppercase heading, a button to the Katalog, and three stat cards counted from the catalogue (simulations, classes, subjects). The featured simulation sits framed on the right. Below it come a link per school stage and a card grid per class. The look follows the Stitch arcade prototype (`docs/adr/0017`). See [Site Navigation](site-navigation.md) for the shared layout and [Katalog Page](katalog-page.md) for the full list.
 
 ## Data
 

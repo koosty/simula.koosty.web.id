@@ -64,9 +64,9 @@ Sources: [src/lib/theme.ts:42-60]()
 
 ## Why the palette changed
 
-ADR 0015 replaces the palette that ADR 0010 set. The site and the simulations now share one palette (Neo-Arcade STEM), so an embedded simulation has no visible edge against the page. Fonts are self-hosted from `public/fonts/`.
+ADR 0015 replaces the palette that ADR 0010 set. The site and the simulations share one palette (Neo-Arcade STEM), so an embedded simulation has no visible edge against the page. ADR 0017 then sets the values to the Stitch prototype's: a background of `#12131d`, a surface scale from `#0c0d17` to `#33343f`, and the cyan, pink and yellow accents. Fonts are self-hosted from `public/fonts/`.
 
-Sources: [docs/adr/0015-neo-arcade-stem-palette.md:1-30]()
+Sources: [docs/adr/0015-neo-arcade-stem-palette.md:1-30](), [docs/adr/0017-stitch-arcade-prototype-is-the-v1-design.md:1-20]()
 
 The token *names* are still the simulations' own: `--bg`, `--surface`, `--text-muted`.
 

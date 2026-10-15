@@ -34,7 +34,7 @@ Start with [Architecture Overview](architecture/overview.md).
 
 | Page | What it covers | Importance |
 |---|---|---|
-| [Home Page](features/home-page.md) | The bench layout, the featured simulation, stage and class previews. | Medium |
+| [Home Page](features/home-page.md) | The arcade hero, stat cards, the featured simulation, stage and class previews. | Medium |
 | [Site Navigation and Layout](features/site-navigation.md) | `Base.astro`, the document head, how nav links are built. | Medium |
 | [Landing Pages](features/landing-pages.md) | Stage, class and subject pages, and the addresses that select them. | High |
 | [Katalog Page](features/katalog-page.md) | The full list, its three filters, and the client script that hides cards. | High |
