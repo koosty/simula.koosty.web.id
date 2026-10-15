@@ -180,10 +180,12 @@ Sources: [src/pages/[tingkat]/[kelas]/[mataPelajaran]/[slug].astro:88]()
 | `<Base>` | `title={`${entry.title} · Simula`}`, `description={entry.description}`, no `noindex` — this page is indexable. | [src/pages/[tingkat]/[kelas]/[mataPelajaran]/[slug].astro:49](), [src/layouts/Base.astro:36-39]() |
 | Breadcrumb | Beranda → Katalog → Tingkat → Kelas, with the subject as `aria-current="page"`. | [src/pages/[tingkat]/[kelas]/[mataPelajaran]/[slug].astro:38-46](), [src/pages/[tingkat]/[kelas]/[mataPelajaran]/[slug].astro:52-63]() |
 | `<h1>` | `entry.title` | [src/pages/[tingkat]/[kelas]/[mataPelajaran]/[slug].astro:66]() |
-| Description | `entry.description` | [src/pages/[tingkat]/[kelas]/[mataPelajaran]/[slug].astro:67]() |
+| Description | `entry.description`, in the information column beside the frame (below the frame under 1200px) | [src/pages/[tingkat]/[kelas]/[mataPelajaran]/[slug].astro:89-95]() |
 | Meta line | `{tingkatLabel(entry.level)} · Kelas {entry.grade} · {subjectLabel(entry.subject)}` | [src/pages/[tingkat]/[kelas]/[mataPelajaran]/[slug].astro:68-70]() |
 
 The breadcrumb walks the same segments the URL does, so it names the stage, class and subject a reader arrived through.
+
+The frame and its new-tab link sit in a `.stage` column. The information column (`.side`) holds the description and the related simulations. On a screen 1200px wide or more the two sit side by side at two fifths and one fifth of the width; below that they stack. The document order is unchanged, so tab order still reaches the breadcrumb before the frame and the new-tab link after it (`docs/adr/0018`).
 
 Sources: [src/pages/[tingkat]/[kelas]/[mataPelajaran]/[slug].astro:35-46]()
 

@@ -64,40 +64,50 @@ const breadcrumb = [
 
       <header>
         <h1>{entry.title}</h1>
-        <p class="description">{entry.description}</p>
         <p class="meta">
           {tingkatLabel(entry.level)} · Kelas {entry.grade} · {subjectLabel(entry.subject)}
         </p>
       </header>
 
-      <iframe
-        id={FRAME_ID}
-        src={rawFileUrl}
-        title={entry.title}
-        loading="lazy"
-        data-fallback-height={String(FALLBACK_HEIGHT)}
-        data-unmeasurable-height={String(UNMEASURABLE_HEIGHT)}
-      ></iframe>
+      <div class="workspace">
+        <div class="stage">
+          <iframe
+            id={FRAME_ID}
+            src={rawFileUrl}
+            title={entry.title}
+            loading="lazy"
+            data-fallback-height={String(FALLBACK_HEIGHT)}
+            data-unmeasurable-height={String(UNMEASURABLE_HEIGHT)}
+          ></iframe>
 
-      <p class="fallback">
-        <a href={rawFileUrl} target="_blank" rel="noopener">Buka simulasi ini di tab baru</a>
-        jika simulasi tidak muncul di atas.
-      </p>
+          <p class="fallback">
+            <a href={rawFileUrl} target="_blank" rel="noopener">Buka simulasi ini di tab baru</a>{' '}
+            jika simulasi tidak muncul di atas.
+          </p>
+        </div>
 
-      {
-        related.length > 0 && (
-          <nav class="related" aria-labelledby="related-heading">
-            <h2 id="related-heading">Simulasi lain di {subjectLabel(entry.subject)}</h2>
-            <ul>
-              {related.map((item) => (
-                <li>
-                  <a href={simulasiUrl(item)}>{item.title}</a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        )
-      }
+        <aside class="side">
+          <section class="about" aria-labelledby="about-heading">
+            <h2 id="about-heading">Tentang simulasi</h2>
+            <p class="description">{entry.description}</p>
+          </section>
+
+          {
+            related.length > 0 && (
+              <nav class="related" aria-labelledby="related-heading">
+                <h2 id="related-heading">Simulasi lain di {subjectLabel(entry.subject)}</h2>
+                <ul>
+                  {related.map((item) => (
+                    <li>
+                      <a href={simulasiUrl(item)}>{item.title}</a>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            )
+          }
+        </aside>
+      </div>
     </article>
   </main>
 </Base>
@@ -206,6 +216,50 @@ const breadcrumb = [
     outline-offset: 3px;
   }
 
+  /* Two columns on a wide screen: the simulation takes most of the width and
+     the information column sits beside it. Below 1200px the column drops under
+     the frame. The grid keeps the document order, so the breadcrumb and the
+     new-tab link stay in tab order on either side of the frame
+     (docs/adr/0018). */
+  .workspace {
+    display: grid;
+    gap: 24px;
+  }
+
+  /* minmax(0, ...) on the tracks, and min-width on the cells: a grid item's
+     default minimum is its content width, so a wide frame would otherwise push
+     its column past the page. */
+  .stage,
+  .side {
+    min-width: 0;
+  }
+
+  .side {
+    display: grid;
+    gap: 16px;
+    align-content: start;
+  }
+
+  .about {
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .about h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+
+  @media (min-width: 1200px) {
+    .workspace {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+      align-items: start;
+    }
+  }
+
   .fallback {
     margin-top: 16px;
     font-size: 0.9375rem;
@@ -220,9 +274,11 @@ const breadcrumb = [
   }
 
   .related {
-    margin-top: 48px;
-    padding-top: 24px;
-    border-top: 1px solid var(--border);
+    margin: 0;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
   }
 
   .related h2 {
