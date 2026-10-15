@@ -33,6 +33,7 @@ const navLinks = navLinksFor(catalog, Astro.url.pathname);
         way, writing {FALLBACK_HEIGHT}px into a <style> block and finding it
         silently dropped rather than caught. */}
     <style set:html={themeCustomProperties()}></style>
+    <link rel="stylesheet" href="/fonts/fonts.css" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
@@ -65,8 +66,14 @@ const navLinks = navLinksFor(catalog, Astro.url.pathname);
 
   body {
     margin: 0;
-    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
     line-height: 1.6;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
   }
 
   /* Links take the palette's link colour rather than the browser's default.

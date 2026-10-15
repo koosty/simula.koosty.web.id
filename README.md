@@ -38,25 +38,20 @@ because the external tool produces them and this repository does not reshape the
 
 ## Colour
 
-The site's own pages paint with the simulations' palette, under the names the
-simulations use, so an embedded simulation reads as part of the page rather than
-as a rectangle punched through it. The values live in `src/lib/theme.ts` and are
-emitted once as CSS custom properties; a page writes `var(--text-muted)` and
-never a literal. A test reads the simulation files to confirm the two still
-agree. See `docs/adr/0009`.
+The site and all 71 simulations use the Neo-Arcade STEM palette (`docs/adr/0015`).
+The site's values live in `src/lib/theme.ts` and are emitted once as CSS custom
+properties; a page writes `var(--text-muted)` and never a literal. Each
+simulation carries the same values in its own `:root` block, because a
+simulation is a standalone file.
 
 Two things are worth knowing before changing a colour there:
 
-- The simulations' `--accent` is a **border** colour. It reaches 4.2:1 against
-  the page background and is below the 4.5:1 that body text needs, which is why
-  the simulations never use it for running text. A test holds it there.
-- All 23 simulations also ship a complete light palette under
-  `[data-theme="light"]` that nothing selects: every one is hardcoded to dark,
-  none reads `prefers-color-scheme`, and no script changes the attribute. The
-  chrome paints with the dark half and does not anticipate the other one. When
-  the simulations do honour a preference, `themeCustomProperties` takes the
-  palette and the selector to write it under, so adding the light half is one
-  call rather than a change of approach.
+- The accent (cyan `#00f0ff`) is for actions, not running text. A test checks
+  the text roles and that the accent is not one of them. Links use their own
+  token, `--link`, even though the value matches the accent today.
+- Canvas drawings in the simulations use hex values, since canvas cannot read
+  `var(--token)`. A palette change means editing `theme.ts` and the simulation
+  files together.
 
 `src/lib/theme.ts` also holds the contrast arithmetic, so a new colour can be
 checked against the ratio its use needs before it reaches a page.

@@ -25,20 +25,20 @@ Sources: [CONTEXT.md:43-45](), [src/layouts/Base.astro:35]()
 
 ```ts
 export const TOKENS: Record<TokenName, string> = {
-  bg: '#0e1311',
-  surface: '#161d1a',
-  panel: 'rgba(22, 29, 26, 0.9)',
-  border: 'rgba(241, 238, 228, 0.12)',
-  borderStrong: '#3b4742',
-  text: '#f1eee4',
-  textMuted: '#c2beb0',
-  textDim: '#9b9789',
-  link: '#9ed9c2',
-  linkHover: '#ffffff',
-  accent: '#e3b451',
-  focusRing: '#ffd98a',
-  radius: '12px',
-  radiusSmall: '8px',
+  bg: '#0b0c16',
+  surface: '#1a1b32',
+  panel: 'rgba(18, 19, 36, 0.92)',
+  border: 'rgba(138, 43, 226, 0.4)',
+  borderStrong: '#8a2be2',
+  text: '#e2e1f0',
+  textMuted: '#b9cacb',
+  textDim: '#849495',
+  link: '#00f0ff',
+  linkHover: '#dbfcff',
+  accent: '#00f0ff',
+  focusRing: '#00f0ff',
+  radius: '8px',
+  radiusSmall: '4px',
 } as const satisfies Record<TokenName, string>;
 ```
 
@@ -62,11 +62,11 @@ The type system splits the set three ways: `OpaqueToken` is what contrast arithm
 
 Sources: [src/lib/theme.ts:42-60]()
 
-## Why the site has its own palette
+## Why the palette changed
 
-ADR 0009 kept the chrome in the simulations' palette so an embedded simulation would read as part of the page. ADR 0010 supersedes that for the palette: the home page is laid out as a lab bench with the framed simulation as an object on it, so the frame's visible edge is the point of the layout, and the old seam test would fail it.
+ADR 0015 replaces the palette that ADR 0010 set. The site and the simulations now share one palette (Neo-Arcade STEM), so an embedded simulation has no visible edge against the page. Fonts are self-hosted from `public/fonts/`.
 
-Sources: [docs/adr/0010-site-keeps-its-own-dark-palette.md:1-13](), [docs/adr/0009-chrome-paints-with-the-simulations-palette.md:1-3]()
+Sources: [docs/adr/0015-neo-arcade-stem-palette.md:1-30]()
 
 The token *names* are still the simulations' own: `--bg`, `--surface`, `--text-muted`.
 
@@ -88,7 +88,7 @@ export function themeCustomProperties(
 
 Sources: [src/lib/theme.ts:92-100]()
 
-The function takes a selector as well as a token map, so the light half the simulations already ship can be added without restructuring anything. No such block is emitted today — the simulations are hardcoded to dark — so adding one is a matter of calling this again under `[data-theme='light']`.
+The function takes a selector as well as a token map. There is one theme today: the simulations are hardcoded dark and nothing selects a light block, so none is emitted.
 
 Sources: [src/lib/theme.ts:77-90](), [README.md:53-61]()
 
@@ -149,8 +149,7 @@ Sources: [src/lib/theme.ts:126-133](), [test/chrome-built.test.ts:1-12]()
 
 ## Known gaps
 
-- The README and `src/lib/theme.ts:77` both state that all 23 simulations ship a light palette and are hardcoded to dark. The repository now holds 71 simulations, and the 23 figure predates them.
-  Sources: [README.md:53-61](), [src/lib/theme.ts:77-78](), [src/integrations/copySimulations.ts:31-37]()
+- Simulations still load KaTeX, marked, highlight.js and three.js from cdnjs and unpkg. The palette does not change that.
 
 ## Related pages
 

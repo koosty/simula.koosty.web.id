@@ -1,10 +1,10 @@
 /**
  * The site's palette, and the arithmetic that holds it readable.
  *
- * A dark palette of the site's own, chosen for the home page's bench layout
- * (docs/adr/0010). It does not match the simulations' navy, so the frame an
- * embedded simulation sits in is a visible edge by design. The test suite
- * checks every text role against the ratio its use needs.
+ * A dark palette: the Neo-Arcade STEM design system (docs/adr/0015). The
+ * simulations use the same values, so an embedded simulation and the page
+ * around it share one surface. The test suite checks every text role against
+ * the ratio its use needs.
  */
 
 /** A colour this module can do contrast arithmetic on. */
@@ -54,40 +54,31 @@ export type ForegroundToken = Extract<TokenName, 'text' | 'textMuted' | 'textDim
 /**
  * The site's colours, under the names the rest of the site paints with.
  *
- * Written as literal values here and checked by test/theme.test.ts. There is
- * no link to the simulations' palette any more (docs/adr/0010 supersedes 0009).
+ * Written as literal values here and checked by test/theme.test.ts. The same
+ * values are written into the :root block of every simulation.
  */
 export const TOKENS: Record<TokenName, string> = {
-  bg: '#0e1311',
-  surface: '#161d1a',
-  panel: 'rgba(22, 29, 26, 0.9)',
-  border: 'rgba(241, 238, 228, 0.12)',
-  borderStrong: '#3b4742',
-  text: '#f1eee4',
-  textMuted: '#c2beb0',
-  textDim: '#9b9789',
-  link: '#9ed9c2',
-  linkHover: '#ffffff',
-  accent: '#e3b451',
-  focusRing: '#ffd98a',
-  radius: '12px',
-  radiusSmall: '8px',
+  bg: '#0b0c16',
+  surface: '#1a1b32',
+  panel: 'rgba(18, 19, 36, 0.92)',
+  border: 'rgba(138, 43, 226, 0.4)',
+  borderStrong: '#8a2be2',
+  text: '#e2e1f0',
+  textMuted: '#b9cacb',
+  textDim: '#849495',
+  link: '#00f0ff',
+  linkHover: '#dbfcff',
+  accent: '#00f0ff',
+  focusRing: '#00f0ff',
+  radius: '8px',
+  radiusSmall: '4px',
 } as const satisfies Record<TokenName, string>;
 
 /**
- * The palette as CSS custom properties, ready for a second theme.
+ * The palette as CSS custom properties, written into the <head> of every page.
  *
- * Two arguments rather than one, so the light half the simulations already ship
- * can be added without restructuring anything: the simulations select a theme by
- * setting `data-theme` on their own <html>, and this is shaped to be written
- * into a `[data-theme='light']` block beside the `:root` one when they honour a
- * preference. No such block is emitted today — all 23 are hardcoded dark — so
- * adding one is a matter of calling this again under a different selector and
- * giving it the other half of their palette.
- *
- * Reversible by choice rather than by accident: the point at which the chrome
- * has to be *edited* is when the simulations change, and the ticket asks that the
- * chrome follow them then, not that it anticipate them now.
+ * There is one theme. The selector is a parameter so a test can write a second
+ * block under another selector without changing this function.
  */
 export function themeCustomProperties(
   tokens: Record<TokenName, string> = TOKENS,

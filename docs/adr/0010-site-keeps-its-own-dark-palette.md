@@ -1,6 +1,6 @@
 # The site keeps its own dark palette
 
-Supersedes `0009` for the palette. The rest of 0009 still holds: the site builds its chrome from `src/lib/theme.ts`, and a page writes `var(--text-muted)` rather than a literal.
+Supersedes `0009` for the palette, and is itself superseded by `0015` for the palette. The rest of 0009 still holds: the site builds its chrome from `src/lib/theme.ts`, and a page writes `var(--text-muted)` rather than a literal.
 
 ## Decision
 

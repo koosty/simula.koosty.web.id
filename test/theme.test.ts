@@ -168,12 +168,8 @@ describe('themeCustomProperties', () => {
   });
 
   it('can write a second theme under a different selector', () => {
-    // Reversible by choice, not by accident. The simulations select a theme by
-    // setting data-theme on their own <html> and already ship a complete light
-    // palette, so the day they honour a preference the chrome needs this to
-    // write a `[data-theme="light"]` block beside the `:root` one. That block is
-    // deliberately not written today — all 23 are hardcoded dark — so this is
-    // what proves adding it is a call rather than a restructuring.
+    // The selector is a parameter, so a second block can be written under another
+    // selector without changing the function. Nothing writes one today.
     const light = themeCustomProperties({ ...TOKENS, bg: '#f7f7fb', text: '#16161d' }, "[data-theme='light']");
     expect(light).toContain("[data-theme='light'] {");
     expect(light).toContain('--bg: #f7f7fb;');
@@ -184,10 +180,10 @@ describe('themeCustomProperties', () => {
     expect(themeCustomProperties()).toContain(':root {');
   });
 
-  it('keeps the accent out of the text roles', () => {
-    // The two are separate tokens on purpose. Merging them would put a 4.2
-    // colour behind body text the first time someone reached for the accent.
-    expect(themeCustomProperties(TOKENS)).not.toContain('--link: #6366f1');
+  it('does not use the accent as a text role', () => {
+    // The accent is a non-text colour (docs/adr/0015). Listing it as a text role
+    // would put it behind body text, so this checks the role list directly.
+    expect(foregroundTokens()).not.toContain('accent');
   });
 });
 
