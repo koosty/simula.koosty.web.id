@@ -15,6 +15,8 @@ site's shape.
 | `npm install` | Install dependencies |
 | `npm run dev` | Start the dev server |
 | `npm run build` | Build static output into `dist/` |
+| `npm run deploy` | Build, then upload to Cloudflare with wrangler |
+| `npm run deploy:preview` | Build, then serve `dist/` through wrangler as Cloudflare will |
 | `npm run preview` | Serve the built output locally |
 | `npm run check` | Typecheck the Astro and TypeScript sources |
 | `npm run lint` | Lint the sources, including the inside of `.astro` files |
