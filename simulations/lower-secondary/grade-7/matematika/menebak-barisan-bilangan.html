@@ -79,9 +79,9 @@
       /* Colour */
       --bg: #12131d;          /* page background; also the 3D canvas background */
       --surface: #1a1b25;     /* panels, cards, step rows */
-      --panel: rgba(18, 19, 36, 0.92);
-      --border: rgba(138, 43, 226, 0.4);
-      --border-strong: #8a2be2;
+      --panel: #1e1f2a;
+      --border: #3b494b;
+      --border-strong: #849495;
       --text: #e2e1f0;
       --text-muted: #b9cacb;
       --text-dim: #849495;
@@ -156,7 +156,7 @@
       border: 1px solid var(--border-strong);
       border-radius: var(--radius-md);
       background: var(--border-strong);
-      color: var(--text);
+      color: var(--bg);
       cursor: pointer;
       transition: background var(--motion);
     }
@@ -168,7 +168,7 @@
     .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
     .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
 
-    .btn-ghost { background: transparent; border-color: var(--border); }
+    .btn-ghost { background: transparent; border-color: var(--border); color: var(--text); }
     .btn-ghost:hover { background: var(--surface); }
 
     .control-label {
