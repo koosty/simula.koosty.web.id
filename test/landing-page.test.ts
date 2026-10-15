@@ -122,7 +122,7 @@ describe('the set of landing pages follows the catalog', () => {
 
   it('publishes no landing page for a level, class or subject the catalog lacks', () => {
     // These three are the open set's failure mode: a page with nothing on it.
-    for (const path of ['/sma/', '/smp/kelas-9/', '/smp/ipa/']) {
+    for (const path of ['/sma/', '/smp/kelas-9/', '/smp/kimia/']) {
       expect(existsSync(resolve(DIST, path.slice(1), 'index.html'))).toBe(false);
     }
   });
@@ -131,14 +131,14 @@ describe('the set of landing pages follows the catalog', () => {
 describe('a landing page lists the right simulations', () => {
   it('lists every simulation of a Tingkat exactly once', () => {
     const html = htmlAt('/smp/');
-    const links = [...html.matchAll(/<a href="\/smp\/kelas-7\/matematika\/([^/"]+)\/"/g)].map((m) => m[1]);
+    const links = [...html.matchAll(/<a href="\/smp\/kelas-7\/[^/"]+\/([^/"]+)\/"/g)].map((m) => m[1]);
     expect(new Set(links).size).toBe(links.length);
     expect(new Set(links)).toEqual(new Set(CATALOG.map((entry) => entry.slug)));
   });
 
   it('lists a class page’s simulations in display order', () => {
     const html = htmlAt('/smp/kelas-7/');
-    const links = [...html.matchAll(/<a href="\/smp\/kelas-7\/matematika\/([^/"]+)\/"/g)].map((m) => m[1]);
+    const links = [...html.matchAll(/<a href="\/smp\/kelas-7\/[^/"]+\/([^/"]+)\/"/g)].map((m) => m[1]);
     const expected = [...CATALOG]
       .sort((a, b) => a.order - b.order)
       .map((entry) => entry.slug);
@@ -148,7 +148,7 @@ describe('a landing page lists the right simulations', () => {
   it('links every card on a landing page to a Halaman Simulasi that exists', () => {
     for (const page of PAGES) {
       const html = htmlAt(page.path);
-      const hrefs = [...html.matchAll(/<a href="(\/smp\/kelas-7\/matematika\/[^/"]+\/)"/g)].map((m) => m[1]);
+      const hrefs = [...html.matchAll(/<a href="(\/smp\/kelas-7\/[^/"]+\/[^/"]+\/)"/g)].map((m) => m[1]);
       expect(hrefs.length).toBeGreaterThan(0);
       for (const href of hrefs) {
         expect(existsSync(resolve(DIST, href.slice(1), 'index.html'))).toBe(true);
@@ -160,7 +160,7 @@ describe('a landing page lists the right simulations', () => {
     const cards = [...htmlAt('/smp/kelas-7/').matchAll(/<li class="card"[\s\S]*?<\/li>/g)].map((m) => m[0]);
     expect(cards).toHaveLength(CATALOG.length);
     for (const card of cards) {
-      expect(card).toMatch(/<a href="\/smp\/kelas-7\/matematika\/[^"]+"[^>]*>[^<]+<\/a>/);
+      expect(card).toMatch(/<a href="\/smp\/kelas-7\/[^/"]+\/[^"]+"[^>]*>[^<]+<\/a>/);
       expect(card).toMatch(/<p class="card-description"[^>]*>.{20,}<\/p>/);
     }
   });

@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Besaran Pokok SI dan Konversi Satuan · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Main menangkap satuan besaran pokok SI dan jawaban konversi satuan panjang serta massa sebelum nyawa habis.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Besaran Pokok SI dan Konversi Satuan">
+  <meta property="og:description" content="Main menangkap satuan besaran pokok SI dan jawaban konversi satuan panjang serta massa sebelum nyawa habis.">
+  <meta property="og:locale" content="id">
+  <style>
+:root {
+  /* Colour */
+  --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+  --surface: #14141e;     /* panels, cards, step rows */
+  --panel: rgba(20, 20, 30, 0.9);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: #333;
+  --text: #ffffff;
+  --text-muted: #aaa;
+  --text-dim: #888;
+  --accent: #6366f1;      /* primary action, slider thumb, active state */
+  --accent-hover: #5558e8;
+  --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+  --success: #fbbf24;     /* completion, headings, callouts */
+  --warning: #fb923c;
+  --error: #ff6b6b;
+  --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-none: none;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type scale (system fonts only) */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-caption: 11px;   /* uppercase control labels */
+  --text-heading: 24px;
+  --font-weight-display: 600;  /* headings */
+  --font-weight-number: 500;   /* monospaced readouts */
+
+  /* Focus, motion, stacking */
+  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  --motion: 0.2s;
+  --motion-slow: 0.3s;
+  --z-overlay: 100;        /* panels, tooltips */
+  --z-modal: 1000;         /* loading screens, modal dialogs */
+}
+
+[data-theme="light"] {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-strong: #d4d4d8;
+  --text: #16161d;
+  --text-muted: #52525b;
+  --text-dim: #71717a;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.95);
+  --success: #b45309;
+  --warning: #c2410c;
+  --error: #dc2626;
+  --accent-text: #ffffff;
+  --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+h1, h2, h3 { font-weight: var(--font-weight-display); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-4);
+}
+.panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+.btn {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  min-height: 44px;            /* never below 44px, mobile */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--border-strong);
+  color: var(--text);
+  box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.btn:hover { background: var(--text-muted); }
+.btn:active { transform: scale(0.95); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); }
+
+.control-label {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+input[type="range"] {
+  width: 100%; height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Visually hidden but announced by screen readers. Use when a layout has no
+   room for a visible <h1> (e.g. a full-bleed canvas) — never as an excuse to
+   drop a heading. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+#feedback-panel {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+#feedback-panel.success { border-left-color: var(--success); }
+#feedback-panel.error { border-left-color: var(--error); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+.sources {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+.sources-heading {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+.source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+.source-item a { color: var(--accent); text-decoration: none; }
+.source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+.reading-article {
+  max-width: 720px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+.reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+.reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+.reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+.reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+.reading-article blockquote {
+  border-left: 3px solid var(--border-strong);
+  padding-left: var(--space-4);
+  color: var(--text-muted);
+  margin-bottom: var(--space-4);
+}
+.reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+.reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+.reading-article pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+}
+.reading-article pre code { background: none; padding: 0; }
+.reading-article table { width: 100%; border-collapse: collapse; }
+.reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+.reading-article details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.reading-article summary {
+  cursor: pointer;
+  font-weight: var(--font-weight-display);
+  color: var(--text);
+}
+.reading-article details[open] summary { margin-bottom: var(--space-2); }
+.glossary-term {
+  text-decoration: underline dotted var(--text-dim);
+  text-decoration-thickness: 1px;
+  cursor: help;
+}
+.katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+/* highlight.js token colours — mapped to the token set, not a canned theme */
+.hljs { color: var(--text); }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+.hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+.hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+.hljs-number { color: var(--warning); }
+
+/* ---- Scene layout (appearance uses tokens only) ---- */
+.page { max-width: 960px; margin: 0 auto; padding: var(--space-4); display: grid; gap: var(--space-4); }
+.muted { color: var(--text-muted); font-size: var(--text-sm); }
+.game-panel { display: grid; gap: var(--space-3); }
+.hud { display: flex; flex-wrap: wrap; gap: var(--space-4); font-size: var(--text-sm); color: var(--text-muted); }
+.hud strong { color: var(--text); font-weight: var(--font-weight-number); }
+.prompt { font-size: var(--text-base); color: var(--text); }
+.actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.actions .btn { flex: 1 1 auto; }
+.game-canvas {
+  width: 100%; display: block;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  touch-action: none;
+  cursor: pointer;
+}
+.touch-controls { display: flex; gap: var(--space-3); justify-content: center; }
+.touch-controls .btn { flex: 1 1 0; max-width: 240px; user-select: none; touch-action: manipulation; }
+.toast { min-height: 1.5em; font-size: var(--text-sm); color: var(--text-muted); }
+.toast.success { color: var(--success); }
+.toast.error { color: var(--error); }
+.achievements { list-style: none; display: grid; gap: var(--space-2); font-size: var(--text-sm); color: var(--text-dim); }
+.achievements li.unlocked { color: var(--success); }
+.hint { font-size: var(--text-caption); color: var(--text-dim); }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="panel game-panel" aria-labelledby="game-heading">
+      <h1 id="game-heading">Besaran Pokok SI dan Konversi Satuan</h1>
+      <p class="muted">Geser keranjang untuk menangkap benda yang jatuh. Level 1: tangkap hanya satuan besaran pokok SI (m, kg, s, K, mol, A, cd) dan hindari satuan turunan. Level 2: tangkap jawaban konversi yang benar.</p>
+
+      <div class="hud" aria-live="polite">
+        <span>Skor: <strong class="mono-value" id="hud-score">0</strong></span>
+        <span>Nyawa: <strong class="mono-value" id="hud-lives">3</strong></span>
+        <span>Level: <strong class="mono-value" id="hud-level">1</strong></span>
+        <span>Terbaik: <strong class="mono-value" id="best-display">0</strong></span>
+      </div>
+
+      <p class="prompt" id="hud-prompt">Tekan Mulai untuk bermain.</p>
+
+      <div class="actions">
+        <button type="button" class="btn btn-primary" id="start-btn" onclick="startGame()">Mulai</button>
+        <button type="button" class="btn" id="pause-btn" onclick="togglePause()">Jeda</button>
+        <button type="button" class="btn btn-ghost" id="reset-btn" onclick="resetGame()">Ulang</button>
+      </div>
+      <p class="hint">Spasi: mulai atau jeda · Panah kiri/kanan atau A/D: geser keranjang · R: ulang</p>
+    </section>
+
+    <section class="panel" aria-label="Area permainan">
+      <canvas class="game-canvas" id="game-canvas" role="img" aria-label="Area permainan menangkap benda yang jatuh ke dalam keranjang"></canvas>
+      <div class="touch-controls" style="margin-top: var(--space-3);">
+        <button type="button" class="btn" id="left-btn" aria-label="Geser keranjang ke kiri">◀ Kiri</button>
+        <button type="button" class="btn" id="right-btn" aria-label="Geser keranjang ke kanan">Kanan ▶</button>
+      </div>
+      <p class="toast" id="toast" role="status" aria-live="polite" style="margin-top: var(--space-3);"></p>
+    </section>
+
+    <section class="panel" aria-labelledby="ach-heading">
+      <h2 class="panel-heading" id="ach-heading">Pencapaian</h2>
+      <ul class="achievements" id="achievement-list">
+        <li id="ach-seven">Pemburu Tujuh: tangkap ketujuh satuan besaran pokok SI</li>
+        <li id="ach-convert">Konversi Cepat: jawab dua konversi dengan benar</li>
+        <li id="ach-win">Juara Gudang Satuan: selesaikan level 2</li>
+      </ul>
+    </section>
+  </main>
+
+  <script type="application/json" id="widget-config">
+{
+  "type": "game",
+  "gameType": "action",
+  "description": "Tangkap satuan besaran pokok SI di level 1 dan jawaban konversi satuan panjang serta massa di level 2.",
+  "gameConfig": {
+    "controls": ["basket_left_right"],
+    "targets": [
+      { "id": "base-units", "type": "catch", "items": ["m", "kg", "s", "K", "mol", "A", "cd"] },
+      { "id": "conversions", "type": "catch", "items": ["2500 m", "0,5 kg", "120 cm", "3000 g"] }
+    ],
+    "initialConditions": { "lives": 3, "graceSeconds": 4 },
+    "successCondition": "Level 1 selesai setelah 10 satuan pokok tertangkap; level 2 selesai setelah 4 konversi benar."
+  },
+  "scoring": {
+    "baseCatch": 10,
+    "conversionCatch": 25,
+    "wrongCatch": "kehilangan 1 nyawa"
+  },
+  "achievements": [
+    { "id": "seven", "name": "Pemburu Tujuh", "description": "Tangkap ketujuh satuan besaran pokok SI" },
+    { "id": "convert", "name": "Konversi Cepat", "description": "Jawab dua konversi dengan benar" },
+    { "id": "win", "name": "Juara Gudang Satuan", "description": "Selesaikan level 2" }
+  ]
+}
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      'use strict';
+
+      var TOTAL_BASE_CATCH = 10;
+      var CONVERSIONS_TO_WIN = 4;
+      var GRACE_START = 4;
+      var GRACE_QUESTION = 3;
+      var BASE_UNITS = ['m', 'kg', 's', 'K', 'mol', 'A', 'cd'];
+      var DERIVED_UNITS = ['N', 'J', 'Pa', 'W', 'm/s'];
+      var QUESTIONS = [
+        { q: '2,5 km = ... m', a: '2500 m', decoys: ['250 m', '25 m'] },
+        { q: '500 g = ... kg', a: '0,5 kg', decoys: ['5 kg', '0,05 kg'] },
+        { q: '1,2 m = ... cm', a: '120 cm', decoys: ['12 cm', '1200 cm'] },
+        { q: '3 kg = ... g', a: '3000 g', decoys: ['300 g', '30 g'] }
+      ];
+      var BEST_KEY = 'ipa7-besaran-best';
+
+      var canvas = document.getElementById('game-canvas');
+      var ctx = canvas ? canvas.getContext('2d') : null;
+      var cssW = 0;
+      var cssH = 0;
+      var dpr = 1;
+      var lastTs = 0;
+      var dragging = false;
+      var best = loadBest();
+      var game = newGame();
+
+      function $(id) { return document.getElementById(id); }
+      function setText(el, t) { if (el) el.textContent = t; }
+      function cssVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+      function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+      function loadBest() {
+        try { return Number(localStorage.getItem(BEST_KEY)) || 0; } catch (e) { return 0; }
+      }
+
+      function saveBest() {
+        if (game.score > best) {
+          best = game.score;
+          try { localStorage.setItem(BEST_KEY, String(best)); } catch (e) { /* penyimpanan tidak tersedia */ }
+        }
+      }
+
+      function newGame() {
+        return {
+          running: false,
+          paused: false,
+          over: false,
+          won: false,
+          level: 1,
+          score: 0,
+          lives: 3,
+          basketX: 0,
+          moveDir: 0,
+          spawnTimer: 0,
+          graceLeft: GRACE_START,
+          tokens: [],
+          caughtBase: {},
+          baseCount: 0,
+          convDone: 0,
+          questionIdx: 0,
+          unlocked: {},
+          toast: '',
+          toastKind: ''
+        };
+      }
+
+      function showToast(text, kind) {
+        game.toast = text;
+        game.toastKind = kind || '';
+      }
+
+      function unlock(key) {
+        if (game.unlocked[key]) return;
+        game.unlocked[key] = true;
+      }
+
+      function spawnInterval() { return game.level === 1 ? 1.1 : 1.5; }
+
+      function makeToken(text, good) {
+        ctx.font = '600 18px ' + cssVar('--font-mono');
+        var w = Math.max(64, ctx.measureText(text).width + 24);
+        var x = clamp(Math.random() * cssW, w / 2 + 8, cssW - w / 2 - 8);
+        return { text: text, good: good, x: x, y: -20, w: w, h: 34, vy: cssH * (game.level === 1 ? 0.2 : 0.23), dead: false };
+      }
+
+      function spawn() {
+        var inGrace = game.graceLeft > 0;
+        if (game.level === 1) {
+          var good = inGrace || Math.random() < 0.6;
+          var text = good
+            ? BASE_UNITS[Math.floor(Math.random() * BASE_UNITS.length)]
+            : DERIVED_UNITS[Math.floor(Math.random() * DERIVED_UNITS.length)];
+          game.tokens.push(makeToken(text, good));
+        } else {
+          var q = QUESTIONS[game.questionIdx];
+          if (inGrace || Math.random() < 0.5) {
+            game.tokens.push(makeToken(q.a, true));
+          } else {
+            var decoy = q.decoys[Math.floor(Math.random() * q.decoys.length)];
+            game.tokens.push(makeToken(decoy, false));
+          }
+        }
+      }
+
+      function gameOver() {
+        game.over = true;
+        game.running = false;
+        game.paused = false;
+        showToast('Nyawa habis. Tekan Ulang lalu Mulai untuk bermain lagi.', 'error');
+        saveBest();
+      }
+
+      function win() {
+        game.over = true;
+        game.won = true;
+        game.running = false;
+        unlock('win');
+        showToast('Selesai! Kamu menjawab ' + CONVERSIONS_TO_WIN + ' konversi dengan benar.', 'success');
+        saveBest();
+      }
+
+      function nextQuestion() {
+        game.questionIdx = (game.questionIdx + 1) % QUESTIONS.length;
+        game.tokens = [];
+        game.graceLeft = GRACE_QUESTION;
+      }
+
+      function catchToken(t) {
+        if (t.good) {
+          if (game.level === 1) {
+            game.score += 10;
+            game.caughtBase[t.text] = true;
+            game.baseCount++;
+            if (BASE_UNITS.every(function (u) { return game.caughtBase[u]; })) unlock('seven');
+            showToast('Benar: ' + t.text + ' adalah satuan besaran pokok SI.', 'success');
+            if (game.baseCount >= TOTAL_BASE_CATCH) {
+              game.level = 2;
+              game.tokens = [];
+              game.graceLeft = GRACE_QUESTION;
+              showToast('Level 2: jawab konversi satuan dengan benar.', 'success');
+            }
+          } else {
+            game.score += 25;
+            game.convDone++;
+            if (game.convDone >= 2) unlock('convert');
+            showToast('Konversi benar: ' + QUESTIONS[game.questionIdx].q.split(' = ')[0] + ' = ' + t.text, 'success');
+            if (game.convDone >= CONVERSIONS_TO_WIN) { win(); return; }
+            nextQuestion();
+          }
+        } else {
+          game.lives--;
+          if (game.level === 1) {
+            showToast(t.text + ' adalah satuan turunan, bukan besaran pokok. Nyawa berkurang.', 'error');
+          } else {
+            showToast(t.text + ' belum tepat untuk soal ini. Nyawa berkurang.', 'error');
+          }
+          if (game.lives <= 0) gameOver();
+        }
+      }
+
+      function update(dt) {
+        var halfBasket = basketWidth() / 2;
+        game.basketX = clamp(game.basketX + game.moveDir * cssW * 0.9 * dt, halfBasket, cssW - halfBasket);
+
+        if (game.graceLeft > 0) game.graceLeft -= dt;
+
+        game.spawnTimer -= dt;
+        if (game.spawnTimer <= 0) {
+          spawn();
+          game.spawnTimer = spawnInterval();
+        }
+
+        var basketY = basketCenterY();
+        for (var i = 0; i < game.tokens.length; i++) {
+          var t = game.tokens[i];
+          t.y += t.vy * dt;
+          if (t.y >= basketY - 20 && t.y <= basketY + 20 &&
+              Math.abs(t.x - game.basketX) <= (basketWidth() + t.w) / 2 - 8) {
+            t.dead = true;
+            catchToken(t);
+            if (game.over) return;
+          } else if (t.y > cssH + 40) {
+            t.dead = true;
+          }
+        }
+        game.tokens = game.tokens.filter(function (t) { return !t.dead; });
+      }
+
+      function basketWidth() { return clamp(cssW * 0.22, 80, 130); }
+      function basketCenterY() { return cssH - 40; }
+
+      function roundRect(x, y, w, h, r) {
+        ctx.beginPath();
+        if (ctx.roundRect) {
+          ctx.roundRect(x, y, w, h, r);
+        } else {
+          ctx.rect(x, y, w, h);
+        }
+        ctx.fill();
+      }
+
+      function draw() {
+        if (!ctx || !cssW) return;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        var bg = cssVar('--bg');
+        var surface = cssVar('--surface');
+        var border = cssVar('--border-strong');
+        var accent = cssVar('--accent');
+        var error = cssVar('--error');
+        var text = cssVar('--accent-text');
+        var font = cssVar('--font-mono');
+
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, cssW, cssH);
+
+        ctx.fillStyle = surface;
+        ctx.fillRect(0, cssH - 70, cssW, 70);
+
+        ctx.font = '600 18px ' + font;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        for (var i = 0; i < game.tokens.length; i++) {
+          var t = game.tokens[i];
+          ctx.fillStyle = t.good ? accent : error;
+          roundRect(t.x - t.w / 2, t.y - t.h / 2, t.w, t.h, 8);
+          ctx.fillStyle = text;
+          ctx.fillText(t.text, t.x, t.y + 1);
+        }
+
+        var bw = basketWidth();
+        var by = basketCenterY();
+        ctx.fillStyle = border;
+        roundRect(game.basketX - bw / 2, by - 13, bw, 26, 8);
+      }
+
+      function updateUI() {
+        setText($('hud-score'), String(game.score));
+        setText($('hud-lives'), String(game.lives));
+        setText($('hud-level'), String(game.level));
+        setText($('best-display'), String(best));
+
+        var prompt = game.level === 1
+          ? 'Tangkap satuan besaran pokok SI: m, kg, s, K, mol, A, cd. Hindari satuan turunan.'
+          : 'Konversi: ' + QUESTIONS[game.questionIdx].q + ' (tangkap jawaban yang benar)';
+        setText($('hud-prompt'), game.running || game.over ? prompt : 'Tekan Mulai untuk bermain.');
+
+        var startBtn = $('start-btn');
+        if (startBtn) {
+          startBtn.textContent = game.running ? 'Berjalan' : (game.over ? 'Main lagi' : 'Mulai');
+          startBtn.disabled = game.running;
+        }
+        var pauseBtn = $('pause-btn');
+        if (pauseBtn) {
+          pauseBtn.textContent = game.paused ? 'Lanjut' : 'Jeda';
+          pauseBtn.disabled = !game.running || game.over;
+        }
+
+        var toast = $('toast');
+        if (toast) {
+          toast.textContent = game.toast;
+          toast.className = 'toast ' + game.toastKind;
+        }
+
+        ['seven', 'convert', 'win'].forEach(function (key) {
+          var item = $('ach-' + key);
+          if (item) item.classList.toggle('unlocked', !!game.unlocked[key]);
+        });
+      }
+
+      function startGame() {
+        if (game.over) resetGame();
+        game.running = true;
+        game.paused = false;
+        updateUI();
+      }
+
+      function togglePause() {
+        if (!game.running || game.over) return;
+        game.paused = !game.paused;
+        updateUI();
+      }
+
+      function resetGame() {
+        game = newGame();
+        game.basketX = cssW / 2;
+        updateUI();
+        draw();
+      }
+
+      window.startGame = startGame;
+      window.togglePause = togglePause;
+      window.resetGame = resetGame;
+
+      function resize() {
+        if (!canvas) return;
+        dpr = window.devicePixelRatio || 1;
+        cssW = canvas.clientWidth;
+        cssH = Math.round(clamp(cssW * 0.85, 320, 520));
+        canvas.style.height = cssH + 'px';
+        canvas.width = Math.round(cssW * dpr);
+        canvas.height = Math.round(cssH * dpr);
+        if (game.basketX === 0) game.basketX = cssW / 2;
+        draw();
+      }
+
+      function setPointerX(e) {
+        if (!canvas) return;
+        var rect = canvas.getBoundingClientRect();
+        var half = basketWidth() / 2;
+        game.basketX = clamp(e.clientX - rect.left, half, cssW - half);
+      }
+
+      function loop(ts) {
+        var dt = lastTs ? Math.min(0.05, (ts - lastTs) / 1000) : 0;
+        lastTs = ts;
+        if (game.running && !game.paused && !game.over) {
+          update(dt);
+          updateUI();
+        }
+        draw();
+        window.requestAnimationFrame(loop);
+      }
+
+      if (canvas) {
+        canvas.addEventListener('pointerdown', function (e) { dragging = true; setPointerX(e); });
+        canvas.addEventListener('pointermove', function (e) { if (dragging) setPointerX(e); });
+        window.addEventListener('pointerup', function () { dragging = false; });
+      }
+
+      function bindHold(id, dir) {
+        var btn = $(id);
+        if (!btn) return;
+        var start = function (e) { e.preventDefault(); game.moveDir = dir; };
+        var stop = function () { if (game.moveDir === dir) game.moveDir = 0; };
+        btn.addEventListener('pointerdown', start);
+        btn.addEventListener('pointerup', stop);
+        btn.addEventListener('pointerleave', stop);
+        btn.addEventListener('pointercancel', stop);
+      }
+      bindHold('left-btn', -1);
+      bindHold('right-btn', 1);
+
+      document.addEventListener('keydown', function (e) {
+        var tag = e.target && e.target.tagName ? e.target.tagName : '';
+        if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') { game.moveDir = -1; e.preventDefault(); }
+        else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') { game.moveDir = 1; e.preventDefault(); }
+        else if (e.key === ' ') {
+          if (tag === 'BUTTON') return;
+          e.preventDefault();
+          if (!game.running) startGame(); else togglePause();
+        }
+        else if (e.key === 'r' || e.key === 'R') resetGame();
+      });
+      document.addEventListener('keyup', function (e) {
+        if (['ArrowLeft', 'a', 'A', 'ArrowRight', 'd', 'D'].indexOf(e.key) !== -1) game.moveDir = 0;
+      });
+
+      if (typeof ResizeObserver !== 'undefined' && canvas) {
+        new ResizeObserver(resize).observe(canvas);
+      } else {
+        window.addEventListener('resize', resize);
+      }
+
+      resize();
+      resetGame();
+      window.requestAnimationFrame(loop);
+    });
+  </script>
+</body>
+</html>

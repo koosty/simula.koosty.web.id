@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grafik Batang dan Grafik Garis · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Pilih jenis grafik yang sesuai dengan variabel bebas: grafik batang untuk kategori dan grafik garis untuk angka.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Grafik Batang dan Grafik Garis">
+  <meta property="og:description" content="Pilih jenis grafik yang sesuai dengan variabel bebas: grafik batang untuk kategori dan grafik garis untuk angka.">
+  <meta property="og:locale" content="id">
+  <style>
+:root {
+  /* Colour */
+  --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+  --surface: #14141e;     /* panels, cards, step rows */
+  --panel: rgba(20, 20, 30, 0.9);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: #333;
+  --text: #ffffff;
+  --text-muted: #aaa;
+  --text-dim: #888;
+  --accent: #6366f1;      /* primary action, slider thumb, active state */
+  --accent-hover: #5558e8;
+  --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+  --success: #fbbf24;     /* completion, headings, callouts */
+  --warning: #fb923c;
+  --error: #ff6b6b;
+  --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-none: none;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type scale (system fonts only) */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-caption: 11px;   /* uppercase control labels */
+  --text-heading: 24px;
+  --font-weight-display: 600;  /* headings */
+  --font-weight-number: 500;   /* monospaced readouts */
+
+  /* Focus, motion, stacking */
+  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  --motion: 0.2s;
+  --motion-slow: 0.3s;
+  --z-overlay: 100;        /* panels, tooltips */
+  --z-modal: 1000;         /* loading screens, modal dialogs */
+}
+
+[data-theme="light"] {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-strong: #d4d4d8;
+  --text: #16161d;
+  --text-muted: #52525b;
+  --text-dim: #71717a;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.95);
+  --success: #b45309;
+  --warning: #c2410c;
+  --error: #dc2626;
+  --accent-text: #ffffff;
+  --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+h1, h2, h3 { font-weight: var(--font-weight-display); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-4);
+}
+.panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+.btn {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  min-height: 44px;            /* never below 44px, mobile */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--border-strong);
+  color: var(--text);
+  box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.btn:hover { background: var(--text-muted); }
+.btn:active { transform: scale(0.95); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); }
+
+.control-label {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+input[type="range"] {
+  width: 100%; height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Visually hidden but announced by screen readers. Use when a layout has no
+   room for a visible <h1> (e.g. a full-bleed canvas) — never as an excuse to
+   drop a heading. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+#feedback-panel {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+#feedback-panel.success { border-left-color: var(--success); }
+#feedback-panel.error { border-left-color: var(--error); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+.sources {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+.sources-heading {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+.source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+.source-item a { color: var(--accent); text-decoration: none; }
+.source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+.reading-article {
+  max-width: 720px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+.reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+.reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+.reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+.reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+.reading-article blockquote {
+  border-left: 3px solid var(--border-strong);
+  padding-left: var(--space-4);
+  color: var(--text-muted);
+  margin-bottom: var(--space-4);
+}
+.reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+.reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+.reading-article pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+}
+.reading-article pre code { background: none; padding: 0; }
+.reading-article table { width: 100%; border-collapse: collapse; }
+.reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+.reading-article details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.reading-article summary {
+  cursor: pointer;
+  font-weight: var(--font-weight-display);
+  color: var(--text);
+}
+.reading-article details[open] summary { margin-bottom: var(--space-2); }
+.glossary-term {
+  text-decoration: underline dotted var(--text-dim);
+  text-decoration-thickness: 1px;
+  cursor: help;
+}
+.katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+/* highlight.js token colours — mapped to the token set, not a canned theme */
+.hljs { color: var(--text); }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+.hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+.hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+.hljs-number { color: var(--warning); }
+
+/* ---- Scene layout (appearance uses tokens only) ---- */
+.page { max-width: 1040px; margin: 0 auto; padding: var(--space-4); display: grid; gap: var(--space-4); }
+.layout { display: grid; gap: var(--space-4); }
+@media (min-width: 768px) {
+  .layout { grid-template-columns: minmax(0, 320px) minmax(0, 1fr); align-items: start; }
+}
+.muted { color: var(--text-muted); font-size: var(--text-sm); }
+.control-group { display: grid; gap: var(--space-2); margin-top: var(--space-4); }
+.control-label-row { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); }
+.role { font-size: var(--text-caption); color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+.choice-row { display: grid; gap: var(--space-2); }
+.choice-row .btn { width: 100%; text-align: left; }
+.choice-row .btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-4); }
+.actions .btn { flex: 1 1 auto; }
+input[type="range"] { height: 8px; }
+input[type="range"]::-webkit-slider-thumb { width: 24px; height: 24px; }
+input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; background: var(--accent); border: none; border-radius: 50%; }
+.stage { display: grid; gap: var(--space-3); }
+.stage-canvas { width: 100%; display: block; border-radius: var(--radius-lg); border: 1px solid var(--border); background: var(--bg); }
+.value-list { list-style: none; display: grid; gap: var(--space-1); font-size: var(--text-sm); color: var(--text-muted); }
+.value-list li { display: flex; justify-content: space-between; gap: var(--space-3); }
+.value-list strong { color: var(--text); font-weight: var(--font-weight-number); }
+#feedback-panel { font-size: var(--text-sm); }
+.hint { font-size: var(--text-caption); color: var(--text-dim); }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="panel">
+      <h1>Grafik Batang dan Grafik Garis</h1>
+      <p class="muted">Pilih variabel bebas, lalu pilih jenis grafik yang sesuai. Grafik batang untuk variabel bebas berupa kategori. Grafik garis untuk variabel bebas berupa angka yang berurutan.</p>
+    </header>
+
+    <div class="layout">
+      <section class="panel" aria-labelledby="controls-heading">
+        <h2 class="panel-heading" id="controls-heading">Atur data</h2>
+
+        <div class="control-group">
+          <div class="control-label-row">
+            <span class="control-label">Variabel bebas</span>
+            <span class="role">Pilih satu</span>
+          </div>
+          <div class="choice-row" role="group" aria-label="Variabel bebas">
+            <button type="button" class="btn" id="scenario-1-btn" aria-pressed="true">Jenis pupuk (kategori)</button>
+            <button type="button" class="btn" id="scenario-2-btn" aria-pressed="false">Lama penyinaran (angka)</button>
+            <button type="button" class="btn" id="scenario-3-btn" aria-pressed="false">Sumber cahaya (kategori)</button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div class="control-label-row">
+            <span class="control-label">Jenis grafik</span>
+            <span class="role">Pilih satu</span>
+          </div>
+          <div class="choice-row" role="group" aria-label="Jenis grafik">
+            <button type="button" class="btn" id="bar-btn" aria-pressed="true">Grafik batang</button>
+            <button type="button" class="btn" id="line-btn" aria-pressed="false">Grafik garis</button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div class="control-label-row">
+            <label class="control-label" for="variasi-slider">Variasi antarpot</label>
+            <span class="role">Opsional</span>
+          </div>
+          <input type="range" id="variasi-slider" min="0" max="5" step="0.5" value="0" aria-describedby="variasi-display">
+          <span class="mono-value" id="variasi-display">0 cm</span>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn btn-primary" id="start-btn">Gambar grafik</button>
+          <button type="button" class="btn btn-ghost" id="reset-btn">Reset</button>
+        </div>
+
+        <div class="choice-row" style="margin-top: var(--space-4);">
+          <button type="button" class="btn" id="preset-1-btn">Contoh: pupuk, grafik batang</button>
+          <button type="button" class="btn" id="preset-2-btn">Contoh: penyinaran, grafik garis</button>
+        </div>
+        <p class="hint" style="margin-top: var(--space-3);">Spasi: gambar grafik · R: reset</p>
+      </section>
+
+      <section class="panel stage" aria-labelledby="stage-heading">
+        <h2 class="panel-heading" id="stage-heading">Grafik</h2>
+        <canvas class="stage-canvas" id="chart-canvas" role="img" aria-label="Grafik tinggi kecambah terhadap variabel bebas"></canvas>
+        <div id="feedback-panel" role="status" aria-live="polite">Pilih variabel bebas dan jenis grafik untuk memeriksa kecocokannya.</div>
+        <ul class="value-list" id="value-list" aria-label="Nilai data"></ul>
+      </section>
+    </div>
+  </main>
+
+  <script type="application/json" id="widget-config">
+{
+  "type": "simulation",
+  "concept": "jenis_grafik",
+  "description": "Memilih grafik batang untuk variabel bebas berupa kategori dan grafik garis untuk variabel bebas berupa angka yang berurutan.",
+  "variables": [
+    { "name": "variasi", "label": "Variasi antarpot", "min": 0, "max": 5, "default": 0, "unit": "cm" }
+  ],
+  "presets": [
+    { "name": "Pupuk, grafik batang", "variables": { "scenario": "pupuk", "chart": "bar", "variasi": 0 } },
+    { "name": "Penyinaran, grafik garis", "variables": { "scenario": "penyinaran", "chart": "line", "variasi": 0 } }
+  ]
+}
+  </script>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var ANIM_MS = 1200;
+      var DEVIATIONS = [0.5, -0.4, 0.3, -0.6, 0.2, -0.2, 0.4];
+      var SCENARIOS = {
+        pupuk: {
+          type: 'kategori',
+          xLabel: 'Jenis pupuk',
+          labels: ['Tanpa', 'Pupuk A', 'Pupuk B', 'Pupuk C'],
+          values: [4.0, 6.5, 5.2, 7.1]
+        },
+        penyinaran: {
+          type: 'angka',
+          xLabel: 'Lama penyinaran (jam per hari)',
+          labels: ['0', '2', '4', '6', '8', '10', '12'],
+          values: [2.0, 3.2, 4.1, 5.0, 6.2, 6.9, 7.5]
+        },
+        cahaya: {
+          type: 'kategori',
+          xLabel: 'Sumber cahaya',
+          labels: ['Pijar', 'LED', 'Matahari'],
+          values: [4.8, 5.4, 7.0]
+        }
+      };
+      var DEFAULTS = { scenario: 'pupuk', chart: 'bar', variasi: 0 };
+
+      var canvas = document.getElementById('chart-canvas');
+      var ctx = canvas ? canvas.getContext('2d') : null;
+      var cssW = 0;
+      var cssH = 0;
+      var dpr = 1;
+      var lastTs = 0;
+      var state = freshState(DEFAULTS.scenario, DEFAULTS.chart, DEFAULTS.variasi);
+
+      function $(id) { return document.getElementById(id); }
+      function setText(el, t) { if (el) el.textContent = t; }
+      function fmt(n) { return n.toFixed(1).replace('.', ','); }
+      function cssVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+      function freshState(scenario, chart, variasi) {
+        return { scenario: scenario, chart: chart, variasi: variasi, progress: 1, animating: false };
+      }
+
+      function valuesFor(s) {
+        return s.values.map(function (v, i) {
+          return Math.max(0, v + state.variasi * DEVIATIONS[i % DEVIATIONS.length]);
+        });
+      }
+
+      function fitMessage() {
+        var s = SCENARIOS[state.scenario];
+        var fits = s.type === 'kategori' ? state.chart === 'bar' : state.chart === 'line';
+        if (fits && s.type === 'kategori') {
+          return { kind: 'success', text: 'Tepat: variabel bebas berupa kategori, jadi grafik batang dipakai untuk membandingkan tiap kelompok.' };
+        }
+        if (fits) {
+          return { kind: 'success', text: 'Tepat: variabel bebas berupa angka yang berurutan, jadi grafik garis memperlihatkan tren perubahan.' };
+        }
+        if (s.type === 'kategori') {
+          return { kind: 'error', text: 'Kurang tepat: kategori tidak berurutan, sehingga garis menyiratkan hubungan yang tidak ada. Gunakan grafik batang.' };
+        }
+        return { kind: 'error', text: 'Kurang tepat: lama penyinaran berupa angka berurutan, sehingga grafik batang menyembunyikan tren. Gunakan grafik garis.' };
+      }
+
+      function setPressed(id, on) {
+        var btn = $(id);
+        if (!btn) return;
+        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      }
+
+      function updateUI() {
+        setPressed('scenario-1-btn', state.scenario === 'pupuk');
+        setPressed('scenario-2-btn', state.scenario === 'penyinaran');
+        setPressed('scenario-3-btn', state.scenario === 'cahaya');
+        setPressed('bar-btn', state.chart === 'bar');
+        setPressed('line-btn', state.chart === 'line');
+
+        setText($('variasi-display'), fmt(state.variasi) + ' cm');
+        var slider = $('variasi-slider');
+        if (slider) slider.value = String(state.variasi);
+
+        var startBtn = $('start-btn');
+        if (startBtn) {
+          startBtn.textContent = state.animating ? 'Menggambar...' : (state.progress >= 1 ? 'Gambar ulang' : 'Gambar grafik');
+          startBtn.disabled = state.animating;
+        }
+
+        var fit = fitMessage();
+        var panel = $('feedback-panel');
+        if (panel) {
+          panel.textContent = fit.text;
+          panel.className = fit.kind;
+        }
+
+        var list = $('value-list');
+        if (list) {
+          var s = SCENARIOS[state.scenario];
+          var vals = valuesFor(s);
+          list.textContent = '';
+          for (var i = 0; i < s.labels.length; i++) {
+            var li = document.createElement('li');
+            var label = document.createElement('span');
+            label.textContent = s.labels[i];
+            var value = document.createElement('strong');
+            value.className = 'mono-value';
+            value.textContent = fmt(vals[i]) + ' cm';
+            li.appendChild(label);
+            li.appendChild(value);
+            list.appendChild(li);
+          }
+        }
+      }
+
+      function setScenario(key) { state.scenario = key; resetChart(); }
+      function setChart(key) { state.chart = key; resetChart(); }
+      function setVariasi(v) { state.variasi = v; resetChart(); }
+
+      function resetChart() {
+        state.progress = 1;
+        state.animating = false;
+        updateUI();
+        draw();
+      }
+
+      function resetAll() {
+        state = freshState(DEFAULTS.scenario, DEFAULTS.chart, DEFAULTS.variasi);
+        updateUI();
+        draw();
+      }
+
+      function startDrawing() {
+        state.progress = 0;
+        state.animating = true;
+        lastTs = 0;
+        updateUI();
+      }
+
+      function mainAction() {
+        if (state.animating) return;
+        startDrawing();
+      }
+
+      function draw() {
+        if (!ctx || !cssW) return;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        var colors = {
+          bg: cssVar('--bg'),
+          border: cssVar('--border'),
+          text: cssVar('--text'),
+          muted: cssVar('--text-muted'),
+          accent: cssVar('--accent'),
+          font: cssVar('--font'),
+          mono: cssVar('--font-mono')
+        };
+
+        ctx.fillStyle = colors.bg;
+        ctx.fillRect(0, 0, cssW, cssH);
+
+        var s = SCENARIOS[state.scenario];
+        var vals = valuesFor(s);
+        var n = vals.length;
+        var mL = 56, mR = 16, mT = 20, mB = 60;
+        var plotW = cssW - mL - mR;
+        var plotH = cssH - mT - mB;
+        var maxV = Math.max(1, Math.ceil(Math.max.apply(null, vals) + 1));
+        var p = state.progress;
+
+        ctx.font = '12px ' + colors.mono;
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        for (var v = 0; v <= maxV; v++) {
+          var gy = mT + plotH - (v / maxV) * plotH;
+          ctx.strokeStyle = colors.border;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(mL, gy);
+          ctx.lineTo(mL + plotW, gy);
+          ctx.stroke();
+          ctx.fillStyle = colors.muted;
+          ctx.fillText(String(v), mL - 8, gy);
+        }
+
+        ctx.save();
+        ctx.translate(16, mT + plotH / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.textAlign = 'center';
+        ctx.fillStyle = colors.muted;
+        ctx.font = '13px ' + colors.font;
+        ctx.fillText('Tinggi kecambah (cm)', 0, 0);
+        ctx.restore();
+
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'alphabetic';
+        ctx.fillStyle = colors.muted;
+        ctx.font = '13px ' + colors.font;
+        ctx.fillText(s.xLabel, mL + plotW / 2, cssH - 12);
+
+        var slot = plotW / n;
+        var i;
+        if (state.chart === 'bar') {
+          var bw = Math.min(64, slot * 0.6);
+          for (i = 0; i < n; i++) {
+            var cx = mL + slot * (i + 0.5);
+            var h = (vals[i] / maxV) * plotH * p;
+            ctx.fillStyle = colors.accent;
+            ctx.fillRect(cx - bw / 2, mT + plotH - h, bw, h);
+            if (p >= 1) {
+              ctx.fillStyle = colors.text;
+              ctx.font = '600 13px ' + colors.mono;
+              ctx.textAlign = 'center';
+              ctx.fillText(fmt(vals[i]), cx, mT + plotH - h - 10);
+            }
+            ctx.fillStyle = colors.text;
+            ctx.font = '13px ' + colors.font;
+            ctx.textAlign = 'center';
+            ctx.fillText(s.labels[i], cx, mT + plotH + 20);
+          }
+        } else {
+          var pts = [];
+          for (i = 0; i < n; i++) {
+            pts.push({ x: mL + slot * (i + 0.5), y: mT + plotH - (vals[i] / maxV) * plotH });
+          }
+          var f = p * (n - 1);
+          ctx.strokeStyle = colors.accent;
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(pts[0].x, pts[0].y);
+          for (i = 0; i < n - 1; i++) {
+            if (f >= i + 1) {
+              ctx.lineTo(pts[i + 1].x, pts[i + 1].y);
+            } else if (f > i) {
+              var t = f - i;
+              ctx.lineTo(pts[i].x + (pts[i + 1].x - pts[i].x) * t, pts[i].y + (pts[i + 1].y - pts[i].y) * t);
+              break;
+            } else {
+              break;
+            }
+          }
+          ctx.stroke();
+
+          for (i = 0; i < n; i++) {
+            if (i > f + 1e-6) break;
+            ctx.fillStyle = colors.accent;
+            ctx.beginPath();
+            ctx.arc(pts[i].x, pts[i].y, 5, 0, 2 * Math.PI);
+            ctx.fill();
+            if (p >= 1) {
+              ctx.fillStyle = colors.text;
+              ctx.font = '600 13px ' + colors.mono;
+              ctx.textAlign = 'center';
+              ctx.fillText(fmt(vals[i]), pts[i].x, pts[i].y - 12);
+            }
+          }
+          ctx.fillStyle = colors.text;
+          ctx.font = '13px ' + colors.font;
+          ctx.textAlign = 'center';
+          for (i = 0; i < n; i++) {
+            ctx.fillText(s.labels[i], pts[i].x, mT + plotH + 20);
+          }
+        }
+      }
+
+      function resize() {
+        if (!canvas) return;
+        dpr = window.devicePixelRatio || 1;
+        cssW = canvas.clientWidth;
+        cssH = Math.round(Math.min(420, Math.max(280, cssW * 0.6)));
+        canvas.style.height = cssH + 'px';
+        canvas.width = Math.round(cssW * dpr);
+        canvas.height = Math.round(cssH * dpr);
+        draw();
+      }
+
+      function loop(ts) {
+        if (state.animating) {
+          if (!lastTs) lastTs = ts;
+          var dt = ts - lastTs;
+          lastTs = ts;
+          state.progress = Math.min(1, state.progress + dt / ANIM_MS);
+          if (state.progress >= 1) {
+            state.animating = false;
+            updateUI();
+          }
+        } else {
+          lastTs = 0;
+        }
+        draw();
+        window.requestAnimationFrame(loop);
+      }
+
+      function bind() {
+        var map = [
+          ['scenario-1-btn', function () { setScenario('pupuk'); }],
+          ['scenario-2-btn', function () { setScenario('penyinaran'); }],
+          ['scenario-3-btn', function () { setScenario('cahaya'); }],
+          ['bar-btn', function () { setChart('bar'); }],
+          ['line-btn', function () { setChart('line'); }],
+          ['start-btn', mainAction],
+          ['reset-btn', resetAll],
+          ['preset-1-btn', function () { state.scenario = 'pupuk'; state.chart = 'bar'; state.variasi = 0; resetChart(); }],
+          ['preset-2-btn', function () { state.scenario = 'penyinaran'; state.chart = 'line'; state.variasi = 0; resetChart(); }]
+        ];
+        map.forEach(function (pair) {
+          var el = $(pair[0]);
+          if (el) el.addEventListener('click', pair[1]);
+        });
+
+        var slider = $('variasi-slider');
+        if (slider) slider.addEventListener('input', function () { setVariasi(Number(slider.value)); });
+
+        document.addEventListener('keydown', function (e) {
+          var tag = e.target && e.target.tagName ? e.target.tagName : '';
+          if (e.key === ' ' && tag !== 'BUTTON' && tag !== 'INPUT') {
+            e.preventDefault();
+            mainAction();
+          } else if ((e.key === 'r' || e.key === 'R') && tag !== 'INPUT') {
+            resetAll();
+          }
+        });
+      }
+
+      if (typeof ResizeObserver !== 'undefined' && canvas) {
+        new ResizeObserver(resize).observe(canvas);
+      } else {
+        window.addEventListener('resize', resize);
+      }
+
+      bind();
+      updateUI();
+      resize();
+      window.requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>

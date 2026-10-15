@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interaksi Antarmakhluk Hidup · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Mencocokkan contoh dengan jenis interaksi antarmakhluk hidup: kompetisi, predasi, herbivori, dan simbiosis.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Interaksi Antarmakhluk Hidup">
+  <meta property="og:description" content="Mencocokkan contoh dengan jenis interaksi antarmakhluk hidup: kompetisi, predasi, herbivori, dan simbiosis.">
+  <meta property="og:locale" content="id">
+  <style>
+    :root {
+      /* Colour */
+      --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+      --surface: #14141e;     /* panels, cards, step rows */
+      --panel: rgba(20, 20, 30, 0.9);
+      --border: rgba(255, 255, 255, 0.1);
+      --border-strong: #333;
+      --text: #ffffff;
+      --text-muted: #aaa;
+      --text-dim: #888;
+      --accent: #6366f1;      /* primary action, slider thumb, active state */
+      --accent-hover: #5558e8;
+      --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+      --success: #fbbf24;     /* completion, headings, callouts */
+      --warning: #fb923c;
+      --error: #ff6b6b;
+      --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+      --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+      --shadow-none: none;
+
+      /* Spacing scale */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+
+      /* Radius scale */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-pill: 999px;
+
+      /* Type scale (system fonts only) */
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --text-base: 16px;
+      --text-sm: 14px;
+      --text-xs: 13px;
+      --text-caption: 11px;   /* uppercase control labels */
+      --text-heading: 24px;
+      --font-weight-display: 600;  /* headings */
+      --font-weight-number: 500;   /* monospaced readouts */
+
+      /* Focus, motion, stacking */
+      --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+      --motion: 0.2s;
+      --motion-slow: 0.3s;
+      --z-overlay: 100;        /* panels, tooltips */
+      --z-modal: 1000;         /* loading screens, modal dialogs */
+    }
+
+    [data-theme="light"] {
+      --bg: #f7f7fb;
+      --surface: #ffffff;
+      --panel: rgba(255, 255, 255, 0.92);
+      --border: rgba(0, 0, 0, 0.12);
+      --border-strong: #d4d4d8;
+      --text: #16161d;
+      --text-muted: #52525b;
+      --text-dim: #71717a;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+      --accent-soft: rgba(79, 70, 229, 0.95);
+      --success: #b45309;
+      --warning: #c2410c;
+      --error: #dc2626;
+      --accent-text: #ffffff;
+      --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font);
+      font-size: var(--text-base);
+      line-height: 1.5;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    h1, h2, h3 { font-weight: var(--font-weight-display); }
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      padding: var(--space-4);
+    }
+    .panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+    .btn {
+      font-family: inherit;
+      font-size: var(--text-sm);
+      min-height: 44px;            /* never below 44px, mobile */
+      min-width: 44px;
+      padding: var(--space-3) var(--space-5);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      background: var(--border-strong);
+      color: var(--text);
+      box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+      cursor: pointer;
+      transition: background var(--motion);
+    }
+    .btn:hover { background: var(--text-muted); }
+    .btn:active { transform: scale(0.95); }
+    .btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+    .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+    .btn-ghost { background: transparent; border-color: var(--border); }
+    .btn-ghost:hover { background: var(--surface); }
+
+    .control-label {
+      font-size: var(--text-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    input[type="range"] {
+      width: 100%; height: 6px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px; height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    /* Visually hidden but announced by screen readers. Use when a layout has no
+       room for a visible <h1> (e.g. a full-bleed canvas) — never as an excuse to
+       drop a heading. */
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+    }
+
+    #feedback-panel {
+      background: var(--surface);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+    }
+    #feedback-panel.success { border-left-color: var(--success); }
+    #feedback-panel.error { border-left-color: var(--error); }
+
+    .progress-track {
+      height: 8px;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+    .mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+    .sources {
+      margin-top: var(--space-5);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--border);
+    }
+    .sources-heading {
+      font-size: var(--text-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: var(--space-2);
+    }
+    .source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+    .source-item a { color: var(--accent); text-decoration: none; }
+    .source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+    .reading-article {
+      max-width: 720px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+    .reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+    .reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+    .reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+    .reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+    .reading-article blockquote {
+      border-left: 3px solid var(--border-strong);
+      padding-left: var(--space-4);
+      color: var(--text-muted);
+      margin-bottom: var(--space-4);
+    }
+    .reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+    .reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+    .reading-article pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      overflow-x: auto;
+      margin-bottom: var(--space-4);
+    }
+    .reading-article pre code { background: none; padding: 0; }
+    .reading-article table { width: 100%; border-collapse: collapse; }
+    .reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+    .reading-article details {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+      margin-bottom: var(--space-4);
+    }
+    .reading-article summary {
+      cursor: pointer;
+      font-weight: var(--font-weight-display);
+      color: var(--text);
+    }
+    .reading-article details[open] summary { margin-bottom: var(--space-2); }
+    .glossary-term {
+      text-decoration: underline dotted var(--text-dim);
+      text-decoration-thickness: 1px;
+      cursor: help;
+    }
+    .katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+    /* highlight.js token colours — mapped to the token set, not a canned theme */
+    .hljs { color: var(--text); }
+    .hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+    .hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+    .hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+    .hljs-number { color: var(--warning); }
+
+    /* ---- Scene layout (composition only; tokens and components above) ---- */
+    [hidden] { display: none !important; }
+    .app { max-width: 1040px; margin: 0 auto; padding: var(--space-4); display: grid; gap: var(--space-4); }
+    .app h1 { font-size: var(--text-heading); margin-bottom: var(--space-2); }
+    .header-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: var(--space-3); }
+    .header-row p { max-width: 640px; }
+    .layout { display: grid; gap: var(--space-4); align-items: start; }
+    @media (min-width: 840px) {
+      .layout { grid-template-columns: minmax(0, 1fr) 300px; }
+    }
+    .stack { display: grid; gap: var(--space-4); align-content: start; }
+    .start-list { padding-left: var(--space-5); display: grid; gap: var(--space-2); color: var(--text-muted); }
+    .card-face {
+      min-height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+    }
+    #card-text { font-size: var(--text-heading); line-height: 1.4; }
+    .bins { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+    @media (min-width: 640px) {
+      .bins { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    .bins .btn { width: 100%; text-align: left; }
+    .button-row { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
+    #paused-note { font-size: var(--text-sm); color: var(--warning); min-height: 1em; margin-top: var(--space-2); }
+    .hud { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); text-align: center; }
+    .hud-value { font-size: var(--text-heading); }
+    .hud-label { font-size: var(--text-caption); text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+    #progress-fill {
+      height: 100%;
+      width: 0;
+      background: var(--accent);
+      border-radius: var(--radius-pill);
+      transition: width var(--motion-slow);
+    }
+    .progress-block { margin-top: var(--space-4); }
+    .ach-list { list-style: none; display: grid; gap: var(--space-2); font-size: var(--text-sm); }
+    .ach-list li { border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); color: var(--text-muted); }
+    .ach-list li.is-unlocked { border-color: var(--success); color: var(--text); }
+    .ach-state { display: block; font-size: var(--text-xs); color: var(--text-dim); }
+    .ach-list li.is-unlocked .ach-state { color: var(--success); }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="panel header-row">
+      <div>
+        <p class="control-label">Permainan · IPA Kelas VII</p>
+        <h1>Interaksi Antarmakhluk Hidup</h1>
+        <p>Baca setiap kartu, lalu pilih jenis interaksi yang paling tepat. Setiap kartu hanya memiliki satu jawaban yang benar.</p>
+      </div>
+      <button id="reset-btn" class="btn btn-ghost" type="button">Mulai ulang</button>
+    </header>
+
+    <section id="start-screen" class="panel stack" aria-labelledby="start-heading">
+      <h2 id="start-heading">Cara bermain</h2>
+      <ol class="start-list">
+        <li>Baca kartu contoh interaksi yang tampil di layar.</li>
+        <li>Pilih kategori yang sesuai: kompetisi, predasi, herbivori, parasitisme, mutualisme, atau komensalisme.</li>
+        <li>Jawaban benar langsung menghilangkan kartu. Jawaban salah mengurangi satu nyawa dan kartu tetap ada.</li>
+        <li>Tidak ada batas waktu. Kamu punya 3 nyawa dan boleh memakai petunjuk.</li>
+      </ol>
+      <div class="button-row">
+        <button id="start-btn" class="btn btn-primary" type="button" onclick="startGame()">Mulai permainan</button>
+      </div>
+    </section>
+
+    <div id="game-screen" class="layout" hidden>
+      <section class="panel stack" aria-labelledby="game-heading">
+        <h2 id="game-heading" class="panel-heading">Kartu aktif</h2>
+        <p id="card-count" class="control-label mono-value"></p>
+        <div id="card" class="card-face" aria-live="polite">
+          <p id="card-text"></p>
+        </div>
+        <h3 class="control-label">Pilih kategori</h3>
+        <div id="bins" class="bins"></div>
+        <div class="button-row">
+          <button id="hint-btn" class="btn" type="button">Petunjuk</button>
+          <button id="pause-btn" class="btn" type="button">Jeda</button>
+        </div>
+        <p id="paused-note"></p>
+        <div id="feedback-panel" role="status" aria-live="polite"></div>
+      </section>
+
+      <aside class="stack">
+        <section class="panel" aria-labelledby="hud-heading">
+          <h2 id="hud-heading" class="panel-heading">Papan skor</h2>
+          <div class="hud">
+            <div>
+              <p class="hud-label">Skor</p>
+              <p id="score-display" class="hud-value mono-value">0</p>
+            </div>
+            <div>
+              <p class="hud-label">Nyawa</p>
+              <p id="lives-display" class="hud-value mono-value"></p>
+            </div>
+            <div>
+              <p class="hud-label">Waktu</p>
+              <p id="timer-display" class="hud-value mono-value">00:00</p>
+            </div>
+          </div>
+          <div class="progress-block">
+            <p class="control-label">Kartu selesai</p>
+            <div class="progress-track"><div id="progress-fill"></div></div>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="ach-heading">
+          <h2 id="ach-heading" class="panel-heading">Pencapaian</h2>
+          <ul id="achievement-list" class="ach-list"></ul>
+        </section>
+      </aside>
+    </div>
+
+    <section id="end-screen" class="panel stack" hidden aria-labelledby="end-title">
+      <h2 id="end-title"></h2>
+      <p id="end-text"></p>
+      <div class="button-row">
+        <button id="again-btn" class="btn btn-primary" type="button" onclick="startGame()">Main lagi</button>
+      </div>
+    </section>
+  </main>
+
+  <script type="application/json" id="widget-config">
+{"type":"game","gameType":"sorting","description":"Permainan memilah kartu contoh interaksi antarmakhluk hidup ke dalam enam kategori: kompetisi, predasi, herbivori, parasitisme, mutualisme, dan komensalisme.","gameConfig":{"controls":["tombol kategori","tombol petunjuk","tombol jeda"],"targets":["kompetisi","predasi","herbivori","parasitisme","mutualisme","komensalisme"],"initialConditions":{"lives":3,"cards":12},"successCondition":"semua 12 kartu dipilah dengan benar sebelum nyawa habis"},"scoring":{"correct":10,"retryCorrect":5,"timeBonus":false},"achievements":[{"id":"rantai-sempurna","name":"Rantai Sempurna","description":"Lima jawaban benar berturut-turut"},{"id":"tanpa-salah","name":"Tanpa Salah","description":"Menyelesaikan permainan tanpa satu pun kesalahan"},{"id":"penjaga-ekosistem","name":"Penjaga Ekosistem","description":"Memilah semua 12 kartu dengan benar"}],"categories":[{"id":"kompetisi","label":"Kompetisi","clue":"Lihat apakah dua pihak berebut sumber daya yang sama dan sama-sama dirugikan."},{"id":"predasi","label":"Predasi","clue":"Lihat apakah satu makhluk hidup membunuh dan memakan makhluk hidup lain."},{"id":"herbivori","label":"Herbivori","clue":"Lihat apakah hewan memakan tumbuhan atau bagian tumbuhan."},{"id":"parasitisme","label":"Parasitisme","clue":"Lihat apakah satu pihak untung sementara pihak lain dirugikan."},{"id":"mutualisme","label":"Mutualisme","clue":"Lihat apakah kedua pihak sama-sama memperoleh keuntungan."},{"id":"komensalisme","label":"Komensalisme","clue":"Lihat apakah satu pihak untung dan pihak lain tidak dirugikan."}],"cards":[{"id":"c1","text":"Dua tumbuhan kecil berebut cahaya matahari dan air di tanah yang sama.","category":"kompetisi","explain":"Kompetisi terjadi ketika dua makhluk hidup memperebutkan sumber daya yang sama dan keduanya dirugikan."},{"id":"c2","text":"Dua burung jantan berebut wilayah dan makanan di satu pohon yang sama.","category":"kompetisi","explain":"Kedua burung bersaing memperebutkan sumber daya yang terbatas, sehingga keduanya dirugikan."},{"id":"c3","text":"Harimau memangsa rusa di hutan.","category":"predasi","explain":"Pada predasi, pemangsa membunuh dan memakan mangsanya."},{"id":"c4","text":"Elang menangkap tikus di sawah.","category":"predasi","explain":"Elang adalah pemangsa, dan tikus adalah mangsanya."},{"id":"c5","text":"Kambing memakan rumput di padang penggembalaan.","category":"herbivori","explain":"Herbivori adalah hewan yang memakan tumbuhan sebagai sumber makanannya."},{"id":"c6","text":"Ulat memakan daun jati hingga berlubang.","category":"herbivori","explain":"Ulat termasuk herbivora karena makanannya berupa daun tumbuhan."},{"id":"c7","text":"Cacing pita hidup di usus manusia dan menyerap sari makanan dari inangnya.","category":"parasitisme","explain":"Cacing pita untung karena mendapat makanan, sedangkan manusia sebagai inang dirugikan."},{"id":"c8","text":"Benalu tumbuh di batang pohon mangga dan mengambil air serta zat hara darinya.","category":"parasitisme","explain":"Benalu menyerap air dan zat hara dari inangnya, sehingga pohon mangga dirugikan."},{"id":"c9","text":"Lebah mengambil nektar dari bunga sambil membantu penyerbukannya.","category":"mutualisme","explain":"Lebah mendapat nektar, sedangkan bunga terbantu penyerbukannya. Keduanya sama-sama untung."},{"id":"c10","text":"Bakteri pengikat nitrogen di akar kacang-kacangan menyediakan nitrogen, dan tumbuhan memberi makanan kepada bakteri.","category":"mutualisme","explain":"Kedua pihak saling menguntungkan, sehingga interaksinya mutualisme."},{"id":"c11","text":"Anggrek menempel di batang pohon besar untuk mendapat tempat tinggal tanpa merugikan pohon.","category":"komensalisme","explain":"Anggrek untung karena mendapat tempat tinggal, sedangkan pohon tidak dirugikan."},{"id":"c12","text":"Ikan remora menempel pada tubuh hiu dan ikut memakan sisa mangsa hiu tanpa merugikan hiu.","category":"komensalisme","explain":"Remora untung karena mendapat sisa makanan, sedangkan hiu tidak dirugikan."}]}
+  </script>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var CONFIG = JSON.parse(document.getElementById('widget-config').textContent);
+      var CATS = CONFIG.categories;
+      var CARDS = CONFIG.cards;
+      var ACH = CONFIG.achievements;
+      var LIVES = CONFIG.gameConfig.initialConditions.lives;
+      var POINTS_FIRST = CONFIG.scoring.correct;
+      var POINTS_RETRY = CONFIG.scoring.retryCorrect;
+      var WIN_STREAK = 5;
+
+      var state = null;
+      var lastTs = null;
+
+      function el(id) { return document.getElementById(id); }
+
+      function setText(id, text) {
+        var node = el(id);
+        if (node) node.textContent = text;
+      }
+
+      function setHidden(id, hidden) {
+        var node = el(id);
+        if (node) node.hidden = hidden;
+      }
+
+      function catLabel(id) {
+        var found = CATS.filter(function (c) { return c.id === id; })[0];
+        return found ? found.label : id;
+      }
+
+      function catClue(id) {
+        var found = CATS.filter(function (c) { return c.id === id; })[0];
+        return found ? found.clue : '';
+      }
+
+      function shuffle(items) {
+        for (var i = items.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var tmp = items[i];
+          items[i] = items[j];
+          items[j] = tmp;
+        }
+        return items;
+      }
+
+      function formatTime(seconds) {
+        var m = Math.floor(seconds / 60);
+        var s = Math.floor(seconds % 60);
+        return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+      }
+
+      function newState() {
+        return {
+          phase: 'start',
+          deck: [],
+          index: 0,
+          score: 0,
+          lives: LIVES,
+          sorted: 0,
+          mistakes: 0,
+          streak: 0,
+          cardWrong: false,
+          cardHinted: false,
+          paused: false,
+          elapsed: 0,
+          unlocked: {},
+          won: false,
+          feedback: '',
+          feedbackKind: ''
+        };
+      }
+
+      function unlock(id) {
+        if (state) state.unlocked[id] = true;
+      }
+
+      function buildBins() {
+        var box = el('bins');
+        if (!box) return;
+        box.textContent = '';
+        CATS.forEach(function (cat, i) {
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'btn';
+          btn.id = 'bin-' + cat.id + '-btn';
+          btn.title = 'Tombol ' + (i + 1) + ': ' + cat.label;
+          btn.textContent = (i + 1) + '. ' + cat.label;
+          btn.addEventListener('click', function () { chooseBin(cat.id); });
+          box.appendChild(btn);
+        });
+      }
+
+      function buildAchievements() {
+        var list = el('achievement-list');
+        if (!list) return;
+        list.textContent = '';
+        ACH.forEach(function (a) {
+          var li = document.createElement('li');
+          li.id = 'ach-' + a.id;
+          var name = document.createElement('strong');
+          name.textContent = a.name;
+          var desc = document.createElement('span');
+          desc.textContent = ' · ' + a.description;
+          var st = document.createElement('span');
+          st.className = 'ach-state';
+          li.appendChild(name);
+          li.appendChild(desc);
+          li.appendChild(st);
+          list.appendChild(li);
+        });
+      }
+
+      window.startGame = function () {
+        state = newState();
+        state.deck = shuffle(CARDS.slice());
+        state.phase = 'playing';
+        state.feedback = 'Baca kartu, lalu pilih kategori yang paling tepat. Kamu punya ' + LIVES + ' nyawa.';
+        lastTs = null;
+        render();
+      };
+
+      function resetGame() {
+        state = newState();
+        lastTs = null;
+        render();
+      }
+
+      function togglePause() {
+        if (!state || state.phase !== 'playing') return;
+        state.paused = !state.paused;
+        lastTs = null;
+        render();
+      }
+
+      function useHint() {
+        if (!state || state.phase !== 'playing' || state.paused || state.cardHinted) return;
+        var card = state.deck[state.index];
+        state.cardHinted = true;
+        state.feedback = 'Petunjuk: ' + catClue(card.category) + ' Poin untuk kartu ini turun menjadi ' + POINTS_RETRY + '.';
+        state.feedbackKind = '';
+        render();
+      }
+
+      function chooseBin(catId) {
+        if (!state || state.phase !== 'playing' || state.paused) return;
+        var card = state.deck[state.index];
+        if (card.category === catId) {
+          var pts = (state.cardWrong || state.cardHinted) ? POINTS_RETRY : POINTS_FIRST;
+          state.score += pts;
+          state.sorted += 1;
+          state.streak += 1;
+          state.index += 1;
+          state.cardWrong = false;
+          state.cardHinted = false;
+          state.feedback = 'Tepat! ' + card.explain + ' (+' + pts + ' poin)';
+          state.feedbackKind = 'success';
+          if (state.streak >= WIN_STREAK) unlock('rantai-sempurna');
+          if (state.index >= state.deck.length) {
+            state.phase = 'end';
+            state.won = true;
+            unlock('penjaga-ekosistem');
+            if (state.mistakes === 0) unlock('tanpa-salah');
+          }
+        } else {
+          state.lives -= 1;
+          state.mistakes += 1;
+          state.streak = 0;
+          state.cardWrong = true;
+          state.feedback = 'Salah memilih ' + catLabel(catId) + '. Kartu ini termasuk ' + catLabel(card.category) + '. ' + card.explain + ' Nyawa tersisa ' + state.lives + ' dari ' + LIVES + '.';
+          state.feedbackKind = 'error';
+          if (state.lives <= 0) {
+            state.phase = 'end';
+            state.won = false;
+          }
+        }
+        render();
+      }
+
+      function renderGame() {
+        var card = state.deck[state.index];
+        if (card) {
+          setText('card-text', card.text);
+          setText('card-count', 'Kartu ' + (state.index + 1) + ' dari ' + state.deck.length);
+        }
+        CATS.forEach(function (cat) {
+          var btn = el('bin-' + cat.id + '-btn');
+          if (btn) btn.disabled = state.paused;
+        });
+        var hint = el('hint-btn');
+        if (hint) hint.disabled = state.paused || state.cardHinted;
+        var pause = el('pause-btn');
+        if (pause) pause.textContent = state.paused ? 'Lanjutkan' : 'Jeda';
+        setText('paused-note', state.paused ? 'Permainan dijeda. Tekan Lanjutkan untuk melanjutkan.' : '');
+        setText('score-display', String(state.score));
+        setText('lives-display', state.lives + ' / ' + LIVES);
+        var fill = el('progress-fill');
+        if (fill) fill.style.width = Math.round((state.sorted / state.deck.length) * 100) + '%';
+      }
+
+      function renderEnd() {
+        if (state.won) {
+          setText('end-title', 'Ekosistem seimbang!');
+          setText('end-text', 'Kamu memilah ' + state.sorted + ' kartu dengan benar. Skor akhir: ' + state.score + ' poin, dengan ' + state.mistakes + ' kesalahan dalam waktu ' + formatTime(state.elapsed) + '.');
+        } else {
+          setText('end-title', 'Nyawa habis');
+          setText('end-text', 'Kamu berhasil memilah ' + state.sorted + ' dari ' + state.deck.length + ' kartu. Skor akhir: ' + state.score + ' poin. Coba lagi dan gunakan petunjuk jika perlu.');
+        }
+      }
+
+      function render() {
+        var phase = state ? state.phase : 'start';
+        setHidden('start-screen', phase !== 'start');
+        setHidden('game-screen', phase !== 'playing');
+        setHidden('end-screen', phase !== 'end');
+
+        if (state) {
+          if (phase === 'playing') renderGame();
+          if (phase === 'end') renderEnd();
+
+          var panel = el('feedback-panel');
+          if (panel) {
+            panel.textContent = state.feedback;
+            panel.classList.toggle('success', state.feedbackKind === 'success');
+            panel.classList.toggle('error', state.feedbackKind === 'error');
+          }
+
+          CONFIG.achievements.forEach(function (a) {
+            var li = el('ach-' + a.id);
+            if (!li) return;
+            var on = !!state.unlocked[a.id];
+            li.classList.toggle('is-unlocked', on);
+            var st = li.querySelector('.ach-state');
+            if (st) st.textContent = on ? 'Terbuka' : 'Terkunci';
+          });
+        }
+        updateClock();
+      }
+
+      function updateClock() {
+        setText('timer-display', state ? formatTime(state.elapsed) : '00:00');
+      }
+
+      function frame(ts) {
+        if (lastTs === null) lastTs = ts;
+        var dt = (ts - lastTs) / 1000;
+        lastTs = ts;
+        if (state && state.phase === 'playing' && !state.paused) {
+          state.elapsed += dt;
+          updateClock();
+        }
+        window.requestAnimationFrame(frame);
+      }
+
+      function init() {
+        buildBins();
+        buildAchievements();
+        var hint = el('hint-btn');
+        if (hint) hint.addEventListener('click', useHint);
+        var pause = el('pause-btn');
+        if (pause) pause.addEventListener('click', togglePause);
+        var reset = el('reset-btn');
+        if (reset) reset.addEventListener('click', resetGame);
+
+        document.addEventListener('keydown', function (e) {
+          var tag = e.target && e.target.tagName;
+          if (e.key === 'r' || e.key === 'R') {
+            resetGame();
+          } else if (e.key === ' ' && tag !== 'BUTTON') {
+            e.preventDefault();
+            togglePause();
+          } else if (/^[1-6]$/.test(e.key) && state && state.phase === 'playing') {
+            var cat = CATS[Number(e.key) - 1];
+            if (cat) chooseBin(cat.id);
+          }
+        });
+
+        render();
+        window.requestAnimationFrame(frame);
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

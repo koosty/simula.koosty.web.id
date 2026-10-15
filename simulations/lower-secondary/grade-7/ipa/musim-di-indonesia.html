@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Musim di Indonesia · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Simulasikan posisi Matahari sepanjang tahun untuk memahami mengapa Indonesia hanya memiliki dua musim: hujan dan kemarau.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Musim di Indonesia">
+  <meta property="og:description" content="Simulasikan posisi Matahari sepanjang tahun untuk memahami mengapa Indonesia hanya memiliki dua musim: hujan dan kemarau.">
+  <meta property="og:locale" content="id">
+  <style>
+:root {
+  /* Colour */
+  --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+  --surface: #14141e;     /* panels, cards, step rows */
+  --panel: rgba(20, 20, 30, 0.9);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: #333;
+  --text: #ffffff;
+  --text-muted: #aaa;
+  --text-dim: #888;
+  --accent: #6366f1;      /* primary action, slider thumb, active state */
+  --accent-hover: #5558e8;
+  --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+  --success: #fbbf24;     /* completion, headings, callouts */
+  --warning: #fb923c;
+  --error: #ff6b6b;
+  --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-none: none;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type scale (system fonts only) */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-caption: 11px;   /* uppercase control labels */
+  --text-heading: 24px;
+  --font-weight-display: 600;  /* headings */
+  --font-weight-number: 500;   /* monospaced readouts */
+
+  /* Focus, motion, stacking */
+  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  --motion: 0.2s;
+  --motion-slow: 0.3s;
+  --z-overlay: 100;        /* panels, tooltips */
+  --z-modal: 1000;         /* loading screens, modal dialogs */
+}
+
+[data-theme="light"] {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-strong: #d4d4d8;
+  --text: #16161d;
+  --text-muted: #52525b;
+  --text-dim: #71717a;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.95);
+  --success: #b45309;
+  --warning: #c2410c;
+  --error: #dc2626;
+  --accent-text: #ffffff;
+  --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+h1, h2, h3 { font-weight: var(--font-weight-display); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-4);
+}
+.panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+.btn {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  min-height: 44px;            /* never below 44px, mobile */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--border-strong);
+  color: var(--text);
+  box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.btn:hover { background: var(--text-muted); }
+.btn:active { transform: scale(0.95); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); }
+
+.control-label {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+input[type="range"] {
+  width: 100%; height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Visually hidden but announced by screen readers. Use when a layout has no
+   room for a visible h1 (e.g. a full-bleed canvas) — never as an excuse to
+   drop a heading. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+#feedback-panel {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+#feedback-panel.success { border-left-color: var(--success); }
+#feedback-panel.error { border-left-color: var(--error); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+.sources {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+.sources-heading {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+.source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+.source-item a { color: var(--accent); text-decoration: none; }
+.source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+.reading-article {
+  max-width: 720px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+.reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+.reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+.reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+.reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+.reading-article blockquote {
+  border-left: 3px solid var(--border-strong);
+  padding-left: var(--space-4);
+  color: var(--text-muted);
+  margin-bottom: var(--space-4);
+}
+.reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+.reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+.reading-article pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+}
+.reading-article pre code { background: none; padding: 0; }
+.reading-article table { width: 100%; border-collapse: collapse; }
+.reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+.reading-article details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.reading-article summary {
+  cursor: pointer;
+  font-weight: var(--font-weight-display);
+  color: var(--text);
+}
+.reading-article details[open] summary { margin-bottom: var(--space-2); }
+.glossary-term {
+  text-decoration: underline dotted var(--text-dim);
+  text-decoration-thickness: 1px;
+  cursor: help;
+}
+.katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+/* highlight.js token colours — mapped to the token set, not a canned theme */
+.hljs { color: var(--text); }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+.hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+.hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+.hljs-number { color: var(--warning); }
+
+/* Tata letak simulasi (warna hanya dari token) */
+.sim-page { max-width: 1100px; margin: 0 auto; padding: var(--space-4); display: grid; gap: var(--space-4); }
+.sim-page h1 { font-size: var(--text-heading); }
+.intro p { color: var(--text-muted); margin-top: var(--space-2); }
+.sim-layout { display: grid; gap: var(--space-4); }
+@media (min-width: 900px) {
+  .sim-layout { grid-template-columns: minmax(0, 1fr) 340px; align-items: start; }
+}
+.sim-wrap { position: relative; width: 100%; height: min(62vh, 480px); min-height: 300px; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; background: var(--bg); }
+#sim-canvas { display: block; width: 100%; height: 100%; }
+.side-stack { display: grid; gap: var(--space-4); align-content: start; }
+.control-stack { display: grid; gap: var(--space-2); }
+.slider-wrap { min-height: 44px; display: flex; align-items: center; }
+.info-row { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.readout-list { display: grid; gap: var(--space-2); font-size: var(--text-sm); }
+.readout-list .mono-value { color: var(--text); text-align: right; }
+.place-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+.place-btn { width: 100%; }
+.place-btn.active { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.control-row { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+.hint { font-size: var(--text-xs); color: var(--text-dim); }
+#feedback-text { font-size: var(--text-sm); color: var(--text); }
+#feedback-panel { padding: var(--space-3) var(--space-4); }
+  </style>
+</head>
+<body>
+  <main class="sim-page">
+    <header class="intro">
+      <h1>Musim di Indonesia</h1>
+      <p>Geser hari dalam setahun atau pilih tempat. Lihat bagaimana tinggi Matahari dan pola hujan berubah, dan mengapa Indonesia hanya memiliki dua musim.</p>
+    </header>
+
+    <div class="sim-layout">
+      <div>
+        <div class="sim-wrap" id="sim-wrap">
+          <canvas id="sim-canvas" role="img" aria-label="Diagram Bumi dengan posisi Matahari tegak lurus dan grafik tinggi Matahari sepanjang tahun"></canvas>
+        </div>
+      </div>
+
+      <aside class="side-stack">
+        <section id="feedback-panel" aria-live="polite">
+          <p class="panel-heading">Penjelasan</p>
+          <p id="feedback-text"></p>
+        </section>
+
+        <section class="panel" aria-label="Pembacaan">
+          <p class="panel-heading">Pembacaan</p>
+          <dl class="readout-list">
+            <div class="info-row"><dt>Tanggal</dt><dd class="mono-value" id="day-readout">–</dd></div>
+            <div class="info-row"><dt>Matahari tegak lurus di</dt><dd class="mono-value" id="declination-readout">–</dd></div>
+            <div class="info-row"><dt>Tinggi Matahari siang</dt><dd class="mono-value" id="altitude-readout">–</dd></div>
+            <div class="info-row"><dt>Lama siang hari ini</dt><dd class="mono-value" id="daylength-readout">–</dd></div>
+            <div class="info-row"><dt>Musim hujan atau kemarau</dt><dd class="mono-value" id="season-readout">–</dd></div>
+            <div class="info-row"><dt>Lama siang setahun (tempatmu)</dt><dd class="mono-value" id="range-readout">–</dd></div>
+            <div class="info-row"><dt>Pembanding: 40° LU</dt><dd class="mono-value" id="compare-readout">–</dd></div>
+          </dl>
+        </section>
+
+        <section class="panel" aria-label="Kontrol">
+          <p class="panel-heading">Kontrol</p>
+          <div class="control-stack">
+            <div class="info-row">
+              <label class="control-label" for="day-slider">Hari dalam setahun</label>
+              <span class="mono-value" id="day-slider-readout">15 Januari</span>
+            </div>
+            <div class="slider-wrap">
+              <input type="range" id="day-slider" min="1" max="365" step="1" value="15" aria-label="Hari dalam setahun">
+            </div>
+            <div class="info-row">
+              <label class="control-label" for="lat-slider">Lintang tempatmu</label>
+              <span class="mono-value" id="lat-slider-readout">6,2° LS</span>
+            </div>
+            <div class="slider-wrap">
+              <input type="range" id="lat-slider" min="-10" max="8" step="0.1" value="-6.2" aria-label="Lintang tempatmu">
+            </div>
+            <div class="control-row">
+              <button type="button" class="btn btn-primary" id="play-btn">Putar setahun</button>
+              <button type="button" class="btn btn-ghost" id="reset-btn">Atur ulang</button>
+            </div>
+            <p class="hint">Tekan Spasi untuk memutar atau menjeda, dan R untuk mengatur ulang.</p>
+          </div>
+        </section>
+
+        <section class="panel" aria-label="Pilih tempat">
+          <p class="panel-heading">Pilih tempat (atur ulang ke 1 Januari)</p>
+          <div class="place-grid">
+            <button type="button" class="btn place-btn" id="place-sabang-btn">Sabang</button>
+            <button type="button" class="btn place-btn" id="place-pontianak-btn">Pontianak</button>
+            <button type="button" class="btn place-btn" id="place-jakarta-btn">Jakarta</button>
+            <button type="button" class="btn place-btn" id="place-merauke-btn">Merauke</button>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <script type="application/json" id="widget-config">
+{"type":"simulation","concept":"seasons_indonesia","description":"Simulasi posisi Matahari sepanjang tahun di tempat yang berbeda lintangnya. Pengguna dapat melihat lintang Matahari tegak lurus, tinggi Matahari siang hari, lama siang, dan pola musim hujan atau kemarau di Indonesia.","variables":[{"name":"day","label":"Hari dalam setahun","min":1,"max":365,"default":15,"unit":"hari"},{"name":"lat","label":"Lintang tempat","min":-10,"max":8,"default":-6.2,"unit":"°"}],"presets":[{"name":"Sabang","variables":{"lat":5.9,"day":1}},{"name":"Pontianak","variables":{"lat":0,"day":1}},{"name":"Jakarta","variables":{"lat":-6.2,"day":1}},{"name":"Merauke","variables":{"lat":-8.5,"day":1}}]}
+  </script>
+
+  <script>
+  (function () {
+    'use strict';
+
+    var MONTHS = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    var MONTH_INITIALS = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+    var MONTH_DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    var DAYS_PER_SECOND = 20;
+    var DEFAULT_DAY = 15;
+    var DEFAULT_LAT = -6.2;
+    var DEG = Math.PI / 180;
+    var COMPARE_LAT = 40;
+
+    var state = { day: DEFAULT_DAY, lat: DEFAULT_LAT, playing: false };
+    var view = { W: 0, H: 0 };
+    var dpr = 1;
+    var PAL = null;
+    var canvas = null;
+    var ctx = null;
+
+    function $(id) { return document.getElementById(id); }
+    function setText(id, t) { var n = $(id); if (n) n.textContent = t; }
+    function fmt1(n) { return n.toFixed(1).replace('.', ','); }
+    function fmt0(n) { return String(Math.round(n)); }
+
+    function dateLabel(day) {
+      var d = day;
+      for (var m = 0; m < 12; m++) {
+        if (d <= MONTH_DAYS[m]) return d + ' ' + MONTHS[m];
+        d -= MONTH_DAYS[m];
+      }
+      return '31 Desember';
+    }
+    function monthIndex(day) {
+      var d = day;
+      for (var m = 0; m < 12; m++) {
+        if (d <= MONTH_DAYS[m]) return m;
+        d -= MONTH_DAYS[m];
+      }
+      return 11;
+    }
+    // Deklinasi Matahari (derajat): posisi lintang tempat Matahari tegak lurus.
+    function declination(day) {
+      return 23.44 * Math.sin(DEG * (360 / 365) * (day - 81));
+    }
+    // Lama siang (jam) dari sudut jam terbit: cos H = -tan(lintang) tan(deklinasi).
+    function dayLength(lat, dec) {
+      var x = -Math.tan(lat * DEG) * Math.tan(dec * DEG);
+      x = Math.max(-1, Math.min(1, x));
+      return 2 * Math.acos(x) / DEG / 15;
+    }
+    function noonAltitude(lat, dec) {
+      return 90 - Math.abs(lat - dec);
+    }
+    function hoursText(h) {
+      var whole = Math.floor(h);
+      var mins = Math.round((h - whole) * 60);
+      if (mins === 60) { whole += 1; mins = 0; }
+      return whole + ' jam ' + mins + ' menit';
+    }
+    function latText(lat) {
+      var a = Math.abs(lat);
+      return fmt1(a) + '° ' + (lat < 0 ? 'LS' : lat > 0 ? 'LU' : '');
+    }
+    // Pola umum Indonesia: muson barat membawa hujan (Oktober–Maret), muson timur membawa kemarau (April–September).
+    function isWetMonth(m) { return m >= 9 || m <= 2; }
+
+    function yearRange(lat) {
+      var min = Infinity, max = -Infinity;
+      for (var d = 1; d <= 365; d++) {
+        var len = dayLength(lat, declination(d));
+        if (len < min) min = len;
+        if (len > max) max = len;
+      }
+      return { min: min, max: max };
+    }
+
+    function palette() {
+      var cs = getComputedStyle(document.documentElement);
+      function g(n) { return cs.getPropertyValue(n).trim(); }
+      return {
+        bg: g('--bg'), surface: g('--surface'), border: g('--border-strong'),
+        text: g('--text'), muted: g('--text-muted'), dim: g('--text-dim'),
+        accent: g('--accent'), success: g('--success'), warning: g('--warning'),
+        font: g('--font'), fontMono: g('--font-mono')
+      };
+    }
+
+    function renderReadouts() {
+      var dec = declination(state.day);
+      var len = dayLength(state.lat, dec);
+      var alt = noonAltitude(state.lat, dec);
+      var wet = isWetMonth(monthIndex(state.day));
+      var range = yearRange(state.lat);
+      var cmp = yearRange(COMPARE_LAT);
+
+      setText('day-readout', dateLabel(state.day));
+      setText('declination-readout', fmt1(Math.abs(dec)) + '° ' + (dec < 0 ? 'LS' : 'LU'));
+      setText('altitude-readout', fmt1(alt) + '°');
+      setText('daylength-readout', hoursText(len));
+      setText('season-readout', wet ? 'Hujan' : 'Kemarau');
+      setText('range-readout', fmt1(range.min) + ' – ' + fmt1(range.max) + ' jam');
+      setText('compare-readout', fmt1(cmp.min) + ' – ' + fmt1(cmp.max) + ' jam');
+
+      setText('day-slider-readout', dateLabel(state.day));
+      setText('lat-slider-readout', latText(state.lat));
+
+      var daySlider = $('day-slider');
+      if (daySlider) daySlider.value = String(state.day);
+      var latSlider = $('lat-slider');
+      if (latSlider) latSlider.value = String(state.lat);
+
+      var play = $('play-btn');
+      if (play) play.textContent = state.playing ? 'Jeda' : 'Putar setahun';
+
+      var places = { 'sabang': 5.9, 'pontianak': 0, 'jakarta': -6.2, 'merauke': -8.5 };
+      Object.keys(places).forEach(function (k) {
+        var b = $('place-' + k + '-btn');
+        if (b) {
+          var on = Math.abs(state.lat - places[k]) < 0.05;
+          b.classList.toggle('active', on);
+          b.setAttribute('aria-pressed', String(on));
+        }
+      });
+
+      var inIndonesia = state.lat >= -11 && state.lat <= 6;
+      var text = 'Matahari tegak lurus di ' + fmt1(Math.abs(dec)) + '° ' + (dec < 0 ? 'LS' : 'LU') + ' pada ' + dateLabel(state.day) + '. ';
+      text += inIndonesia
+        ? 'Tempatmu dekat khatulistiwa, sehingga lama siang dan malam hanya berubah sekitar ' + fmt1(range.max - range.min) + ' jam sepanjang tahun. '
+        : 'Tempatmu jauh dari khatulistiwa, sehingga lama siang berubah cukup besar sepanjang tahun. ';
+      text += wet
+        ? 'Sekarang musim hujan: angin muson barat yang lembap membawa hujan ke sebagian besar wilayah Indonesia.'
+        : 'Sekarang musim kemarau: angin muson timur yang lebih kering bertiup dari Australia, sehingga hujan jarang.';
+      setText('feedback-text', text);
+    }
+
+    function drawGlobe(x0, y0, w, h, dec, lat) {
+      var R = Math.min(w, h) * 0.3;
+      var cx = x0 + w / 2;
+      var cy = y0 + h / 2 + 8;
+
+      // Titik tengah: Bumi dilihat dari samping, Matahari di sebelah kiri.
+      ctx.fillStyle = PAL.surface;
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Sisi siang (menghadap Matahari) dengan token aksen lembut.
+      var sx = -Math.cos(dec * DEG);
+      var sy = Math.sin(dec * DEG);
+      var angS = Math.atan2(-sy, sx);
+      ctx.save();
+      ctx.globalAlpha = 0.18;
+      ctx.fillStyle = PAL.warning;
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, angS - Math.PI / 2, angS + Math.PI / 2);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      ctx.strokeStyle = PAL.border;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Khatulistiwa
+      ctx.strokeStyle = PAL.dim;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(cx - R * 1.25, cy);
+      ctx.lineTo(cx + R * 1.25, cy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = PAL.dim;
+      ctx.font = '12px ' + PAL.font;
+      ctx.textAlign = 'right';
+      ctx.fillText('Khatulistiwa', cx + R * 1.25, cy - 6);
+
+      // Sinar Matahari sejajar (arah -s) jatuh ke sisi Bumi yang menghadap Matahari.
+      var px = -sy, py = sx;
+      ctx.strokeStyle = PAL.warning;
+      ctx.lineWidth = 2;
+      [-0.6, -0.3, 0, 0.3, 0.6].forEach(function (f) {
+        var off = f * R;
+        var along = Math.sqrt(R * R - off * off);
+        var endX = cx + (sx * along + px * off);
+        var endY = cy - (sy * along + py * off);
+        var startX = cx + (sx * R * 1.4 + px * off);
+        var startY = cy - (sy * R * 1.4 + py * off);
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+      });
+
+      // Titik tegak lurus Matahari
+      var subX = cx + sx * R;
+      var subY = cy - sy * R;
+      ctx.fillStyle = PAL.warning;
+      ctx.beginPath();
+      ctx.arc(subX, subY, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = PAL.text;
+      ctx.font = '12px ' + PAL.font;
+      ctx.textAlign = 'center';
+      ctx.fillText('Matahari tegak lurus', subX, subY - 12);
+
+      // Tempatmu
+      var plx = cx - Math.cos(lat * DEG) * R;
+      var ply = cy - Math.sin(lat * DEG) * R;
+      ctx.strokeStyle = PAL.accent;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(plx, ply);
+      ctx.stroke();
+      ctx.fillStyle = PAL.accent;
+      ctx.beginPath();
+      ctx.arc(plx, ply, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = PAL.text;
+      ctx.textAlign = 'center';
+      ctx.fillText('Tempatmu', plx, ply + 20);
+    }
+
+    function drawChart(x0, y0, w, h, lat, day) {
+      var padL = 44, padR = 16, padT = 34, padB = 34;
+      var px0 = x0 + padL, py0 = y0 + padT;
+      var pw = w - padL - padR, ph = h - padT - padB;
+      function X(d) { return px0 + ((d - 1) / 364) * pw; }
+      function Y(a) { return py0 + (1 - (Math.max(40, Math.min(90, a)) - 40) / 50) * ph; }
+
+      // Area musim: hujan (Oktober–Maret) dan kemarau (April–September).
+      var monthStart = [1];
+      for (var m = 0; m < 11; m++) monthStart.push(monthStart[m] + MONTH_DAYS[m]);
+      for (var i = 0; i < 12; i++) {
+        var d0 = monthStart[i];
+        var d1 = i === 11 ? 365 : monthStart[i + 1] - 1;
+        ctx.globalAlpha = 0.12;
+        ctx.fillStyle = isWetMonth(i) ? PAL.accent : PAL.warning;
+        ctx.fillRect(X(d0), py0, X(d1) - X(d0), ph);
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.strokeStyle = PAL.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(px0, py0, pw, ph);
+
+      ctx.fillStyle = PAL.dim;
+      ctx.font = '11px ' + PAL.font;
+      ctx.textAlign = 'center';
+      for (var j = 0; j < 12; j++) {
+        var mid = (monthStart[j] + (j === 11 ? 365 : monthStart[j + 1] - 1)) / 2;
+        ctx.fillText(MONTH_INITIALS[j], X(mid), py0 + ph + 16);
+      }
+      ctx.textAlign = 'right';
+      [40, 60, 80, 90].forEach(function (a) {
+        ctx.fillText(a + '°', px0 - 6, Y(a) + 4);
+      });
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = PAL.muted;
+      ctx.font = '12px ' + PAL.font;
+      ctx.fillText('Tinggi Matahari siang hari di tempatmu', px0, y0 + 18);
+
+      ctx.strokeStyle = PAL.text;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      var first = true;
+      for (var d = 1; d <= 365; d += 2) {
+        var a = noonAltitude(lat, declination(d));
+        if (first) { ctx.moveTo(X(d), Y(a)); first = false; } else { ctx.lineTo(X(d), Y(a)); }
+      }
+      ctx.stroke();
+
+      var cur = noonAltitude(lat, declination(day));
+      ctx.strokeStyle = PAL.accent;
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(X(day), py0);
+      ctx.lineTo(X(day), py0 + ph);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = PAL.accent;
+      ctx.beginPath();
+      ctx.arc(X(day), Y(cur), 6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function draw() {
+      if (!ctx || !view.W) return;
+      var W = view.W, H = view.H;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.fillStyle = PAL.bg;
+      ctx.fillRect(0, 0, W, H);
+
+      var dec = declination(state.day);
+      var split = W >= 640;
+      if (split) {
+        drawGlobe(0, 0, W * 0.45, H, dec, state.lat);
+        drawChart(W * 0.45, 0, W * 0.55, H, state.lat, state.day);
+      } else {
+        drawGlobe(0, 0, W, H * 0.5, dec, state.lat);
+        drawChart(0, H * 0.5, W, H * 0.5, state.lat, state.day);
+      }
+    }
+
+    function setDay(v) {
+      var n = Math.round(Number(v));
+      if (isNaN(n)) return;
+      state.day = Math.min(365, Math.max(1, n));
+      renderReadouts();
+    }
+    function setLat(v) {
+      var n = Number(v);
+      if (isNaN(n)) return;
+      state.lat = Math.min(8, Math.max(-10, Math.round(n * 10) / 10));
+      renderReadouts();
+    }
+    function setPlaying(v) {
+      state.playing = !!v;
+      renderReadouts();
+    }
+    function applyPlace(lat) {
+      state.lat = lat;
+      state.day = 1;
+      state.playing = false;
+      renderReadouts();
+    }
+    function resetState() {
+      state.day = DEFAULT_DAY;
+      state.lat = DEFAULT_LAT;
+      state.playing = false;
+      renderReadouts();
+    }
+
+    function resizeCanvas() {
+      var wrap = $('sim-wrap');
+      if (!wrap || !canvas) return;
+      var w = wrap.clientWidth;
+      var h = wrap.clientHeight;
+      if (!w || !h) return;
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      view.W = w;
+      view.H = h;
+    }
+
+    function on(id, fn) {
+      var n = $(id);
+      if (n) n.addEventListener('click', fn);
+    }
+
+    function init() {
+      canvas = $('sim-canvas');
+      if (!canvas) return;
+      ctx = canvas.getContext('2d');
+      PAL = palette();
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+
+      var daySlider = $('day-slider');
+      if (daySlider) daySlider.addEventListener('input', function () { setDay(this.value); });
+      var latSlider = $('lat-slider');
+      if (latSlider) latSlider.addEventListener('input', function () { setLat(this.value); });
+
+      on('play-btn', function () { setPlaying(!state.playing); });
+      on('reset-btn', resetState);
+      on('place-sabang-btn', function () { applyPlace(5.9); });
+      on('place-pontianak-btn', function () { applyPlace(0); });
+      on('place-jakarta-btn', function () { applyPlace(-6.2); });
+      on('place-merauke-btn', function () { applyPlace(-8.5); });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        var tag = e.target && e.target.tagName;
+        if (e.key === ' ' && tag !== 'BUTTON' && tag !== 'INPUT') {
+          e.preventDefault();
+          setPlaying(!state.playing);
+        } else if (e.key === 'r' || e.key === 'R') {
+          resetState();
+        }
+      });
+
+      var last = performance.now();
+      function frame(now) {
+        var dt = Math.min(0.05, (now - last) / 1000);
+        last = now;
+        if (state.playing) {
+          state.day += dt * DAYS_PER_SECOND;
+          if (state.day > 365) state.day -= 365;
+          state.day = Math.max(1, state.day);
+          renderReadouts();
+        }
+        draw();
+        requestAnimationFrame(frame);
+      }
+
+      renderReadouts();
+      requestAnimationFrame(frame);
+    }
+
+    init();
+  })();
+  </script>
+</body>
+</html>

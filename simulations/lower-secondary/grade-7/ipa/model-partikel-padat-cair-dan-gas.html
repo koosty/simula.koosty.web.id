@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Model Partikel: Padat, Cair, dan Gas · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Lihat susunan dan gerak partikel pada wujud padat, cair, dan gas, serta pengaruh suhu terhadap geraknya.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Model Partikel: Padat, Cair, dan Gas">
+  <meta property="og:description" content="Lihat susunan dan gerak partikel pada wujud padat, cair, dan gas, serta pengaruh suhu terhadap geraknya.">
+  <meta property="og:locale" content="id">
+  <style>
+:root {
+  /* Colour */
+  --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+  --surface: #14141e;     /* panels, cards, step rows */
+  --panel: rgba(20, 20, 30, 0.9);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: #333;
+  --text: #ffffff;
+  --text-muted: #aaa;
+  --text-dim: #888;
+  --accent: #6366f1;      /* primary action, slider thumb, active state */
+  --accent-hover: #5558e8;
+  --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+  --success: #fbbf24;     /* completion, headings, callouts */
+  --warning: #fb923c;
+  --error: #ff6b6b;
+  --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-none: none;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type scale (system fonts only) */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-caption: 11px;   /* uppercase control labels */
+  --text-heading: 24px;
+  --font-weight-display: 600;  /* headings */
+  --font-weight-number: 500;   /* monospaced readouts */
+
+  /* Focus, motion, stacking */
+  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  --motion: 0.2s;
+  --motion-slow: 0.3s;
+  --z-overlay: 100;        /* panels, tooltips */
+  --z-modal: 1000;         /* loading screens, modal dialogs */
+}
+
+[data-theme="light"] {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-strong: #d4d4d8;
+  --text: #16161d;
+  --text-muted: #52525b;
+  --text-dim: #71717a;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.95);
+  --success: #b45309;
+  --warning: #c2410c;
+  --error: #dc2626;
+  --accent-text: #ffffff;
+  --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+h1, h2, h3 { font-weight: var(--font-weight-display); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-4);
+}
+.panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+.btn {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  min-height: 44px;            /* never below 44px, mobile */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--border-strong);
+  color: var(--text);
+  box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.btn:hover { background: var(--text-muted); }
+.btn:active { transform: scale(0.95); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); }
+
+.control-label {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+input[type="range"] {
+  width: 100%; height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Visually hidden but announced by screen readers. Use when a layout has no
+   room for a visible <h1> (e.g. a full-bleed canvas) — never as an excuse to
+   drop a heading. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+#feedback-panel {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+#feedback-panel.success { border-left-color: var(--success); }
+#feedback-panel.error { border-left-color: var(--error); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+.sources {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+.sources-heading {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+.source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+.source-item a { color: var(--accent); text-decoration: none; }
+.source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+.reading-article {
+  max-width: 720px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+.reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+.reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+.reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+.reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+.reading-article blockquote {
+  border-left: 3px solid var(--border-strong);
+  padding-left: var(--space-4);
+  color: var(--text-muted);
+  margin-bottom: var(--space-4);
+}
+.reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+.reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+.reading-article pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+}
+.reading-article pre code { background: none; padding: 0; }
+.reading-article table { width: 100%; border-collapse: collapse; }
+.reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+.reading-article details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.reading-article summary {
+  cursor: pointer;
+  font-weight: var(--font-weight-display);
+  color: var(--text);
+}
+.reading-article details[open] summary { margin-bottom: var(--space-2); }
+.glossary-term {
+  text-decoration: underline dotted var(--text-dim);
+  text-decoration-thickness: 1px;
+  cursor: help;
+}
+.katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+/* highlight.js token colours — mapped to the token set, not a canned theme */
+.hljs { color: var(--text); }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+.hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+.hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+.hljs-number { color: var(--warning); }
+
+/* ---- Scene layout (appearance uses tokens only) ---- */
+.page { max-width: 1040px; margin: 0 auto; padding: var(--space-4); display: grid; gap: var(--space-4); }
+.layout { display: grid; gap: var(--space-4); }
+@media (min-width: 768px) {
+  .layout { grid-template-columns: minmax(0, 320px) minmax(0, 1fr); align-items: start; }
+}
+.muted { color: var(--text-muted); font-size: var(--text-sm); }
+.control-group { display: grid; gap: var(--space-2); margin-top: var(--space-4); }
+.control-label-row { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); }
+.role { font-size: var(--text-caption); color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+.choice-row { display: grid; gap: var(--space-2); }
+.choice-row .btn { width: 100%; text-align: left; }
+.choice-row .btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-4); }
+.actions .btn { flex: 1 1 auto; }
+input[type="range"] { height: 8px; }
+input[type="range"]::-webkit-slider-thumb { width: 24px; height: 24px; }
+input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; background: var(--accent); border: none; border-radius: 50%; }
+.stage { display: grid; gap: var(--space-3); }
+.stage-canvas { width: 100%; display: block; border-radius: var(--radius-lg); border: 1px solid var(--border); background: var(--bg); }
+.readout { display: grid; gap: var(--space-2); font-size: var(--text-sm); margin-top: var(--space-4); }
+.readout-row { display: flex; justify-content: space-between; gap: var(--space-3); color: var(--text-muted); }
+.readout-row strong { color: var(--text); font-weight: var(--font-weight-number); }
+.description { font-size: var(--text-sm); color: var(--text-muted); }
+.presets { display: grid; gap: var(--space-2); margin-top: var(--space-4); }
+.presets .btn { width: 100%; text-align: left; }
+.hint { font-size: var(--text-caption); color: var(--text-dim); margin-top: var(--space-3); }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="panel">
+      <h1>Model Partikel: Padat, Cair, dan Gas</h1>
+      <p class="muted">Pilih wujud zat dan atur suhunya. Amati susunan partikel, lalu tekan Mulai untuk melihat cara partikel bergerak.</p>
+    </header>
+
+    <div class="layout">
+      <section class="panel" aria-labelledby="controls-heading">
+        <h2 class="panel-heading" id="controls-heading">Atur zat</h2>
+
+        <div class="control-group">
+          <div class="control-label-row">
+            <span class="control-label">Wujud zat</span>
+            <span class="role">Pilih satu</span>
+          </div>
+          <div class="choice-row" role="group" aria-label="Wujud zat">
+            <button type="button" class="btn" id="padat-btn" aria-pressed="true">Padat</button>
+            <button type="button" class="btn" id="cair-btn" aria-pressed="false">Cair</button>
+            <button type="button" class="btn" id="gas-btn" aria-pressed="false">Gas</button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div class="control-label-row">
+            <label class="control-label" for="suhu-slider">Suhu</label>
+            <span class="role">Dapat diubah</span>
+          </div>
+          <input type="range" id="suhu-slider" min="0" max="100" step="1" value="20" aria-describedby="suhu-display">
+          <span class="mono-value" id="suhu-display">20 °C</span>
+        </div>
+
+        <div class="readout">
+          <div class="readout-row"><span>Energi gerak (relatif)</span><strong class="mono-value" id="energy-display">0 %</strong></div>
+        </div>
+
+        <p class="description" id="state-description" style="margin-top: var(--space-4);"></p>
+
+        <div class="actions">
+          <button type="button" class="btn btn-primary" id="start-btn">Mulai</button>
+          <button type="button" class="btn btn-ghost" id="reset-btn">Reset</button>
+        </div>
+
+        <div class="presets" aria-label="Contoh pengaturan">
+          <button type="button" class="btn" id="preset-1-btn">Padat pada 0 °C</button>
+          <button type="button" class="btn" id="preset-2-btn">Gas pada 100 °C</button>
+        </div>
+        <p class="hint">Spasi: mulai atau jeda · R: reset</p>
+      </section>
+
+      <section class="panel stage" aria-labelledby="stage-heading">
+        <h2 class="panel-heading" id="stage-heading">Susunan partikel</h2>
+        <canvas class="stage-canvas" id="particle-canvas" role="img" aria-label="Animasi partikel dalam wadah sesuai wujud dan suhu zat"></canvas>
+      </section>
+    </div>
+  </main>
+
+  <script type="application/json" id="widget-config">
+{
+  "type": "simulation",
+  "concept": "model_partikel",
+  "description": "Susunan dan gerak partikel pada wujud padat, cair, dan gas. Suhu mengubah energi gerak partikel.",
+  "variables": [
+    { "name": "suhu", "label": "Suhu", "min": 0, "max": 100, "default": 20, "unit": "°C" }
+  ],
+  "presets": [
+    { "name": "Padat pada 0 °C", "variables": { "wujud": "padat", "suhu": 0 } },
+    { "name": "Gas pada 100 °C", "variables": { "wujud": "gas", "suhu": 100 } }
+  ]
+}
+  </script>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var N = 36;
+      var COLS = 6;
+      var ROWS = 6;
+      var DEFAULT_WUJUD = 'padat';
+      var DEFAULT_SUHU = 20;
+      var DESCRIPTIONS = {
+        padat: 'Partikel padat tersusun rapat dan hanya bergetar di tempatnya. Bentuk dan volumenya tetap.',
+        cair: 'Partikel cair masih berdekatan, tetapi dapat bergerak lebih bebas. Bentuknya mengikuti wadah, volumenya tetap.',
+        gas: 'Partikel gas berjauhan dan bergerak bebas ke segala arah. Gas menyebar hingga memenuhi seluruh wadah.'
+      };
+
+      var canvas = document.getElementById('particle-canvas');
+      var ctx = canvas ? canvas.getContext('2d') : null;
+      var cssW = 0;
+      var cssH = 0;
+      var dpr = 1;
+      var layout = { x: 0, y: 0, w: 0, h: 0, unit: 1 };
+      var particles = [];
+      var time = 0;
+      var lastTs = 0;
+      var state = freshState(DEFAULT_WUJUD, DEFAULT_SUHU);
+
+      function $(id) { return document.getElementById(id); }
+      function setText(el, t) { if (el) el.textContent = t; }
+      function cssVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+      function freshState(wujud, suhu) {
+        return { wujud: wujud, suhu: suhu, running: false };
+      }
+
+      function speedFactor() { return 0.05 + (state.suhu / 100) * 0.95; }
+
+      function computeLayout() {
+        var margin = 16;
+        var bottomLabel = 44;
+        layout.x = margin;
+        layout.y = margin;
+        layout.w = Math.max(0, cssW - margin * 2);
+        layout.h = Math.max(0, cssH - margin * 2 - bottomLabel);
+        layout.unit = Math.min(layout.w, layout.h) / COLS;
+      }
+
+      function initParticles() {
+        particles = [];
+        for (var i = 0; i < N; i++) {
+          var c = i % COLS;
+          var r = Math.floor(i / COLS);
+          var p = { x: 0, y: 0, hx: 0, hy: 0, dx: 0, dy: 0, phase: Math.random() * Math.PI * 2 };
+          if (state.wujud === 'padat') {
+            p.hx = layout.x + layout.w * (c + 0.5) / COLS;
+            p.hy = layout.y + layout.h * (r + 0.5) / ROWS;
+            p.x = p.hx;
+            p.y = p.hy;
+          } else {
+            var minY = state.wujud === 'cair' ? layout.y + layout.h * 0.4 : layout.y;
+            p.x = layout.x + Math.random() * layout.w;
+            p.y = minY + Math.random() * (layout.y + layout.h - minY);
+            var angle = Math.random() * Math.PI * 2;
+            p.dx = Math.cos(angle);
+            p.dy = Math.sin(angle);
+          }
+          particles.push(p);
+        }
+      }
+
+      function stepParticles(dt) {
+        time += dt;
+        if (state.wujud === 'padat') {
+          var amp = layout.unit * (0.04 + 0.22 * (state.suhu / 100));
+          var w = 3 + 4 * (state.suhu / 100);
+          for (var i = 0; i < particles.length; i++) {
+            var p = particles[i];
+            p.x = p.hx + amp * Math.cos(time * w + p.phase);
+            p.y = p.hy + amp * Math.sin(time * w * 1.3 + p.phase);
+          }
+          return;
+        }
+
+        var speed = layout.unit * (state.wujud === 'cair' ? 0.5 : 1.6) * speedFactor();
+        var minY = state.wujud === 'cair' ? layout.y + layout.h * 0.4 : layout.y;
+        var maxX = layout.x + layout.w;
+        var maxY = layout.y + layout.h;
+        for (var j = 0; j < particles.length; j++) {
+          var q = particles[j];
+          q.x += q.dx * speed * dt;
+          q.y += q.dy * speed * dt;
+          if (q.x < layout.x) { q.x = layout.x; q.dx = Math.abs(q.dx); }
+          if (q.x > maxX) { q.x = maxX; q.dx = -Math.abs(q.dx); }
+          if (q.y < minY) { q.y = minY; q.dy = Math.abs(q.dy); }
+          if (q.y > maxY) { q.y = maxY; q.dy = -Math.abs(q.dy); }
+        }
+      }
+
+      function draw() {
+        if (!ctx || !cssW) return;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        var colors = {
+          bg: cssVar('--bg'),
+          surface: cssVar('--surface'),
+          border: cssVar('--border-strong'),
+          accent: cssVar('--accent'),
+          muted: cssVar('--text-muted'),
+          font: cssVar('--font'),
+          mono: cssVar('--font-mono')
+        };
+
+        ctx.fillStyle = colors.bg;
+        ctx.fillRect(0, 0, cssW, cssH);
+
+        ctx.fillStyle = colors.surface;
+        ctx.fillRect(layout.x, layout.y, layout.w, layout.h);
+        ctx.strokeStyle = colors.border;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(layout.x, layout.y, layout.w, layout.h);
+
+        var radius = Math.max(5, layout.unit * 0.24);
+        ctx.fillStyle = colors.accent;
+        for (var i = 0; i < particles.length; i++) {
+          var p = particles[i];
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        var names = { padat: 'Padat', cair: 'Cair', gas: 'Gas' };
+        ctx.fillStyle = colors.muted;
+        ctx.font = '13px ' + colors.font;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('Wujud: ' + names[state.wujud], layout.x, cssH - 22);
+        ctx.font = '500 13px ' + colors.mono;
+        ctx.textAlign = 'right';
+        ctx.fillText(state.suhu + ' °C', layout.x + layout.w, cssH - 22);
+      }
+
+      function setPressed(id, on) {
+        var btn = $(id);
+        if (btn) btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      }
+
+      function updateUI() {
+        setPressed('padat-btn', state.wujud === 'padat');
+        setPressed('cair-btn', state.wujud === 'cair');
+        setPressed('gas-btn', state.wujud === 'gas');
+
+        setText($('suhu-display'), state.suhu + ' °C');
+        var slider = $('suhu-slider');
+        if (slider) slider.value = String(state.suhu);
+
+        setText($('energy-display'), Math.round(speedFactor() * 100) + ' %');
+        setText($('state-description'), DESCRIPTIONS[state.wujud]);
+        setText($('start-btn'), state.running ? 'Jeda' : 'Mulai');
+      }
+
+      function setWujud(w) {
+        state.wujud = w;
+        state.running = false;
+        initParticles();
+        updateUI();
+        draw();
+      }
+
+      function setSuhu(v) {
+        state.suhu = v;
+        updateUI();
+        draw();
+      }
+
+      function toggleRun() {
+        state.running = !state.running;
+        updateUI();
+      }
+
+      function resetAll() {
+        state = freshState(DEFAULT_WUJUD, DEFAULT_SUHU);
+        time = 0;
+        initParticles();
+        updateUI();
+        draw();
+      }
+
+      function applyPreset(wujud, suhu) {
+        state.wujud = wujud;
+        state.suhu = suhu;
+        state.running = false;
+        time = 0;
+        initParticles();
+        updateUI();
+        draw();
+      }
+
+      function resize() {
+        if (!canvas) return;
+        dpr = window.devicePixelRatio || 1;
+        cssW = canvas.clientWidth;
+        cssH = Math.round(Math.min(420, Math.max(300, cssW * 0.7)));
+        canvas.style.height = cssH + 'px';
+        canvas.width = Math.round(cssW * dpr);
+        canvas.height = Math.round(cssH * dpr);
+        computeLayout();
+        initParticles();
+        draw();
+      }
+
+      function loop(ts) {
+        var dt = lastTs ? Math.min(0.05, (ts - lastTs) / 1000) : 0;
+        lastTs = ts;
+        if (state.running) stepParticles(dt);
+        draw();
+        window.requestAnimationFrame(loop);
+      }
+
+      function bind() {
+        var map = [
+          ['padat-btn', function () { setWujud('padat'); }],
+          ['cair-btn', function () { setWujud('cair'); }],
+          ['gas-btn', function () { setWujud('gas'); }],
+          ['start-btn', toggleRun],
+          ['reset-btn', resetAll],
+          ['preset-1-btn', function () { applyPreset('padat', 0); }],
+          ['preset-2-btn', function () { applyPreset('gas', 100); }]
+        ];
+        map.forEach(function (pair) {
+          var el = $(pair[0]);
+          if (el) el.addEventListener('click', pair[1]);
+        });
+
+        var slider = $('suhu-slider');
+        if (slider) slider.addEventListener('input', function () { setSuhu(Number(slider.value)); });
+
+        document.addEventListener('keydown', function (e) {
+          var tag = e.target && e.target.tagName ? e.target.tagName : '';
+          if (e.key === ' ' && tag !== 'BUTTON' && tag !== 'INPUT') {
+            e.preventDefault();
+            toggleRun();
+          } else if ((e.key === 'r' || e.key === 'R') && tag !== 'INPUT') {
+            resetAll();
+          }
+        });
+      }
+
+      if (typeof ResizeObserver !== 'undefined' && canvas) {
+        new ResizeObserver(resize).observe(canvas);
+      } else {
+        window.addEventListener('resize', resize);
+      }
+
+      bind();
+      updateUI();
+      resize();
+      window.requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>

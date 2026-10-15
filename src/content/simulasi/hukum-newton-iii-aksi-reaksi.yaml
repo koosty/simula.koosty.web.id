@@ -1,0 +1,11 @@
+# Satu entri katalog per simulasi. Kunci adalah pengenal bahasa Inggris;
+# nilainya Bahasa Indonesia karena menjadi bagian URL.
+# Katalog adalah sumber kebenaran atas metadata simulasi (docs/adr/0004).
+title: "Hukum Newton III: Aksi-Reaksi"
+description: >-
+  Mengamati pasangan aksi dan reaksi pada dua benda.
+level: smp
+grade: 7
+subject: ipa
+order: 50
+scene: "s27"

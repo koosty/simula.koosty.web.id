@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Benda Langit Selain Planet · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Klasifikasikan satelit, planet kerdil, asteroid, meteoroid, meteor, meteorit, dan komet sebelum melewati stasiun pengamatan.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Benda Langit Selain Planet">
+  <meta property="og:description" content="Klasifikasikan satelit, planet kerdil, asteroid, meteoroid, meteor, meteorit, dan komet sebelum melewati stasiun pengamatan.">
+  <meta property="og:locale" content="id">
+  <style>
+:root {
+  /* Colour */
+  --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+  --surface: #14141e;     /* panels, cards, step rows */
+  --panel: rgba(20, 20, 30, 0.9);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: #333;
+  --text: #ffffff;
+  --text-muted: #aaa;
+  --text-dim: #888;
+  --accent: #6366f1;      /* primary action, slider thumb, active state */
+  --accent-hover: #5558e8;
+  --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+  --success: #fbbf24;     /* completion, headings, callouts */
+  --warning: #fb923c;
+  --error: #ff6b6b;
+  --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-none: none;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type scale (system fonts only) */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-caption: 11px;   /* uppercase control labels */
+  --text-heading: 24px;
+  --font-weight-display: 600;  /* headings */
+  --font-weight-number: 500;   /* monospaced readouts */
+
+  /* Focus, motion, stacking */
+  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  --motion: 0.2s;
+  --motion-slow: 0.3s;
+  --z-overlay: 100;        /* panels, tooltips */
+  --z-modal: 1000;         /* loading screens, modal dialogs */
+}
+
+[data-theme="light"] {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-strong: #d4d4d8;
+  --text: #16161d;
+  --text-muted: #52525b;
+  --text-dim: #71717a;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.95);
+  --success: #b45309;
+  --warning: #c2410c;
+  --error: #dc2626;
+  --accent-text: #ffffff;
+  --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+h1, h2, h3 { font-weight: var(--font-weight-display); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-4);
+}
+.panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+.btn {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  min-height: 44px;            /* never below 44px, mobile */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--border-strong);
+  color: var(--text);
+  box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.btn:hover { background: var(--text-muted); }
+.btn:active { transform: scale(0.95); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); }
+
+.control-label {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+input[type="range"] {
+  width: 100%; height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Visually hidden but announced by screen readers. Use when a layout has no
+   room for a visible h1 (e.g. a full-bleed canvas) — never as an excuse to
+   drop a heading. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+#feedback-panel {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+#feedback-panel.success { border-left-color: var(--success); }
+#feedback-panel.error { border-left-color: var(--error); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+.sources {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+.sources-heading {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+.source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+.source-item a { color: var(--accent); text-decoration: none; }
+.source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+.reading-article {
+  max-width: 720px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+.reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+.reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+.reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+.reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+.reading-article blockquote {
+  border-left: 3px solid var(--border-strong);
+  padding-left: var(--space-4);
+  color: var(--text-muted);
+  margin-bottom: var(--space-4);
+}
+.reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+.reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+.reading-article pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+}
+.reading-article pre code { background: none; padding: 0; }
+.reading-article table { width: 100%; border-collapse: collapse; }
+.reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+.reading-article details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.reading-article summary {
+  cursor: pointer;
+  font-weight: var(--font-weight-display);
+  color: var(--text);
+}
+.reading-article details[open] summary { margin-bottom: var(--space-2); }
+.glossary-term {
+  text-decoration: underline dotted var(--text-dim);
+  text-decoration-thickness: 1px;
+  cursor: help;
+}
+.katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+/* highlight.js token colours — mapped to the token set, not a canned theme */
+.hljs { color: var(--text); }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+.hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+.hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+.hljs-number { color: var(--warning); }
+
+/* Tata letak permainan (warna hanya dari token) */
+.game-page { max-width: 960px; margin: 0 auto; padding: var(--space-4); display: grid; gap: var(--space-4); }
+.game-page h1 { font-size: var(--text-heading); }
+.intro p { color: var(--text-muted); margin-top: var(--space-2); }
+.hidden { display: none !important; }
+.start-copy { display: grid; gap: var(--space-3); }
+.start-copy p { color: var(--text-muted); }
+.start-copy ol { padding-left: var(--space-5); color: var(--text-muted); display: grid; gap: var(--space-1); }
+.hud { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: var(--space-3); align-items: center; }
+.hud-item { display: flex; flex-direction: column; gap: var(--space-1); }
+.hud-value { font-size: var(--text-heading); color: var(--text); }
+.hud-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; grid-column: 1 / -1; }
+.chips { display: flex; gap: var(--space-2); flex-wrap: wrap; grid-column: 1 / -1; }
+.chip { font-size: var(--text-caption); padding: var(--space-1) var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-pill); color: var(--text-dim); }
+.chip.unlocked { color: var(--success); border-color: var(--success); }
+.game-wrap { position: relative; width: 100%; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; background: var(--bg); }
+#game-canvas { display: block; width: 100%; }
+.classify-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: var(--space-2); }
+.classify-grid .btn { width: 100%; }
+.ref-list { display: grid; gap: var(--space-2); font-size: var(--text-sm); }
+.ref-list dt { font-weight: var(--font-weight-display); color: var(--text); }
+.ref-list dd { color: var(--text-muted); margin-bottom: var(--space-2); }
+.hint { font-size: var(--text-xs); color: var(--text-dim); }
+#feedback-text { font-size: var(--text-sm); }
+  </style>
+</head>
+<body>
+  <main class="game-page">
+    <header class="intro">
+      <h1>Benda Langit Selain Planet</h1>
+      <p>Klasifikasikan benda langit yang melintas sebelum mencapai stasiun pengamatan.</p>
+    </header>
+
+    <section class="panel" id="start-screen" aria-label="Cara bermain">
+      <div class="start-copy">
+        <p class="panel-heading">Cara bermain</p>
+        <ol>
+          <li>Benda langit bergerak dari kanan ke kiri menuju stasiun pengamatan.</li>
+          <li>Benda paling dekat dengan stasiun adalah sasaran. Pilih kategori yang tepat dengan tombol di bawah area permainan.</li>
+          <li>Jawaban salah mengurangi 1 nyawa. Benda yang lewat tanpa diklasifikasi juga mengurangi 1 nyawa, kecuali 5 detik pertama (pemanasan).</li>
+          <li>Benar 30 kali untuk menyelesaikan misi. Kamu punya 3 nyawa.</li>
+        </ol>
+        <button type="button" class="btn btn-primary" id="start-btn" onclick="startGame()">Mulai bermain</button>
+      </div>
+    </section>
+
+    <section class="panel hidden" id="over-screen" aria-label="Hasil permainan">
+      <div class="start-copy">
+        <p class="panel-heading" id="over-title">Permainan selesai</p>
+        <p id="over-text"></p>
+        <button type="button" class="btn btn-primary" id="restart-btn" onclick="startGame()">Main lagi</button>
+      </div>
+    </section>
+
+    <section class="panel hud" aria-label="Papan skor">
+      <div class="hud-item"><span class="control-label">Skor</span><span class="hud-value mono-value" id="score-display">0</span></div>
+      <div class="hud-item"><span class="control-label">Nyawa</span><span class="hud-value mono-value" id="lives-display">3</span></div>
+      <div class="hud-item"><span class="control-label">Level</span><span class="hud-value mono-value" id="level-display">1</span></div>
+      <div class="hud-item"><span class="control-label">Benar</span><span class="hud-value mono-value" id="correct-display">0 / 30</span></div>
+      <div class="hud-item"><span class="control-label">Rekor</span><span class="hud-value mono-value" id="best-display">0</span></div>
+      <div class="hud-actions">
+        <button type="button" class="btn btn-primary" id="pause-btn" onclick="togglePause()" disabled>Jeda</button>
+        <button type="button" class="btn btn-ghost" id="reset-btn" onclick="resetGame()">Atur ulang</button>
+      </div>
+      <div class="chips" aria-label="Pencapaian">
+        <span class="chip" id="ach-ulung">Pengamat Ulung: 5 benar berturut-turut</span>
+        <span class="chip" id="ach-ahli">Ahli Benda Langit: capai level 3</span>
+      </div>
+    </section>
+
+    <div class="game-wrap" id="game-wrap">
+      <canvas id="game-canvas" role="img" aria-label="Area permainan: benda langit bergerak menuju stasiun pengamatan"></canvas>
+    </div>
+
+    <section class="panel" aria-label="Pilih kategori">
+      <p class="panel-heading">Klasifikasikan sasaran sebagai</p>
+      <div class="classify-grid">
+        <button type="button" class="btn" id="classify-satelit-btn" onclick="classify('satelit')" disabled>Satelit alami</button>
+        <button type="button" class="btn" id="classify-kerdil-btn" onclick="classify('kerdil')" disabled>Planet kerdil</button>
+        <button type="button" class="btn" id="classify-asteroid-btn" onclick="classify('asteroid')" disabled>Asteroid</button>
+        <button type="button" class="btn" id="classify-meteoroid-btn" onclick="classify('meteoroid')" disabled>Meteoroid</button>
+        <button type="button" class="btn" id="classify-meteor-btn" onclick="classify('meteor')" disabled>Meteor</button>
+        <button type="button" class="btn" id="classify-meteorit-btn" onclick="classify('meteorit')" disabled>Meteorit</button>
+        <button type="button" class="btn" id="classify-komet-btn" onclick="classify('komet')" disabled>Komet</button>
+      </div>
+    </section>
+
+    <section id="feedback-panel" aria-live="polite">
+      <p class="panel-heading">Umpan balik</p>
+      <p id="feedback-text"></p>
+    </section>
+
+    <section class="panel" aria-label="Panduan kategori">
+      <p class="panel-heading">Panduan kategori</p>
+      <dl class="ref-list">
+        <div><dt>Satelit alami</dt><dd>Benda yang mengorbit planet. Contoh: Bulan, Io, dan Titan.</dd></div>
+        <div><dt>Planet kerdil</dt><dd>Bulat karena gravitasinya dan mengorbit Matahari, tetapi belum membersihkan lintasannya dari benda lain. Contoh: Pluto, Ceres, Haumea, Makemake, Eris.</dd></div>
+        <div><dt>Asteroid</dt><dd>Batuan besar, sebagian besar berada di sabuk asteroid antara Mars dan Jupiter.</dd></div>
+        <div><dt>Meteoroid</dt><dd>Batuan kecil yang melayang di ruang angkasa.</dd></div>
+        <div><dt>Meteor</dt><dd>Meteoroid yang terbakar di atmosfer sehingga tampak seperti kilatan cahaya.</dd></div>
+        <div><dt>Meteorit</dt><dd>Sisa meteoroid yang sudah sampai di permukaan Bumi atau planet lain.</dd></div>
+        <div><dt>Komet</dt><dd>Bola es dan debu yang memiliki ekor saat mendekati Matahari.</dd></div>
+      </dl>
+      <p class="hint" style="margin-top: var(--space-3);">Tekan Spasi untuk menjeda dan R untuk mengatur ulang.</p>
+    </section>
+  </main>
+
+  <script type="application/json" id="widget-config">
+{"type":"game","gameType":"action","description":"Kamu menjadi pengamat langit. Klasifikasikan benda langit yang bergerak menuju stasiun pengamatan sebelum melewatinya. Kategori: satelit alami, planet kerdil, asteroid, meteoroid, meteor, meteorit, dan komet.","gameConfig":{"controls":["classify-buttons","pause-btn","reset-btn"],"targets":[{"id":"stasiun","type":"station","x":0.18}],"initialConditions":{"lives":3,"level":1,"spawnIntervalSeconds":3,"speedFractionOfWidthPerSecond":0.06,"graceSeconds":5},"successCondition":"Mengklasifikasikan 30 benda dengan benar sebelum nyawa habis"},"scoring":{"correctPoints":10,"streakBonusPerCorrect":2,"wrongAnswerPenalty":"1 nyawa","missPenalty":"1 nyawa setelah masa pemanasan"},"achievements":[{"id":"pengamat_ulung","name":"Pengamat Ulung","description":"Benar 5 kali berturut-turut"},{"id":"ahli_benda_langit","name":"Ahli Benda Langit","description":"Mencapai level 3"}]}
+  </script>
+
+  <script>
+  var KINDS = [
+    { key: 'satelit', label: 'Satelit alami', names: ['Bulan', 'Io', 'Titan', 'Europa'], hint: 'Benda ini mengorbit planet, contohnya Bulan.', r: 9 },
+    { key: 'kerdil', label: 'Planet kerdil', names: ['Pluto', 'Ceres', 'Haumea', 'Makemake', 'Eris'], hint: 'Planet kerdil bulat dan mengorbit Matahari, tetapi belum membersihkan lintasannya.', r: 10 },
+    { key: 'asteroid', label: 'Asteroid', names: ['Vesta', 'Pallas', 'Hygiea'], hint: 'Asteroid adalah batuan besar, sebagian besar berada di sabuk asteroid.', r: 8 },
+    { key: 'meteoroid', label: 'Meteoroid', names: ['Serpihan batu', 'Batu kecil'], hint: 'Meteoroid adalah batuan kecil yang melayang di ruang angkasa.', r: 4 },
+    { key: 'meteor', label: 'Meteor', names: ['Kilatan cahaya', 'Bintang jatuh'], hint: 'Meteor adalah meteoroid yang terbakar di atmosfer dan tampak sebagai kilatan cahaya.', r: 5 },
+    { key: 'meteorit', label: 'Meteorit', names: ['Batu sisa jatuh'], hint: 'Meteorit adalah sisa meteoroid yang sudah sampai di permukaan planet.', r: 6 },
+    { key: 'komet', label: 'Komet', names: ['Halley', 'Hale-Bopp', 'Hyakutake'], hint: 'Komet adalah bola es dan debu yang memiliki ekor saat mendekati Matahari.', r: 7 }
+  ];
+
+  var WIN_CORRECT = 30;
+  var GRACE_SECONDS = 5;
+  var BEST_KEY = 'omp-ipa7-benda-langit-best';
+  var INITIAL_FEEDBACK = 'Tekan Mulai bermain untuk memulai. Pelajari panduan kategori di bawah sambil bermain.';
+
+  var G = null;
+  var view = { W: 0, H: 0 };
+  var PAL = null;
+  var canvas = null;
+  var ctx = null;
+  var dpr = 1;
+  var stars = [];
+  var lastTs = 0;
+
+  function $(id) { return document.getElementById(id); }
+  function setText(id, t) { var n = $(id); if (n) n.textContent = t; }
+
+  function loadBest() {
+    try { return parseInt(localStorage.getItem(BEST_KEY), 10) || 0; } catch (e) { return 0; }
+  }
+  function saveBest(v) {
+    try { localStorage.setItem(BEST_KEY, String(v)); } catch (e) { /* penyimpanan tidak tersedia: rekor tetap berlaku di sesi ini */ }
+  }
+
+  function palette() {
+    var cs = getComputedStyle(document.documentElement);
+    function g(n) { return cs.getPropertyValue(n).trim(); }
+    return {
+      bg: g('--bg'), text: g('--text'), muted: g('--text-muted'), dim: g('--text-dim'),
+      accent: g('--accent'), success: g('--success'), warning: g('--warning'), font: g('--font')
+    };
+  }
+
+  function newRun(best) {
+    return {
+      running: false, paused: false, over: false, victory: false,
+      elapsed: 0, spawnTimer: 0, objects: [], nextId: 1,
+      score: 0, lives: 3, streak: 0, correct: 0, level: 1, best: best,
+      ach: { ulung: false, ahli: false }
+    };
+  }
+
+  function levelFor(correct) { return Math.min(5, 1 + Math.floor(correct / 6)); }
+  function speedPx() { return view.W * (0.06 + 0.012 * (G.level - 1)); }
+  function spawnInterval() { return Math.max(1.2, 3 - 0.2 * (G.level - 1)); }
+
+  function setFeedback(kind, text) {
+    setText('feedback-text', text);
+    var fp = $('feedback-panel');
+    if (fp) {
+      fp.classList.toggle('success', kind === 'success');
+      fp.classList.toggle('error', kind === 'error');
+    }
+  }
+
+  function renderHud() {
+    setText('score-display', String(G.score));
+    setText('lives-display', String(G.lives));
+    setText('level-display', String(G.level));
+    setText('correct-display', G.correct + ' / ' + WIN_CORRECT);
+    setText('best-display', String(G.best));
+    var u = $('ach-ulung'); if (u) u.classList.toggle('unlocked', G.ach.ulung);
+    var a = $('ach-ahli'); if (a) a.classList.toggle('unlocked', G.ach.ahli);
+  }
+
+  function renderControls() {
+    var pause = $('pause-btn');
+    if (pause) {
+      pause.disabled = !G.running || G.over;
+      pause.textContent = G.paused ? 'Lanjut' : 'Jeda';
+    }
+    var live = G.running && !G.paused && !G.over;
+    KINDS.forEach(function (k) {
+      var b = $('classify-' + k.key + '-btn');
+      if (b) b.disabled = !live;
+    });
+  }
+
+  function renderAll() {
+    renderHud();
+    renderControls();
+  }
+
+  function spawnObject() {
+    var k = KINDS[Math.floor(Math.random() * KINDS.length)];
+    var name = k.names[Math.floor(Math.random() * k.names.length)];
+    var minY = view.H * 0.22;
+    var maxY = view.H * 0.82;
+    G.objects.push({
+      id: G.nextId++, kind: k, name: name,
+      x: view.W + k.r + 12, y: minY + Math.random() * (maxY - minY),
+      r: k.r, seed: Math.random() * Math.PI * 2
+    });
+  }
+
+  function target() {
+    var t = null;
+    G.objects.forEach(function (o) { if (!t || o.x < t.x) t = o; });
+    return t;
+  }
+
+  function finishGame() {
+    G.running = false;
+    G.paused = false;
+    if (G.score > G.best) {
+      G.best = G.score;
+      saveBest(G.best);
+    }
+    setText('over-title', G.victory ? 'Misi selesai!' : 'Permainan selesai');
+    setText('over-text', (G.victory
+      ? 'Kamu benar ' + G.correct + ' kali. '
+      : 'Nyawa habis setelah ' + G.correct + ' jawaban benar. ')
+      + 'Skor: ' + G.score + '. Rekor: ' + G.best + '.');
+    var screen = $('over-screen');
+    if (screen) screen.classList.remove('hidden');
+    var start = $('start-screen');
+    if (start) start.classList.add('hidden');
+  }
+
+  function checkEnd() {
+    if (G.over) return;
+    if (G.correct >= WIN_CORRECT) { G.over = true; G.victory = true; }
+    else if (G.lives <= 0) { G.over = true; G.victory = false; }
+    if (G.over) finishGame();
+  }
+
+  function onMiss(o) {
+    if (G.elapsed < GRACE_SECONDS) {
+      setFeedback('', o.name + ' lewat saat pemanasan. Nyawa tidak berkurang. Coba klasifikasikan lebih cepat.');
+    } else {
+      G.lives -= 1;
+      G.streak = 0;
+      setFeedback('error', 'Terlewat: ' + o.name + ' lewat stasiun tanpa diklasifikasi. Nyawa berkurang. ' + o.kind.hint);
+    }
+  }
+
+  function update(dt) {
+    G.elapsed += dt;
+    G.spawnTimer -= dt;
+    if (G.spawnTimer <= 0) {
+      spawnObject();
+      G.spawnTimer = spawnInterval();
+    }
+
+    var stationX = view.W * 0.18;
+    var move = speedPx() * dt;
+    var passed = [];
+    G.objects.forEach(function (o) {
+      o.x -= move;
+      if (o.x <= stationX) passed.push(o);
+    });
+    if (passed.length) {
+      G.objects = G.objects.filter(function (o) { return passed.indexOf(o) < 0; });
+      passed.forEach(onMiss);
+      checkEnd();
+      renderAll();
+    }
+  }
+
+  function classify(key) {
+    if (!G || !G.running || G.paused || G.over) return;
+    var t = target();
+    if (!t) {
+      setFeedback('', 'Belum ada benda di sasaran. Tunggu benda berikutnya.');
+      return;
+    }
+    if (t.kind.key === key) {
+      G.score += 10 + G.streak * 2;
+      G.streak += 1;
+      G.correct += 1;
+      G.level = levelFor(G.correct);
+      G.objects = G.objects.filter(function (o) { return o !== t; });
+      var msg = 'Tepat! ' + t.name + ' adalah ' + t.kind.label + '. ' + t.kind.hint;
+      if (G.streak >= 5 && !G.ach.ulung) {
+        G.ach.ulung = true;
+        msg += ' Pencapaian baru: Pengamat Ulung!';
+      }
+      if (G.level >= 3 && !G.ach.ahli) {
+        G.ach.ahli = true;
+        msg += ' Pencapaian baru: Ahli Benda Langit!';
+      }
+      setFeedback('success', msg);
+    } else {
+      G.lives -= 1;
+      G.streak = 0;
+      var chosen = KINDS.filter(function (k) { return k.key === key; })[0];
+      setFeedback('error', 'Salah: ' + t.name + ' termasuk ' + t.kind.label + ', bukan ' + (chosen ? chosen.label : key) + '. ' + t.kind.hint + ' Nyawa berkurang.');
+    }
+    checkEnd();
+    renderAll();
+  }
+
+  function togglePause() {
+    if (!G || !G.running || G.over) return;
+    G.paused = !G.paused;
+    setFeedback('', G.paused ? 'Permainan dijeda. Tekan Lanjut untuk melanjutkan.' : 'Permainan dilanjutkan.');
+    renderControls();
+  }
+
+  function startGame() {
+    G = newRun(G ? G.best : loadBest());
+    G.running = true;
+    G.spawnTimer = 0;
+    var start = $('start-screen');
+    if (start) start.classList.add('hidden');
+    var over = $('over-screen');
+    if (over) over.classList.add('hidden');
+    setFeedback('', 'Pemanasan dimulai. Klasifikasikan benda yang mendekati stasiun. 5 detik pertama tidak mengurangi nyawa.');
+    renderAll();
+  }
+
+  function resetGame() {
+    G = newRun(G ? G.best : loadBest());
+    var start = $('start-screen');
+    if (start) start.classList.remove('hidden');
+    var over = $('over-screen');
+    if (over) over.classList.add('hidden');
+    setFeedback('', INITIAL_FEEDBACK);
+    renderAll();
+  }
+
+  function resizeCanvas() {
+    var wrap = $('game-wrap');
+    if (!wrap || !canvas) return;
+    var w = wrap.clientWidth;
+    if (!w) return;
+    var h = Math.round(Math.min(Math.max(w * 0.6, 260), 460));
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    canvas.style.height = h + 'px';
+    view.W = w;
+    view.H = h;
+    var count = Math.min(160, Math.round((w * h) / 2500));
+    stars = [];
+    for (var i = 0; i < count; i++) {
+      stars.push({ x: Math.random() * w, y: Math.random() * h, r: 1 + Math.random(), a: 0.3 + Math.random() * 0.6 });
+    }
+  }
+
+  function drawObject(o, isTarget) {
+    var k = o.kind;
+    var r = o.r;
+    var colors = {
+      satelit: PAL.muted, kerdil: PAL.success, asteroid: PAL.dim, meteoroid: PAL.muted,
+      meteor: PAL.accent, meteorit: PAL.warning, komet: PAL.text
+    };
+    ctx.save();
+    ctx.translate(o.x, o.y);
+    if (k.key === 'meteor') {
+      ctx.strokeStyle = PAL.accent;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(r * 4, -r);
+      ctx.stroke();
+    }
+    if (k.key === 'komet') {
+      ctx.globalAlpha = 0.45;
+      ctx.fillStyle = PAL.text;
+      ctx.beginPath();
+      ctx.moveTo(0, -r * 0.7);
+      ctx.lineTo(r * 4.5, 0);
+      ctx.lineTo(0, r * 0.7);
+      ctx.closePath();
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+    ctx.beginPath();
+    if (k.key === 'asteroid' || k.key === 'meteorit') {
+      for (var i = 0; i < 7; i++) {
+        var a = (i / 7) * Math.PI * 2 + o.seed * 0.3;
+        var rr = r * (0.75 + 0.25 * Math.sin(o.seed * (i + 2)));
+        var px = Math.cos(a) * rr;
+        var py = Math.sin(a) * rr;
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+    } else {
+      ctx.arc(0, 0, r, 0, Math.PI * 2);
+    }
+    ctx.fillStyle = colors[k.key] || PAL.muted;
+    ctx.fill();
+    if (k.key === 'satelit') {
+      ctx.strokeStyle = PAL.dim;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, r * 2.2, r * 0.7, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    if (isTarget) {
+      ctx.strokeStyle = PAL.accent;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(o.x, o.y, r + 10, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.fillStyle = PAL.text;
+    ctx.font = '12px ' + PAL.font;
+    ctx.textAlign = 'center';
+    ctx.fillText(o.name, o.x, o.y + r + 22);
+  }
+
+  function draw() {
+    if (!ctx || !view.W) return;
+    var W = view.W;
+    var H = view.H;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = PAL.bg;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.fillStyle = PAL.dim;
+    stars.forEach(function (s) {
+      ctx.globalAlpha = s.a;
+      ctx.fillRect(s.x, s.y, s.r, s.r);
+    });
+    ctx.globalAlpha = 1;
+
+    var sx = W * 0.18;
+    ctx.strokeStyle = PAL.dim;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([6, 6]);
+    ctx.beginPath();
+    ctx.moveTo(sx, H * 0.12);
+    ctx.lineTo(sx, H * 0.92);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = PAL.muted;
+    ctx.font = '12px ' + PAL.font;
+    ctx.textAlign = 'left';
+    ctx.fillText('Stasiun pengamatan', sx + 6, H * 0.12 - 4);
+
+    var t = target();
+    G.objects.forEach(function (o) { drawObject(o, o === t); });
+  }
+
+  function loop(ts) {
+    var dt = lastTs ? Math.min(0.05, (ts - lastTs) / 1000) : 0;
+    lastTs = ts;
+    if (G && G.running && !G.paused && !G.over) update(dt);
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  function init() {
+    canvas = $('game-canvas');
+    if (!canvas) return;
+    ctx = canvas.getContext('2d');
+    PAL = palette();
+    G = newRun(loadBest());
+    resizeCanvas();
+    window.addEventListener('resize', function () { resizeCanvas(); });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      var tag = e.target && e.target.tagName;
+      if (e.key === ' ' && tag !== 'BUTTON') {
+        e.preventDefault();
+        togglePause();
+      } else if (e.key === 'r' || e.key === 'R') {
+        resetGame();
+      }
+    });
+
+    setFeedback('', INITIAL_FEEDBACK);
+    renderAll();
+    requestAnimationFrame(loop);
+  }
+
+  init();
+  </script>
+</body>
+</html>

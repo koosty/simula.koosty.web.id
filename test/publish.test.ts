@@ -19,7 +19,7 @@ function scene(overrides: Partial<SceneSource> & { id: string }): SceneSource {
     description: 'Deskripsi simulasi.',
     html: '<html lang="id"></html>',
     courseFolder: 'matematika-smp-kelas-vii',
-    sourceFolder: 'lower-secondary/grade-7',
+    sourceFolder: 'lower-secondary/grade-7/matematika',
     ...overrides,
   };
 }
@@ -109,6 +109,36 @@ describe('planPublish', () => {
     expect(result.added).toEqual([]);
     // The published title stands too, so the URL keeps its address and its words.
     expect(result.updated[0].title).toBe('Judul');
+  });
+
+  it('does not read another subject as the same simulation', () => {
+    // Every course numbers its scenes from s1, so "s1" alone names no one
+    // simulation. Matching on it across subjects would take the IPA scene s1
+    // for a correction of Matematika's s1 and publish the IPA HTML under the
+    // Matematika title and slug.
+    const ipa = scene({
+      id: 's1',
+      title: 'Cabang-cabang Ilmu Pengetahuan Alam',
+      courseFolder: 'ipa-smp-kelas-vii',
+      sourceFolder: 'lower-secondary/grade-7/ipa',
+    });
+    const result = planPublish([ipa], existing);
+    expect(result.updated).toEqual([]);
+    expect(result.added.map((s) => s.slug)).toEqual(['cabang-cabang-ilmu-pengetahuan-alam']);
+    expect(result.added[0].subject).toBe('ipa');
+  });
+
+  it('refuses a slug a published simulation of another subject already holds', () => {
+    // Two subjects cannot share a slug: the URLs carry no subject, so one
+    // simulation would take the other's address. The batch stops instead.
+    const clash = scene({
+      id: 's40',
+      title: 'Lama',
+      courseFolder: 'ipa-smp-kelas-vii',
+      sourceFolder: 'lower-secondary/grade-7/ipa',
+    });
+    const problems = validateRenameIntent(planPublish([clash], existing), existing);
+    expect(problems.join(' ')).toMatch(/lama/);
   });
 
   it('records the scene id on a simulation it adds', () => {
@@ -230,12 +260,20 @@ describe('the published catalog the pipeline reads', () => {
     }
   });
 
-  it('gives every entry a different scene', () => {
+  it('gives every simulation of a subject a different scene', () => {
+    // A scene id numbers one course's scenes, so two courses of the same
+    // subject are the case that would collide: the pipeline would read the
+    // second course's s1 as a correction of the first one's s1.
     const catalogDir = resolve(import.meta.dirname, '..', 'src/content/simulasi');
-    const scenes = readdirSync(catalogDir)
+    const entries = readdirSync(catalogDir)
       .filter((name) => name.endsWith('.yaml'))
-      .map((name) => parse(readFileSync(join(catalogDir, name), 'utf8')).scene);
-    expect(new Set(scenes).size).toBe(scenes.length);
+      .map((name) => parse(readFileSync(join(catalogDir, name), 'utf8')));
+    for (const subject of new Set(entries.map((entry) => entry.subject))) {
+      const scenes = entries.filter((entry) => entry.subject === subject).map((e) => e.scene);
+      expect(new Set(scenes).size, `dua entri mapel ${subject} memakai scene yang sama`).toBe(
+        scenes.length,
+      );
+    }
   });
 
   it('builds with the scene field present', () => {

@@ -31,7 +31,7 @@ function requestTo(urlPath: string): string | null {
  */
 function fixtureWith(...files: string[]): string {
   const root = mkdtempSync(join(tmpdir(), 'simulasi-'));
-  const dir = join(root, 'lower-secondary', 'grade-7');
+  const dir = join(root, 'lower-secondary', 'grade-7', 'matematika');
   mkdirSync(dir, { recursive: true });
   for (const file of files) writeFileSync(join(dir, file), '<html lang="id"></html>');
   return root;
@@ -144,7 +144,7 @@ describe('resolveSimulationRequest', () => {
     // walk looks for any entry with that name, and reading it as a file would
     // throw. Only a fixture has a folder where a simulation's file is expected.
     const root = fixtureWith('seperti.html');
-    mkdirSync(join(root, 'lower-secondary', 'grade-7', 'bukan-berkas.html'), {
+    mkdirSync(join(root, 'lower-secondary', 'grade-7', 'matematika', 'bukan-berkas.html'), {
       recursive: true,
     });
 

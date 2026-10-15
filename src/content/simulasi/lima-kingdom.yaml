@@ -1,0 +1,11 @@
+# Satu entri katalog per simulasi. Kunci adalah pengenal bahasa Inggris;
+# nilainya Bahasa Indonesia karena menjadi bagian URL.
+# Katalog adalah sumber kebenaran atas metadata simulasi (docs/adr/0004).
+title: "Lima Kingdom"
+description: >-
+  Membedakan kelima kingdom berdasarkan ciri utamanya.
+level: smp
+grade: 7
+subject: ipa
+order: 54
+scene: "s31"

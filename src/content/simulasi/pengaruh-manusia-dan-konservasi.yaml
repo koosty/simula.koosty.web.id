@@ -1,0 +1,11 @@
+# Satu entri katalog per simulasi. Kunci adalah pengenal bahasa Inggris;
+# nilainya Bahasa Indonesia karena menjadi bagian URL.
+# Katalog adalah sumber kebenaran atas metadata simulasi (docs/adr/0004).
+title: "Pengaruh Manusia dan Konservasi"
+description: >-
+  Mengenal dampak aktivitas manusia dan cara konservasi in-situ serta eks-situ.
+level: smp
+grade: 7
+subject: ipa
+order: 63
+scene: "s40"

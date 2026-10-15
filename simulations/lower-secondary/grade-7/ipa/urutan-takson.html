@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Urutan Takson · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Mengurutkan takson dari kingdom hingga spesies dalam permainan susun kartu yang tidak dibatasi waktu.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Urutan Takson">
+  <meta property="og:description" content="Mengurutkan takson dari kingdom hingga spesies dalam permainan susun kartu yang tidak dibatasi waktu.">
+  <meta property="og:locale" content="id">
+  <style>
+:root {
+  /* Colour */
+  --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+  --surface: #14141e;     /* panels, cards, step rows */
+  --panel: rgba(20, 20, 30, 0.9);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: #333;
+  --text: #ffffff;
+  --text-muted: #aaa;
+  --text-dim: #888;
+  --accent: #6366f1;      /* primary action, slider thumb, active state */
+  --accent-hover: #5558e8;
+  --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+  --success: #fbbf24;     /* completion, headings, callouts */
+  --warning: #fb923c;
+  --error: #ff6b6b;
+  --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-none: none;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type scale (system fonts only) */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-caption: 11px;   /* uppercase control labels */
+  --text-heading: 24px;
+  --font-weight-display: 600;  /* headings */
+  --font-weight-number: 500;   /* monospaced readouts */
+
+  /* Focus, motion, stacking */
+  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  --motion: 0.2s;
+  --motion-slow: 0.3s;
+  --z-overlay: 100;        /* panels, tooltips */
+  --z-modal: 1000;         /* loading screens, modal dialogs */
+}
+
+[data-theme="light"] {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-strong: #d4d4d8;
+  --text: #16161d;
+  --text-muted: #52525b;
+  --text-dim: #71717a;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.95);
+  --success: #b45309;
+  --warning: #c2410c;
+  --error: #dc2626;
+  --accent-text: #ffffff;
+  --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+h1, h2, h3 { font-weight: var(--font-weight-display); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-4);
+}
+.panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+.btn {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  min-height: 44px;            /* never below 44px, mobile */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--border-strong);
+  color: var(--text);
+  box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.btn:hover { background: var(--text-muted); }
+.btn:active { transform: scale(0.95); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); }
+
+.control-label {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+input[type="range"] {
+  width: 100%; height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Visually hidden but announced by screen readers. Use when a layout has no
+   room for a visible h1 element (e.g. a full-bleed canvas) — never as an excuse to
+   drop a heading. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+#feedback-panel {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+#feedback-panel.success { border-left-color: var(--success); }
+#feedback-panel.error { border-left-color: var(--error); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+.sources {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+.sources-heading {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+.source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+.source-item a { color: var(--accent); text-decoration: none; }
+.source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+.reading-article {
+  max-width: 720px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+.reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+.reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+.reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+.reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+.reading-article blockquote {
+  border-left: 3px solid var(--border-strong);
+  padding-left: var(--space-4);
+  color: var(--text-muted);
+  margin-bottom: var(--space-4);
+}
+.reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+.reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+.reading-article pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+}
+.reading-article pre code { background: none; padding: 0; }
+.reading-article table { width: 100%; border-collapse: collapse; }
+.reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+.reading-article details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.reading-article summary {
+  cursor: pointer;
+  font-weight: var(--font-weight-display);
+  color: var(--text);
+}
+.reading-article details[open] summary { margin-bottom: var(--space-2); }
+.glossary-term {
+  text-decoration: underline dotted var(--text-dim);
+  text-decoration-thickness: 1px;
+  cursor: help;
+}
+.katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+/* highlight.js token colours — mapped to the token set, not a canned theme */
+.hljs { color: var(--text); }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+.hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+.hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+.hljs-number { color: var(--warning); }
+
+    /* Page layout only: every colour, radius, and spacing comes from the shared tokens above. */
+    .app { max-width: 1000px; margin: 0 auto; padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-4); }
+    .intro h1 { font-size: var(--text-heading); margin-bottom: var(--space-2); }
+    .intro p { color: var(--text-muted); }
+    .start-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-4); }
+    .hud { display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: space-between; align-items: center; font-size: var(--text-sm); color: var(--text-muted); }
+    .hud .mono-value { color: var(--text); }
+    .organism { font-size: var(--text-base); font-weight: var(--font-weight-display); font-style: italic; }
+    .layout { display: flex; flex-direction: column; gap: var(--space-4); }
+    .slot-list { list-style: none; display: flex; flex-direction: column; gap: var(--space-2); }
+    .slot-row { display: flex; align-items: center; gap: var(--space-3); }
+    .slot-rank { width: 120px; flex-shrink: 0; font-size: var(--text-sm); color: var(--text-muted); }
+    .slot-btn { flex: 1; text-align: left; min-width: 0; overflow-wrap: anywhere; }
+    .slot-btn.is-filled { border-color: var(--success); color: var(--text); }
+    .card-pool { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .card-btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+    .hint { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-3); }
+    .btn-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .achievement-list { list-style: none; display: flex; flex-direction: column; gap: var(--space-2); font-size: var(--text-sm); color: var(--text-muted); }
+    .achievement-list li[data-unlocked="true"] { color: var(--success); }
+    #feedback-text { font-size: var(--text-sm); color: var(--text); }
+    #pause-overlay { position: fixed; inset: 0; background: var(--panel); display: flex; align-items: center; justify-content: center; padding: var(--space-4); z-index: var(--z-modal); }
+    #pause-overlay[hidden] { display: none; }
+    [hidden] { display: none !important; }
+    #pause-overlay .panel { max-width: 320px; text-align: center; }
+    @media (min-width: 800px) {
+      .layout { flex-direction: row; align-items: flex-start; }
+      .play-col { flex: 1 1 0; min-width: 0; }
+      .side { width: 320px; flex-shrink: 0; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="intro">
+    <h1>Urutan Takson</h1>
+    <p>Susun tujuh tingkat takson dari kingdom sampai spesies untuk tiga makhluk hidup. Pilih satu kartu, lalu pilih tingkat yang tepat. Tidak ada batas waktu; kamu hanya punya tiga nyawa per ronde.</p>
+  </header>
+
+  <section class="panel" id="start-screen">
+    <h2 class="panel-heading">Cara bermain</h2>
+    <ol class="achievement-list">
+      <li>Tekan satu kartu nama takson.</li>
+      <li>Tekan kotak tingkat yang sesuai, dari Kingdom sampai Spesies.</li>
+      <li>Kesalahan mengurangi satu nyawa. Tekan kotak berisi kartu untuk mengembalikannya ke kotak kartu.</li>
+    </ol>
+    <div class="start-actions">
+      <button class="btn btn-primary" id="start-btn" type="button" onclick="startGame()">Mulai permainan</button>
+    </div>
+  </section>
+
+  <div id="game-screen" class="layout" hidden>
+    <div class="play-col">
+      <section class="panel">
+        <div class="hud">
+          <span id="round-display"></span>
+          <span class="organism" id="organism-display"></span>
+        </div>
+        <div class="hud" style="margin-top: var(--space-3);">
+          <span class="mono-value" id="lives-display"></span>
+          <span class="mono-value" id="score-display"></span>
+          <span class="mono-value" id="best-display"></span>
+        </div>
+      </section>
+
+      <section class="panel" style="margin-top: var(--space-4);">
+        <h2 class="panel-heading">Tingkat takson</h2>
+        <ol class="slot-list" id="slot-list">
+          <li class="slot-row"><span class="slot-rank">Kingdom</span><button class="btn slot-btn" id="slot-0" type="button" data-slot="0"></button></li>
+          <li class="slot-row"><span class="slot-rank">Filum/divisi</span><button class="btn slot-btn" id="slot-1" type="button" data-slot="1"></button></li>
+          <li class="slot-row"><span class="slot-rank">Kelas</span><button class="btn slot-btn" id="slot-2" type="button" data-slot="2"></button></li>
+          <li class="slot-row"><span class="slot-rank">Ordo</span><button class="btn slot-btn" id="slot-3" type="button" data-slot="3"></button></li>
+          <li class="slot-row"><span class="slot-rank">Famili</span><button class="btn slot-btn" id="slot-4" type="button" data-slot="4"></button></li>
+          <li class="slot-row"><span class="slot-rank">Genus</span><button class="btn slot-btn" id="slot-5" type="button" data-slot="5"></button></li>
+          <li class="slot-row"><span class="slot-rank">Spesies</span><button class="btn slot-btn" id="slot-6" type="button" data-slot="6"></button></li>
+        </ol>
+      </section>
+
+      <section class="panel" style="margin-top: var(--space-4);">
+        <h2 class="panel-heading">Kartu nama takson</h2>
+        <p class="hint" id="hint-text" aria-live="polite"></p>
+        <div class="card-pool" id="card-pool"></div>
+      </section>
+    </div>
+
+    <aside class="side">
+      <div id="feedback-panel" aria-live="polite"><p id="feedback-text"></p></div>
+
+      <section class="panel" style="margin-top: var(--space-4);">
+        <h2 class="panel-heading">Pencapaian</h2>
+        <ul class="achievement-list" id="achievement-list">
+          <li data-achievement="tanpa-salah" data-unlocked="false">Tanpa Salah: selesaikan satu ronde tanpa kesalahan</li>
+          <li data-achievement="pakar" data-unlocked="false">Pakar Takson: selesaikan ketiga ronde</li>
+        </ul>
+      </section>
+
+      <div class="btn-row" style="margin-top: var(--space-4);">
+        <button class="btn" id="pause-btn" type="button">Jeda</button>
+        <button class="btn btn-primary" id="next-round-btn" type="button" hidden>Ronde berikutnya</button>
+        <button class="btn btn-ghost" id="reset-btn" type="button">Atur ulang</button>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div id="pause-overlay" hidden>
+  <div class="panel">
+    <h2 class="panel-heading">Permainan dijeda</h2>
+    <p>Tidak ada batas waktu. Lanjutkan saat kamu siap.</p>
+    <div class="start-actions">
+      <button class="btn btn-primary" id="resume-btn" type="button">Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ROUNDS = [
+  { organism: 'Harimau (Panthera tigris)', ranks: ['Animalia', 'Chordata', 'Mammalia', 'Carnivora', 'Felidae', 'Panthera', 'Panthera tigris'] },
+  { organism: 'Mangga (Mangifera indica)', ranks: ['Plantae', 'Magnoliophyta', 'Magnoliopsida', 'Sapindales', 'Anacardiaceae', 'Mangifera', 'Mangifera indica'] },
+  { organism: 'Lele (Clarias batrachus)', ranks: ['Animalia', 'Chordata', 'Actinopterygii', 'Siluriformes', 'Clariidae', 'Clarias', 'Clarias batrachus'] }
+];
+const RANK_NAMES = ['Kingdom', 'Filum/divisi', 'Kelas', 'Ordo', 'Famili', 'Genus', 'Spesies'];
+const MAX_LIVES = 3;
+const POINTS_PER_PLACEMENT = 10;
+const ROUND_BONUS = 20;
+const BEST_KEY = 'ipa7-urutan-takson-skor-terbaik';
+
+const $ = (id) => document.getElementById(id);
+const setText = (id, text) => {
+  const el = $(id);
+  if (el) el.textContent = text;
+};
+
+function loadBest() {
+  try {
+    return Number(localStorage.getItem(BEST_KEY)) || 0;
+  } catch (e) {
+    return 0;
+  }
+}
+
+function saveBest(value) {
+  try {
+    localStorage.setItem(BEST_KEY, String(value));
+  } catch (e) {
+    // Penyimpanan tidak tersedia: skor terbaik hanya berlaku selama halaman terbuka.
+  }
+}
+
+let best = loadBest();
+
+function freshGame() {
+  return {
+    started: false,
+    paused: false,
+    round: 0,
+    lives: MAX_LIVES,
+    score: 0,
+    slots: [null, null, null, null, null, null, null],
+    pool: [],
+    selected: null,
+    mistakes: 0,
+    roundDone: false,
+    unlocked: { 'tanpa-salah': false, pakar: false },
+    message: { text: 'Pilih satu kartu, lalu pilih tingkat yang sesuai.', kind: 'info' }
+  };
+}
+
+let game = freshGame();
+
+function shuffle(items) {
+  const a = items.slice();
+  for (let i = a.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function dealRound() {
+  const ranks = ROUNDS[game.round].ranks;
+  game.pool = shuffle(ranks.map((name, rank) => ({ name: name, rank: rank })));
+  game.slots = [null, null, null, null, null, null, null];
+  game.selected = null;
+  game.mistakes = 0;
+  game.lives = MAX_LIVES;
+  game.roundDone = false;
+}
+
+function say(text, kind) {
+  game.message = { text: text, kind: kind };
+}
+
+function startGame() {
+  game = freshGame();
+  game.started = true;
+  dealRound();
+  say('Pilih satu kartu, lalu pilih tingkat yang sesuai.', 'info');
+  render();
+}
+
+function resetGame() {
+  game = freshGame();
+  render();
+}
+
+function togglePause() {
+  if (!game.started) return;
+  game.paused = !game.paused;
+  render();
+}
+
+function selectCard(card) {
+  if (game.paused || game.roundDone) return;
+  game.selected = game.selected === card ? null : card;
+  render();
+}
+
+function pressSlot(index) {
+  if (game.paused || game.roundDone) return;
+  const current = game.slots[index];
+  if (current) {
+    // Kartu dikembalikan ke kotak tanpa hukuman.
+    game.slots[index] = null;
+    game.pool.push(current);
+    game.selected = null;
+    say(`Kartu "${current.name}" dikembalikan ke kotak.`, 'info');
+    render();
+    return;
+  }
+  if (!game.selected) {
+    say('Pilih satu kartu dulu, lalu tekan tingkat yang sesuai.', 'warn');
+    render();
+    return;
+  }
+  const card = game.selected;
+  if (card.rank === index) {
+    game.slots[index] = card;
+    game.pool = game.pool.filter((c) => c !== card);
+    game.selected = null;
+    game.score += POINTS_PER_PLACEMENT;
+    say(`Tepat: ${card.name} berada di tingkat ${RANK_NAMES[index]}.`, 'ok');
+    if (game.slots.every(Boolean)) finishRound();
+  } else {
+    game.mistakes += 1;
+    game.lives -= 1;
+    if (game.lives <= 0) {
+      say(`Nyawa habis. ${card.name} bukan ${RANK_NAMES[index]}. Ronde diulang dari awal dengan nyawa penuh.`, 'warn');
+      dealRound();
+    } else {
+      say(`${card.name} bukan ${RANK_NAMES[index]}. Hierarki takson jadi keliru dan nyawa tersisa ${game.lives}.`, 'warn');
+    }
+  }
+  render();
+}
+
+function finishRound() {
+  game.roundDone = true;
+  if (game.mistakes === 0) {
+    game.score += ROUND_BONUS;
+    game.unlocked['tanpa-salah'] = true;
+  }
+  const isLast = game.round === ROUNDS.length - 1;
+  if (isLast) {
+    game.unlocked.pakar = true;
+    if (game.score > best) {
+      best = game.score;
+      saveBest(best);
+    }
+    say(`Semua ronde selesai! Skor akhirmu ${game.score}. Tekan Main lagi untuk bermain ulang.`, 'ok');
+  } else {
+    const bonus = game.mistakes === 0 ? ` Bonus tanpa salah +${ROUND_BONUS}.` : '';
+    say(`Ronde selesai.${bonus} Lanjut ke ronde berikutnya.`, 'ok');
+  }
+}
+
+function nextRound() {
+  if (!game.roundDone) return;
+  if (game.round === ROUNDS.length - 1) {
+    resetGame();
+    startGame();
+    return;
+  }
+  game.round += 1;
+  dealRound();
+  say('Ronde baru dimulai. Pilih satu kartu, lalu pilih tingkat yang sesuai.', 'info');
+  render();
+}
+
+function render() {
+  const started = game.started;
+  const startPanel = $('start-screen');
+  const gameScreen = $('game-screen');
+  if (startPanel) startPanel.hidden = started;
+  if (gameScreen) gameScreen.hidden = !started;
+  setText('best-display', `Skor terbaik: ${best}`);
+  const overlay = $('pause-overlay');
+  if (overlay) overlay.hidden = !game.paused;
+  if (!started) return;
+
+  const round = ROUNDS[game.round];
+  setText('round-display', `Ronde ${game.round + 1} dari ${ROUNDS.length}`);
+  setText('organism-display', round.organism);
+  setText('lives-display', `Nyawa: ${'♥'.repeat(game.lives)}${'♡'.repeat(MAX_LIVES - game.lives)}`);
+  setText('score-display', `Skor: ${game.score}`);
+
+  const locked = game.paused || game.roundDone;
+  game.slots.forEach((card, i) => {
+    const btn = $(`slot-${i}`);
+    if (!btn) return;
+    btn.textContent = card ? card.name : 'Kosong: pilih kartu lalu tekan di sini';
+    btn.classList.toggle('is-filled', Boolean(card));
+    btn.disabled = locked;
+  });
+
+  const pool = $('card-pool');
+  if (pool) {
+    pool.innerHTML = '';
+    game.pool.forEach((card) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn card-btn';
+      btn.textContent = card.name;
+      btn.setAttribute('aria-pressed', String(game.selected === card));
+      btn.disabled = locked;
+      btn.addEventListener('click', () => selectCard(card));
+      pool.appendChild(btn);
+    });
+  }
+
+  setText('hint-text', game.selected
+    ? `Kartu "${game.selected.name}" dipilih. Sekarang tekan tingkat takson yang sesuai.`
+    : 'Pilih satu kartu, lalu tekan tingkat takson yang sesuai.');
+
+  const panel = $('feedback-panel');
+  setText('feedback-text', game.message.text);
+  if (panel) panel.className = game.message.kind === 'ok' ? 'success' : game.message.kind === 'warn' ? 'error' : '';
+
+  document.querySelectorAll('[data-achievement]').forEach((li) => {
+    const key = li.dataset.achievement;
+    li.dataset.unlocked = String(Boolean(game.unlocked[key]));
+    li.textContent = `${game.unlocked[key] ? '✔ ' : ''}${li.dataset.label || li.textContent}`;
+  });
+
+  const next = $('next-round-btn');
+  if (next) {
+    next.hidden = !game.roundDone;
+    next.textContent = game.round === ROUNDS.length - 1 ? 'Main lagi' : 'Ronde berikutnya';
+  }
+  const pause = $('pause-btn');
+  if (pause) pause.textContent = game.paused ? 'Lanjutkan' : 'Jeda';
+}
+
+document.querySelectorAll('[data-achievement]').forEach((li) => {
+  li.dataset.label = li.textContent;
+});
+document.querySelectorAll('[data-slot]').forEach((btn) => {
+  btn.addEventListener('click', () => pressSlot(Number(btn.dataset.slot)));
+});
+$('pause-btn').addEventListener('click', togglePause);
+$('resume-btn').addEventListener('click', togglePause);
+$('next-round-btn').addEventListener('click', nextRound);
+$('reset-btn').addEventListener('click', resetGame);
+
+render();
+</script>
+
+<script type="application/json" id="widget-config">
+{
+  "type": "game",
+  "gameType": "sorting",
+  "description": "Susun tujuh tingkat takson (kingdom, filum/divisi, kelas, ordo, famili, genus, spesies) untuk tiga makhluk hidup. Tanpa batas waktu; kesalahan mengurangi nyawa dalam satu ronde.",
+  "gameConfig": {
+    "controls": ["card_select", "slot_place"],
+    "targets": [
+      { "id": "ronde-1", "organism": "Harimau (Panthera tigris)", "ranks": ["Animalia", "Chordata", "Mammalia", "Carnivora", "Felidae", "Panthera", "Panthera tigris"] },
+      { "id": "ronde-2", "organism": "Mangga (Mangifera indica)", "ranks": ["Plantae", "Magnoliophyta", "Magnoliopsida", "Sapindales", "Anacardiaceae", "Mangifera", "Mangifera indica"] },
+      { "id": "ronde-3", "organism": "Lele (Clarias batrachus)", "ranks": ["Animalia", "Chordata", "Actinopterygii", "Siluriformes", "Clariidae", "Clarias", "Clarias batrachus"] }
+    ],
+    "initialConditions": { "lives": 3, "timeLimit": null },
+    "successCondition": "Semua tujuh tingkat terisi dengan urutan yang benar pada ketiga ronde"
+  },
+  "scoring": {
+    "completionPoints": 10,
+    "perfectRoundBonus": 20,
+    "penalty": "Kesalahan mengurangi satu nyawa; nyawa habis mengulang ronde"
+  },
+  "achievements": [
+    { "id": "tanpa-salah", "name": "Tanpa Salah", "description": "Selesaikan satu ronde tanpa kesalahan" },
+    { "id": "pakar", "name": "Pakar Takson", "description": "Selesaikan ketiga ronde" }
+  ]
+}
+</script>
+</body>
+</html>

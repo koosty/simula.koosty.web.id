@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Difusi · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Mengamati perpindahan partikel zat dari konsentrasi tinggi ke konsentrasi rendah melalui simulasi difusi.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Difusi">
+  <meta property="og:description" content="Mengamati perpindahan partikel zat dari konsentrasi tinggi ke konsentrasi rendah melalui simulasi difusi interaktif.">
+  <meta property="og:locale" content="id">
+  <style>
+    /* ===== Shared tokens (VISUAL-STYLE.md) ===== */
+    :root {
+      /* Colour */
+      --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+      --surface: #14141e;     /* panels, cards, step rows */
+      --panel: rgba(20, 20, 30, 0.9);
+      --border: rgba(255, 255, 255, 0.1);
+      --border-strong: #333;
+      --text: #ffffff;
+      --text-muted: #aaa;
+      --text-dim: #888;
+      --accent: #6366f1;      /* primary action, slider thumb, active state */
+      --accent-hover: #5558e8;
+      --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+      --success: #fbbf24;     /* completion, headings, callouts */
+      --warning: #fb923c;
+      --error: #ff6b6b;
+      --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+      --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+      --shadow-none: none;
+
+      /* Spacing scale */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+
+      /* Radius scale */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-pill: 999px;
+
+      /* Type scale (system fonts only) */
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --text-base: 16px;
+      --text-sm: 14px;
+      --text-xs: 13px;
+      --text-caption: 11px;   /* uppercase control labels */
+      --text-heading: 24px;
+      --font-weight-display: 600;  /* headings */
+      --font-weight-number: 500;   /* monospaced readouts */
+
+      /* Focus, motion, stacking */
+      --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+      --motion: 0.2s;
+      --motion-slow: 0.3s;
+      --z-overlay: 100;        /* panels, tooltips */
+      --z-modal: 1000;         /* loading screens, modal dialogs */
+    }
+
+    [data-theme="light"] {
+      --bg: #f7f7fb;
+      --surface: #ffffff;
+      --panel: rgba(255, 255, 255, 0.92);
+      --border: rgba(0, 0, 0, 0.12);
+      --border-strong: #d4d4d8;
+      --text: #16161d;
+      --text-muted: #52525b;
+      --text-dim: #71717a;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+      --accent-soft: rgba(79, 70, 229, 0.95);
+      --success: #b45309;
+      --warning: #c2410c;
+      --error: #dc2626;
+      --accent-text: #ffffff;
+      --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+    }
+
+    /* ===== Component classes (VISUAL-STYLE.md) ===== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font);
+      font-size: var(--text-base);
+      line-height: 1.5;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    h1, h2, h3 { font-weight: var(--font-weight-display); }
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      padding: var(--space-4);
+    }
+    .panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+    .btn {
+      font-family: inherit;
+      font-size: var(--text-sm);
+      min-height: 44px;            /* never below 44px, mobile */
+      min-width: 44px;
+      padding: var(--space-3) var(--space-5);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      background: var(--border-strong);
+      color: var(--text);
+      box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+      cursor: pointer;
+      transition: background var(--motion);
+    }
+    .btn:hover { background: var(--text-muted); }
+    .btn:active { transform: scale(0.95); }
+    .btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+    .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+    .btn-ghost { background: transparent; border-color: var(--border); }
+    .btn-ghost:hover { background: var(--surface); }
+
+    .control-label {
+      font-size: var(--text-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    input[type="range"] {
+      width: 100%; height: 6px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px; height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    /* Visually hidden but announced by screen readers. Use when a layout has no
+       room for a visible <h1> (e.g. a full-bleed canvas) — never as an excuse to
+       drop a heading. */
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+    }
+
+    #feedback-panel {
+      background: var(--surface);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+    }
+    #feedback-panel.success { border-left-color: var(--success); }
+    #feedback-panel.error { border-left-color: var(--error); }
+
+    .progress-track {
+      height: 8px;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+    .mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+    .sources {
+      margin-top: var(--space-5);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--border);
+    }
+    .sources-heading {
+      font-size: var(--text-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: var(--space-2);
+    }
+    .source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+    .source-item a { color: var(--accent); text-decoration: none; }
+    .source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+    .reading-article {
+      max-width: 720px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+    .reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+    .reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+    .reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+    .reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+    .reading-article blockquote {
+      border-left: 3px solid var(--border-strong);
+      padding-left: var(--space-4);
+      color: var(--text-muted);
+      margin-bottom: var(--space-4);
+    }
+    .reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+    .reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+    .reading-article pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      overflow-x: auto;
+      margin-bottom: var(--space-4);
+    }
+    .reading-article pre code { background: none; padding: 0; }
+    .reading-article table { width: 100%; border-collapse: collapse; }
+    .reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+    .reading-article details {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+      margin-bottom: var(--space-4);
+    }
+    .reading-article summary {
+      cursor: pointer;
+      font-weight: var(--font-weight-display);
+      color: var(--text);
+    }
+    .reading-article details[open] summary { margin-bottom: var(--space-2); }
+    .glossary-term {
+      text-decoration: underline dotted var(--text-dim);
+      text-decoration-thickness: 1px;
+      cursor: help;
+    }
+    .katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+    /* highlight.js token colours — mapped to the token set, not a canned theme */
+    .hljs { color: var(--text); }
+    .hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+    .hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+    .hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+    .hljs-number { color: var(--warning); }
+
+    /* ===== Scene layout ===== */
+    * { -webkit-tap-highlight-color: transparent; }
+    .scene { padding: var(--space-4); max-width: 1100px; margin: 0 auto; }
+    .scene-header { margin-bottom: var(--space-4); }
+    .scene-header h1 { font-size: var(--text-heading); margin-bottom: var(--space-2); }
+    .lead { color: var(--text-muted); font-size: var(--text-sm); }
+
+    .sim-layout { display: flex; flex-direction: column; gap: var(--space-4); }
+    .controls { max-height: 40vh; overflow-y: auto; }
+    .var-group { margin-bottom: var(--space-4); }
+    .var-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--space-2); }
+    .var-value { font-size: var(--text-sm); color: var(--text); }
+    .preset-row { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-4); }
+    .preset-row .btn { flex: 1 1 100%; text-align: left; }
+    .action-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .action-row .btn { flex: 1 1 0; }
+
+    .canvas-box { position: relative; width: 100%; min-height: 300px; }
+    #sim-canvas { display: block; width: 100%; touch-action: manipulation; border-radius: var(--radius-md); }
+    .status-line { font-size: var(--text-sm); color: var(--text); margin: var(--space-3) 0; }
+    .readouts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
+    .readout { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); }
+    .readout-value { font-size: var(--text-base); color: var(--text); }
+    .bar-row { margin-top: var(--space-3); }
+    .bar-row + .bar-row { margin-top: var(--space-2); }
+    .bar-fill { height: 100%; background: var(--accent); border-radius: var(--radius-pill); transition: width var(--motion); }
+
+    @media (min-width: 768px) {
+      .sim-layout { flex-direction: row; align-items: flex-start; }
+      .controls { width: 300px; flex-shrink: 0; max-height: none; }
+      .canvas-area { flex: 1; min-width: 0; }
+    }
+  </style>
+</head>
+<body>
+  <main class="scene">
+    <header class="scene-header">
+      <h1>Difusi</h1>
+      <p class="lead">Atur suhu dan jumlah partikel, lalu amati partikel zat terlarut menyebar dari sisi berkonsentrasi tinggi (kiri) ke sisi berkonsentrasi rendah (kanan).</p>
+    </header>
+
+    <div class="sim-layout">
+      <aside class="panel controls" aria-label="Kontrol simulasi">
+        <p class="panel-heading">Variabel</p>
+
+        <div class="var-group">
+          <div class="var-head">
+            <label class="control-label" for="suhu-slider">Suhu</label>
+            <span class="var-value mono-value" id="suhu-display">25 °C</span>
+          </div>
+          <input type="range" id="suhu-slider" min="10" max="60" step="1" value="25">
+        </div>
+
+        <div class="var-group">
+          <div class="var-head">
+            <label class="control-label" for="jumlah-slider">Jumlah partikel</label>
+            <span class="var-value mono-value" id="jumlah-display">60 partikel</span>
+          </div>
+          <input type="range" id="jumlah-slider" min="20" max="120" step="1" value="60">
+        </div>
+
+        <p class="panel-heading">Preset</p>
+        <div class="preset-row">
+          <button class="btn btn-ghost" id="preset-1-btn" type="button">Suhu rendah (10 °C)</button>
+          <button class="btn btn-ghost" id="preset-2-btn" type="button">Suhu tinggi (55 °C)</button>
+          <button class="btn btn-ghost" id="preset-3-btn" type="button">Partikel banyak (110)</button>
+        </div>
+
+        <div class="action-row">
+          <button class="btn btn-primary" id="mulai-btn" type="button" aria-live="polite">Mulai</button>
+          <button class="btn" id="ulangi-btn" type="button">Atur ulang</button>
+        </div>
+      </aside>
+
+      <section class="panel canvas-area" aria-label="Area simulasi">
+        <div class="canvas-box" id="canvas-box">
+          <canvas id="sim-canvas" role="img" aria-label="Animasi partikel zat terlarut yang menyebar dari sisi kiri ke sisi kanan"></canvas>
+        </div>
+
+        <p class="status-line" id="status-display" role="status">Siap. Tekan Mulai untuk melihat partikel menyebar.</p>
+
+        <div class="readouts">
+          <div class="readout">
+            <p class="control-label">Sisi kiri</p>
+            <p class="readout-value mono-value" id="kiri-display">0 partikel</p>
+          </div>
+          <div class="readout">
+            <p class="control-label">Sisi kanan</p>
+            <p class="readout-value mono-value" id="kanan-display">0 partikel</p>
+          </div>
+          <div class="readout">
+            <p class="control-label">Selisih |kiri − kanan|</p>
+            <p class="readout-value mono-value" id="selisih-display">0 partikel</p>
+          </div>
+          <div class="readout">
+            <p class="control-label">Waktu</p>
+            <p class="readout-value mono-value" id="waktu-display">0.0 s</p>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <p class="control-label">Konsentrasi sisi kiri</p>
+          <div class="progress-track"><div class="bar-fill" id="kiri-bar"></div></div>
+        </div>
+        <div class="bar-row">
+          <p class="control-label">Konsentrasi sisi kanan</p>
+          <div class="progress-track"><div class="bar-fill" id="kanan-bar"></div></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script type="application/json" id="widget-config">
+  {"type":"simulation","concept":"difusi","description":"Partikel zat terlarut bergerak acak dan berpindah dari daerah berkonsentrasi tinggi ke daerah berkonsentrasi rendah hingga tersebar merata. Suhu yang lebih tinggi membuat partikel bergerak lebih cepat.","variables":[{"name":"suhu","label":"Suhu","min":10,"max":60,"default":25,"unit":"°C"},{"name":"jumlah","label":"Jumlah partikel","min":20,"max":120,"default":60,"unit":"partikel"}],"presets":[{"name":"Suhu rendah","variables":{"suhu":10,"jumlah":60}},{"name":"Suhu tinggi","variables":{"suhu":55,"jumlah":60}},{"name":"Partikel banyak","variables":{"suhu":25,"jumlah":110}}]}
+  </script>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const config = JSON.parse(document.getElementById('widget-config').textContent);
+      const BASE_SPEED = 0.12;     // satuan lebar kotak per detik pada 25 °C
+      const WIGGLE = 4;            // seberapa cepat arah gerak partikel berubah (rad/s)
+      const EQUAL_TOLERANCE = 0.1; // selisih dianggap setimbang jika ≤ 10% jumlah partikel
+
+      const canvas = document.getElementById('sim-canvas');
+      const ctx = canvas.getContext('2d');
+      const canvasBox = document.getElementById('canvas-box');
+      const suhuSlider = document.getElementById('suhu-slider');
+      const jumlahSlider = document.getElementById('jumlah-slider');
+      const suhuDisplay = document.getElementById('suhu-display');
+      const jumlahDisplay = document.getElementById('jumlah-display');
+      const mulaiBtn = document.getElementById('mulai-btn');
+      const ulangiBtn = document.getElementById('ulangi-btn');
+      const statusDisplay = document.getElementById('status-display');
+      const kiriDisplay = document.getElementById('kiri-display');
+      const kananDisplay = document.getElementById('kanan-display');
+      const selisihDisplay = document.getElementById('selisih-display');
+      const waktuDisplay = document.getElementById('waktu-display');
+      const kiriBar = document.getElementById('kiri-bar');
+      const kananBar = document.getElementById('kanan-bar');
+
+      const params = { suhu: 25, jumlah: 60 };
+      const state = {
+        running: false,
+        ended: false,
+        t: 0,
+        particles: [],
+        last: null,
+        cssW: 300,
+        cssH: 300,
+        dpr: window.devicePixelRatio || 1
+      };
+
+      function cssVar(name) {
+        return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      }
+
+      function makeParticles() {
+        const list = [];
+        const tempScale = Math.sqrt((params.suhu + 273.15) / 298.15);
+        for (let i = 0; i < params.jumlah; i++) {
+          list.push({
+            x: Math.random() * 0.5,          // semua zat terlarut mulai di sisi kiri
+            y: Math.random(),
+            angle: Math.random() * Math.PI * 2,
+            speed: BASE_SPEED * tempScale * (0.7 + Math.random() * 0.6)
+          });
+        }
+        return list;
+      }
+
+      function countSides() {
+        let left = 0;
+        for (const p of state.particles) if (p.x < 0.5) left++;
+        return { left: left, right: state.particles.length - left };
+      }
+
+      function stepParticles(dt) {
+        for (const p of state.particles) {
+          p.angle += (Math.random() - 0.5) * 2 * WIGGLE * dt;
+          p.x += Math.cos(p.angle) * p.speed * dt;
+          p.y += Math.sin(p.angle) * p.speed * dt;
+          if (p.x < 0) { p.x = -p.x; p.angle = Math.PI - p.angle; }
+          if (p.x > 1) { p.x = 2 - p.x; p.angle = Math.PI - p.angle; }
+          if (p.y < 0) { p.y = -p.y; p.angle = -p.angle; }
+          if (p.y > 1) { p.y = 2 - p.y; p.angle = -p.angle; }
+        }
+      }
+
+      function checkEnded() {
+        const c = countSides();
+        const n = state.particles.length;
+        const tolerance = Math.max(2, Math.round(n * EQUAL_TOLERANCE));
+        if (state.t > 2 && Math.abs(c.left - c.right) <= tolerance) {
+          state.running = false;
+          state.ended = true;
+          setStatus('Sudah setimbang: jumlah partikel kedua sisi hampir sama. Partikel tetap bergerak, tetapi tidak ada perpindahan bersih.');
+          updateUI();
+        }
+      }
+
+      function setStatus(text) {
+        statusDisplay.textContent = text;
+      }
+
+      function resizeCanvas() {
+        const width = Math.max(260, Math.floor(canvasBox.clientWidth));
+        const height = Math.round(Math.min(Math.max(width * 0.6, 260), 480));
+        state.cssW = width;
+        state.cssH = height;
+        state.dpr = window.devicePixelRatio || 1;
+        canvas.style.width = width + 'px';
+        canvas.style.height = height + 'px';
+        canvas.width = Math.round(width * state.dpr);
+        canvas.height = Math.round(height * state.dpr);
+        draw();
+      }
+
+      function draw() {
+        const w = state.cssW;
+        const h = state.cssH;
+        const boxX = 16, boxY = 44, boxW = w - 32, boxH = h - 60;
+
+        ctx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
+        ctx.fillStyle = cssVar('--bg');
+        ctx.fillRect(0, 0, w, h);
+
+        // Kotak wadah
+        ctx.strokeStyle = cssVar('--border-strong');
+        ctx.lineWidth = 1;
+        ctx.strokeRect(boxX + 0.5, boxY + 0.5, boxW - 1, boxH - 1);
+
+        // Garis acuan tengah (bukan sekat)
+        ctx.setLineDash([6, 6]);
+        ctx.strokeStyle = cssVar('--text-dim');
+        ctx.beginPath();
+        ctx.moveTo(boxX + boxW / 2, boxY);
+        ctx.lineTo(boxX + boxW / 2, boxY + boxH);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Label sisi
+        ctx.font = '13px ' + cssVar('--font');
+        ctx.fillStyle = cssVar('--text-muted');
+        ctx.textAlign = 'center';
+        ctx.fillText('Sisi kiri (awal)', boxX + boxW / 4, 24);
+        ctx.fillText('Sisi kanan (awal)', boxX + (3 * boxW) / 4, 24);
+
+        // Partikel zat terlarut
+        ctx.fillStyle = cssVar('--accent');
+        for (const p of state.particles) {
+          const px = boxX + p.x * boxW;
+          const py = boxY + p.y * boxH;
+          ctx.beginPath();
+          ctx.arc(px, py, 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      function updateReadouts() {
+        const c = countSides();
+        const n = state.particles.length;
+        const kiriPct = n > 0 ? (c.left / n) * 100 : 0;
+        const kananPct = n > 0 ? (c.right / n) * 100 : 0;
+        kiriDisplay.textContent = c.left + ' partikel';
+        kananDisplay.textContent = c.right + ' partikel';
+        selisihDisplay.textContent = Math.abs(c.left - c.right) + ' partikel';
+        waktuDisplay.textContent = state.t.toFixed(1) + ' s';
+        kiriBar.style.width = kiriPct.toFixed(1) + '%';
+        kananBar.style.width = kananPct.toFixed(1) + '%';
+      }
+
+      function updateUI() {
+        if (state.ended) {
+          mulaiBtn.textContent = 'Ulangi';
+        } else if (state.running) {
+          mulaiBtn.textContent = 'Jeda';
+        } else if (state.t > 0) {
+          mulaiBtn.textContent = 'Lanjutkan';
+        } else {
+          mulaiBtn.textContent = 'Mulai';
+        }
+        suhuDisplay.textContent = params.suhu + ' °C';
+        jumlahDisplay.textContent = params.jumlah + ' partikel';
+        updateReadouts();
+      }
+
+      function resetState(message) {
+        state.running = false;
+        state.ended = false;
+        state.t = 0;
+        state.last = null;
+        state.particles = makeParticles();
+        setStatus(message || 'Siap. Tekan Mulai untuk melihat partikel menyebar.');
+        updateUI();
+        draw();
+      }
+
+      function togglePlay() {
+        if (state.ended) {
+          resetState();
+        }
+        state.running = !state.running;
+        if (state.running) {
+          setStatus('Partikel bergerak acak dan menyebar dari sisi kiri (konsentrasi tinggi) ke sisi kanan (konsentrasi rendah).');
+        } else {
+          setStatus('Simulasi dijeda. Tekan Lanjutkan untuk melanjutkan.');
+        }
+        updateUI();
+      }
+
+      function applyPreset(preset) {
+        params.suhu = preset.variables.suhu;
+        params.jumlah = preset.variables.jumlah;
+        suhuSlider.value = params.suhu;
+        jumlahSlider.value = params.jumlah;
+        resetState('Preset "' + preset.name + '" diterapkan. Tekan Mulai untuk menjalankan.');
+      }
+
+      function frame(ts) {
+        if (state.last === null) state.last = ts;
+        const dt = Math.min((ts - state.last) / 1000, 0.05);
+        state.last = ts;
+        if (state.running) {
+          state.t += dt;
+          stepParticles(dt);
+          checkEnded();
+        }
+        draw();
+        updateReadouts();
+        requestAnimationFrame(frame);
+      }
+
+      // Kontrol
+      suhuSlider.addEventListener('input', function () {
+        params.suhu = Number(suhuSlider.value);
+        suhuDisplay.textContent = params.suhu + ' °C';
+      });
+      suhuSlider.addEventListener('change', function () {
+        resetState('Suhu diubah. Simulasi dimulai ulang dari keadaan awal.');
+      });
+      jumlahSlider.addEventListener('input', function () {
+        params.jumlah = Number(jumlahSlider.value);
+        jumlahDisplay.textContent = params.jumlah + ' partikel';
+      });
+      jumlahSlider.addEventListener('change', function () {
+        resetState('Jumlah partikel diubah. Simulasi dimulai ulang dari keadaan awal.');
+      });
+
+      mulaiBtn.addEventListener('click', togglePlay);
+      ulangiBtn.addEventListener('click', function () {
+        resetState('Simulasi diatur ulang ke keadaan awal.');
+      });
+
+      document.getElementById('preset-1-btn').addEventListener('click', function () { applyPreset(config.presets[0]); });
+      document.getElementById('preset-2-btn').addEventListener('click', function () { applyPreset(config.presets[1]); });
+      document.getElementById('preset-3-btn').addEventListener('click', function () { applyPreset(config.presets[2]); });
+
+      window.addEventListener('keydown', function (e) {
+        const tag = e.target && e.target.tagName;
+        if (tag === 'BUTTON' || tag === 'INPUT') return;
+        if (e.code === 'Space') {
+          e.preventDefault();
+          togglePlay();
+        } else if (e.key === 'r' || e.key === 'R') {
+          resetState('Simulasi diatur ulang ke keadaan awal.');
+        }
+      });
+
+      if ('ResizeObserver' in window) {
+        new ResizeObserver(resizeCanvas).observe(canvasBox);
+      } else {
+        window.addEventListener('resize', resizeCanvas);
+      }
+
+      // Inisialisasi
+      params.suhu = Number(suhuSlider.value);
+      params.jumlah = Number(jumlahSlider.value);
+      resetState();
+      resizeCanvas();
+      requestAnimationFrame(frame);
+    })();
+  </script>
+</body>
+</html>

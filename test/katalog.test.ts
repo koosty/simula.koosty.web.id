@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { parse } from 'yaml';
+import { subjectLabel } from '../src/lib/katalogFilter';
 import { resolve } from 'node:path';
 
 const ROOT = resolve(import.meta.dirname, '..');
@@ -17,6 +19,18 @@ const SIMULATION_COUNT = readdirSync(resolve(ROOT, 'src/content/simulasi')).filt
   name.endsWith('.yaml'),
 ).length;
 
+/** The subjects the catalog holds, as the page spells them. */
+const SUBJECT_LABELS = [
+  ...new Set(
+    readdirSync(resolve(ROOT, 'src/content/simulasi'))
+      .filter((name) => name.endsWith('.yaml'))
+      .map((name) => {
+        const data = parse(readFileSync(resolve(ROOT, 'src/content/simulasi', name), 'utf8'));
+        return subjectLabel(data.subject);
+      }),
+  ),
+];
+
 describe('the Katalog page is built', () => {
   it('lists every simulation as a card', () => {
     const cards = page.match(/class="card"/g) ?? [];
@@ -24,7 +38,7 @@ describe('the Katalog page is built', () => {
   });
 
   it('links every card to a Halaman Simulasi that exists', () => {
-    const hrefs = [...page.matchAll(/<a href="(\/smp\/kelas-7\/matematika\/[^"]+)"/g)].map((m) => m[1]);
+    const hrefs = [...page.matchAll(/<a href="(\/smp\/kelas-7\/[^/"]+\/[^"]+)"/g)].map((m) => m[1]);
     expect(hrefs).toHaveLength(SIMULATION_COUNT);
     for (const href of hrefs) {
       expect(existsSync(resolve(DIST, href.slice(1), 'index.html'))).toBe(true);
@@ -36,7 +50,7 @@ describe('the Katalog page is built', () => {
     const cards = [...page.matchAll(/<li class="card"[\s\S]*?<\/li>/g)].map((m) => m[0]);
     expect(cards).toHaveLength(SIMULATION_COUNT);
     for (const card of cards) {
-      expect(card).toMatch(/<a href="\/smp\/kelas-7\/matematika\/[^"]+"[^>]*>[^<]+<\/a>/);
+      expect(card).toMatch(/<a href="\/smp\/kelas-7\/[^/"]+\/[^"]+"[^>]*>[^<]+<\/a>/);
       expect(card).toMatch(/<p class="card-meta"[^>]*>[^<]*Kelas 7[^<]*<\/p>/);
       expect(card).toMatch(/<p class="card-description"[^>]*>.{20,}<\/p>/);
     }
@@ -80,12 +94,15 @@ describe('the Katalog page is built', () => {
     expect(bundle).toMatch(/\.hidden=[A-Za-z_$][\w$]*!==0/);
   });
 
-  it('offers only choices the catalog can satisfy', () => {
-    // The catalog is all SMP grade 7 matematika, so no other choice may appear.
+  it('offers a choice for every subject the catalog holds, and no others', () => {
+    // A subject with no simulation would filter the reader to an empty list, so
+    // the choices follow the catalog rather than being written down here.
     const options = [...page.matchAll(/<option[^>]*>([^<]*)<\/option>/g)].map((m) => m[1].trim());
     expect(options).toContain('SMP');
     expect(options).toContain('Kelas 7');
-    expect(options).toContain('Matematika');
+    for (const label of SUBJECT_LABELS) {
+      expect(options).toContain(label);
+    }
     expect(options).not.toContain('SMA');
     expect(options).not.toContain('Sekolah Dasar');
   });

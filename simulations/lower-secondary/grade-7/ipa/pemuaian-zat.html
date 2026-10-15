@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pemuaian Zat · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Mengamati pemuaian panjang, luas, dan volume pada zat padat, cair, dan gas saat dipanaskan.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Pemuaian Zat">
+  <meta property="og:description" content="Mengamati pemuaian panjang, luas, dan volume pada zat padat, cair, dan gas saat dipanaskan.">
+  <meta property="og:locale" content="id">
+  <style>
+:root {
+  /* Colour */
+  --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+  --surface: #14141e;     /* panels, cards, step rows */
+  --panel: rgba(20, 20, 30, 0.9);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: #333;
+  --text: #ffffff;
+  --text-muted: #aaa;
+  --text-dim: #888;
+  --accent: #6366f1;      /* primary action, slider thumb, active state */
+  --accent-hover: #5558e8;
+  --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+  --success: #fbbf24;     /* completion, headings, callouts */
+  --warning: #fb923c;
+  --error: #ff6b6b;
+  --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-none: none;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type scale (system fonts only) */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-caption: 11px;   /* uppercase control labels */
+  --text-heading: 24px;
+  --font-weight-display: 600;  /* headings */
+  --font-weight-number: 500;   /* monospaced readouts */
+
+  /* Focus, motion, stacking */
+  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  --motion: 0.2s;
+  --motion-slow: 0.3s;
+  --z-overlay: 100;        /* panels, tooltips */
+  --z-modal: 1000;         /* loading screens, modal dialogs */
+}
+
+[data-theme="light"] {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-strong: #d4d4d8;
+  --text: #16161d;
+  --text-muted: #52525b;
+  --text-dim: #71717a;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.95);
+  --success: #b45309;
+  --warning: #c2410c;
+  --error: #dc2626;
+  --accent-text: #ffffff;
+  --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+h1, h2, h3 { font-weight: var(--font-weight-display); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-4);
+}
+.panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+.btn {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  min-height: 44px;            /* never below 44px, mobile */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--border-strong);
+  color: var(--text);
+  box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.btn:hover { background: var(--text-muted); }
+.btn:active { transform: scale(0.95); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); }
+
+.control-label {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+input[type="range"] {
+  width: 100%; height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Visually hidden but announced by screen readers. Use when a layout has no
+   room for a visible <h1> (e.g. a full-bleed canvas) — never as an excuse to
+   drop a heading. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+#feedback-panel {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+#feedback-panel.success { border-left-color: var(--success); }
+#feedback-panel.error { border-left-color: var(--error); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+.sources {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+.sources-heading {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+.source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+.source-item a { color: var(--accent); text-decoration: none; }
+.source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+.reading-article {
+  max-width: 720px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+.reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+.reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+.reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+.reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+.reading-article blockquote {
+  border-left: 3px solid var(--border-strong);
+  padding-left: var(--space-4);
+  color: var(--text-muted);
+  margin-bottom: var(--space-4);
+}
+.reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+.reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+.reading-article pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+}
+.reading-article pre code { background: none; padding: 0; }
+.reading-article table { width: 100%; border-collapse: collapse; }
+.reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+.reading-article details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.reading-article summary {
+  cursor: pointer;
+  font-weight: var(--font-weight-display);
+  color: var(--text);
+}
+.reading-article details[open] summary { margin-bottom: var(--space-2); }
+.glossary-term {
+  text-decoration: underline dotted var(--text-dim);
+  text-decoration-thickness: 1px;
+  cursor: help;
+}
+.katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+/* highlight.js token colours — mapped to the token set, not a canned theme */
+.hljs { color: var(--text); }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+.hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+.hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+.hljs-number { color: var(--warning); }
+
+/* Layout for this scene (appearance comes from the tokens above) */
+.page { min-height: 100vh; max-width: 1100px; margin: 0 auto; padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-4); }
+.page-header h1 { font-size: var(--text-heading); margin-bottom: var(--space-2); }
+.page-header p { font-size: var(--text-sm); color: var(--text-muted); max-width: 60ch; }
+
+.sim-shell { display: flex; flex-direction: column; gap: var(--space-4); }
+@media (min-width: 768px) { .sim-shell { flex-direction: row; align-items: stretch; } }
+
+.sim-controls { display: flex; flex-direction: column; gap: var(--space-4); max-height: 40vh; overflow-y: auto; }
+@media (min-width: 768px) { .sim-controls { flex-shrink: 0; width: 20rem; max-height: none; } }
+
+.sim-stage { position: relative; flex: 1 1 auto; min-width: 0; min-height: 300px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--bg); overflow: hidden; }
+#sim-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.stage-readout { position: absolute; top: var(--space-3); left: var(--space-3); right: var(--space-3); display: flex; flex-wrap: wrap; gap: var(--space-2); pointer-events: none; }
+.readout-chip { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-1) var(--space-3); font-size: var(--text-xs); color: var(--text-muted); }
+.readout-chip .mono-value { color: var(--text); }
+
+.state-badge { font-size: var(--text-caption); text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+.state-badge[data-state="running"] { color: var(--accent); }
+.state-badge[data-state="paused"] { color: var(--warning); }
+.state-badge[data-state="ended"] { color: var(--success); }
+
+.control-group { display: flex; flex-direction: column; gap: var(--space-1); }
+.slider-row { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); }
+.slider-wrap { min-height: 44px; display: flex; align-items: center; }
+.slider-wrap input[type="range"] { margin: 0; }
+input[type="range"]:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+input[type="range"]:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.btn-row .btn { flex: 1 1 8rem; }
+.mode-row .btn { flex: 1 1 4.5rem; }
+.btn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.preset-list { display: flex; flex-direction: column; gap: var(--space-2); }
+.preset-list .btn { width: 100%; text-align: left; }
+
+.equation { font-family: var(--font-mono); font-weight: var(--font-weight-number); font-size: var(--text-xs); color: var(--text-muted); overflow-wrap: anywhere; }
+.note { font-size: var(--text-xs); color: var(--text-dim); }
+
+.progress-fill { height: 100%; width: 0; background: var(--accent); transition: width var(--motion); }
+.ratio-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: var(--space-3); margin-top: var(--space-4); }
+.ratio-row { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); }
+.ratio-row[hidden] { display: none; }
+.ratio-row .mono-value { font-size: var(--text-base); }
+
+.lesson-list { padding-left: var(--space-5); margin-bottom: var(--space-3); font-size: var(--text-sm); }
+.lesson-list li { margin-bottom: var(--space-1); }
+details.qa { margin-top: var(--space-3); }
+details.qa summary { cursor: pointer; color: var(--text); font-weight: var(--font-weight-display); }
+details.qa p { margin-top: var(--space-2); color: var(--text-muted); }
+</style>
+</head>
+<body>
+  <main class="page">
+    <header class="page-header">
+      <h1>Pemuaian Zat</h1>
+      <p>Saat dipanaskan, zat memuai. Pilih jenis zat, atur kenaikan suhu, lalu amati perubahan panjang, luas, atau volumenya.</p>
+    </header>
+
+    <section class="sim-shell" aria-label="Simulasi pemuaian zat">
+      <aside class="panel sim-controls" aria-label="Pengaturan simulasi">
+        <div class="control-group">
+          <p class="control-label">Wujud zat</p>
+          <div class="btn-row mode-row">
+            <button type="button" class="btn btn-ghost" id="mode-solid-btn" aria-pressed="true">Padat</button>
+            <button type="button" class="btn btn-ghost" id="mode-liquid-btn" aria-pressed="false">Cair</button>
+            <button type="button" class="btn btn-ghost" id="mode-gas-btn" aria-pressed="false">Gas</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="slider-row">
+            <label class="control-label" for="dtemp-slider">Kenaikan suhu (ΔT)</label>
+            <span class="mono-value" id="dtemp-display"></span>
+          </div>
+          <div class="slider-wrap"><input type="range" id="dtemp-slider"></div>
+        </div>
+        <div class="control-group">
+          <div class="slider-row">
+            <label class="control-label" for="alpha-slider">Koefisien muai panjang (α)</label>
+            <span class="mono-value" id="alpha-display"></span>
+          </div>
+          <div class="slider-wrap"><input type="range" id="alpha-slider"></div>
+        </div>
+        <div class="control-group">
+          <p class="control-label">Contoh zat padat</p>
+          <div class="preset-list" id="preset-list"></div>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="btn btn-primary" id="start-btn">Mulai</button>
+          <button type="button" class="btn btn-ghost" id="reset-btn">Atur ulang</button>
+        </div>
+        <p class="note">Pintasan keyboard: Spasi untuk mulai atau jeda, R untuk mengatur ulang.</p>
+      </aside>
+
+      <div class="sim-stage" id="stage">
+        <canvas id="sim-canvas" role="img" aria-label="Gambar pemuaian zat sesuai wujud yang dipilih"></canvas>
+        <div class="stage-readout">
+          <span class="readout-chip"><span class="state-badge" id="state-badge" data-state="idle">Siap</span></span>
+          <span class="readout-chip">ΔT sekarang: <span class="mono-value" id="dt-now-display">0 °C</span></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Kemajuan dan hasil">
+      <div class="progress-track" id="energy-track" role="progressbar" aria-label="Kemajuan pemanasan" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="progress-fill" id="energy-fill"></div>
+      </div>
+      <p class="equation" id="eq-display"></p>
+      <div class="ratio-list">
+        <div class="ratio-row" id="row-length">
+          <p class="control-label">Panjang (ΔL/L₀)</p>
+          <p class="mono-value" id="rl-display">0 %</p>
+        </div>
+        <div class="ratio-row" id="row-area">
+          <p class="control-label">Luas (ΔA/A₀)</p>
+          <p class="mono-value" id="ra-display">0 %</p>
+        </div>
+        <div class="ratio-row" id="row-volume">
+          <p class="control-label">Volume (ΔV/V₀)</p>
+          <p class="mono-value" id="rv-display">0 %</p>
+        </div>
+      </div>
+      <div id="feedback-panel" role="status" aria-live="polite"></div>
+      <p class="note">Pada zat padat, bentuk yang digambar dibesarkan 40 kali agar pemuaiannya terlihat. Angka di panel adalah nilai sebenarnya.</p>
+    </section>
+
+    <section class="panel">
+      <h2 class="panel-heading">Keterangan</h2>
+      <ul class="lesson-list">
+        <li><strong>α</strong> = koefisien muai panjang zat padat (per °C). Nilainya berbeda untuk setiap jenis zat.</li>
+        <li><strong>Pemuaian panjang</strong>: ΔL/L₀ = α × ΔT</li>
+        <li><strong>Pemuaian luas</strong>: ΔA/A₀ = 2α × ΔT</li>
+        <li><strong>Pemuaian volume</strong>: ΔV/V₀ = 3α × ΔT untuk zat padat; untuk cairan dan gas digunakan koefisien muai volume yang sesuai.</li>
+      </ul>
+      <details class="qa">
+        <summary>Mengapa pemuaian luas kira-kira dua kali pemuaian panjang?</summary>
+        <p>Luas adalah panjang dikali lebar. Jika setiap sisi memuai dengan faktor (1 + αΔT), luasnya memuai dengan faktor (1 + αΔT)², yang sama dengan 1 + 2αΔT untuk αΔT yang kecil. Volume dengan pola yang sama memberi 1 + 3αΔT.</p>
+      </details>
+    </section>
+  </main>
+
+  <script type="application/json" id="widget-config">{"type":"simulation","concept":"pemuaian_zat","description":"Mengamati pemuaian panjang, luas, dan volume pada zat padat, cair, dan gas.","variables":[{"name":"dtemp","label":"Kenaikan suhu (ΔT)","min":0,"max":200,"default":100,"step":1,"unit":"°C"},{"name":"alpha","label":"Koefisien muai panjang (α)","min":5,"max":30,"default":12,"step":1,"unit":"× 10⁻⁶ /°C","appliesTo":"solid"}],"presets":[{"name":"Besi (α = 12)","mode":"solid","variables":{"dtemp":100,"alpha":12}},{"name":"Aluminium (α = 23)","mode":"solid","variables":{"dtemp":100,"alpha":23}},{"name":"Kaca (α = 9)","mode":"solid","variables":{"dtemp":100,"alpha":9}}]}</script>
+  <script>
+  (function () {
+    'use strict';
+
+    const CONFIG = JSON.parse(document.getElementById('widget-config').textContent);
+    const VARS = CONFIG.variables;
+    const DURATION = 8;       // detik untuk animasi pemanasan
+    const VIS = 40;           // faktor pembesaran visual untuk zat padat
+    const GAMMA_CAIR = 1.1e-3; // koefisien muai volume cairan (alkohol), per °C
+    const LABEL = { solid: 'Padat', liquid: 'Cair', gas: 'Gas' };
+
+    const DEFAULTS = {};
+    VARS.forEach(function (v) { DEFAULTS[v.name] = v.default; });
+    const params = Object.assign({}, DEFAULTS);
+    const state = { running: false, ended: false, elapsed: 0, mode: 'solid' };
+    let activePreset = -1;
+    let notice = '';
+    let anim = 0;
+
+    const nf6 = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 6 });
+    const nf1 = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 1 });
+    const nf0 = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 });
+    const nfPct = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 3 });
+    const fmt6 = function (n) { return nf6.format(n); };
+    const fmt1 = function (n) { return nf1.format(n); };
+    const fmt0 = function (n) { return nf0.format(n); };
+    const fmtPct = function (x) { return nfPct.format(x * 100) + ' %'; };
+
+    const $ = function (id) { return document.getElementById(id); };
+    const setText = function (id, t) { const el = $(id); if (el) el.textContent = t; };
+
+    const progress = function () { return Math.min(1, state.elapsed / DURATION); };
+    const isPaused = function () { return !state.running && !state.ended && state.elapsed > 0; };
+    const stateName = function () {
+      if (state.ended) return 'ended';
+      if (state.running) return 'running';
+      return isPaused() ? 'paused' : 'idle';
+    };
+
+    // Rasio pemuaian sekarang (nilai sebenarnya, tanpa pembesaran visual)
+    function ratios(dT) {
+      const a = params.alpha * 1e-6;
+      if (state.mode === 'solid') return { L: a * dT, A: 2 * a * dT, V: 3 * a * dT };
+      if (state.mode === 'liquid') return { L: null, A: null, V: GAMMA_CAIR * dT };
+      return { L: null, A: null, V: dT / 273 };
+    }
+
+    /* ---------- Canvas ---------- */
+    const canvas = $('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let W = 0, H = 0, dpr = 1;
+    let COL = {};
+
+    function readColors() {
+      const cs = getComputedStyle(document.documentElement);
+      const v = function (n) { return cs.getPropertyValue(n).trim(); };
+      COL = { bg: v('--bg'), text: v('--text'), dim: v('--text-dim'), cool: v('--accent'), hot: v('--error') };
+    }
+
+    function rgb(hex) {
+      const n = parseInt(hex.slice(1), 16);
+      return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+    }
+
+    function mix(a, b, t) {
+      const A = rgb(a), B = rgb(b);
+      return 'rgb(' + Math.round(A[0] + (B[0] - A[0]) * t) + ',' +
+        Math.round(A[1] + (B[1] - A[1]) * t) + ',' +
+        Math.round(A[2] + (B[2] - A[2]) * t) + ')';
+    }
+
+    function resize() {
+      const r = canvas.getBoundingClientRect();
+      dpr = window.devicePixelRatio || 1;
+      W = r.width;
+      H = r.height;
+      canvas.width = Math.max(1, Math.round(W * dpr));
+      canvas.height = Math.max(1, Math.round(H * dpr));
+      readColors();
+    }
+
+    function ghostRect(x, y, w, h) {
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = COL.dim;
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(x, y, w, h);
+      ctx.setLineDash([]);
+    }
+
+    function drawSolid(dT) {
+      const e = params.alpha * 1e-6 * dT * VIS;   // regangan linear (dibesarkan)
+      const s = 1 + e;
+      const unit = Math.min(W, H) * 0.2;
+      const cy = H * 0.46;
+      const xs = [W * 0.17, W * 0.5, W * 0.83];
+      const fill = mix(COL.cool, COL.hot, progress());
+      const labels = ['Panjang', 'Luas', 'Volume'];
+
+      // Batang: hanya panjangnya yang berubah
+      const rodW = unit * 1.3;
+      const rodH = unit * 0.24;
+      ghostRect(xs[0] - rodW / 2, cy - rodH / 2, rodW, rodH);
+      ctx.fillStyle = fill;
+      ctx.globalAlpha = 0.7;
+      ctx.fillRect(xs[0] - rodW * s / 2, cy - rodH / 2, rodW * s, rodH);
+
+      // Pelat persegi: luas = sisi²
+      const side = unit;
+      ghostRect(xs[1] - side / 2, cy - side / 2, side, side);
+      ctx.fillStyle = fill;
+      ctx.fillRect(xs[1] - side * s / 2, cy - side * s / 2, side * s, side * s);
+
+      // Kubus: volume = sisi³ (digambar dengan sisi depan, atas, dan kanan)
+      const cs = unit * 0.9;
+      const d = cs * 0.25;
+      ghostRect(xs[2] - cs / 2, cy - cs / 2 + d, cs, cs);
+      const ss = cs * s;
+      const x0 = xs[2] - ss / 2, y0 = cy - ss / 2 + d * s;
+      const dd = d * s;
+      ctx.globalAlpha = 0.55;
+      ctx.fillStyle = fill;
+      ctx.beginPath();
+      ctx.moveTo(x0, y0); ctx.lineTo(x0 + dd, y0 - dd); ctx.lineTo(x0 + ss + dd, y0 - dd); ctx.lineTo(x0 + ss, y0);
+      ctx.closePath(); ctx.fill();
+      ctx.globalAlpha = 0.85;
+      ctx.beginPath();
+      ctx.moveTo(x0 + ss, y0); ctx.lineTo(x0 + ss + dd, y0 - dd); ctx.lineTo(x0 + ss + dd, y0 - dd + ss); ctx.lineTo(x0 + ss, y0 + ss);
+      ctx.closePath(); ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = fill;
+      ctx.fillRect(x0, y0, ss, ss);
+      ctx.strokeStyle = COL.dim;
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(x0, y0, ss, ss);
+
+      ctx.fillStyle = COL.text;
+      ctx.font = '13px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      for (let i = 0; i < 3; i++) ctx.fillText(labels[i], xs[i], H - 10);
+    }
+
+    function drawLiquid(dT) {
+      const v = GAMMA_CAIR * dT;
+      const gw = Math.min(W * 0.36, 160);
+      const cx = W * 0.5;
+      const bottom = H * 0.9;
+      const gh = H * 0.62;
+      const top = bottom - gh;
+      const left = cx - gw / 2, right = cx + gw / 2;
+      const baseLevel = gh * 0.5;
+      const level = baseLevel * (1 + v);
+
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = COL.dim;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(left, bottom - baseLevel);
+      ctx.lineTo(right, bottom - baseLevel);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = mix(COL.cool, COL.hot, progress());
+      ctx.globalAlpha = 0.8;
+      ctx.fillRect(left + 2, bottom - level, gw - 4, level - 2);
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = COL.dim;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(left, top);
+      ctx.lineTo(left, bottom);
+      ctx.lineTo(right, bottom);
+      ctx.lineTo(right, top);
+      ctx.stroke();
+
+      ctx.fillStyle = COL.text;
+      ctx.font = '13px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Volume cairan naik', cx, H - 10);
+    }
+
+    function drawGas(dT) {
+      const v = dT / 273;
+      const r0 = Math.min(W, H) * 0.2;
+      const r = r0 * Math.cbrt(1 + v);
+      const cx = W * 0.5;
+      const cy = H * 0.45;
+      ghostRect(cx - r0, cy - r0, r0 * 2, r0 * 2);
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fillStyle = mix(COL.cool, COL.hot, progress());
+      ctx.globalAlpha = 0.6;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = COL.dim;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(cx - 6, cy + r + 2);
+      ctx.lineTo(cx + 6, cy + r + 2);
+      ctx.lineTo(cx, cy + r + 12);
+      ctx.closePath();
+      ctx.fillStyle = COL.dim;
+      ctx.fill();
+
+      ctx.fillStyle = COL.text;
+      ctx.font = '13px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Volume gas membesar', cx, H - 10);
+    }
+
+    function drawStage() {
+      if (!W || !H) return;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.fillStyle = COL.bg;
+      ctx.fillRect(0, 0, W, H);
+      const dT = params.dtemp * progress();
+      if (state.mode === 'solid') drawSolid(dT);
+      else if (state.mode === 'liquid') drawLiquid(dT);
+      else drawGas(dT);
+    }
+
+    /* ---------- Teks dan kontrol ---------- */
+    function message() {
+      if (notice) return notice;
+      if (state.ended) {
+        if (state.mode === 'solid') return 'Selesai. Luas memuai kira-kira 2 kali dan volume kira-kira 3 kali pemuaian panjang.';
+        if (state.mode === 'liquid') return 'Selesai. Cairan memuai terutama dalam volume, sehingga permukaannya naik.';
+        return 'Selesai. Gas memuai mengikuti ΔV/V₀ = ΔT / 273, sehingga balon membesar.';
+      }
+      if (state.running) {
+        if (state.mode === 'solid') return 'Zat dipanaskan. Panjang, luas, dan volumenya bertambah bersamaan.';
+        if (state.mode === 'liquid') return 'Cairan dipanaskan. Volumenya bertambah dan permukaannya naik.';
+        return 'Gas dipanaskan. Volumenya bertambah dan balon membesar.';
+      }
+      if (isPaused()) return 'Pemanasan dijeda. Tekan Lanjutkan untuk meneruskan.';
+      return 'Pilih wujud zat, atur ΔT dan α, lalu tekan Mulai. Amati perbedaan pemuaian tiap wujud.';
+    }
+
+    function renderControls() {
+      const name = stateName();
+      const labels = { idle: 'Siap', running: 'Berjalan', paused: 'Dijeda', ended: 'Selesai' };
+      const badge = $('state-badge');
+      if (badge) {
+        badge.textContent = labels[name];
+        badge.setAttribute('data-state', name);
+      }
+      const btn = $('start-btn');
+      if (btn) {
+        btn.textContent = state.ended ? 'Mulai ulang' : state.running ? 'Jeda' : isPaused() ? 'Lanjutkan' : 'Mulai';
+      }
+      const fb = $('feedback-panel');
+      if (fb) {
+        fb.textContent = message();
+        fb.classList.toggle('success', state.ended);
+      }
+      ['solid', 'liquid', 'gas'].forEach(function (m) {
+        const b = $('mode-' + m + '-btn');
+        if (b) b.setAttribute('aria-pressed', String(state.mode === m));
+      });
+      document.querySelectorAll('#preset-list button').forEach(function (b, i) {
+        b.setAttribute('aria-pressed', String(i === activePreset));
+      });
+    }
+
+    function renderSliders() {
+      VARS.forEach(function (v) {
+        const slider = $(v.name + '-slider');
+        if (slider) {
+          if (Number(slider.value) !== params[v.name]) slider.value = String(params[v.name]);
+          slider.disabled = !!v.appliesTo && v.appliesTo !== state.mode;
+        }
+        setText(v.name + '-display', fmt0(params[v.name]) + ' ' + v.unit);
+      });
+    }
+
+    function renderReadouts() {
+      const dT = params.dtemp * progress();
+      const full = params.dtemp;
+      const r = ratios(dT);
+      setText('dt-now-display', fmt1(dT) + ' °C');
+      setText('rl-display', r.L === null ? '—' : fmtPct(r.L));
+      setText('ra-display', r.A === null ? '—' : fmtPct(r.A));
+      setText('rv-display', fmtPct(r.V));
+      const rowL = $('row-length'), rowA = $('row-area');
+      if (rowL) rowL.hidden = state.mode !== 'solid';
+      if (rowA) rowA.hidden = state.mode !== 'solid';
+
+      const a = params.alpha * 1e-6;
+      let eq;
+      if (state.mode === 'solid') eq = 'ΔL/L₀ = α × ΔT = ' + fmt0(params.alpha) + ' × 10⁻⁶ × ' + fmt0(full) + ' = ' + fmt6(a * full);
+      else if (state.mode === 'liquid') eq = 'ΔV/V₀ = γ × ΔT = 1,1 × 10⁻³ × ' + fmt0(full) + ' = ' + fmt6(GAMMA_CAIR * full);
+      else eq = 'ΔV/V₀ = ΔT / 273 = ' + fmt0(full) + ' / 273 = ' + fmt6(full / 273);
+      setText('eq-display', eq);
+
+      const pct = Math.round(progress() * 100);
+      const fill = $('energy-fill');
+      if (fill) fill.style.width = pct + '%';
+      const track = $('energy-track');
+      if (track) track.setAttribute('aria-valuenow', String(pct));
+    }
+
+    function render() {
+      renderControls();
+      renderSliders();
+      renderReadouts();
+    }
+
+    function resetRun(msg) {
+      state.running = false;
+      state.ended = false;
+      state.elapsed = 0;
+      notice = msg || '';
+      render();
+    }
+
+    function setParams(values, msg) {
+      VARS.forEach(function (v) { params[v.name] = values[v.name]; });
+      resetRun(msg);
+    }
+
+    // Reset penuh: wujud, parameter, progres, dan umpan balik kembali ke awal
+    function resetState() {
+      activePreset = -1;
+      state.mode = 'solid';
+      setParams(DEFAULTS, '');
+    }
+
+    function setMode(m) {
+      if (state.mode === m) return;
+      activePreset = -1;
+      state.mode = m;
+      resetRun('Wujud diganti menjadi ' + LABEL[m].toLowerCase() + '. Simulasi diatur ulang.');
+    }
+
+    function mainAction() {
+      if (state.ended) resetRun('');
+      notice = '';
+      state.running = !state.running;
+      render();
+    }
+
+    VARS.forEach(function (v) {
+      const slider = $(v.name + '-slider');
+      if (!slider) return;
+      slider.min = String(v.min);
+      slider.max = String(v.max);
+      slider.step = String(v.step);
+      slider.value = String(v.default);
+      slider.addEventListener('input', function () {
+        if (slider.disabled) return;
+        activePreset = -1;
+        params[v.name] = Number(slider.value);
+        resetRun('Parameter diubah. Simulasi diatur ulang; tekan Mulai untuk mencoba lagi.');
+      });
+    });
+
+    function renderPresets() {
+      const list = $('preset-list');
+      if (!list) return;
+      (CONFIG.presets || []).forEach(function (p, i) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'btn btn-ghost';
+        b.id = 'preset-' + (i + 1) + '-btn';
+        b.textContent = p.name;
+        b.setAttribute('aria-pressed', 'false');
+        b.addEventListener('click', function () {
+          activePreset = i;
+          state.mode = p.mode || 'solid';
+          setParams(Object.assign({}, DEFAULTS, p.variables), 'Contoh "' + p.name + '" dimuat. Tekan Mulai untuk memanaskan.');
+        });
+        list.appendChild(b);
+      });
+    }
+
+    const startBtn = $('start-btn');
+    if (startBtn) startBtn.addEventListener('click', mainAction);
+    const resetBtn = $('reset-btn');
+    if (resetBtn) resetBtn.addEventListener('click', resetState);
+    ['solid', 'liquid', 'gas'].forEach(function (m) {
+      const b = $('mode-' + m + '-btn');
+      if (b) b.addEventListener('click', function () { setMode(m); });
+    });
+
+    window.addEventListener('keydown', function (e) {
+      const tag = e.target && e.target.tagName ? e.target.tagName.toLowerCase() : '';
+      if (e.code === 'Space' && tag !== 'button' && tag !== 'input' && tag !== 'a') {
+        e.preventDefault();
+        mainAction();
+      } else if ((e.key === 'r' || e.key === 'R') && tag !== 'input') {
+        resetState();
+      }
+    });
+
+    /* ---------- Loop animasi ---------- */
+    let lastTs = 0;
+    function frame(ts) {
+      const dt = lastTs ? Math.min((ts - lastTs) / 1000, 0.05) : 0;
+      lastTs = ts;
+      anim += dt;
+      if (state.running) {
+        state.elapsed = Math.min(DURATION, state.elapsed + dt);
+        if (state.elapsed >= DURATION) {
+          state.running = false;
+          state.ended = true;
+          notice = '';
+          render();
+        }
+      }
+      drawStage();
+      renderReadouts();
+      requestAnimationFrame(frame);
+    }
+
+    new ResizeObserver(resize).observe(canvas);
+    readColors();
+    resize();
+    renderPresets();
+    setParams(DEFAULTS, '');
+    requestAnimationFrame(frame);
+  })();
+  </script>
+</body>
+</html>

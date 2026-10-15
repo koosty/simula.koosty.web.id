@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Massa Jenis dan Aturan Mengapung · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Menghitung massa jenis benda dan memprediksi apakah benda mengapung, melayang, atau tenggelam dalam cairan.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Massa Jenis dan Aturan Mengapung">
+  <meta property="og:description" content="Hitung massa jenis dengan rumus ρ = m / V, lalu bandingkan dengan massa jenis cairan untuk memprediksi benda mengapung, melayang, atau tenggelam.">
+  <meta property="og:locale" content="id">
+  <style>
+    /* ===== Shared tokens (VISUAL-STYLE.md) ===== */
+    :root {
+      /* Colour */
+      --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+      --surface: #14141e;     /* panels, cards, step rows */
+      --panel: rgba(20, 20, 30, 0.9);
+      --border: rgba(255, 255, 255, 0.1);
+      --border-strong: #333;
+      --text: #ffffff;
+      --text-muted: #aaa;
+      --text-dim: #888;
+      --accent: #6366f1;      /* primary action, slider thumb, active state */
+      --accent-hover: #5558e8;
+      --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+      --success: #fbbf24;     /* completion, headings, callouts */
+      --warning: #fb923c;
+      --error: #ff6b6b;
+      --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+      --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+      --shadow-none: none;
+
+      /* Spacing scale */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+
+      /* Radius scale */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-pill: 999px;
+
+      /* Type scale (system fonts only) */
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --text-base: 16px;
+      --text-sm: 14px;
+      --text-xs: 13px;
+      --text-caption: 11px;   /* uppercase control labels */
+      --text-heading: 24px;
+      --font-weight-display: 600;  /* headings */
+      --font-weight-number: 500;   /* monospaced readouts */
+
+      /* Focus, motion, stacking */
+      --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+      --motion: 0.2s;
+      --motion-slow: 0.3s;
+      --z-overlay: 100;        /* panels, tooltips */
+      --z-modal: 1000;         /* loading screens, modal dialogs */
+    }
+
+    [data-theme="light"] {
+      --bg: #f7f7fb;
+      --surface: #ffffff;
+      --panel: rgba(255, 255, 255, 0.92);
+      --border: rgba(0, 0, 0, 0.12);
+      --border-strong: #d4d4d8;
+      --text: #16161d;
+      --text-muted: #52525b;
+      --text-dim: #71717a;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+      --accent-soft: rgba(79, 70, 229, 0.95);
+      --success: #b45309;
+      --warning: #c2410c;
+      --error: #dc2626;
+      --accent-text: #ffffff;
+      --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+    }
+
+    /* ===== Component classes (VISUAL-STYLE.md) ===== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font);
+      font-size: var(--text-base);
+      line-height: 1.5;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    h1, h2, h3 { font-weight: var(--font-weight-display); }
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      padding: var(--space-4);
+    }
+    .panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+    .btn {
+      font-family: inherit;
+      font-size: var(--text-sm);
+      min-height: 44px;            /* never below 44px, mobile */
+      min-width: 44px;
+      padding: var(--space-3) var(--space-5);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      background: var(--border-strong);
+      color: var(--text);
+      box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+      cursor: pointer;
+      transition: background var(--motion);
+    }
+    .btn:hover { background: var(--text-muted); }
+    .btn:active { transform: scale(0.95); }
+    .btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+    .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+    .btn-ghost { background: transparent; border-color: var(--border); }
+    .btn-ghost:hover { background: var(--surface); }
+
+    .control-label {
+      font-size: var(--text-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    input[type="range"] {
+      width: 100%; height: 6px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px; height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    /* Visually hidden but announced by screen readers. Use when a layout has no
+       room for a visible <h1> (e.g. a full-bleed canvas) — never as an excuse to
+       drop a heading. */
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+    }
+
+    #feedback-panel {
+      background: var(--surface);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+    }
+    #feedback-panel.success { border-left-color: var(--success); }
+    #feedback-panel.error { border-left-color: var(--error); }
+
+    .progress-track {
+      height: 8px;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+    .mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+    .sources {
+      margin-top: var(--space-5);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--border);
+    }
+    .sources-heading {
+      font-size: var(--text-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: var(--space-2);
+    }
+    .source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+    .source-item a { color: var(--accent); text-decoration: none; }
+    .source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+    .reading-article {
+      max-width: 720px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+    .reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+    .reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+    .reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+    .reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+    .reading-article blockquote {
+      border-left: 3px solid var(--border-strong);
+      padding-left: var(--space-4);
+      color: var(--text-muted);
+      margin-bottom: var(--space-4);
+    }
+    .reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+    .reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+    .reading-article pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      overflow-x: auto;
+      margin-bottom: var(--space-4);
+    }
+    .reading-article pre code { background: none; padding: 0; }
+    .reading-article table { width: 100%; border-collapse: collapse; }
+    .reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+    .reading-article details {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+      margin-bottom: var(--space-4);
+    }
+    .reading-article summary {
+      cursor: pointer;
+      font-weight: var(--font-weight-display);
+      color: var(--text);
+    }
+    .reading-article details[open] summary { margin-bottom: var(--space-2); }
+    .glossary-term {
+      text-decoration: underline dotted var(--text-dim);
+      text-decoration-thickness: 1px;
+      cursor: help;
+    }
+    .katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+    /* highlight.js token colours — mapped to the token set, not a canned theme */
+    .hljs { color: var(--text); }
+    .hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+    .hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+    .hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+    .hljs-number { color: var(--warning); }
+
+    /* ===== Scene layout ===== */
+    * { -webkit-tap-highlight-color: transparent; }
+    .scene { padding: var(--space-4); max-width: 1100px; margin: 0 auto; }
+    .scene-header { margin-bottom: var(--space-4); }
+    .scene-header h1 { font-size: var(--text-heading); margin-bottom: var(--space-2); }
+    .lead { color: var(--text-muted); font-size: var(--text-sm); }
+
+    .sim-layout { display: flex; flex-direction: column; gap: var(--space-4); }
+    .controls { max-height: 40vh; overflow-y: auto; }
+    .var-group { margin-bottom: var(--space-4); }
+    .var-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--space-2); gap: var(--space-2); }
+    .var-value { font-size: var(--text-sm); color: var(--text); }
+    .preset-row { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4); }
+    .prediction-row { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-4); }
+    .prediction-row .btn { flex: 1 1 calc(50% - var(--space-2)); }
+    .prediction-row .btn.is-picked { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+    .action-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .action-row .btn { flex: 1 1 0; }
+
+    .canvas-box { position: relative; width: 100%; min-height: 300px; }
+    #sim-canvas { display: block; width: 100%; border-radius: var(--radius-md); }
+    .formula { font-family: var(--font-mono); font-size: var(--text-sm); color: var(--text); margin: var(--space-3) 0; overflow-x: auto; }
+    .readouts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); margin-bottom: var(--space-3); }
+    .readout { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); }
+    .readout-value { font-size: var(--text-base); color: var(--text); }
+    .rule-line { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-3); }
+
+    @media (min-width: 768px) {
+      .sim-layout { flex-direction: row; align-items: flex-start; }
+      .controls { width: 300px; flex-shrink: 0; max-height: none; }
+      .canvas-area { flex: 1; min-width: 0; }
+    }
+  </style>
+</head>
+<body>
+  <main class="scene">
+    <header class="scene-header">
+      <h1>Massa Jenis dan Aturan Mengapung</h1>
+      <p class="lead">Atur massa dan volume benda serta massa jenis cairan. Hitung massa jenis benda dengan ρ = m ÷ V, lalu uji prediksi Anda: mengapung, melayang, atau tenggelam.</p>
+    </header>
+
+    <div class="sim-layout">
+      <aside class="panel controls" aria-label="Kontrol simulasi">
+        <p class="panel-heading">Variabel</p>
+
+        <div class="var-group">
+          <div class="var-head">
+            <label class="control-label" for="massa-slider">Massa benda (m)</label>
+            <span class="var-value mono-value" id="massa-display">60 g</span>
+          </div>
+          <input type="range" id="massa-slider" min="10" max="400" step="1" value="60">
+        </div>
+
+        <div class="var-group">
+          <div class="var-head">
+            <label class="control-label" for="volume-slider">Volume benda (V)</label>
+            <span class="var-value mono-value" id="volume-display">100 cm³</span>
+          </div>
+          <input type="range" id="volume-slider" min="10" max="200" step="1" value="100">
+        </div>
+
+        <div class="var-group">
+          <div class="var-head">
+            <label class="control-label" for="cairan-slider">Massa jenis cairan</label>
+            <span class="var-value mono-value" id="cairan-display">1,00 g/cm³</span>
+          </div>
+          <input type="range" id="cairan-slider" min="0.8" max="1.5" step="0.01" value="1">
+        </div>
+
+        <p class="panel-heading">Prediksi Anda</p>
+        <div class="prediction-row">
+          <button class="btn" id="pred-mengapung-btn" type="button" aria-pressed="false">Mengapung</button>
+          <button class="btn" id="pred-melayang-btn" type="button" aria-pressed="false">Melayang</button>
+          <button class="btn" id="pred-tenggelam-btn" type="button" aria-pressed="false">Tenggelam</button>
+        </div>
+
+        <p class="panel-heading">Preset</p>
+        <div class="preset-row">
+          <button class="btn btn-ghost" id="preset-1-btn" type="button">Kayu: 60 g, 100 cm³</button>
+          <button class="btn btn-ghost" id="preset-2-btn" type="button">Batu: 260 g, 100 cm³</button>
+          <button class="btn btn-ghost" id="preset-3-btn" type="button">Melayang: 100 g, 100 cm³</button>
+        </div>
+
+        <div class="action-row">
+          <button class="btn btn-primary" id="mulai-btn" type="button" aria-live="polite">Mulai</button>
+          <button class="btn" id="ulangi-btn" type="button">Atur ulang</button>
+        </div>
+      </aside>
+
+      <section class="panel canvas-area" aria-label="Area simulasi">
+        <div class="canvas-box" id="canvas-box">
+          <canvas id="sim-canvas" role="img" aria-label="Animasi benda di dalam bak cairan"></canvas>
+        </div>
+
+        <p class="formula" id="formula-display">ρ = m ÷ V</p>
+
+        <div class="readouts">
+          <div class="readout">
+            <p class="control-label">Massa jenis benda</p>
+            <p class="readout-value mono-value" id="rho-display">0,60 g/cm³</p>
+          </div>
+          <div class="readout">
+            <p class="control-label">Dalam SI</p>
+            <p class="readout-value mono-value" id="rho-si-display">600 kg/m³</p>
+          </div>
+          <div class="readout">
+            <p class="control-label">Massa jenis cairan</p>
+            <p class="readout-value mono-value" id="cairan-readout">1,00 g/cm³</p>
+          </div>
+          <div class="readout">
+            <p class="control-label">Hasil aturan</p>
+            <p class="readout-value mono-value" id="hasil-display">Mengapung</p>
+          </div>
+        </div>
+
+        <p class="rule-line" id="rule-display">Aturan: jika ρ benda &lt; ρ cairan, benda mengapung.</p>
+
+        <div id="feedback-panel" role="status">Pilih prediksi, lalu tekan Mulai untuk menguji.</div>
+      </section>
+    </div>
+  </main>
+
+  <script type="application/json" id="widget-config">
+  {"type":"simulation","concept":"massa_jenis","description":"Massa jenis benda dihitung dengan ρ = m ÷ V dalam g/cm³ (1 g/cm³ = 1000 kg/m³). Benda mengapung jika ρ benda lebih kecil dari ρ cairan, melayang jika sama, dan tenggelam jika lebih besar.","variables":[{"name":"massa","label":"Massa benda","min":10,"max":400,"default":60,"unit":"g"},{"name":"volume","label":"Volume benda","min":10,"max":200,"default":100,"unit":"cm³"},{"name":"cairan","label":"Massa jenis cairan","min":0.8,"max":1.5,"default":1,"unit":"g/cm³"}],"presets":[{"name":"Kayu","variables":{"massa":60,"volume":100,"cairan":1}},{"name":"Batu","variables":{"massa":260,"volume":100,"cairan":1}},{"name":"Melayang","variables":{"massa":100,"volume":100,"cairan":1}}]}
+  </script>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const config = JSON.parse(document.getElementById('widget-config').textContent);
+      const EQUAL_EPS = 0.005;     // selisih massa jenis dianggap sama
+      const SINK_SPEED = 0.45;     // bagian tinggi bak per detik saat benda bergerak
+
+      const canvas = document.getElementById('sim-canvas');
+      const ctx = canvas.getContext('2d');
+      const canvasBox = document.getElementById('canvas-box');
+      const massaSlider = document.getElementById('massa-slider');
+      const volumeSlider = document.getElementById('volume-slider');
+      const cairanSlider = document.getElementById('cairan-slider');
+      const massaDisplay = document.getElementById('massa-display');
+      const volumeDisplay = document.getElementById('volume-display');
+      const cairanDisplay = document.getElementById('cairan-display');
+      const mulaiBtn = document.getElementById('mulai-btn');
+      const ulangiBtn = document.getElementById('ulangi-btn');
+      const formulaDisplay = document.getElementById('formula-display');
+      const rhoDisplay = document.getElementById('rho-display');
+      const rhoSiDisplay = document.getElementById('rho-si-display');
+      const cairanReadout = document.getElementById('cairan-readout');
+      const hasilDisplay = document.getElementById('hasil-display');
+      const ruleDisplay = document.getElementById('rule-display');
+      const feedbackPanel = document.getElementById('feedback-panel');
+      const predButtons = {
+        mengapung: document.getElementById('pred-mengapung-btn'),
+        melayang: document.getElementById('pred-melayang-btn'),
+        tenggelam: document.getElementById('pred-tenggelam-btn')
+      };
+      const LABEL = { mengapung: 'Mengapung', melayang: 'Melayang', tenggelam: 'Tenggelam' };
+
+      const params = { massa: 60, volume: 100, cairan: 1 };
+      const state = {
+        started: false,
+        running: false,
+        ended: false,
+        top: 0,          // posisi sisi atas benda (px, koordinat kanvas)
+        last: null,
+        prediction: null,
+        cssW: 300,
+        cssH: 300,
+        dpr: window.devicePixelRatio || 1
+      };
+
+      function fmt(x, digits) {
+        return x.toFixed(digits).replace('.', ',');
+      }
+
+      function cssVar(name) {
+        return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      }
+
+      function density() {
+        return params.massa / params.volume;
+      }
+
+      function outcome() {
+        const rb = density();
+        const rc = params.cairan;
+        if (Math.abs(rb - rc) < EQUAL_EPS) return 'melayang';
+        return rb < rc ? 'mengapung' : 'tenggelam';
+      }
+
+      function geometry() {
+        const w = state.cssW;
+        const h = state.cssH;
+        const tankX = w * 0.1;
+        const tankW = w * 0.8;
+        const tankTop = 16;
+        const tankBottom = h - 16;
+        const tankH = tankBottom - tankTop;
+        const waterY = tankTop + tankH * 0.4;
+        // Ukuran gambar benda sebanding dengan akar pangkat tiga volumenya.
+        const blockH = Math.max(14, tankH * 0.28 * Math.cbrt(params.volume / 200));
+        const blockW = blockH * 1.3;
+        const blockX = tankX + tankW / 2 - blockW / 2;
+        return { tankX, tankW, tankTop, tankBottom, tankH, waterY, blockH, blockW, blockX };
+      }
+
+      function targetTop() {
+        const g = geometry();
+        const o = outcome();
+        if (o === 'mengapung') {
+          const fraction = Math.min(1, density() / params.cairan);
+          return g.waterY - (1 - fraction) * g.blockH;
+        }
+        if (o === 'melayang') return g.waterY + 0.1 * g.tankH;
+        return g.tankBottom - 2 - g.blockH;
+      }
+
+      function startTop() {
+        return geometry().tankTop + 4;
+      }
+
+      function resizeCanvas() {
+        const width = Math.max(260, Math.floor(canvasBox.clientWidth));
+        const height = Math.round(Math.min(Math.max(width * 0.75, 260), 460));
+        state.cssW = width;
+        state.cssH = height;
+        state.dpr = window.devicePixelRatio || 1;
+        canvas.style.width = width + 'px';
+        canvas.style.height = height + 'px';
+        canvas.width = Math.round(width * state.dpr);
+        canvas.height = Math.round(height * state.dpr);
+        draw();
+      }
+
+      function draw() {
+        const g = geometry();
+        ctx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
+        ctx.fillStyle = cssVar('--bg');
+        ctx.fillRect(0, 0, state.cssW, state.cssH);
+
+        // Cairan
+        ctx.globalAlpha = 0.3;
+        ctx.fillStyle = cssVar('--accent');
+        ctx.fillRect(g.tankX, g.waterY, g.tankW, g.tankBottom - g.waterY);
+        ctx.globalAlpha = 1;
+
+        // Bak
+        ctx.strokeStyle = cssVar('--border-strong');
+        ctx.lineWidth = 2;
+        ctx.strokeRect(g.tankX, g.tankTop, g.tankW, g.tankH);
+
+        // Permukaan cairan
+        ctx.setLineDash([6, 6]);
+        ctx.strokeStyle = cssVar('--text-dim');
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(g.tankX, g.waterY);
+        ctx.lineTo(g.tankX + g.tankW, g.waterY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Benda
+        ctx.fillStyle = cssVar('--warning');
+        ctx.fillRect(g.blockX, state.top, g.blockW, g.blockH);
+        ctx.fillStyle = cssVar('--bg');
+        ctx.font = '600 13px ' + cssVar('--font');
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('ρ ' + fmt(density(), 2), g.blockX + g.blockW / 2, state.top + g.blockH / 2);
+
+        // Label
+        ctx.font = '13px ' + cssVar('--font');
+        ctx.fillStyle = cssVar('--text-muted');
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
+        ctx.fillText('Permukaan cairan', g.tankX + 8, g.waterY - 6);
+        ctx.fillText('Cairan ρ = ' + fmt(params.cairan, 2) + ' g/cm³', g.tankX + 8, g.tankBottom - 8);
+      }
+
+      function updateReadouts() {
+        const rb = density();
+        const rc = params.cairan;
+        const o = outcome();
+        formulaDisplay.textContent = 'ρ = m ÷ V = ' + params.massa + ' g ÷ ' + params.volume + ' cm³ = ' + fmt(rb, 2) + ' g/cm³';
+        rhoDisplay.textContent = fmt(rb, 2) + ' g/cm³';
+        rhoSiDisplay.textContent = Math.round(rb * 1000) + ' kg/m³';
+        cairanReadout.textContent = fmt(rc, 2) + ' g/cm³';
+        hasilDisplay.textContent = LABEL[o];
+
+        let rule;
+        if (o === 'mengapung') {
+          rule = 'Aturan: ρ benda (' + fmt(rb, 2) + ') < ρ cairan (' + fmt(rc, 2) + '), sehingga benda mengapung. Fraksi volume tercelup = ρ benda ÷ ρ cairan = ' + Math.round(Math.min(1, rb / rc) * 100) + '%.';
+        } else if (o === 'melayang') {
+          rule = 'Aturan: ρ benda sama dengan ρ cairan, sehingga benda melayang di dalam cairan.';
+        } else {
+          rule = 'Aturan: ρ benda (' + fmt(rb, 2) + ') > ρ cairan (' + fmt(rc, 2) + '), sehingga benda tenggelam.';
+        }
+        ruleDisplay.textContent = rule;
+
+        Object.keys(predButtons).forEach(function (key) {
+          const picked = state.prediction === key;
+          predButtons[key].classList.toggle('is-picked', picked);
+          predButtons[key].setAttribute('aria-pressed', picked ? 'true' : 'false');
+        });
+
+        massaDisplay.textContent = params.massa + ' g';
+        volumeDisplay.textContent = params.volume + ' cm³';
+        cairanDisplay.textContent = fmt(params.cairan, 2) + ' g/cm³';
+        mulaiBtn.textContent = state.ended ? 'Ulangi' : state.running ? 'Jeda' : state.started ? 'Lanjutkan' : 'Mulai';
+      }
+
+      function setFeedback(text, kind) {
+        feedbackPanel.textContent = text;
+        feedbackPanel.className = kind || '';
+      }
+
+      function reasonFor(o) {
+        if (o === 'mengapung') return 'Benda lebih ringan daripada cairan, sehingga naik dan mengapung di permukaan.';
+        if (o === 'melayang') return 'Massa jenis benda sama dengan cairan, sehingga benda melayang di dalam cairan.';
+        return 'Benda lebih berat per satuan volume daripada cairan, sehingga tenggelam ke dasar.';
+      }
+
+      function finish() {
+        state.running = false;
+        state.ended = true;
+        const o = outcome();
+        let msg = 'Hasil: ' + LABEL[o] + '. ' + reasonFor(o);
+        let kind = '';
+        if (state.prediction) {
+          if (state.prediction === o) {
+            msg = 'Prediksi Anda (' + LABEL[state.prediction] + ') benar. ' + msg;
+            kind = 'success';
+          } else {
+            msg = 'Prediksi Anda (' + LABEL[state.prediction] + ') belum tepat. ' + msg;
+            kind = 'error';
+          }
+        }
+        setFeedback(msg, kind);
+        updateReadouts();
+      }
+
+      function update(dt) {
+        const target = targetTop();
+        const step = geometry().tankH * SINK_SPEED * dt;
+        const diff = target - state.top;
+        if (Math.abs(diff) <= step) {
+          state.top = target;
+          finish();
+        } else {
+          state.top += Math.sign(diff) * step;
+        }
+      }
+
+      function frame(ts) {
+        if (state.last === null) state.last = ts;
+        const dt = Math.min((ts - state.last) / 1000, 0.05);
+        state.last = ts;
+        if (state.running) update(dt);
+        draw();
+        requestAnimationFrame(frame);
+      }
+
+      function resetSim(message) {
+        state.started = false;
+        state.running = false;
+        state.ended = false;
+        state.top = startTop();
+        state.last = null;
+        setFeedback(message || (state.prediction
+          ? 'Prediksi: ' + LABEL[state.prediction] + '. Tekan Mulai untuk menguji.'
+          : 'Pilih prediksi, lalu tekan Mulai untuk menguji.'), '');
+        updateReadouts();
+      }
+
+      function resetAll() {
+        state.prediction = null;
+        resetSim('Pilih prediksi, lalu tekan Mulai untuk menguji.');
+      }
+
+      function togglePlay() {
+        if (state.ended) {
+          resetSim('Simulasi diulang dari awal.');
+        }
+        state.started = true;
+        state.running = !state.running;
+        if (state.running) {
+          setFeedback('Benda dilepaskan dan bergerak menuju posisinya di dalam cairan.', '');
+        } else {
+          setFeedback('Simulasi dijeda. Tekan Lanjutkan untuk melanjutkan.', '');
+        }
+        updateReadouts();
+      }
+
+      function pick(key) {
+        state.prediction = state.prediction === key ? null : key;
+        setFeedback(state.prediction
+          ? 'Prediksi: ' + LABEL[state.prediction] + '. Tekan Mulai untuk menguji.'
+          : 'Prediksi dibatalkan. Pilih prediksi, lalu tekan Mulai.', '');
+        updateReadouts();
+      }
+
+      function applyParams(values, message) {
+        params.massa = values.massa;
+        params.volume = values.volume;
+        params.cairan = values.cairan;
+        massaSlider.value = params.massa;
+        volumeSlider.value = params.volume;
+        cairanSlider.value = params.cairan;
+        resetSim(message);
+        resizeCanvas();
+      }
+
+      massaSlider.addEventListener('input', function () {
+        params.massa = Number(massaSlider.value);
+        updateReadouts();
+      });
+      massaSlider.addEventListener('change', function () {
+        resetSim('Massa benda diubah. Simulasi dimulai ulang.');
+        resizeCanvas();
+      });
+      volumeSlider.addEventListener('input', function () {
+        params.volume = Number(volumeSlider.value);
+        updateReadouts();
+      });
+      volumeSlider.addEventListener('change', function () {
+        resetSim('Volume benda diubah. Simulasi dimulai ulang.');
+        resizeCanvas();
+      });
+      cairanSlider.addEventListener('input', function () {
+        params.cairan = Number(cairanSlider.value);
+        updateReadouts();
+      });
+      cairanSlider.addEventListener('change', function () {
+        resetSim('Massa jenis cairan diubah. Simulasi dimulai ulang.');
+        resizeCanvas();
+      });
+
+      predButtons.mengapung.addEventListener('click', function () { pick('mengapung'); });
+      predButtons.melayang.addEventListener('click', function () { pick('melayang'); });
+      predButtons.tenggelam.addEventListener('click', function () { pick('tenggelam'); });
+
+      mulaiBtn.addEventListener('click', togglePlay);
+      ulangiBtn.addEventListener('click', resetAll);
+
+      document.getElementById('preset-1-btn').addEventListener('click', function () {
+        applyParams(config.presets[0].variables, 'Preset "Kayu" diterapkan. Tekan Mulai untuk menguji.');
+      });
+      document.getElementById('preset-2-btn').addEventListener('click', function () {
+        applyParams(config.presets[1].variables, 'Preset "Batu" diterapkan. Tekan Mulai untuk menguji.');
+      });
+      document.getElementById('preset-3-btn').addEventListener('click', function () {
+        applyParams(config.presets[2].variables, 'Preset "Melayang" diterapkan. Tekan Mulai untuk menguji.');
+      });
+
+      window.addEventListener('keydown', function (e) {
+        const tag = e.target && e.target.tagName;
+        if (tag === 'BUTTON' || tag === 'INPUT') return;
+        if (e.code === 'Space') {
+          e.preventDefault();
+          togglePlay();
+        } else if (e.key === 'r' || e.key === 'R') {
+          resetAll();
+        }
+      });
+
+      if ('ResizeObserver' in window) {
+        new ResizeObserver(resizeCanvas).observe(canvasBox);
+      } else {
+        window.addEventListener('resize', resizeCanvas);
+      }
+
+      params.massa = Number(massaSlider.value);
+      params.volume = Number(volumeSlider.value);
+      params.cairan = Number(cairanSlider.value);
+      resetAll();
+      resizeCanvas();
+      requestAnimationFrame(frame);
+    })();
+  </script>
+</body>
+</html>

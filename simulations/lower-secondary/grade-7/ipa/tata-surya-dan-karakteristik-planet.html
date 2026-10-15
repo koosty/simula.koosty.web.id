@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tata Surya dan Karakteristik Planet · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Jelajahi tata surya dalam 3D dan bandingkan planet terestrial dan jovian dengan data jarak, diameter, dan periode orbit.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Tata Surya dan Karakteristik Planet">
+  <meta property="og:description" content="Jelajahi tata surya dalam 3D dan bandingkan planet terestrial dan jovian dengan data jarak, diameter, dan periode orbit.">
+  <meta property="og:locale" content="id">
+  <style>
+:root {
+  /* Colour */
+  --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+  --surface: #14141e;     /* panels, cards, step rows */
+  --panel: rgba(20, 20, 30, 0.9);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: #333;
+  --text: #ffffff;
+  --text-muted: #aaa;
+  --text-dim: #888;
+  --accent: #6366f1;      /* primary action, slider thumb, active state */
+  --accent-hover: #5558e8;
+  --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+  --success: #fbbf24;     /* completion, headings, callouts */
+  --warning: #fb923c;
+  --error: #ff6b6b;
+  --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-none: none;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type scale (system fonts only) */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-caption: 11px;   /* uppercase control labels */
+  --text-heading: 24px;
+  --font-weight-display: 600;  /* headings */
+  --font-weight-number: 500;   /* monospaced readouts */
+
+  /* Focus, motion, stacking */
+  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  --motion: 0.2s;
+  --motion-slow: 0.3s;
+  --z-overlay: 100;        /* panels, tooltips */
+  --z-modal: 1000;         /* loading screens, modal dialogs */
+}
+
+[data-theme="light"] {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-strong: #d4d4d8;
+  --text: #16161d;
+  --text-muted: #52525b;
+  --text-dim: #71717a;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.95);
+  --success: #b45309;
+  --warning: #c2410c;
+  --error: #dc2626;
+  --accent-text: #ffffff;
+  --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+h1, h2, h3 { font-weight: var(--font-weight-display); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-4);
+}
+.panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+.btn {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  min-height: 44px;            /* never below 44px, mobile */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--border-strong);
+  color: var(--text);
+  box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.btn:hover { background: var(--text-muted); }
+.btn:active { transform: scale(0.95); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); }
+
+.control-label {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+input[type="range"] {
+  width: 100%; height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Visually hidden but announced by screen readers. Use when a layout has no
+   room for a visible h1 (e.g. a full-bleed canvas) — never as an excuse to
+   drop a heading. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+#feedback-panel {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+#feedback-panel.success { border-left-color: var(--success); }
+#feedback-panel.error { border-left-color: var(--error); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+.sources {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+.sources-heading {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+.source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+.source-item a { color: var(--accent); text-decoration: none; }
+.source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+.reading-article {
+  max-width: 720px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+.reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+.reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+.reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+.reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+.reading-article blockquote {
+  border-left: 3px solid var(--border-strong);
+  padding-left: var(--space-4);
+  color: var(--text-muted);
+  margin-bottom: var(--space-4);
+}
+.reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+.reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+.reading-article pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+}
+.reading-article pre code { background: none; padding: 0; }
+.reading-article table { width: 100%; border-collapse: collapse; }
+.reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+.reading-article details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.reading-article summary {
+  cursor: pointer;
+  font-weight: var(--font-weight-display);
+  color: var(--text);
+}
+.reading-article details[open] summary { margin-bottom: var(--space-2); }
+.glossary-term {
+  text-decoration: underline dotted var(--text-dim);
+  text-decoration-thickness: 1px;
+  cursor: help;
+}
+.katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+/* highlight.js token colours — mapped to the token set, not a canned theme */
+.hljs { color: var(--text); }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+.hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+.hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+.hljs-number { color: var(--warning); }
+
+/* Tata letak tampilan 3D (warna hanya dari token) */
+.viz-page { min-height: 100vh; display: flex; flex-direction: column; }
+.viz-head { width: 100%; max-width: 1200px; margin: 0 auto; padding: var(--space-4) var(--space-4) 0; }
+.viz-head h1 { font-size: var(--text-heading); }
+.viz-head p { color: var(--text-muted); font-size: var(--text-sm); margin-top: var(--space-1); }
+.viz-layout { flex: 1; width: 100%; max-width: 1200px; margin: 0 auto; padding: var(--space-4); display: grid; gap: var(--space-4); grid-template-columns: minmax(0, 1fr); }
+#canvas-container { position: relative; height: 56vh; min-height: 320px; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border); }
+#canvas-container canvas { display: block; width: 100%; height: 100%; }
+#loading { position: absolute; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: var(--text-base); z-index: var(--z-modal); }
+#loading .spinner { width: var(--space-6); height: var(--space-6); border: 3px solid var(--border-strong); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto var(--space-4); }
+@keyframes spin { to { transform: rotate(360deg); } }
+.side-stack { display: grid; gap: var(--space-4); align-content: start; }
+@media (min-width: 900px) {
+  .viz-layout { grid-template-columns: minmax(0, 1fr) 340px; align-items: start; }
+  #canvas-container { height: 72vh; min-height: 480px; }
+}
+#info h2 { font-size: var(--text-base); color: var(--success); margin-bottom: var(--space-1); }
+.tag { font-size: var(--text-caption); text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: var(--space-3); }
+.tag-terrestrial { color: var(--accent); }
+.tag-jovian { color: var(--success); }
+.info-list { display: grid; gap: var(--space-2); font-size: var(--text-sm); margin-bottom: var(--space-3); }
+.info-row { display: flex; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
+.info-row dt { color: var(--text-muted); }
+.info-row dd { text-align: right; }
+#info-desc { font-size: var(--text-sm); color: var(--text-muted); }
+.planet-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+.planet-btn { width: 100%; }
+.planet-btn.active { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.control-stack { display: grid; gap: var(--space-2); }
+.control-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.zoom-btns { display: flex; gap: var(--space-2); }
+.zoom-btns .btn { width: var(--space-6); height: var(--space-6); min-width: 44px; min-height: 44px; font-size: var(--text-heading); padding: 0; display: flex; align-items: center; justify-content: center; }
+.slider-wrap { min-height: 44px; display: flex; align-items: center; }
+.hint { font-size: var(--text-xs); color: var(--text-dim); }
+#view-status { font-size: var(--text-sm); color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <div class="viz-page">
+    <header class="viz-head">
+      <h1>Tata Surya dan Karakteristik Planet</h1>
+      <p>Putar tampilan, pilih planet, dan bandingkan planet terestrial dengan planet jovian.</p>
+    </header>
+
+    <main class="viz-layout">
+      <div id="canvas-container">
+        <div id="loading">
+          <div style="text-align:center;">
+            <div class="spinner"></div>
+            Memuat tata surya…
+          </div>
+        </div>
+      </div>
+
+      <aside class="side-stack">
+        <section class="panel" id="info" aria-live="polite">
+          <h2 id="info-name">Tata Surya</h2>
+          <p class="tag" id="info-type">Pilih satu planet</p>
+          <dl class="info-list">
+            <div class="info-row"><dt>Jarak dari Matahari</dt><dd class="mono-value" id="info-distance">–</dd></div>
+            <div class="info-row"><dt>Diameter</dt><dd class="mono-value" id="info-diameter">–</dd></div>
+            <div class="info-row"><dt>Periode orbit</dt><dd class="mono-value" id="info-period">–</dd></div>
+          </dl>
+          <p id="info-desc">Matahari berada di pusat. 1 SA (satuan astronomi) adalah jarak rata-rata Bumi ke Matahari, yaitu 149.600.000 km.</p>
+        </section>
+
+        <section class="panel" aria-label="Pilih planet">
+          <p class="panel-heading">Pilih planet</p>
+          <div class="planet-grid">
+            <button type="button" class="btn planet-btn" id="planet-merkurius-btn" aria-pressed="false">Merkurius</button>
+            <button type="button" class="btn planet-btn" id="planet-venus-btn" aria-pressed="false">Venus</button>
+            <button type="button" class="btn planet-btn" id="planet-bumi-btn" aria-pressed="false">Bumi</button>
+            <button type="button" class="btn planet-btn" id="planet-mars-btn" aria-pressed="false">Mars</button>
+            <button type="button" class="btn planet-btn" id="planet-jupiter-btn" aria-pressed="false">Jupiter</button>
+            <button type="button" class="btn planet-btn" id="planet-saturnus-btn" aria-pressed="false">Saturnus</button>
+            <button type="button" class="btn planet-btn" id="planet-uranus-btn" aria-pressed="false">Uranus</button>
+            <button type="button" class="btn planet-btn" id="planet-neptunus-btn" aria-pressed="false">Neptunus</button>
+          </div>
+          <p class="hint" style="margin-top: var(--space-3);">Jarak orbit di tampilan tidak sesuai skala agar semua planet terlihat. Angka jarak ada di panel informasi.</p>
+        </section>
+
+        <section class="panel" aria-label="Tampilan dan kontrol">
+          <p class="panel-heading">Tampilan</p>
+          <div class="control-row">
+            <button type="button" class="btn btn-ghost" id="view-overview-btn">Seluruh tata surya</button>
+            <button type="button" class="btn btn-ghost" id="view-terrestrial-btn">Planet terestrial</button>
+            <button type="button" class="btn btn-ghost" id="view-jovian-btn">Planet jovian</button>
+          </div>
+          <div class="control-stack" style="margin-top: var(--space-4);">
+            <div class="info-row">
+              <label class="control-label" for="speed-slider">Kecepatan orbit</label>
+              <span class="mono-value" id="speed-readout">x1,0</span>
+            </div>
+            <div class="slider-wrap">
+              <input type="range" id="speed-slider" min="0" max="3" step="0.1" value="1" aria-label="Kecepatan orbit">
+            </div>
+            <div class="control-row">
+              <button type="button" class="btn btn-primary" id="pause-btn">Jeda</button>
+              <div class="zoom-btns">
+                <button type="button" class="btn" id="zoom-in-btn" title="Perbesar" aria-label="Perbesar tampilan">+</button>
+                <button type="button" class="btn" id="zoom-out-btn" title="Perkecil" aria-label="Perkecil tampilan">−</button>
+              </div>
+              <button type="button" class="btn btn-ghost" id="reset-btn">Atur ulang</button>
+            </div>
+            <p class="hint">Tekan Spasi untuk menjeda, dan R untuk mengatur ulang.</p>
+            <p id="view-status"></p>
+          </div>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    // Data planet (nilai rata-rata dari tabel astronomi standar).
+    // Jarak dalam satuan astronomi (SA); 1 SA = 149.600.000 km.
+    const PLANETS = [
+      { key: 'merkurius', name: 'Merkurius', type: 'terestrial', sa: 0.39, diameter: 4879, periodTahun: 0.24, periodText: '88 hari', radius: 0.25, color: 0x9a8f85, ring: false,
+        desc: 'Planet terestrial terkecil dan paling dekat dengan Matahari. Permukaannya berbatu dan penuh kawah.' },
+      { key: 'venus', name: 'Venus', type: 'terestrial', sa: 0.72, diameter: 12104, periodTahun: 0.62, periodText: '225 hari', radius: 0.4, color: 0xe8c07a, ring: false,
+        desc: 'Planet terestrial dengan ukuran hampir sama dengan Bumi. Atmosfernya tebal sehingga suhunya sangat panas.' },
+      { key: 'bumi', name: 'Bumi', type: 'terestrial', sa: 1.0, diameter: 12756, periodTahun: 1.0, periodText: '365,25 hari', radius: 0.42, color: 0x2b7bd6, ring: false,
+        desc: 'Planet terestrial tempat kita tinggal. Bumi adalah satu-satunya planet yang diketahui memiliki kehidupan.' },
+      { key: 'mars', name: 'Mars', type: 'terestrial', sa: 1.52, diameter: 6792, periodTahun: 1.88, periodText: '687 hari', radius: 0.32, color: 0xc1502e, ring: false,
+        desc: 'Planet terestrial berwarna kemerahan karena permukaannya mengandung banyak oksida besi.' },
+      { key: 'jupiter', name: 'Jupiter', type: 'jovian', sa: 5.2, diameter: 142984, periodTahun: 11.86, periodText: '11,9 tahun', radius: 1.2, color: 0xd9a066, ring: false,
+        desc: 'Planet jovian terbesar. Sebagian besar tersusun dari hidrogen dan helium, bukan permukaan padat.' },
+      { key: 'saturnus', name: 'Saturnus', type: 'jovian', sa: 9.58, diameter: 120536, periodTahun: 29.46, periodText: '29,5 tahun', radius: 1.0, color: 0xe3c98a, ring: true,
+        desc: 'Planet jovian yang dikelilingi cincin dari es dan batuan.' },
+      { key: 'uranus', name: 'Uranus', type: 'jovian', sa: 19.22, diameter: 51118, periodTahun: 84.01, periodText: '84 tahun', radius: 0.7, color: 0x9ad8e8, ring: false,
+        desc: 'Planet jovian yang sumbu putarnya miring hampir mendatar, sehingga tampak seperti berguling saat mengorbit.' },
+      { key: 'neptunus', name: 'Neptunus', type: 'jovian', sa: 30.05, diameter: 49528, periodTahun: 164.8, periodText: '164,8 tahun', radius: 0.68, color: 0x3d5fd6, ring: false,
+        desc: 'Planet jovian paling jauh dari Matahari. Angin di permukaannya termasuk yang paling kencang di tata surya.' }
+    ];
+
+    const SUN_RADIUS = 1.2;
+    const ORBIT_BASE = 3.5;
+    const ORBIT_SCALE = 2.6;
+    const ORBIT_RATE = 0.6;
+    const SA_KM = 149.6;
+
+    const VIEWS = {
+      overview: { label: 'Seluruh tata surya', target: null, offset: [0, 12, 24] },
+      terrestrial: { label: 'Planet terestrial', target: null, offset: [0, 8, 14] },
+      jovian: { label: 'Planet jovian', target: null, offset: [0, 18, 30] }
+    };
+    const FOCUS_OFFSET = [0, 2.5, 5];
+
+    const state = { focus: null, view: 'overview', paused: false, speed: 1 };
+    let fly = null;
+
+    function $(id) { return document.getElementById(id); }
+    function setText(id, text) { const n = $(id); if (n) n.textContent = text; }
+    function fmtDec(n) { return n.toFixed(2).replace('.', ','); }
+    function orbitRadius(sa) { return ORBIT_BASE + ORBIT_SCALE * Math.sqrt(sa); }
+
+    function checkWebGL() {
+      try {
+        const c = document.createElement('canvas');
+        return !!(window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl')));
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function measure(container) {
+      return { w: container.clientWidth || window.innerWidth, h: container.clientHeight || 320 };
+    }
+
+    function showError(message) {
+      const loading = $('loading');
+      if (!loading) return;
+      loading.style.display = 'flex';
+      loading.textContent = 'Gagal memuat tampilan 3D: ' + message + '. Muat ulang halaman untuk mencoba lagi.';
+    }
+
+    function init() {
+      const container = $('canvas-container');
+      if (!container) return;
+
+      try {
+        if (!checkWebGL()) throw new Error('WebGL tidak didukung di peramban ini');
+        const size = measure(container);
+        if (size.w === 0 || size.h === 0) throw new Error('area tampilan berukuran nol');
+
+        const scene = new THREE.Scene();
+        // Latar mengikuti token --bg dari halaman, sehingga tidak ada sambungan warna.
+        scene.background = new THREE.Color(getComputedStyle(document.body).backgroundColor);
+
+        const camera = new THREE.PerspectiveCamera(55, size.w / size.h, 0.1, 500);
+        camera.position.set(0, 12, 24);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setSize(size.w, size.h);
+        container.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.minDistance = 2;
+        controls.maxDistance = 90;
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+        scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 0.6));
+        scene.add(new THREE.PointLight(0xffffff, 2, 0, 0));
+
+        const sun = new THREE.Mesh(
+          new THREE.SphereGeometry(SUN_RADIUS, 48, 48),
+          new THREE.MeshBasicMaterial({ color: 0xfdb813 })
+        );
+        scene.add(sun);
+
+        const planets = PLANETS.map(function (p, i) {
+          const r = orbitRadius(p.sa);
+          const pivot = new THREE.Object3D();
+          scene.add(pivot);
+
+          const pts = [];
+          for (let k = 0; k <= 128; k++) {
+            const a = (k / 128) * Math.PI * 2;
+            pts.push(new THREE.Vector3(Math.cos(a) * r, 0, Math.sin(a) * r));
+          }
+          scene.add(new THREE.LineLoop(
+            new THREE.BufferGeometry().setFromPoints(pts),
+            new THREE.LineBasicMaterial({ color: 0x3a3a55 })
+          ));
+
+          const mesh = new THREE.Mesh(
+            new THREE.SphereGeometry(p.radius, 40, 40),
+            new THREE.MeshPhongMaterial({ color: p.color, shininess: 12 })
+          );
+          mesh.position.set(r, 0, 0);
+          pivot.add(mesh);
+
+          if (p.ring) {
+            const ring = new THREE.Mesh(
+              new THREE.RingGeometry(p.radius * 1.4, p.radius * 2.2, 64),
+              new THREE.MeshBasicMaterial({ color: 0xc8b68a, side: THREE.DoubleSide })
+            );
+            ring.rotation.x = Math.PI / 2.4;
+            mesh.add(ring);
+          }
+
+          return { data: p, pivot: pivot, mesh: mesh, angle: i * 0.8 };
+        });
+
+        function planetPosition(key) {
+          const hit = planets.find(function (x) { return x.data.key === key; });
+          return hit ? hit.mesh.getWorldPosition(new THREE.Vector3()) : null;
+        }
+
+        VIEWS.overview.target = function () { return new THREE.Vector3(); };
+        VIEWS.terrestrial.target = function () { return new THREE.Vector3(); };
+        VIEWS.jovian.target = function () { return new THREE.Vector3(); };
+
+        function flyToCurrent() {
+          if (state.focus) {
+            fly = { target: function () { return planetPosition(state.focus); }, offset: new THREE.Vector3().fromArray(FOCUS_OFFSET) };
+          } else {
+            const v = VIEWS[state.view];
+            fly = { target: v.target, offset: new THREE.Vector3().fromArray(v.offset) };
+          }
+        }
+
+        const goal = new THREE.Vector3();
+        const goalPos = new THREE.Vector3();
+        function updateCamera() {
+          if (fly) {
+            const t = fly.target();
+            if (!t) { fly = null; return; }
+            goal.copy(t);
+            goalPos.copy(goal).add(fly.offset);
+            controls.target.lerp(goal, 0.08);
+            camera.position.lerp(goalPos, 0.08);
+            if (camera.position.distanceTo(goalPos) < 0.05 && controls.target.distanceTo(goal) < 0.05) fly = null;
+          } else if (state.focus) {
+            // Ikuti planet yang sedang dipilih sambil mempertahankan sudut pandang pengguna.
+            const p = planetPosition(state.focus);
+            if (p) {
+              const d = p.sub(controls.target);
+              controls.target.add(d);
+              camera.position.add(d);
+            }
+          }
+        }
+
+        function zoom(factor) {
+          fly = null;
+          const offset = camera.position.clone().sub(controls.target);
+          if (offset.lengthSq() === 0) return;
+          const dist = THREE.MathUtils.clamp(offset.length() * factor, controls.minDistance, controls.maxDistance);
+          camera.position.copy(controls.target).add(offset.normalize().multiplyScalar(dist));
+        }
+
+        function describeView() {
+          if (state.focus) {
+            const p = PLANETS.find(function (x) { return x.key === state.focus; });
+            return 'Fokus: ' + (p ? p.name : '');
+          }
+          return VIEWS[state.view].label;
+        }
+
+        function render() {
+          PLANETS.forEach(function (p) {
+            const btn = $('planet-' + p.key + '-btn');
+            if (!btn) return;
+            const on = state.focus === p.key;
+            btn.classList.toggle('active', on);
+            btn.setAttribute('aria-pressed', String(on));
+          });
+
+          const p = PLANETS.find(function (x) { return x.key === state.focus; });
+          if (p) {
+            setText('info-name', p.name);
+            setText('info-type', p.type === 'terestrial' ? 'Terestrial (berbatu)' : 'Jovian (raksasa gas dan es)');
+            setText('info-distance', fmtDec(p.sa) + ' SA ≈ ' + Math.round(p.sa * SA_KM) + ' juta km');
+            setText('info-diameter', p.diameter.toLocaleString('id-ID') + ' km');
+            setText('info-period', p.periodText);
+            setText('info-desc', p.desc);
+            const tag = $('info-type');
+            if (tag) {
+              tag.classList.toggle('tag-terrestrial', p.type === 'terestrial');
+              tag.classList.toggle('tag-jovian', p.type === 'jovian');
+            }
+          } else {
+            setText('info-name', 'Tata Surya');
+            setText('info-type', 'Pilih satu planet');
+            setText('info-distance', '–');
+            setText('info-diameter', '–');
+            setText('info-period', '–');
+            setText('info-desc', 'Matahari berada di pusat. 1 SA (satuan astronomi) adalah jarak rata-rata Bumi ke Matahari, yaitu 149.600.000 km.');
+            const tag = $('info-type');
+            if (tag) {
+              tag.classList.remove('tag-terrestrial');
+              tag.classList.remove('tag-jovian');
+            }
+          }
+
+          const pause = $('pause-btn');
+          if (pause) pause.textContent = state.paused ? 'Lanjutkan' : 'Jeda';
+
+          const slider = $('speed-slider');
+          if (slider) slider.value = String(state.speed);
+          setText('speed-readout', 'x' + fmtDec(state.speed));
+
+          ['overview', 'terrestrial', 'jovian'].forEach(function (v) {
+            const b = $('view-' + v + '-btn');
+            if (b) b.classList.toggle('active', !state.focus && state.view === v);
+          });
+
+          setText('view-status', describeView() + (state.paused ? ' · dijeda' : ''));
+        }
+
+        function selectPlanet(key) {
+          state.focus = (key && PLANETS.some(function (x) { return x.key === key; })) ? key : null;
+          flyToCurrent();
+          render();
+        }
+
+        function setView(v) {
+          if (!VIEWS[v]) return;
+          state.view = v;
+          state.focus = null;
+          flyToCurrent();
+          render();
+        }
+
+        function setSpeed(v) {
+          const n = Number(v);
+          if (isNaN(n)) return;
+          state.speed = Math.min(3, Math.max(0, n));
+          render();
+        }
+
+        function setPaused(v) {
+          state.paused = !!v;
+          render();
+        }
+
+        function resetState() {
+          state.focus = null;
+          state.view = 'overview';
+          state.paused = false;
+          state.speed = 1;
+          fly = null;
+          controls.target.set(0, 0, 0);
+          camera.position.set(0, 12, 24);
+          flyToCurrent();
+          render();
+        }
+
+        // Fungsi publik sederhana: tombol dan preset memakai jalur yang sama.
+        window.setSceneState = function (key, value) {
+          if (key === 'focus') selectPlanet(value);
+          else if (key === 'view') setView(value);
+          else if (key === 'speed') setSpeed(value);
+          else if (key === 'paused') setPaused(value);
+        };
+
+        // Bind UI
+        PLANETS.forEach(function (p) {
+          const btn = $('planet-' + p.key + '-btn');
+          if (btn) btn.addEventListener('click', function () {
+            selectPlanet(state.focus === p.key ? null : p.key);
+          });
+        });
+        ['overview', 'terrestrial', 'jovian'].forEach(function (v) {
+          const b = $('view-' + v + '-btn');
+          if (b) b.addEventListener('click', function () { setView(v); });
+        });
+        const pauseBtn = $('pause-btn');
+        if (pauseBtn) pauseBtn.addEventListener('click', function () { setPaused(!state.paused); });
+        const zin = $('zoom-in-btn');
+        if (zin) zin.addEventListener('click', function () { zoom(0.8); });
+        const zout = $('zoom-out-btn');
+        if (zout) zout.addEventListener('click', function () { zoom(1.25); });
+        const reset = $('reset-btn');
+        if (reset) reset.addEventListener('click', resetState);
+        const speedSlider = $('speed-slider');
+        if (speedSlider) speedSlider.addEventListener('input', function () { setSpeed(this.value); });
+
+        document.addEventListener('keydown', function (e) {
+          if (e.ctrlKey || e.metaKey || e.altKey) return;
+          const tag = e.target && e.target.tagName;
+          if (e.key === ' ' && tag !== 'BUTTON' && tag !== 'INPUT') {
+            e.preventDefault();
+            setPaused(!state.paused);
+          } else if (e.key === 'r' || e.key === 'R') {
+            resetState();
+          }
+        });
+
+        const ro = new ResizeObserver(function () {
+          const s = measure(container);
+          if (s.w === 0 || s.h === 0) return;
+          camera.aspect = s.w / s.h;
+          camera.updateProjectionMatrix();
+          renderer.setSize(s.w, s.h);
+        });
+        ro.observe(container);
+
+        let last = performance.now();
+        function frame(now) {
+          requestAnimationFrame(frame);
+          const dt = Math.min(0.05, (now - last) / 1000);
+          last = now;
+          if (!state.paused) {
+            planets.forEach(function (p) {
+              p.angle += dt * ORBIT_RATE * state.speed / Math.sqrt(p.data.periodTahun);
+              p.pivot.rotation.y = -p.angle;
+              p.mesh.rotation.y += dt * 0.4 * state.speed;
+            });
+          }
+          updateCamera();
+          controls.update();
+          renderer.render(scene, camera);
+        }
+
+        // Tampilan awal
+        flyToCurrent();
+        render();
+        requestAnimationFrame(frame);
+
+        const loading = $('loading');
+        if (loading) loading.style.display = 'none';
+      } catch (error) {
+        console.error('Inisialisasi tampilan 3D gagal:', error);
+        showError(error && error.message ? error.message : 'kesalahan tidak diketahui');
+      }
+    }
+
+    init();
+  </script>
+
+  <script type="application/json" id="widget-config">
+{"type":"visualization3d","visualizationType":"solar","description":"Model tata surya interaktif dengan Matahari di pusat dan delapan planet. Data jarak, diameter, dan periode orbit membantu membandingkan planet terestrial dan jovian.","objects":[{"id":"matahari","type":"sphere","material":{"type":"emissive","color":"0xfdb813"}},{"id":"merkurius","type":"sphere","material":{"type":"phong","color":"0x9a8f85"}},{"id":"venus","type":"sphere","material":{"type":"phong","color":"0xe8c07a"}},{"id":"bumi","type":"sphere","material":{"type":"phong","color":"0x2b7bd6"}},{"id":"mars","type":"sphere","material":{"type":"phong","color":"0xc1502e"}},{"id":"jupiter","type":"sphere","material":{"type":"phong","color":"0xd9a066"}},{"id":"saturnus","type":"sphere","material":{"type":"phong","color":"0xe3c98a"}},{"id":"uranus","type":"sphere","material":{"type":"phong","color":"0x9ad8e8"}},{"id":"neptunus","type":"sphere","material":{"type":"phong","color":"0x3d5fd6"}}],"interactions":[{"type":"orbit","target":"camera"},{"type":"slider","param":"speed","min":0,"max":3,"default":1},{"type":"button","action":"pause","label":"Jeda"},{"type":"button","action":"zoomIn","label":"Perbesar"},{"type":"button","action":"zoomOut","label":"Perkecil"},{"type":"button","action":"reset","label":"Atur ulang"}],"presets":[{"name":"Seluruh tata surya","state":{"view":"overview"}},{"name":"Planet terestrial","state":{"view":"terrestrial"}},{"name":"Planet jovian","state":{"view":"jovian"}}]}
+  </script>
+</body>
+</html>

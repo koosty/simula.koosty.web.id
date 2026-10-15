@@ -6,7 +6,7 @@ import type { SimulationMeta } from './types';
 /** One simulation file the tool produced, with the English folder it came from. */
 export interface DiscoveredSimulation {
   filename: string;
-  /** English source folder, e.g. "lower-secondary/grade-7". */
+  /** Source folder, e.g. "lower-secondary/grade-7/matematika". */
   sourceFolder: string;
   html: string;
 }
@@ -59,6 +59,7 @@ export function levelForSourceFolder(folder: string): string | null {
 export function discoverSimulations(root: string): SimulationScan {
   const found: DiscoveredSimulation[] = [];
   const unknownFolders: string[] = [];
+  const seen = new Map<string, string>();
 
   let stages: Dirent[];
   try {
@@ -80,14 +81,40 @@ export function discoverSimulations(root: string): SimulationScan {
     for (const grade of readdirSync(join(root, stage.name), { withFileTypes: true })) {
       if (!grade.isDirectory()) continue;
 
-      const sourceFolder = `${stage.name}/${grade.name}`;
-      for (const file of readdirSync(join(root, sourceFolder))) {
-        if (!file.endsWith('.html')) continue;
-        found.push({
-          filename: file,
-          sourceFolder,
-          html: readFileSync(join(root, sourceFolder, file), 'utf8'),
-        });
+      const gradeFolder = `${stage.name}/${grade.name}`;
+      for (const entry of readdirSync(join(root, gradeFolder), { withFileTypes: true })) {
+        // A simulation sits under its subject. One placed directly in the grade
+        // folder has no subject, so it would be filed under whichever subject the
+        // catalog happens to name. It is refused rather than guessed at.
+        if (entry.isFile() && entry.name.endsWith('.html')) {
+          throw new Error(
+            `Berkas ${gradeFolder}/${entry.name} berada langsung di folder kelas. ` +
+              `Pindahkan ke folder mata pelajarannya, misalnya ${gradeFolder}/matematika/.`,
+          );
+        }
+        if (!entry.isDirectory()) continue;
+
+        const sourceFolder = `${gradeFolder}/${entry.name}`;
+        for (const file of readdirSync(join(root, sourceFolder))) {
+          if (!file.endsWith('.html')) continue;
+
+          // The copy step writes every simulation flat under its level, so a name
+          // used twice would silently replace the first. Names must be unique across
+          // every subject and every stage that maps to the same level.
+          const earlier = seen.get(file);
+          if (earlier) {
+            throw new Error(
+              `Berkas ${file} ada di ${earlier} dan ${sourceFolder}. ` +
+                `Nama berkas harus unik di semua mata pelajaran, karena halaman simulasi memakai nama itu.`,
+            );
+          }
+          seen.set(file, sourceFolder);
+          found.push({
+            filename: file,
+            sourceFolder,
+            html: readFileSync(join(root, sourceFolder, file), 'utf8'),
+          });
+        }
       }
     }
   }

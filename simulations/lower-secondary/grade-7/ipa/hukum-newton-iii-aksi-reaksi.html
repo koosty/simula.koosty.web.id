@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hukum Newton III: Aksi-Reaksi · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Mengamati pasangan gaya aksi dan reaksi pada dua troli yang saling mendorong, lengkap dengan percepatannya.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Hukum Newton III: Aksi-Reaksi">
+  <meta property="og:description" content="Mengamati pasangan gaya aksi dan reaksi pada dua troli yang saling mendorong, lengkap dengan percepatannya.">
+  <meta property="og:locale" content="id">
+  <style>
+:root {
+  /* Colour */
+  --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+  --surface: #14141e;     /* panels, cards, step rows */
+  --panel: rgba(20, 20, 30, 0.9);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: #333;
+  --text: #ffffff;
+  --text-muted: #aaa;
+  --text-dim: #888;
+  --accent: #6366f1;      /* primary action, slider thumb, active state */
+  --accent-hover: #5558e8;
+  --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+  --success: #fbbf24;     /* completion, headings, callouts */
+  --warning: #fb923c;
+  --error: #ff6b6b;
+  --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-none: none;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type scale (system fonts only) */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-caption: 11px;   /* uppercase control labels */
+  --text-heading: 24px;
+  --font-weight-display: 600;  /* headings */
+  --font-weight-number: 500;   /* monospaced readouts */
+
+  /* Focus, motion, stacking */
+  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  --motion: 0.2s;
+  --motion-slow: 0.3s;
+  --z-overlay: 100;        /* panels, tooltips */
+  --z-modal: 1000;         /* loading screens, modal dialogs */
+}
+
+[data-theme="light"] {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-strong: #d4d4d8;
+  --text: #16161d;
+  --text-muted: #52525b;
+  --text-dim: #71717a;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.95);
+  --success: #b45309;
+  --warning: #c2410c;
+  --error: #dc2626;
+  --accent-text: #ffffff;
+  --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+h1, h2, h3 { font-weight: var(--font-weight-display); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-4);
+}
+.panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+.btn {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  min-height: 44px;            /* never below 44px, mobile */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--border-strong);
+  color: var(--text);
+  box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.btn:hover { background: var(--text-muted); }
+.btn:active { transform: scale(0.95); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); }
+
+.control-label {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+input[type="range"] {
+  width: 100%; height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Visually hidden but announced by screen readers. Use when a layout has no
+   room for a visible h1 element (e.g. a full-bleed canvas) — never as an excuse to
+   drop a heading. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+#feedback-panel {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+#feedback-panel.success { border-left-color: var(--success); }
+#feedback-panel.error { border-left-color: var(--error); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+.sources {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+.sources-heading {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+.source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+.source-item a { color: var(--accent); text-decoration: none; }
+.source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+.reading-article {
+  max-width: 720px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+.reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+.reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+.reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+.reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+.reading-article blockquote {
+  border-left: 3px solid var(--border-strong);
+  padding-left: var(--space-4);
+  color: var(--text-muted);
+  margin-bottom: var(--space-4);
+}
+.reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+.reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+.reading-article pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+}
+.reading-article pre code { background: none; padding: 0; }
+.reading-article table { width: 100%; border-collapse: collapse; }
+.reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+.reading-article details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.reading-article summary {
+  cursor: pointer;
+  font-weight: var(--font-weight-display);
+  color: var(--text);
+}
+.reading-article details[open] summary { margin-bottom: var(--space-2); }
+.glossary-term {
+  text-decoration: underline dotted var(--text-dim);
+  text-decoration-thickness: 1px;
+  cursor: help;
+}
+.katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+/* highlight.js token colours — mapped to the token set, not a canned theme */
+.hljs { color: var(--text); }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+.hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+.hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+.hljs-number { color: var(--warning); }
+
+    /* Page layout only: every colour, radius, and spacing comes from the shared tokens above. */
+    .app { max-width: 1100px; margin: 0 auto; padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-4); }
+    .intro h1 { font-size: var(--text-heading); margin-bottom: var(--space-2); }
+    .intro p { color: var(--text-muted); }
+    .layout { display: flex; flex-direction: column; gap: var(--space-4); }
+    .stage { position: relative; height: 56vh; min-height: 320px; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; background: var(--bg); }
+    #canvas-container { position: absolute; inset: 0; }
+    #canvas-container canvas { display: block; touch-action: none; }
+    #loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-4); background: var(--bg); color: var(--text-muted); z-index: var(--z-overlay); padding: var(--space-4); text-align: center; }
+    #loading[hidden] { display: none; }
+    .zoom-btns { display: flex; gap: var(--space-2); }
+    .zoom-btns .btn { width: 44px; padding: 0; font-size: var(--text-heading); font-weight: 600; }
+    .side { display: flex; flex-direction: column; gap: var(--space-4); }
+    .control-row { display: flex; flex-direction: column; gap: var(--space-1); margin-bottom: var(--space-3); }
+    .control-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); }
+    .slider-wrap { min-height: 44px; display: flex; align-items: center; }
+    .slider-wrap input[type="range"] { margin: 0; }
+    .slider-wrap input[type="range"]:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .slider-wrap input[type="range"]::-webkit-slider-thumb { width: 24px; height: 24px; }
+    .slider-wrap input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; border: none; border-radius: 50%; background: var(--accent); }
+    .btn-row { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+    .readout-list { list-style: none; display: flex; flex-direction: column; gap: var(--space-2); }
+    .readout-list li { display: flex; justify-content: space-between; gap: var(--space-3); font-size: var(--text-sm); color: var(--text-muted); }
+    .readout-list li span:last-child { color: var(--text); text-align: right; }
+    #feedback-text { font-size: var(--text-sm); color: var(--text); }
+    @media (min-width: 768px) {
+      .layout { flex-direction: row; align-items: stretch; }
+      .stage { flex: 1 1 0; min-width: 0; height: auto; min-height: 480px; }
+      .side { width: 330px; flex-shrink: 0; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="intro">
+    <h1>Hukum Newton III: Aksi-Reaksi</h1>
+    <p>Dua troli didorong terpisah oleh pegas. Gaya aksi dan reaksi selalu sama besar dan berlawanan arah, tetapi keduanya bekerja pada benda yang berbeda. Percepatan tiap troli tetap berbeda karena massanya berbeda.</p>
+  </header>
+
+  <div class="layout">
+    <section class="stage" aria-label="Adegan tiga dimensi dua troli">
+      <div id="canvas-container"></div>
+      <div id="loading"><p id="loading-text">Memuat adegan 3D…</p><button id="retry-btn" class="btn btn-primary" type="button" hidden>Coba lagi</button></div>
+    </section>
+
+    <aside class="side">
+      <div class="panel">
+        <h2 class="panel-heading">Pengaturan</h2>
+        <div class="control-row">
+          <div class="control-head">
+            <label class="control-label" for="force-slider">Gaya dorong F</label>
+            <span class="mono-value" id="force-display"></span>
+          </div>
+          <div class="slider-wrap"><input type="range" id="force-slider" min="1" max="10" step="1" value="6"></div>
+        </div>
+        <div class="control-row">
+          <div class="control-head">
+            <label class="control-label" for="mass-a-slider">Massa troli A</label>
+            <span class="mono-value" id="mass-a-display"></span>
+          </div>
+          <div class="slider-wrap"><input type="range" id="mass-a-slider" min="1" max="5" step="1" value="2"></div>
+        </div>
+        <div class="control-row">
+          <div class="control-head">
+            <label class="control-label" for="mass-b-slider">Massa troli B</label>
+            <span class="mono-value" id="mass-b-display"></span>
+          </div>
+          <div class="slider-wrap"><input type="range" id="mass-b-slider" min="1" max="5" step="1" value="2"></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="push-btn" type="button">Dorong</button>
+          <button class="btn" id="reset-btn" type="button">Atur ulang</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2 class="panel-heading">Contoh cepat dan kamera</h2>
+        <div class="btn-row">
+          <button class="btn btn-ghost" id="preset-sama-btn" type="button">Massa sama (2 kg : 2 kg)</button>
+          <button class="btn btn-ghost" id="preset-beda-btn" type="button">Massa berbeda (1 kg : 4 kg)</button>
+        </div>
+        <div class="btn-row zoom-btns" style="margin-top: var(--space-3);">
+          <button class="btn" id="zoom-in-btn" type="button" aria-label="Perbesar tampilan">+</button>
+          <button class="btn" id="zoom-out-btn" type="button" aria-label="Perkecil tampilan">−</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2 class="panel-heading">Pembacaan</h2>
+        <ul class="readout-list">
+          <li><span>Gaya aksi A → B</span><span class="mono-value" id="action-display"></span></li>
+          <li><span>Gaya reaksi B → A</span><span class="mono-value" id="reaction-display"></span></li>
+          <li><span>Percepatan troli A</span><span class="mono-value" id="accel-a-display"></span></li>
+          <li><span>Percepatan troli B</span><span class="mono-value" id="accel-b-display"></span></li>
+          <li><span>Kecepatan troli A</span><span class="mono-value" id="vel-a-display"></span></li>
+          <li><span>Kecepatan troli B</span><span class="mono-value" id="vel-b-display"></span></li>
+        </ul>
+      </div>
+
+      <div id="feedback-panel" aria-live="polite"><p id="feedback-text"></p></div>
+    </aside>
+  </div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const $ = (id) => document.getElementById(id);
+const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const fmt = (n, d = 1) => Number(n).toLocaleString('id-ID', { maximumFractionDigits: d });
+
+const PUSH_TIME = 1.2;      // detik gaya dorong bekerja
+const TRACK_HALF = 7.5;     // setengah panjang lintasan (satuan adegan)
+const CART_LIMIT = TRACK_HALF - 1;
+const START_A = -2.5;
+const START_B = 2.5;
+const CAMERA_HOME = [0, 5, 12];
+const TARGET_HOME = [0, 0.5, 0];
+const DEFAULTS = { force: 6, massA: 2, massB: 2 };
+const PRESETS = {
+  sama: { force: 6, massA: 2, massB: 2 },
+  beda: { force: 6, massA: 1, massB: 4 }
+};
+
+const sliders = {
+  force: $('force-slider'),
+  massA: $('mass-a-slider'),
+  massB: $('mass-b-slider')
+};
+const pushBtn = $('push-btn');
+const container = $('canvas-container');
+const feedback = $('feedback-text');
+
+const state = { posA: START_A, posB: START_B, velA: 0, velB: 0, pushT: 0, hasPushed: false };
+let scene;
+let camera;
+let renderer;
+let controls;
+let cartA;
+let cartB;
+let labelA;
+let labelB;
+let arrowAction;
+let arrowReaction;
+let shownLabelA = '';
+let shownLabelB = '';
+
+function readParams() {
+  return {
+    force: Number(sliders.force.value),
+    massA: Number(sliders.massA.value),
+    massB: Number(sliders.massB.value)
+  };
+}
+
+function webglAvailable() {
+  try {
+    const c = document.createElement('canvas');
+    return !!(window.WebGLRenderingContext && (c.getContext('webgl2') || c.getContext('webgl')));
+  } catch (e) {
+    return false;
+  }
+}
+
+function makeLabel() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 128;
+  const texture = new THREE.CanvasTexture(canvas);
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }));
+  sprite.scale.set(2.4, 0.6, 1);
+  sprite.position.set(0, 1.7, 0);
+  return { sprite, canvas, texture };
+}
+
+function setLabelText(label, text) {
+  const ctx = label.canvas.getContext('2d');
+  ctx.clearRect(0, 0, label.canvas.width, label.canvas.height);
+  ctx.fillStyle = cssVar('--text');
+  ctx.font = 'bold 44px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, label.canvas.width / 2, label.canvas.height / 2);
+  label.texture.needsUpdate = true;
+}
+
+function makeCart(color, label) {
+  const group = new THREE.Group();
+  const body = new THREE.Mesh(
+    new THREE.BoxGeometry(1.4, 0.6, 1.4),
+    new THREE.MeshStandardMaterial({ color: color, roughness: 0.5 })
+  );
+  body.position.y = 0.5;
+  group.add(body);
+  const wheelGeo = new THREE.CylinderGeometry(0.22, 0.22, 0.12, 20);
+  const wheelMat = new THREE.MeshStandardMaterial({ color: 0x1f2933 });
+  [[-0.45, 0.78], [0.45, 0.78], [-0.45, -0.78], [0.45, -0.78]].forEach(([x, z]) => {
+    const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+    wheel.rotation.x = Math.PI / 2;
+    wheel.position.set(x, 0.22, z);
+    group.add(wheel);
+  });
+  group.add(label.sprite);
+  group.userData.body = body;
+  return group;
+}
+
+function buildScene() {
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(cssVar('--bg'));
+
+  camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+  camera.position.set(...CAMERA_HOME);
+
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  container.appendChild(renderer.domElement);
+
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.minDistance = 4;
+  controls.maxDistance = 25;
+  controls.target.set(...TARGET_HOME);
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 0.6));
+  const sun = new THREE.DirectionalLight(0xffffff, 1.2);
+  sun.position.set(6, 10, 8);
+  scene.add(sun);
+
+  const track = new THREE.Mesh(
+    new THREE.BoxGeometry(TRACK_HALF * 2 + 1, 0.2, 2.8),
+    new THREE.MeshStandardMaterial({ color: 0x4b5563, roughness: 0.8 })
+  );
+  track.position.y = -0.1;
+  scene.add(track);
+  scene.add(new THREE.GridHelper(TRACK_HALF * 2 + 1, 16, cssVar('--border-strong'), cssVar('--surface')));
+
+  labelA = makeLabel();
+  labelB = makeLabel();
+  cartA = makeCart(0xf59e0b, labelA);
+  cartB = makeCart(0x22d3ee, labelB);
+  scene.add(cartA);
+  scene.add(cartB);
+
+  arrowAction = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0.8, 0), 1, cssVar('--warning'), 0.3, 0.2);
+  arrowReaction = new THREE.ArrowHelper(new THREE.Vector3(-1, 0, 0), new THREE.Vector3(0, 0.8, 0), 1, cssVar('--accent'), 0.3, 0.2);
+  arrowAction.visible = false;
+  arrowReaction.visible = false;
+  scene.add(arrowAction);
+  scene.add(arrowReaction);
+
+  new ResizeObserver(resizeRenderer).observe(container);
+  resizeRenderer();
+}
+
+function resizeRenderer() {
+  if (!renderer) return;
+  const w = Math.max(1, container.clientWidth);
+  const h = Math.max(1, container.clientHeight);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+}
+
+function stepPhysics(dt) {
+  const p = readParams();
+  if (state.pushT > 0) {
+    const h = Math.min(dt, state.pushT);
+    // Hukum II: a = F / m. Gaya sama besar, arah berlawanan.
+    state.velA -= (p.force / p.massA) * h;
+    state.velB += (p.force / p.massB) * h;
+    state.pushT -= h;
+  }
+  state.posA += state.velA * dt;
+  state.posB += state.velB * dt;
+  if (state.posA < -CART_LIMIT) { state.posA = -CART_LIMIT; state.velA = 0; }
+  if (state.posB > CART_LIMIT) { state.posB = CART_LIMIT; state.velB = 0; }
+}
+
+function updateScene() {
+  const p = readParams();
+  cartA.position.x = state.posA;
+  cartB.position.x = state.posB;
+  const pushing = state.pushT > 0;
+  const length = Math.max(0.3, p.force * 0.22);
+  arrowAction.visible = pushing;
+  arrowReaction.visible = pushing;
+  if (pushing) {
+    arrowAction.position.set(state.posB + 0.8, 0.8, 0);
+    arrowAction.setLength(length, 0.3, 0.2);
+    arrowReaction.position.set(state.posA - 0.8, 0.8, 0);
+    arrowReaction.setLength(length, 0.3, 0.2);
+  }
+  const textA = `Troli A · ${fmt(p.massA, 0)} kg`;
+  const textB = `Troli B · ${fmt(p.massB, 0)} kg`;
+  if (textA !== shownLabelA) { setLabelText(labelA, textA); shownLabelA = textA; }
+  if (textB !== shownLabelB) { setLabelText(labelB, textB); shownLabelB = textB; }
+}
+
+function updateReadouts() {
+  const p = readParams();
+  const pushing = state.pushT > 0;
+  $('force-display').textContent = `${fmt(p.force, 0)} N`;
+  $('mass-a-display').textContent = `${fmt(p.massA, 0)} kg`;
+  $('mass-b-display').textContent = `${fmt(p.massB, 0)} kg`;
+  $('action-display').textContent = `${fmt(pushing ? p.force : 0, 1)} N`;
+  $('reaction-display').textContent = `${fmt(pushing ? p.force : 0, 1)} N`;
+  $('accel-a-display').textContent = `${fmt(pushing ? p.force / p.massA : 0, 2)} m/s²`;
+  $('accel-b-display').textContent = `${fmt(pushing ? p.force / p.massB : 0, 2)} m/s²`;
+  $('vel-a-display').textContent = `${fmt(state.velA, 2)} m/s`;
+  $('vel-b-display').textContent = `${fmt(state.velB, 2)} m/s`;
+
+  if (pushing) {
+    feedback.textContent = `Selama dorongan, gaya aksi troli A ke B dan gaya reaksi B ke A sama besar, yaitu ${fmt(p.force, 0)} N, dan berlawanan arah. Percepatan troli A = F / mA = ${fmt(p.force / p.massA, 2)} m/s², troli B = F / mB = ${fmt(p.force / p.massB, 2)} m/s².`;
+  } else if (state.hasPushed) {
+    feedback.textContent = 'Dorongan selesai. Tanpa gesekan, tiap troli bergerak dengan kecepatan tetap. Gaya aksi dan reaksi tetap sama besar, tetapi troli bermassa kecil memperoleh percepatan lebih besar.';
+  } else {
+    feedback.textContent = 'Tekan Dorong (atau tombol Spasi) untuk melepaskan pegas di antara kedua troli.';
+  }
+}
+
+function push() {
+  if (state.pushT > 0) return;
+  state.pushT = PUSH_TIME;
+  state.hasPushed = true;
+}
+
+function resetState() {
+  Object.keys(sliders).forEach((k) => { sliders[k].value = String(DEFAULTS[k]); });
+  state.posA = START_A;
+  state.posB = START_B;
+  state.velA = 0;
+  state.velB = 0;
+  state.pushT = 0;
+  state.hasPushed = false;
+  if (camera && controls) {
+    camera.position.set(...CAMERA_HOME);
+    controls.target.set(...TARGET_HOME);
+    controls.update();
+  }
+}
+
+function applyPreset(values) {
+  Object.keys(values).forEach((k) => { sliders[k].value = String(values[k]); });
+  state.posA = START_A;
+  state.posB = START_B;
+  state.velA = 0;
+  state.velB = 0;
+  state.pushT = 0;
+  state.hasPushed = false;
+}
+
+function zoom(factor) {
+  if (!camera || !controls) return;
+  const offset = camera.position.clone().sub(controls.target);
+  const distance = THREE.MathUtils.clamp(offset.length() * factor, controls.minDistance, controls.maxDistance);
+  offset.setLength(distance);
+  camera.position.copy(controls.target).add(offset);
+  controls.update();
+}
+
+// Fungsi bidang untuk tombol dan pemanggil luar; aman walau objek tidak ada.
+window.setSceneState = function (key, value) {
+  if (!controls || !camera || !Array.isArray(value)) return;
+  if (key === 'cameraPosition') camera.position.set(...value);
+  if (key === 'target') controls.target.set(...value);
+  controls.update();
+};
+
+window.highlightObject = function (objectId) {
+  const cart = objectId === 'cartA' ? cartA : objectId === 'cartB' ? cartB : null;
+  if (!cart) return;
+  cart.userData.body.material.emissive.set(cssVar('--success'));
+};
+
+window.clearHighlight = function (objectId) {
+  const cart = objectId === 'cartA' ? cartA : objectId === 'cartB' ? cartB : null;
+  if (!cart) return;
+  cart.userData.body.material.emissive.set(0x000000);
+};
+
+let last = performance.now();
+function animate(now) {
+  requestAnimationFrame(animate);
+  const dt = Math.min(0.05, (now - last) / 1000);
+  last = now;
+  stepPhysics(dt);
+  updateScene();
+  updateReadouts();
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+function showError(message) {
+  $('loading-text').textContent = message;
+  $('retry-btn').hidden = false;
+  $('loading').hidden = false;
+}
+
+function initScene() {
+  try {
+    if (!webglAvailable()) throw new Error('WebGL tidak didukung di peramban ini.');
+    buildScene();
+    $('loading').hidden = true;
+    updateScene();
+    updateReadouts();
+    requestAnimationFrame(animate);
+  } catch (error) {
+    console.error('Adegan 3D gagal dimuat:', error);
+    showError(`Gagal memuat adegan 3D. ${error && error.message ? error.message : ''}`.trim());
+  }
+}
+
+$('retry-btn').addEventListener('click', () => location.reload());
+pushBtn.addEventListener('click', push);
+$('reset-btn').addEventListener('click', resetState);
+$('preset-sama-btn').addEventListener('click', () => applyPreset(PRESETS.sama));
+$('preset-beda-btn').addEventListener('click', () => applyPreset(PRESETS.beda));
+$('zoom-in-btn').addEventListener('click', () => zoom(0.8));
+$('zoom-out-btn').addEventListener('click', () => zoom(1.25));
+
+document.addEventListener('keydown', (e) => {
+  if (e.target instanceof Element && e.target.closest('input, select, textarea, button')) return;
+  if (e.code === 'Space') {
+    e.preventDefault();
+    push();
+  } else if (e.key === 'r' || e.key === 'R') {
+    resetState();
+  }
+});
+
+initScene();
+</script>
+
+<script type="application/json" id="widget-config">
+{
+  "type": "visualization3d",
+  "visualizationType": "physics",
+  "description": "Dua troli dengan gaya aksi dan reaksi sama besar dan berlawanan arah. Percepatan tiap troli bergantung pada massanya (a = F / m).",
+  "objects": [
+    { "id": "cartA", "type": "box", "label": "Troli A", "material": { "type": "standard", "color": "#f59e0b" } },
+    { "id": "cartB", "type": "box", "label": "Troli B", "material": { "type": "standard", "color": "#22d3ee" } },
+    { "id": "arrowAction", "type": "arrow", "label": "Gaya aksi A → B" },
+    { "id": "arrowReaction", "type": "arrow", "label": "Gaya reaksi B → A" }
+  ],
+  "interactions": [
+    { "type": "button", "action": "push", "label": "Dorong" },
+    { "type": "slider", "param": "force", "min": 1, "max": 10, "default": 6, "unit": "N" },
+    { "type": "slider", "param": "massA", "min": 1, "max": 5, "default": 2, "unit": "kg" },
+    { "type": "slider", "param": "massB", "min": 1, "max": 5, "default": 2, "unit": "kg" },
+    { "type": "orbit", "target": "camera" },
+    { "type": "button", "action": "zoomIn", "label": "Perbesar" },
+    { "type": "button", "action": "zoomOut", "label": "Perkecil" }
+  ],
+  "presets": [
+    { "name": "Massa sama", "state": { "force": 6, "massA": 2, "massB": 2 } },
+    { "name": "Massa berbeda", "state": { "force": 6, "massA": 1, "massB": 4 } }
+  ]
+}
+</script>
+</body>
+</html>

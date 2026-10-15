@@ -1,0 +1,11 @@
+# Satu entri katalog per simulasi. Kunci adalah pengenal bahasa Inggris;
+# nilainya Bahasa Indonesia karena menjadi bagian URL.
+# Katalog adalah sumber kebenaran atas metadata simulasi (docs/adr/0004).
+title: "Komponen Lingkungan: Abiotik dan Biotik"
+description: >-
+  Mengenal faktor abiotik dan biotik dalam suatu lingkungan.
+level: smp
+grade: 7
+subject: ipa
+order: 58
+scene: "s35"

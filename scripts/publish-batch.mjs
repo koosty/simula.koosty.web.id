@@ -27,7 +27,13 @@
 import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync, copyFileSync } from 'node:fs';
 import { join, resolve, dirname, basename } from 'node:path';
 import { parse } from 'yaml';
-import { planPublish, validateRenameIntent, catalogPathFor, simulationPathFor } from '../src/lib/publish.ts';
+import {
+  planPublish,
+  validateRenameIntent,
+  catalogPathFor,
+  simulationPathFor,
+  subjectOf,
+} from '../src/lib/publish.ts';
 
 const args = process.argv.slice(2);
 
@@ -48,8 +54,10 @@ const toolArg = option('tool') ?? process.env.SIMULA_TOOL_REPO;
 
 if (!toolArg) {
   console.error(
-    'Usage: npm run publish -- --tool <path>\n' +
-      'Atau setel SIMULA_TOOL_REPO agar tidak perlu menulis path setiap kali.',
+    'Usage: npm run publish -- --tool <path> [--subject <mapel>] [--stage <stage>] [--grade <n>]\n' +
+      'Atau setel SIMULA_TOOL_REPO agar tidak perlu menulis path setiap kali.\n' +
+      'Subject, stage dan grade dibaca dari nama course kalau namanya "<mapel>-<smp>-kelas-<vii>";\n' +
+      'kalau tidak, isi flag-nya. Stage: primary, lower-secondary, upper-secondary.',
   );
   process.exit(2);
 }
@@ -74,23 +82,57 @@ function findCourseDir(root) {
 }
 
 /**
- * The English folder the site's simulation scanner looks in.
+ * The folder the site's simulation scanner looks in: stage, grade, then subject.
  *
- * Derived from the course folder name rather than guessed from a language code:
- * the tool names a course "<mapel>-<tingkat>-kelas-<romawi>", so "smp" is in the
- * name. Guessing "lower-secondary" for every course would file an SMA scene
- * under SMP and publish it at an address that 404s.
+ * Read from the course folder name when the name carries them: the tool names
+ * a course "<mapel>-<tingkat>-kelas-<romawi>", so "smp" is in the name. Guessing
+ * "lower-secondary" for every course would file an SMA scene under SMP and
+ * publish it at an address that 404s.
+ *
+ * Not every course is named that way. "ipa-kelas-7-kurikulum-merdeka" says
+ * neither the school level nor the level in the form the name uses, and there
+ * is nothing in it to read a stage from, so --subject, --stage and --grade say
+ * it instead. They override the name whatever it holds, so a course can be
+ * published from a folder that spells the stage differently.
  */
-function sourceFolderFor(courseFolder, outline) {
+function sourceFolderFor(courseFolder, outline, overrides) {
   const stage = { sd: 'primary', smp: 'lower-secondary', sma: 'upper-secondary' };
-  const match = courseFolder.match(/-(sd|smp|sma)-/);
-  if (!match) {
+  const named = courseFolder.match(/-(sd|smp|sma)-/);
+  const fromName = named ? stage[named[1]] : null;
+  const chosenStage = overrides.stage ?? fromName;
+
+  if (!chosenStage) {
     throw new Error(
-      `Nama course "${courseFolder}" tidak memuat tingkat sekolah. ` +
-        `Format yang diharapkan: "<mapel>-<sd|smp|sma>-kelas-<romawi>".`,
+      `Nama course "${courseFolder}" tidak memuat tingkat sekolah, dan --stage tidak diisi. ` +
+        `Isi --stage dengan salah satu dari: ${Object.values(stage).join(', ')}. ` +
+        `Atau namai course "<mapel>-<sd|smp|sma>-kelas-<romawi>" agar tidak perlu flag.`,
     );
   }
-  return `${stage[match[1]]}/grade-${outline.grade ?? 7}`;
+  if (!Object.values(stage).includes(chosenStage)) {
+    throw new Error(
+      `--stage "${chosenStage}" tidak dikenal. Pilih salah satu dari: ` +
+        `${Object.values(stage).join(', ')}.`,
+    );
+  }
+
+  const chosenSubject = overrides.subject ?? subjectOf(courseFolder);
+  if (!chosenSubject) {
+    throw new Error(
+      `Nama course "${courseFolder}" tidak memuat mata pelajaran, dan --subject tidak diisi. ` +
+        `Isi --subject dengan nama mapel, misalnya "ipa". ` +
+        `Atau namai course "<mapel>-<sd|smp|sma>-kelas-<romawi>" agar tidak perlu flag.`,
+    );
+  }
+
+  const chosenGrade = overrides.grade ?? outline.grade;
+  if (!Number.isInteger(chosenGrade) || chosenGrade <= 0) {
+    throw new Error(
+      `Outline "${outline.courseTitle ?? courseFolder}" tidak menulis grade yang bisa dibaca, ` +
+        `dan --grade tidak diisi. Isi --grade dengan angka, misalnya 7.`,
+    );
+  }
+
+  return `${chosenStage}/grade-${chosenGrade}/${chosenSubject}`;
 }
 
 const courseDir = findCourseDir(resolve(toolArg));
@@ -101,7 +143,14 @@ if (!courseDir) {
 
 const outline = parse(readFileSync(join(courseDir, 'outline.yaml'), 'utf8'));
 const courseFolder = basename(courseDir);
-const sourceFolder = sourceFolderFor(courseFolder, outline);
+const sourceFolder = sourceFolderFor(courseFolder, outline, {
+  subject: option('subject'),
+  stage: option('stage'),
+  grade: option('grade') === null ? null : Number(option('grade')),
+});
+// The planner reads the subject from the course folder name too, so the one
+// resolved here goes with each scene rather than being derived twice.
+const subject = basename(sourceFolder);
 const scenesDir = join(courseDir, 'scenes');
 
 /** The scenes the outline marks ready, in the order the outline lists them. */
@@ -120,6 +169,7 @@ const scenes = outline.scenes
       html,
       sourceFolder,
       courseFolder,
+      subject,
     };
   });
 

@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hukum Newton I dan II · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Memahami kelembaman pada Hukum Newton I dan hubungan F = m × a pada Hukum Newton II.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Hukum Newton I dan II">
+  <meta property="og:description" content="Memahami kelembaman pada Hukum Newton I dan hubungan F = m × a pada Hukum Newton II.">
+  <meta property="og:locale" content="id">
+  <style>
+:root {
+  /* Colour */
+  --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+  --surface: #14141e;     /* panels, cards, step rows */
+  --panel: rgba(20, 20, 30, 0.9);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: #333;
+  --text: #ffffff;
+  --text-muted: #aaa;
+  --text-dim: #888;
+  --accent: #6366f1;      /* primary action, slider thumb, active state */
+  --accent-hover: #5558e8;
+  --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+  --success: #fbbf24;     /* completion, headings, callouts */
+  --warning: #fb923c;
+  --error: #ff6b6b;
+  --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-none: none;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type scale (system fonts only) */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-caption: 11px;   /* uppercase control labels */
+  --text-heading: 24px;
+  --font-weight-display: 600;  /* headings */
+  --font-weight-number: 500;   /* monospaced readouts */
+
+  /* Focus, motion, stacking */
+  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  --motion: 0.2s;
+  --motion-slow: 0.3s;
+  --z-overlay: 100;        /* panels, tooltips */
+  --z-modal: 1000;         /* loading screens, modal dialogs */
+}
+
+[data-theme="light"] {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-strong: #d4d4d8;
+  --text: #16161d;
+  --text-muted: #52525b;
+  --text-dim: #71717a;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.95);
+  --success: #b45309;
+  --warning: #c2410c;
+  --error: #dc2626;
+  --accent-text: #ffffff;
+  --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+h1, h2, h3 { font-weight: var(--font-weight-display); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-4);
+}
+.panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+.btn {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  min-height: 44px;            /* never below 44px, mobile */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--border-strong);
+  color: var(--text);
+  box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.btn:hover { background: var(--text-muted); }
+.btn:active { transform: scale(0.95); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); }
+
+.control-label {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+input[type="range"] {
+  width: 100%; height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Visually hidden but announced by screen readers. Use when a layout has no
+   room for a visible h1 element (e.g. a full-bleed canvas) — never as an excuse to
+   drop a heading. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+#feedback-panel {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+#feedback-panel.success { border-left-color: var(--success); }
+#feedback-panel.error { border-left-color: var(--error); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+.sources {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+.sources-heading {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+.source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+.source-item a { color: var(--accent); text-decoration: none; }
+.source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+.reading-article {
+  max-width: 720px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+.reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+.reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+.reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+.reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+.reading-article blockquote {
+  border-left: 3px solid var(--border-strong);
+  padding-left: var(--space-4);
+  color: var(--text-muted);
+  margin-bottom: var(--space-4);
+}
+.reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+.reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+.reading-article pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+}
+.reading-article pre code { background: none; padding: 0; }
+.reading-article table { width: 100%; border-collapse: collapse; }
+.reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+.reading-article details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.reading-article summary {
+  cursor: pointer;
+  font-weight: var(--font-weight-display);
+  color: var(--text);
+}
+.reading-article details[open] summary { margin-bottom: var(--space-2); }
+.glossary-term {
+  text-decoration: underline dotted var(--text-dim);
+  text-decoration-thickness: 1px;
+  cursor: help;
+}
+.katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+/* highlight.js token colours — mapped to the token set, not a canned theme */
+.hljs { color: var(--text); }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+.hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+.hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+.hljs-number { color: var(--warning); }
+
+    /* Page layout only: every colour, radius, and spacing comes from the shared tokens above. */
+    .app { max-width: 1100px; margin: 0 auto; padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-4); }
+    .intro h1 { font-size: var(--text-heading); margin-bottom: var(--space-2); }
+    .intro p { color: var(--text-muted); }
+    .layout { display: flex; flex-direction: column; gap: var(--space-4); }
+    .stage { position: relative; height: 52vh; min-height: 300px; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; background: var(--bg); }
+    .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+    .side { display: flex; flex-direction: column; gap: var(--space-4); }
+    .control-row { display: flex; flex-direction: column; gap: var(--space-1); margin-bottom: var(--space-3); }
+    .control-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); }
+    .slider-wrap { min-height: 44px; display: flex; align-items: center; }
+    .slider-wrap input[type="range"] { margin: 0; }
+    .slider-wrap input[type="range"]:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .slider-wrap input[type="range"]::-webkit-slider-thumb { width: 24px; height: 24px; }
+    .slider-wrap input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; border: none; border-radius: 50%; background: var(--accent); }
+    .btn-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .readout-list { list-style: none; display: flex; flex-direction: column; gap: var(--space-2); }
+    .readout-list li { display: flex; justify-content: space-between; gap: var(--space-3); font-size: var(--text-sm); color: var(--text-muted); }
+    .readout-list li span:last-child { color: var(--text); text-align: right; }
+    #feedback-text { font-size: var(--text-sm); color: var(--text); }
+    @media (min-width: 768px) {
+      .layout { flex-direction: row; align-items: stretch; }
+      .stage { flex: 1 1 0; min-width: 0; height: auto; min-height: 460px; }
+      .side { width: 330px; flex-shrink: 0; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="intro">
+    <h1>Hukum Newton I dan II</h1>
+    <p>Jika resultan gaya nol, balok tetap diam atau bergerak lurus beraturan (Hukum I). Jika resultan gaya tidak nol, balok dipercepat sesuai a = ΣF / m (Hukum II).</p>
+  </header>
+
+  <div class="layout">
+    <section class="stage" aria-label="Area simulasi troli">
+      <canvas id="sim-canvas" role="img" aria-label="Troli di atas lintasan dengan panah gaya dorong ke kanan dan gaya gesek ke kiri"></canvas>
+    </section>
+
+    <aside class="side">
+      <div class="panel" id="controls-panel">
+        <h2 class="panel-heading">Pengaturan</h2>
+        <div class="control-row">
+          <div class="control-head">
+            <label class="control-label" for="force-slider">Gaya dorong F</label>
+            <span class="mono-value" id="force-display"></span>
+          </div>
+          <div class="slider-wrap"><input type="range" id="force-slider" min="0" max="30" step="1" value="10"></div>
+        </div>
+        <div class="control-row">
+          <div class="control-head">
+            <label class="control-label" for="friction-slider">Gaya gesek f</label>
+            <span class="mono-value" id="friction-display"></span>
+          </div>
+          <div class="slider-wrap"><input type="range" id="friction-slider" min="0" max="20" step="1" value="4"></div>
+        </div>
+        <div class="control-row">
+          <div class="control-head">
+            <label class="control-label" for="mass-slider">Massa troli m</label>
+            <span class="mono-value" id="mass-display"></span>
+          </div>
+          <div class="slider-wrap"><input type="range" id="mass-slider" min="1" max="10" step="1" value="2"></div>
+        </div>
+        <div class="control-row">
+          <div class="control-head">
+            <label class="control-label" for="v0-slider">Kecepatan awal v0</label>
+            <span class="mono-value" id="v0-display"></span>
+          </div>
+          <div class="slider-wrap"><input type="range" id="v0-slider" min="0" max="5" step="0.5" value="0"></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="main-btn" type="button">Mulai</button>
+          <button class="btn" id="reset-btn" type="button">Atur ulang</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2 class="panel-heading">Contoh cepat</h2>
+        <div class="btn-row">
+          <button class="btn btn-ghost" id="preset-seimbang-btn" type="button">Seimbang (ΣF = 0)</button>
+          <button class="btn btn-ghost" id="preset-percepat-btn" type="button">Dipercepat</button>
+          <button class="btn btn-ghost" id="preset-massa-btn" type="button">Massa besar</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2 class="panel-heading">Pembacaan</h2>
+        <ul class="readout-list">
+          <li><span>Keadaan</span><span class="mono-value" id="state-display">Diam</span></li>
+          <li><span>Resultan ΣF = F − f</span><span class="mono-value" id="net-display"></span></li>
+          <li><span>Percepatan a = ΣF / m</span><span class="mono-value" id="accel-display"></span></li>
+          <li><span>Kecepatan v</span><span class="mono-value" id="velocity-display"></span></li>
+          <li><span>Posisi x</span><span class="mono-value" id="position-display"></span></li>
+        </ul>
+      </div>
+
+      <div id="feedback-panel" aria-live="polite"><p id="feedback-text"></p></div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const TRACK_LEN = 10;
+  const START_X = 0.5;
+  const FINISH_X = 9.5;
+  const DEFAULTS = { force: 10, friction: 4, mass: 2, v0: 0 };
+  const PRESETS = {
+    seimbang: { force: 6, friction: 6, mass: 2, v0: 3 },
+    percepat: { force: 12, friction: 4, mass: 2, v0: 0 },
+    massa: { force: 12, friction: 4, mass: 8, v0: 0 }
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const sliders = {
+    force: $('force-slider'),
+    friction: $('friction-slider'),
+    mass: $('mass-slider'),
+    v0: $('v0-slider')
+  };
+  const canvas = $('sim-canvas');
+  const ctx = canvas.getContext('2d');
+  const stage = canvas.parentElement;
+  const mainBtn = $('main-btn');
+  const feedback = $('feedback-text');
+
+  const sim = { started: false, running: false, ended: false, x: START_X, v: 0 };
+  let width = 1;
+  let height = 1;
+  let last = performance.now();
+
+  const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const fmt = (n, d = 1) => Number(n).toLocaleString('id-ID', { maximumFractionDigits: d });
+
+  function readParams() {
+    return {
+      F: Number(sliders.force.value),
+      f: Number(sliders.friction.value),
+      m: Number(sliders.mass.value),
+      v0: Number(sliders.v0.value)
+    };
+  }
+
+  // Resultan gaya saat ini; nol jika benda diam dan dorongan tidak melebihi gesek.
+  function netForce(p) {
+    if (sim.v === 0 && p.F <= p.f) return 0;
+    return p.F - p.f;
+  }
+
+  function physicsStep(dt) {
+    const p = readParams();
+    if (sim.v === 0 && p.F <= p.f) return; // Hukum I: resultan nol, benda diam
+    const a = (p.F - p.f) / p.m;          // Hukum II: a = ΣF / m
+    sim.v = Math.max(0, sim.v + a * dt);  // gesek memperlambat hingga berhenti
+    sim.x += sim.v * dt;
+    if (sim.x >= FINISH_X) {
+      sim.x = FINISH_X;
+      sim.v = 0;
+      sim.running = false;
+      sim.ended = true;
+    }
+  }
+
+  function setMainLabel() {
+    mainBtn.textContent = sim.ended ? 'Ulangi' : sim.running ? 'Jeda' : sim.started ? 'Lanjut' : 'Mulai';
+  }
+
+  function startSim() {
+    if (sim.ended) return;
+    if (!sim.started) sim.v = readParams().v0; // kecepatan awal hanya saat mulai
+    sim.started = true;
+    sim.running = true;
+    setMainLabel();
+  }
+
+  function pauseSim() {
+    sim.running = false;
+    setMainLabel();
+  }
+
+  function resetMotion() {
+    sim.started = false;
+    sim.running = false;
+    sim.ended = false;
+    sim.x = START_X;
+    sim.v = 0;
+    setMainLabel();
+  }
+
+  function resetAll() {
+    Object.keys(sliders).forEach((k) => { sliders[k].value = String(DEFAULTS[k]); });
+    resetMotion();
+  }
+
+  function applyPreset(values) {
+    Object.keys(values).forEach((k) => { sliders[k].value = String(values[k]); });
+    resetMotion();
+  }
+
+  function mainAction() {
+    if (sim.ended) {
+      resetMotion();
+      startSim();
+      return;
+    }
+    if (sim.running) pauseSim(); else startSim();
+  }
+
+  function explain(p, net, a) {
+    if (sim.ended) return 'Troli mencapai garis finis. Kecepatan terakhir ditampilkan di pembacaan.';
+    if (!sim.started) {
+      return `Atur F, f, massa, dan kecepatan awal, lalu tekan Mulai. ΣF saat ini = ${fmt(net)} N.`;
+    }
+    if (sim.v === 0 && p.F <= p.f) {
+      return `F (${fmt(p.F, 0)} N) tidak melebihi f (${fmt(p.f, 0)} N). ΣF = 0, sehingga troli tetap diam (Hukum I).`;
+    }
+    if (sim.v === 0) {
+      return `ΣF = ${fmt(net)} N. Menurut Hukum II, a = ΣF / m = ${fmt(a, 2)} m/s². Troli mulai bergerak.`;
+    }
+    if (net === 0) {
+      return `ΣF = 0: troli bergerak lurus beraturan dengan kecepatan ${fmt(sim.v, 2)} m/s (Hukum I Newton).`;
+    }
+    if (net > 0) {
+      return `ΣF = ${fmt(net)} N searah gerak. Menurut Hukum II, a = ${fmt(a, 2)} m/s², sehingga kecepatan bertambah.`;
+    }
+    return `ΣF = ${fmt(net)} N berlawanan gerak. Troli melambat dengan a = ${fmt(a, 2)} m/s² hingga berhenti.`;
+  }
+
+  function updateReadouts() {
+    const p = readParams();
+    const net = netForce(p);
+    const a = sim.v > 0 || (sim.v === 0 && p.F > p.f) ? net / p.m : 0;
+    $('force-display').textContent = `${fmt(p.F, 0)} N`;
+    $('friction-display').textContent = `${fmt(p.f, 0)} N`;
+    $('mass-display').textContent = `${fmt(p.m, 0)} kg`;
+    $('v0-display').textContent = `${fmt(p.v0, 1)} m/s`;
+    $('state-display').textContent = sim.ended ? 'Selesai' : sim.v > 0 ? 'Bergerak' : (sim.started && !sim.running) ? 'Dijeda' : 'Diam';
+    $('net-display').textContent = `${fmt(net)} N`;
+    $('accel-display').textContent = `${fmt(a, 2)} m/s²`;
+    $('velocity-display').textContent = `${fmt(sim.started ? sim.v : p.v0, 2)} m/s`;
+    $('position-display').textContent = `${fmt(sim.x, 2)} m`;
+    feedback.textContent = explain(p, net, a);
+  }
+
+  function resize() {
+    const rect = stage.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    width = Math.max(1, rect.width);
+    height = Math.max(1, rect.height);
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function drawArrow(x0, y, len, color, label) {
+    if (Math.abs(len) < 2) return;
+    const dir = len > 0 ? 1 : -1;
+    const x1 = x0 + len;
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(x0, y);
+    ctx.lineTo(x1, y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x1, y);
+    ctx.lineTo(x1 - dir * 12, y - 7);
+    ctx.lineTo(x1 - dir * 12, y + 7);
+    ctx.closePath();
+    ctx.fill();
+    ctx.font = '13px system-ui, sans-serif';
+    ctx.textBaseline = 'bottom';
+    ctx.textAlign = dir > 0 ? 'left' : 'right';
+    ctx.fillText(label, x1 + dir * 6, y - 8);
+  }
+
+  function draw() {
+    const p = readParams();
+    const pad = 24;
+    const groundY = height * 0.72;
+    const scale = (width - pad * 2) / TRACK_LEN;
+    const xPx = (m) => pad + m * scale;
+    const cartW = 84;
+    const cartH = 44;
+    const cx = xPx(sim.started ? sim.x : START_X);
+    const top = groundY - cartH - 8;
+    const yMid = top + cartH / 2;
+    const k = (width * 0.2) / 30; // piksel per N, gaya maksimum 30 N
+    const leftRoom = cx - cartW / 2 - 8;
+    const rightRoom = width - (cx + cartW / 2) - 8;
+
+    ctx.fillStyle = cssVar('--bg');
+    ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = cssVar('--surface');
+    ctx.fillRect(0, groundY, width, height - groundY);
+    ctx.strokeStyle = cssVar('--border-strong');
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, groundY);
+    ctx.lineTo(width, groundY);
+    ctx.stroke();
+
+    ctx.font = '12px system-ui, sans-serif';
+    ctx.fillStyle = cssVar('--text-dim');
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    for (let i = 0; i <= TRACK_LEN; i += 2) {
+      ctx.fillRect(xPx(i), groundY, 1, 8);
+      ctx.fillText(`${i} m`, xPx(i), groundY + 12);
+    }
+    ctx.strokeStyle = cssVar('--success');
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(xPx(FINISH_X), groundY - 80);
+    ctx.lineTo(xPx(FINISH_X), groundY);
+    ctx.stroke();
+
+    // Troli dengan dua roda
+    ctx.fillStyle = cssVar('--accent');
+    ctx.fillRect(cx - cartW / 2, top, cartW, cartH);
+    ctx.fillStyle = cssVar('--text');
+    ctx.beginPath();
+    ctx.arc(cx - cartW / 3, groundY - 6, 8, 0, Math.PI * 2);
+    ctx.arc(cx + cartW / 3, groundY - 6, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = cssVar('--accent-text');
+    ctx.font = '600 14px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`${fmt(p.m, 0)} kg`, cx, yMid);
+
+    if (p.F > 0) {
+      drawArrow(cx + cartW / 2, yMid - 6, Math.min(Math.min(p.F, 30) * k, rightRoom), cssVar('--accent-soft'), `F = ${fmt(p.F, 0)} N`);
+    }
+    if (p.f > 0) {
+      drawArrow(cx - cartW / 2, yMid + 12, -Math.min(Math.min(p.f, 30) * k, leftRoom), cssVar('--warning'), `f = ${fmt(p.f, 0)} N`);
+    }
+    if (sim.v > 0) {
+      drawArrow(cx, top - 14, Math.min(sim.v * 10, rightRoom), cssVar('--success'), `v = ${fmt(sim.v, 2)} m/s`);
+    }
+  }
+
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    if (sim.running) {
+      for (let i = 0; i < 4 && sim.running; i += 1) physicsStep(dt / 4);
+      if (!sim.running) setMainLabel();
+    }
+    draw();
+    updateReadouts();
+    requestAnimationFrame(frame);
+  }
+
+  mainBtn.addEventListener('click', mainAction);
+  $('reset-btn').addEventListener('click', resetAll);
+  $('preset-seimbang-btn').addEventListener('click', () => applyPreset(PRESETS.seimbang));
+  $('preset-percepat-btn').addEventListener('click', () => applyPreset(PRESETS.percepat));
+  $('preset-massa-btn').addEventListener('click', () => applyPreset(PRESETS.massa));
+
+  document.addEventListener('keydown', (e) => {
+    if (e.target instanceof Element && e.target.closest('input, select, textarea, button')) return;
+    if (e.code === 'Space') {
+      e.preventDefault();
+      mainAction();
+    } else if (e.key === 'r' || e.key === 'R') {
+      resetAll();
+    }
+  });
+
+  new ResizeObserver(resize).observe(stage);
+  resize();
+  setMainLabel();
+  requestAnimationFrame(frame);
+})();
+</script>
+<script type="application/json" id="widget-config">
+{
+  "type": "simulation",
+  "concept": "hukum_newton_1_dan_2",
+  "description": "Troli dengan gaya dorong F, gaya gesek f, massa m, dan kecepatan awal v0. Hukum I: ΣF = 0 membuat kecepatan tetap. Hukum II: a = ΣF / m.",
+  "variables": [
+    { "name": "force", "label": "Gaya dorong F", "min": 0, "max": 30, "default": 10, "unit": "N" },
+    { "name": "friction", "label": "Gaya gesek f", "min": 0, "max": 20, "default": 4, "unit": "N" },
+    { "name": "mass", "label": "Massa troli m", "min": 1, "max": 10, "default": 2, "unit": "kg" },
+    { "name": "v0", "label": "Kecepatan awal v0", "min": 0, "max": 5, "default": 0, "unit": "m/s" }
+  ],
+  "presets": [
+    { "name": "Seimbang (ΣF = 0)", "variables": { "force": 6, "friction": 6, "mass": 2, "v0": 3 } },
+    { "name": "Dipercepat", "variables": { "force": 12, "friction": 4, "mass": 2, "v0": 0 } },
+    { "name": "Massa besar", "variables": { "force": 12, "friction": 4, "mass": 8, "v0": 0 } }
+  ]
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rantai dan Jaring-jaring Makanan · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Menghitung energi yang berpindah antar tingkat trofik dalam rantai makanan.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Rantai dan Jaring-jaring Makanan">
+  <meta property="og:description" content="Menghitung energi yang berpindah antar tingkat trofik dalam rantai makanan.">
+  <meta property="og:locale" content="id">
+  <style>
+    :root {
+      /* Colour */
+      --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+      --surface: #14141e;     /* panels, cards, step rows */
+      --panel: rgba(20, 20, 30, 0.9);
+      --border: rgba(255, 255, 255, 0.1);
+      --border-strong: #333;
+      --text: #ffffff;
+      --text-muted: #aaa;
+      --text-dim: #888;
+      --accent: #6366f1;      /* primary action, slider thumb, active state */
+      --accent-hover: #5558e8;
+      --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+      --success: #fbbf24;     /* completion, headings, callouts */
+      --warning: #fb923c;
+      --error: #ff6b6b;
+      --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+      --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+      --shadow-none: none;
+
+      /* Spacing scale */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+
+      /* Radius scale */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-pill: 999px;
+
+      /* Type scale (system fonts only) */
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --text-base: 16px;
+      --text-sm: 14px;
+      --text-xs: 13px;
+      --text-caption: 11px;   /* uppercase control labels */
+      --text-heading: 24px;
+      --font-weight-display: 600;  /* headings */
+      --font-weight-number: 500;   /* monospaced readouts */
+
+      /* Focus, motion, stacking */
+      --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+      --motion: 0.2s;
+      --motion-slow: 0.3s;
+      --z-overlay: 100;        /* panels, tooltips */
+      --z-modal: 1000;         /* loading screens, modal dialogs */
+    }
+
+    [data-theme="light"] {
+      --bg: #f7f7fb;
+      --surface: #ffffff;
+      --panel: rgba(255, 255, 255, 0.92);
+      --border: rgba(0, 0, 0, 0.12);
+      --border-strong: #d4d4d8;
+      --text: #16161d;
+      --text-muted: #52525b;
+      --text-dim: #71717a;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+      --accent-soft: rgba(79, 70, 229, 0.95);
+      --success: #b45309;
+      --warning: #c2410c;
+      --error: #dc2626;
+      --accent-text: #ffffff;
+      --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font);
+      font-size: var(--text-base);
+      line-height: 1.5;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    h1, h2, h3 { font-weight: var(--font-weight-display); }
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      padding: var(--space-4);
+    }
+    .panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+    .btn {
+      font-family: inherit;
+      font-size: var(--text-sm);
+      min-height: 44px;            /* never below 44px, mobile */
+      min-width: 44px;
+      padding: var(--space-3) var(--space-5);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      background: var(--border-strong);
+      color: var(--text);
+      box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+      cursor: pointer;
+      transition: background var(--motion);
+    }
+    .btn:hover { background: var(--text-muted); }
+    .btn:active { transform: scale(0.95); }
+    .btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+    .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+    .btn-ghost { background: transparent; border-color: var(--border); }
+    .btn-ghost:hover { background: var(--surface); }
+
+    .control-label {
+      font-size: var(--text-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    input[type="range"] {
+      width: 100%; height: 6px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px; height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    /* Visually hidden but announced by screen readers. Use when a layout has no
+       room for a visible <h1> (e.g. a full-bleed canvas) — never as an excuse to
+       drop a heading. */
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+    }
+
+    #feedback-panel {
+      background: var(--surface);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+    }
+    #feedback-panel.success { border-left-color: var(--success); }
+    #feedback-panel.error { border-left-color: var(--error); }
+
+    .progress-track {
+      height: 8px;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+    .mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+    .sources {
+      margin-top: var(--space-5);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--border);
+    }
+    .sources-heading {
+      font-size: var(--text-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: var(--space-2);
+    }
+    .source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+    .source-item a { color: var(--accent); text-decoration: none; }
+    .source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+    .reading-article {
+      max-width: 720px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+    .reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+    .reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+    .reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+    .reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+    .reading-article blockquote {
+      border-left: 3px solid var(--border-strong);
+      padding-left: var(--space-4);
+      color: var(--text-muted);
+      margin-bottom: var(--space-4);
+    }
+    .reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+    .reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+    .reading-article pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      overflow-x: auto;
+      margin-bottom: var(--space-4);
+    }
+    .reading-article pre code { background: none; padding: 0; }
+    .reading-article table { width: 100%; border-collapse: collapse; }
+    .reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+    .reading-article details {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+      margin-bottom: var(--space-4);
+    }
+    .reading-article summary {
+      cursor: pointer;
+      font-weight: var(--font-weight-display);
+      color: var(--text);
+    }
+    .reading-article details[open] summary { margin-bottom: var(--space-2); }
+    .glossary-term {
+      text-decoration: underline dotted var(--text-dim);
+      text-decoration-thickness: 1px;
+      cursor: help;
+    }
+    .katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+    /* highlight.js token colours — mapped to the token set, not a canned theme */
+    .hljs { color: var(--text); }
+    .hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+    .hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+    .hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+    .hljs-number { color: var(--warning); }
+
+    /* ---- Scene layout (composition only; tokens and components above) ---- */
+    .app { max-width: 1040px; margin: 0 auto; padding: var(--space-4); display: grid; gap: var(--space-4); }
+    .app h1 { font-size: var(--text-heading); margin-bottom: var(--space-2); }
+    .layout { display: grid; gap: var(--space-4); align-items: start; }
+    @media (min-width: 840px) {
+      .layout { grid-template-columns: 320px minmax(0, 1fr); }
+    }
+    .controls { display: grid; gap: var(--space-4); }
+    .slider-row { display: grid; gap: var(--space-1); padding: var(--space-2) 0; }
+    .slider-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); }
+    .slider-value { font-size: var(--text-sm); }
+    .button-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .preset-list { display: grid; gap: var(--space-2); }
+    .preset-list .btn { text-align: left; }
+    .stage { display: grid; gap: var(--space-3); }
+    #sim-canvas { display: block; width: 100%; border-radius: var(--radius-md); }
+    #status-display { font-size: var(--text-sm); }
+    #result-display { font-size: var(--text-sm); color: var(--text-muted); }
+    .level-list { list-style: none; display: grid; gap: var(--space-1); font-size: var(--text-sm); }
+    .level-list li { display: flex; justify-content: space-between; gap: var(--space-2); border-bottom: 1px solid var(--border); padding: var(--space-1) 0; }
+    .concept { display: grid; gap: var(--space-2); font-size: var(--text-sm); color: var(--text-muted); }
+    .concept strong { color: var(--text); font-weight: var(--font-weight-display); }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="panel">
+      <p class="control-label">Simulasi · IPA Kelas VII</p>
+      <h1>Rantai dan Jaring-jaring Makanan</h1>
+      <p>Atur energi awal produsen, efisiensi perpindahan energi, dan jumlah tingkat trofik. Jalankan simulasi untuk melihat energi yang sampai ke setiap tingkat.</p>
+    </header>
+
+    <div class="layout">
+      <section class="panel controls" aria-labelledby="controls-heading">
+        <h2 id="controls-heading" class="panel-heading">Variabel</h2>
+
+        <div class="slider-row">
+          <div class="slider-head">
+            <label class="control-label" for="energi-slider">Energi awal produsen</label>
+            <span id="energi-display" class="slider-value mono-value"></span>
+          </div>
+          <input type="range" id="energi-slider" min="1000" max="100000" step="1000" aria-describedby="energi-display">
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-head">
+            <label class="control-label" for="efisiensi-slider">Efisiensi perpindahan</label>
+            <span id="efisiensi-display" class="slider-value mono-value"></span>
+          </div>
+          <input type="range" id="efisiensi-slider" min="5" max="20" step="1" aria-describedby="efisiensi-display">
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-head">
+            <label class="control-label" for="tingkat-slider">Jumlah tingkat trofik</label>
+            <span id="tingkat-display" class="slider-value mono-value"></span>
+          </div>
+          <input type="range" id="tingkat-slider" min="2" max="5" step="1" aria-describedby="tingkat-display">
+        </div>
+
+        <div>
+          <p class="control-label">Contoh skenario</p>
+          <div class="preset-list" style="margin-top: var(--space-2);">
+            <button id="preset-1-btn" class="btn" type="button">Rantai 3 tingkat: tumbuhan, belalang, katak</button>
+            <button id="preset-2-btn" class="btn" type="button">Rantai 4 tingkat: tumbuhan, kambing, ular, elang</button>
+            <button id="preset-3-btn" class="btn" type="button">Efisiensi tinggi 20%, 4 tingkat</button>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button id="start-btn" class="btn btn-primary" type="button">Mulai</button>
+          <button id="reset-btn" class="btn btn-ghost" type="button">Mulai ulang</button>
+        </div>
+      </section>
+
+      <section class="panel stage" aria-labelledby="stage-heading">
+        <h2 id="stage-heading" class="panel-heading">Aliran energi antar tingkat trofik</h2>
+        <canvas id="sim-canvas" role="img" aria-label="Diagram batang energi pada setiap tingkat trofik dengan panah perpindahan energi"></canvas>
+        <p id="status-display" class="mono-value"></p>
+        <p id="result-display" aria-live="polite"></p>
+        <ul id="level-list" class="level-list"></ul>
+        <div class="concept">
+          <p><strong>Rantai makanan</strong> menunjukkan satu jalur aliran energi, misalnya tumbuhan dimakan belalang, lalu belalang dimakan katak.</p>
+          <p><strong>Jaring-jaring makanan</strong> terdiri atas banyak rantai yang saling terhubung, karena satu makhluk hidup dapat memakan lebih dari satu jenis mangsa. Aturan perpindahan energi di setiap rantai tetap sama.</p>
+          <p>Hanya sekitar 10% energi berpindah ke tingkat trofik berikutnya. Sisanya digunakan untuk respirasi dan hilang sebagai panas, sehingga energi tidak didaur ulang.</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script type="application/json" id="widget-config">
+{"type":"simulation","concept":"aliran_energi_rantai_makanan","description":"Simulasi perpindahan energi dari produsen ke konsumen. Energi berkurang sekitar 90% pada setiap perpindahan karena digunakan untuk respirasi dan hilang sebagai panas.","variables":[{"name":"energi","label":"Energi awal produsen","min":1000,"max":100000,"default":10000,"unit":"kJ"},{"name":"efisiensi","label":"Efisiensi perpindahan energi","min":5,"max":20,"default":10,"unit":"%"},{"name":"tingkat","label":"Jumlah tingkat trofik","min":2,"max":5,"default":4,"unit":"tingkat"}],"presets":[{"name":"Rantai 3 tingkat: tumbuhan, belalang, katak","variables":{"energi":10000,"efisiensi":10,"tingkat":3}},{"name":"Rantai 4 tingkat: tumbuhan, kambing, ular, elang","variables":{"energi":10000,"efisiensi":10,"tingkat":4}},{"name":"Efisiensi tinggi 20%, 4 tingkat","variables":{"energi":10000,"efisiensi":20,"tingkat":4}}]}
+  </script>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var CONFIG = JSON.parse(document.getElementById('widget-config').textContent);
+      var LEVELS = ['Produsen', 'Konsumen I', 'Konsumen II', 'Konsumen III', 'Konsumen IV'];
+      var SEGMENT_SPEED = 0.45; // transfer segments per second
+
+      var DEFAULTS = {};
+      CONFIG.variables.forEach(function (v) { DEFAULTS[v.name] = v.default; });
+
+      var values = {};
+      var sim = { running: false, ended: false, t: 0 };
+      var lastTs = null;
+
+      var canvas = document.getElementById('sim-canvas');
+      var ctx = canvas.getContext('2d');
+      var stage = canvas.parentElement;
+      var dpr = 1;
+      var cssW = 0;
+      var cssH = 0;
+      var colors = {};
+
+      function el(id) { return document.getElementById(id); }
+
+      function setText(id, text) {
+        var node = el(id);
+        if (node) node.textContent = text;
+      }
+
+      function fmt(n) {
+        return n.toLocaleString('id-ID', { maximumFractionDigits: 2 });
+      }
+
+      function energyAt(k) {
+        return values.energi * Math.pow(values.efisiensi / 100, k);
+      }
+
+      function readColors() {
+        var style = getComputedStyle(document.documentElement);
+        function token(name) { return style.getPropertyValue(name).trim(); }
+        colors = {
+          accent: token('--accent'),
+          success: token('--success'),
+          text: token('--text'),
+          muted: token('--text-muted'),
+          dim: token('--text-dim'),
+          border: token('--border-strong'),
+          font: token('--font'),
+          mono: token('--font-mono')
+        };
+      }
+
+      function resizeCanvas() {
+        if (!stage) return;
+        var width = Math.max(260, canvas.clientWidth || stage.clientWidth);
+        var height = Math.min(440, Math.max(300, Math.round(width * 0.62)));
+        dpr = window.devicePixelRatio || 1;
+        cssW = width;
+        cssH = height;
+        canvas.width = Math.round(width * dpr);
+        canvas.height = Math.round(height * dpr);
+        canvas.style.height = height + 'px';
+      }
+
+      function drawArrow(x1, y1, x2, y2) {
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        var angle = Math.atan2(y2 - y1, x2 - x1);
+        var size = 8;
+        ctx.beginPath();
+        ctx.moveTo(x2, y2);
+        ctx.lineTo(x2 - size * Math.cos(angle - Math.PI / 6), y2 - size * Math.sin(angle - Math.PI / 6));
+        ctx.lineTo(x2 - size * Math.cos(angle + Math.PI / 6), y2 - size * Math.sin(angle + Math.PI / 6));
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      function draw() {
+        if (!ctx || !cssW) return;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, cssW, cssH);
+
+        var n = values.tingkat;
+        var E0 = values.energi;
+        var padX = 16;
+        var baseY = cssH - 96;
+        var topY = 44;
+        var maxH = baseY - topY;
+        var slot = (cssW - padX * 2) / n;
+        var barW = Math.min(72, slot * 0.55);
+        var flowY = baseY + 40;
+
+        ctx.strokeStyle = colors.border;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(padX, baseY);
+        ctx.lineTo(cssW - padX, baseY);
+        ctx.stroke();
+
+        var centers = [];
+        for (var k = 0; k < n; k++) {
+          var E = energyAt(k);
+          var h = Math.max(6, (E / E0) * maxH);
+          var x = padX + slot * k + (slot - barW) / 2;
+          centers.push(x + barW / 2);
+
+          ctx.fillStyle = colors.accent;
+          ctx.fillRect(x, baseY - h, barW, h);
+
+          ctx.textAlign = 'center';
+          ctx.fillStyle = colors.text;
+          ctx.font = '600 12px ' + colors.mono;
+          ctx.fillText(fmt(E) + ' kJ', x + barW / 2, baseY - h - 8);
+
+          ctx.fillStyle = colors.muted;
+          ctx.font = '12px ' + colors.font;
+          ctx.fillText(LEVELS[k], x + barW / 2, baseY + 18);
+        }
+
+        ctx.strokeStyle = colors.dim;
+        ctx.fillStyle = colors.dim;
+        ctx.lineWidth = 2;
+        for (var j = 0; j < n - 1; j++) {
+          drawArrow(centers[j] + 12, flowY, centers[j + 1] - 12, flowY);
+          ctx.textAlign = 'center';
+          ctx.font = '12px ' + colors.font;
+          ctx.fillStyle = colors.muted;
+          ctx.fillText(values.efisiensi + '% diteruskan', (centers[j] + centers[j + 1]) / 2, flowY + 20);
+          ctx.fillStyle = colors.dim;
+        }
+
+        if (!sim.ended && sim.t < n - 1) {
+          var seg = Math.floor(sim.t);
+          var frac = sim.t - seg;
+          var px = centers[seg] + (centers[seg + 1] - centers[seg]) * frac;
+          ctx.beginPath();
+          ctx.arc(px, flowY, 8, 0, Math.PI * 2);
+          ctx.fillStyle = colors.success;
+          ctx.fill();
+        }
+      }
+
+      function updateReadouts() {
+        var n = values.tingkat;
+        var E0 = values.energi;
+        var last = energyAt(n - 1);
+
+        var status;
+        if (sim.ended) status = 'Status: selesai';
+        else if (sim.running) status = 'Status: berjalan';
+        else if (sim.t > 0) status = 'Status: dijeda';
+        else status = 'Status: siap dijalankan';
+        setText('status-display', status);
+
+        if (sim.ended) {
+          setText('result-display', 'Energi yang sampai ke ' + LEVELS[n - 1].toLowerCase() + ' hanya ' + fmt(last) + ' kJ (' + fmt((last / E0) * 100) + '% dari energi awal). Sisanya hilang sebagai panas dan digunakan untuk respirasi.');
+        } else {
+          setText('result-display', 'Energi awal ' + fmt(E0) + ' kJ. Setiap perpindahan hanya meneruskan ' + values.efisiensi + '% energi ke tingkat berikutnya.');
+        }
+
+        var list = el('level-list');
+        if (list) {
+          list.textContent = '';
+          for (var k = 0; k < n; k++) {
+            var li = document.createElement('li');
+            var name = document.createElement('span');
+            name.textContent = LEVELS[k];
+            var value = document.createElement('span');
+            value.className = 'mono-value';
+            value.textContent = fmt(energyAt(k)) + ' kJ (' + fmt((energyAt(k) / E0) * 100) + '%)';
+            li.appendChild(name);
+            li.appendChild(value);
+            list.appendChild(li);
+          }
+        }
+
+        var startBtn = el('start-btn');
+        if (startBtn) {
+          if (sim.ended) startBtn.textContent = 'Ulangi';
+          else if (sim.running) startBtn.textContent = 'Jeda';
+          else if (sim.t > 0) startBtn.textContent = 'Lanjutkan';
+          else startBtn.textContent = 'Mulai';
+        }
+      }
+
+      function syncControls() {
+        CONFIG.variables.forEach(function (v) {
+          var input = el(v.name + '-slider');
+          if (input) input.value = String(values[v.name]);
+          var display = el(v.name + '-display');
+          if (display) {
+            var shown = v.name === 'energi' ? fmt(values[v.name]) : String(values[v.name]);
+            display.textContent = shown + ' ' + v.unit;
+          }
+        });
+        updateReadouts();
+      }
+
+      function rewind() {
+        sim.running = false;
+        sim.ended = false;
+        sim.t = 0;
+        lastTs = null;
+        syncControls();
+      }
+
+      function toggleRun() {
+        if (sim.ended) {
+          sim.ended = false;
+          sim.t = 0;
+          sim.running = true;
+        } else {
+          sim.running = !sim.running;
+        }
+        lastTs = null;
+        updateReadouts();
+      }
+
+      function applyPreset(preset) {
+        CONFIG.presets.forEach(function (p, i) {
+          if (p === preset) values = Object.assign({}, p.variables);
+          var btn = el('preset-' + (i + 1) + '-btn');
+          if (btn) btn.setAttribute('aria-pressed', p === preset ? 'true' : 'false');
+        });
+        rewind();
+      }
+
+      function resetState() {
+        values = Object.assign({}, DEFAULTS);
+        CONFIG.presets.forEach(function (p, i) {
+          var btn = el('preset-' + (i + 1) + '-btn');
+          if (btn) btn.setAttribute('aria-pressed', 'false');
+        });
+        rewind();
+      }
+
+      function frame(ts) {
+        if (lastTs === null) lastTs = ts;
+        var dt = (ts - lastTs) / 1000;
+        lastTs = ts;
+        if (sim.running) {
+          sim.t += dt * SEGMENT_SPEED;
+          var maxT = values.tingkat - 1;
+          if (sim.t >= maxT) {
+            sim.t = maxT;
+            sim.running = false;
+            sim.ended = true;
+            updateReadouts();
+          }
+        }
+        draw();
+        window.requestAnimationFrame(frame);
+      }
+
+      function bindSliders() {
+        CONFIG.variables.forEach(function (v) {
+          var input = el(v.name + '-slider');
+          if (!input) return;
+          input.addEventListener('input', function () {
+            values[v.name] = Number(input.value);
+            rewind();
+          });
+        });
+      }
+
+      function init() {
+        values = Object.assign({}, DEFAULTS);
+        readColors();
+        resizeCanvas();
+        bindSliders();
+
+        CONFIG.presets.forEach(function (p, i) {
+          var btn = el('preset-' + (i + 1) + '-btn');
+          if (btn) btn.addEventListener('click', function () { applyPreset(p); });
+        });
+
+        var startBtn = el('start-btn');
+        if (startBtn) startBtn.addEventListener('click', toggleRun);
+        var resetBtn = el('reset-btn');
+        if (resetBtn) resetBtn.addEventListener('click', resetState);
+
+        document.addEventListener('keydown', function (e) {
+          var tag = e.target && e.target.tagName;
+          if (e.key === 'r' || e.key === 'R') {
+            if (tag !== 'INPUT') resetState();
+          } else if (e.key === ' ' && tag !== 'BUTTON' && tag !== 'INPUT') {
+            e.preventDefault();
+            toggleRun();
+          }
+        });
+
+        window.addEventListener('resize', function () {
+          resizeCanvas();
+        });
+        if (typeof ResizeObserver !== 'undefined' && stage) {
+          new ResizeObserver(function () { resizeCanvas(); }).observe(stage);
+        }
+
+        syncControls();
+        window.requestAnimationFrame(frame);
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

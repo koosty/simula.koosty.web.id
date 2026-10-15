@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Konversi Skala Suhu · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Game menangkap gelembung berisi hasil konversi suhu antara Celsius, Reamur, Fahrenheit, dan Kelvin sebelum jatuh ke dasar.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Konversi Skala Suhu">
+  <meta property="og:description" content="Konversi suhu antara Celsius, Reamur, Fahrenheit, dan Kelvin dengan menangkap jawaban yang benar. Titik beku dan didih air pada tiap skala menjadi kuncinya.">
+  <meta property="og:locale" content="id">
+  <style>
+    /* ===== Shared tokens (VISUAL-STYLE.md) ===== */
+    :root {
+      /* Colour */
+      --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+      --surface: #14141e;     /* panels, cards, step rows */
+      --panel: rgba(20, 20, 30, 0.9);
+      --border: rgba(255, 255, 255, 0.1);
+      --border-strong: #333;
+      --text: #ffffff;
+      --text-muted: #aaa;
+      --text-dim: #888;
+      --accent: #6366f1;      /* primary action, slider thumb, active state */
+      --accent-hover: #5558e8;
+      --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+      --success: #fbbf24;     /* completion, headings, callouts */
+      --warning: #fb923c;
+      --error: #ff6b6b;
+      --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+      --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+      --shadow-none: none;
+
+      /* Spacing scale */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+
+      /* Radius scale */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-pill: 999px;
+
+      /* Type scale (system fonts only) */
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --text-base: 16px;
+      --text-sm: 14px;
+      --text-xs: 13px;
+      --text-caption: 11px;   /* uppercase control labels */
+      --text-heading: 24px;
+      --font-weight-display: 600;  /* headings */
+      --font-weight-number: 500;   /* monospaced readouts */
+
+      /* Focus, motion, stacking */
+      --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+      --motion: 0.2s;
+      --motion-slow: 0.3s;
+      --z-overlay: 100;        /* panels, tooltips */
+      --z-modal: 1000;         /* loading screens, modal dialogs */
+    }
+
+    [data-theme="light"] {
+      --bg: #f7f7fb;
+      --surface: #ffffff;
+      --panel: rgba(255, 255, 255, 0.92);
+      --border: rgba(0, 0, 0, 0.12);
+      --border-strong: #d4d4d8;
+      --text: #16161d;
+      --text-muted: #52525b;
+      --text-dim: #71717a;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+      --accent-soft: rgba(79, 70, 229, 0.95);
+      --success: #b45309;
+      --warning: #c2410c;
+      --error: #dc2626;
+      --accent-text: #ffffff;
+      --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+    }
+
+    /* ===== Component classes (VISUAL-STYLE.md) ===== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font);
+      font-size: var(--text-base);
+      line-height: 1.5;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    h1, h2, h3 { font-weight: var(--font-weight-display); }
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      padding: var(--space-4);
+    }
+    .panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+    .btn {
+      font-family: inherit;
+      font-size: var(--text-sm);
+      min-height: 44px;            /* never below 44px, mobile */
+      min-width: 44px;
+      padding: var(--space-3) var(--space-5);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      background: var(--border-strong);
+      color: var(--text);
+      box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+      cursor: pointer;
+      transition: background var(--motion);
+    }
+    .btn:hover { background: var(--text-muted); }
+    .btn:active { transform: scale(0.95); }
+    .btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+    .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+    .btn-ghost { background: transparent; border-color: var(--border); }
+    .btn-ghost:hover { background: var(--surface); }
+
+    .control-label {
+      font-size: var(--text-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    input[type="range"] {
+      width: 100%; height: 6px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px; height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    /* Visually hidden but announced by screen readers. Use when a layout has no
+       room for a visible <h1> (e.g. a full-bleed canvas) — never as an excuse to
+       drop a heading. */
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+    }
+
+    #feedback-panel {
+      background: var(--surface);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+    }
+    #feedback-panel.success { border-left-color: var(--success); }
+    #feedback-panel.error { border-left-color: var(--error); }
+
+    .progress-track {
+      height: 8px;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+    .mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+    .sources {
+      margin-top: var(--space-5);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--border);
+    }
+    .sources-heading {
+      font-size: var(--text-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: var(--space-2);
+    }
+    .source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+    .source-item a { color: var(--accent); text-decoration: none; }
+    .source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+    .reading-article {
+      max-width: 720px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+    .reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+    .reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+    .reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+    .reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+    .reading-article blockquote {
+      border-left: 3px solid var(--border-strong);
+      padding-left: var(--space-4);
+      color: var(--text-muted);
+      margin-bottom: var(--space-4);
+    }
+    .reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+    .reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+    .reading-article pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      overflow-x: auto;
+      margin-bottom: var(--space-4);
+    }
+    .reading-article pre code { background: none; padding: 0; }
+    .reading-article table { width: 100%; border-collapse: collapse; }
+    .reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+    .reading-article details {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+      margin-bottom: var(--space-4);
+    }
+    .reading-article summary {
+      cursor: pointer;
+      font-weight: var(--font-weight-display);
+      color: var(--text);
+    }
+    .reading-article details[open] summary { margin-bottom: var(--space-2); }
+    .glossary-term {
+      text-decoration: underline dotted var(--text-dim);
+      text-decoration-thickness: 1px;
+      cursor: help;
+    }
+    .katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+    /* highlight.js token colours — mapped to the token set, not a canned theme */
+    .hljs { color: var(--text); }
+    .hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+    .hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+    .hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+    .hljs-number { color: var(--warning); }
+
+    /* ===== Scene layout ===== */
+    * { -webkit-tap-highlight-color: transparent; }
+    .scene { padding: var(--space-4); max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-4); }
+    .scene-header h1 { font-size: var(--text-heading); margin-bottom: var(--space-2); }
+    .lead { color: var(--text-muted); font-size: var(--text-sm); }
+
+    .question { font-size: var(--text-base); color: var(--text); margin-bottom: var(--space-3); }
+    .hud { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: var(--space-2); margin-bottom: var(--space-3); }
+    .hud-item { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); }
+    .hud-value { font-size: var(--text-base); color: var(--text); }
+
+    .game-wrap { position: relative; }
+    .game-box { position: relative; width: 100%; min-height: 300px; }
+    #game-canvas { display: block; width: 100%; border-radius: var(--radius-md); border: 1px solid var(--border); touch-action: manipulation; }
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-3);
+      padding: var(--space-4);
+      text-align: center;
+      z-index: var(--z-overlay);
+    }
+    .overlay h2 { font-size: var(--text-heading); color: var(--text); }
+    .overlay p { font-size: var(--text-sm); color: var(--text-muted); max-width: 480px; }
+    .hidden { display: none !important; }
+
+    .controls-row { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: var(--space-3) 0; }
+    .controls-row .btn { flex: 1 1 0; }
+    .move-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
+    .move-row .btn { font-size: var(--text-base); min-height: 52px; }
+
+    .badges { margin-top: var(--space-2); }
+    .badge-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-2); }
+    .badge { font-size: var(--text-xs); color: var(--text-dim); padding: var(--space-2) var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-md); }
+    .badge.is-unlocked { color: var(--success); border-color: var(--success); }
+  </style>
+</head>
+<body>
+  <main class="scene">
+    <header class="scene-header">
+      <h1>Konversi Skala Suhu</h1>
+      <p class="lead">Gelembung berisi hasil konversi jatuh dari atas. Tangkap gelembung yang benar dengan keranjang, sebelum jatuh ke dasar.</p>
+    </header>
+
+    <section class="panel" aria-label="Permainan konversi suhu">
+      <p class="question" id="question-display" aria-live="polite">Ubah suhu ke skala yang diminta.</p>
+
+      <div class="hud">
+        <div class="hud-item"><p class="control-label">Skor</p><p class="hud-value mono-value" id="score-display">0</p></div>
+        <div class="hud-item"><p class="control-label">Nyawa</p><p class="hud-value mono-value" id="lives-display">3 / 3</p></div>
+        <div class="hud-item"><p class="control-label">Soal</p><p class="hud-value mono-value" id="soal-display">0 dari 10</p></div>
+        <div class="hud-item"><p class="control-label">Beruntun</p><p class="hud-value mono-value" id="streak-display">0</p></div>
+      </div>
+
+      <div class="game-wrap">
+        <div class="game-box" id="game-box">
+          <canvas id="game-canvas" role="img" aria-label="Area permainan: gelembung jawaban jatuh ke keranjang"></canvas>
+        </div>
+
+        <div class="overlay" id="start-screen">
+          <h2>Tangkap Jawaban</h2>
+          <p>Lihat soal konversi di atas. Gelembung berisi empat jawaban jatuh di empat kolom. Gerakkan keranjang ke kolom jawaban yang benar sebelum gelembung mencapai dasar.</p>
+          <p>Rumus kunci: Kelvin = Celsius + 273. Air membeku 0 °C = 32 °F = 0 °R = 273 K, dan mendidih 100 °C = 212 °F = 80 °R = 373 K.</p>
+          <p>Tiga detik pertama aman. Setiap soal diberi waktu bersiap sebelum gelembung turun.</p>
+          <button class="btn btn-primary" type="button" onclick="startGame()">Mulai permainan</button>
+        </div>
+
+        <div class="overlay hidden" id="result-screen" role="alert">
+          <h2 id="result-title">Permainan berakhir</h2>
+          <p id="result-body"></p>
+          <button class="btn btn-primary" type="button" onclick="startGame()">Main lagi</button>
+        </div>
+      </div>
+
+      <div class="move-row" style="margin-top: var(--space-3);">
+        <button class="btn" id="left-btn" type="button" aria-label="Geser keranjang ke kiri">◀ Kiri</button>
+        <button class="btn" id="right-btn" type="button" aria-label="Geser keranjang ke kanan">Kanan ▶</button>
+      </div>
+
+      <div class="controls-row">
+        <button class="btn" id="pause-btn" type="button" disabled>Jeda</button>
+        <button class="btn btn-ghost" id="reset-btn" type="button">Atur ulang</button>
+      </div>
+
+      <div id="feedback-panel" role="status">Tekan Mulai permainan untuk memulai.</div>
+
+      <div class="badges">
+        <p class="panel-heading">Lencana</p>
+        <ul class="badge-list" id="badge-list"></ul>
+      </div>
+    </section>
+  </main>
+
+  <script type="application/json" id="widget-config">
+  {"type":"game","gameType":"sorting-conversion","description":"Tangkap gelembung berisi hasil konversi suhu yang benar. Rumus: F = 9/5 C + 32; R = 4/5 C; K = C + 273; C = 5/9 (F − 32); C = 5/4 R; F = 9/4 R + 32.","gameConfig":{"controls":["left-btn","right-btn","canvas-pointer","arrow-keys"],"targets":[{"id":"C","label":"Celsius (°C)"},{"id":"R","label":"Reamur (°R)"},{"id":"F","label":"Fahrenheit (°F)"},{"id":"K","label":"Kelvin (K)"}],"initialConditions":{"lives":3,"introSeconds":2.5,"columns":4,"speed":{"base":46,"growthPerQuestion":0.06,"max":1.6}},"successCondition":"Tangkap jawaban benar pada semua soal sebelum nyawa habis","questions":[{"from":"C","value":25,"to":"F","answer":77,"distractors":[45,57,98],"note":"F = (9/5) × C + 32, jadi 9/5 × 25 + 32 = 77 °F."},{"from":"C","value":100,"to":"R","answer":80,"distractors":[100,125,20],"note":"R = (4/5) × C, jadi 4/5 × 100 = 80 °R."},{"from":"F","value":212,"to":"C","answer":100,"distractors":[180,412,140],"note":"C = (5/9) × (F − 32), jadi 5/9 × 180 = 100 °C."},{"from":"K","value":300,"to":"C","answer":27,"distractors":[573,300,33],"note":"C = K − 273, jadi 300 − 273 = 27 °C."},{"from":"R","value":40,"to":"C","answer":50,"distractors":[32,60,10],"note":"C = (5/4) × R, jadi 5/4 × 40 = 50 °C."},{"from":"C","value":0,"to":"K","answer":273,"distractors":[0,32,373],"note":"K = C + 273, jadi 0 + 273 = 273 K."},{"from":"C","value":50,"to":"F","answer":122,"distractors":[90,82,212],"note":"F = (9/5) × 50 + 32 = 90 + 32 = 122 °F."},{"from":"R","value":80,"to":"F","answer":212,"distractors":[180,144,32],"note":"F = (9/4) × R + 32, jadi 9/4 × 80 + 32 = 212 °F. Ini sama dengan 100 °C."},{"from":"F","value":77,"to":"C","answer":25,"distractors":[45,109,2],"note":"C = (5/9) × (77 − 32) = 25 °C."},{"from":"K","value":373,"to":"C","answer":100,"distractors":[646,273,0],"note":"C = K − 273, jadi 373 − 273 = 100 °C."}],"scoring":{"correct":10,"fastBonus":5,"fastBonusRule":"tangkap dalam separuh pertama waktu jatuh"},"achievements":[{"id":"beruntun","name":"Beruntun Lima","description":"Benar lima kali berturut-turut"},{"id":"tanpa-salah","name":"Tanpa Salah","description":"Selesaikan semua soal tanpa salah tangkap atau terlewat"},{"id":"juara-skala","name":"Juara Reamur dan Kelvin","description":"Benar pada soal yang melibatkan Reamur atau Kelvin"}]}}
+  </script>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const config = JSON.parse(document.getElementById('widget-config').textContent);
+      const gc = config.gameConfig;
+      const QUESTIONS = gc.questions;
+      const COLS = gc.initialConditions.columns;
+      const LIVES_MAX = gc.initialConditions.lives;
+      const INTRO = gc.initialConditions.introSeconds;
+      const SPEED = gc.initialConditions.speed;
+      const RESULT_TIME = 2.0;
+      const BEST_KEY = 'ipa-s15-skor-terbaik';
+      const UNIT = { C: '°C', R: '°R', F: '°F', K: 'K' };
+      const NAME = { C: 'Celsius', R: 'Reamur', F: 'Fahrenheit', K: 'Kelvin' };
+      const INITIAL_FEEDBACK = 'Tekan Mulai permainan untuk memulai.';
+
+      const achievementsById = {};
+      gc.achievements.forEach(function (a) { achievementsById[a.id] = a; });
+
+      const canvas = document.getElementById('game-canvas');
+      const ctx = canvas.getContext('2d');
+      const gameBox = document.getElementById('game-box');
+      const questionDisplay = document.getElementById('question-display');
+      const scoreDisplay = document.getElementById('score-display');
+      const livesDisplay = document.getElementById('lives-display');
+      const soalDisplay = document.getElementById('soal-display');
+      const streakDisplay = document.getElementById('streak-display');
+      const feedbackPanel = document.getElementById('feedback-panel');
+      const startScreen = document.getElementById('start-screen');
+      const resultScreen = document.getElementById('result-screen');
+      const resultTitle = document.getElementById('result-title');
+      const resultBody = document.getElementById('result-body');
+      const pauseBtn = document.getElementById('pause-btn');
+      const leftBtn = document.getElementById('left-btn');
+      const rightBtn = document.getElementById('right-btn');
+      const badgeList = document.getElementById('badge-list');
+
+      const st = {};
+      const view = { w: 300, h: 360, dpr: window.devicePixelRatio || 1 };
+
+      function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const tmp = arr[i];
+          arr[i] = arr[j];
+          arr[j] = tmp;
+        }
+        return arr;
+      }
+
+      function cssVar(name) {
+        return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      }
+
+      function setFeedback(text, kind) {
+        feedbackPanel.textContent = text;
+        feedbackPanel.className = kind || '';
+      }
+
+      function unlock(id) {
+        if (st.unlocked[id]) return '';
+        st.unlocked[id] = true;
+        renderBadges();
+        const a = achievementsById[id];
+        return a ? ' Lencana baru: ' + a.name + '.' : '';
+      }
+
+      function renderBadges() {
+        badgeList.innerHTML = '';
+        gc.achievements.forEach(function (a) {
+          const li = document.createElement('li');
+          li.className = 'badge' + (st.unlocked[a.id] ? ' is-unlocked' : '');
+          li.textContent = a.name + ': ' + a.description;
+          badgeList.appendChild(li);
+        });
+      }
+
+      function readBest() {
+        try {
+          return Number(localStorage.getItem(BEST_KEY)) || 0;
+        } catch (err) {
+          return 0;
+        }
+      }
+
+      function writeBest(value) {
+        try {
+          localStorage.setItem(BEST_KEY, String(value));
+        } catch (err) {
+          /* penyimpanan tidak tersedia; skor terbaik tidak disimpan */
+        }
+      }
+
+      function questionText(q) {
+        return 'Ubah ' + q.value + ' ' + UNIT[q.from] + ' ke ' + NAME[q.to] + '.';
+      }
+
+      function speedFor(index) {
+        const factor = Math.min(SPEED.max, 1 + SPEED.growthPerQuestion * index);
+        return SPEED.base * factor;
+      }
+
+      function resizeCanvas() {
+        const width = Math.max(280, Math.min(640, Math.floor(gameBox.clientWidth)));
+        const height = Math.round(Math.min(420, Math.max(340, width * 0.7)));
+        view.w = width;
+        view.h = height;
+        view.dpr = window.devicePixelRatio || 1;
+        canvas.style.width = width + 'px';
+        canvas.style.height = height + 'px';
+        canvas.width = Math.round(width * view.dpr);
+        canvas.height = Math.round(height * view.dpr);
+        draw();
+      }
+
+      function colX(c) {
+        return (view.w / COLS) * (c + 0.5);
+      }
+
+      function basketY() {
+        return view.h - 40;
+      }
+
+      function startQuestion() {
+        const q = QUESTIONS[st.index];
+        const values = shuffle([q.answer].concat(q.distractors));
+        st.bubbles = values.map(function (v, c) {
+          return { col: c, value: v, correct: v === q.answer, y: 36 };
+        });
+        st.fallSpeed = speedFor(st.index);
+        st.fallTime = 0;
+        st.phase = 'falling';
+        setFeedback('Gerakkan keranjang ke kolom jawaban yang benar.', '');
+        updateHud();
+      }
+
+      function nextQuestion() {
+        st.index += 1;
+        st.bubbles = [];
+        if (st.index >= QUESTIONS.length) {
+          endGame(st.lives > 0);
+          return;
+        }
+        st.phase = 'intro';
+        st.t = 0;
+        updateHud();
+      }
+
+      function resolve(kind, q, bubble) {
+        st.bubbles = [];
+        st.phase = 'result';
+        st.t = 0;
+        const answerText = q.answer + ' ' + UNIT[q.to];
+        const rule = ' ' + q.note;
+
+        if (kind === 'benar') {
+          const early = bubble.y <= basketY() * 0.5;
+          const gain = gc.scoring.correct + (early ? gc.scoring.fastBonus : 0);
+          st.score += gain;
+          st.streak += 1;
+          st.bestStreak = Math.max(st.bestStreak, st.streak);
+          st.correctCount += 1;
+          let msg = 'Benar! Jawabannya ' + answerText + '. +' + gain + ' poin.' + rule;
+          if (early) msg += ' Bonus cepat!';
+          if (st.streak === 5) msg += unlock('beruntun');
+          if (q.from === 'R' || q.to === 'R' || q.from === 'K' || q.to === 'K') msg += unlock('juara-skala');
+          setFeedback(msg, 'success');
+        } else {
+          st.lives -= 1;
+          st.streak = 0;
+          st.perfect = false;
+          const reason = kind === 'salah'
+            ? 'Gelembung ' + bubble.value + ' ' + UNIT[q.to] + ' tidak sesuai. Nyawa berkurang.'
+            : 'Jawaban benar terlewat dan jatuh ke dasar. Nyawa berkurang.';
+          setFeedback(reason + ' Jawaban yang benar: ' + answerText + '.' + rule, 'error');
+        }
+        updateHud();
+        if (st.lives <= 0) endGame(false);
+      }
+
+      function catchBubble(bubble) {
+        const q = QUESTIONS[st.index];
+        if (bubble.correct) {
+          st.fallTime = 0;
+          resolve('benar', q, bubble);
+        } else {
+          resolve('salah', q, bubble);
+        }
+      }
+
+      function update(dt) {
+        if (st.phase === 'intro') {
+          st.t += dt;
+          if (st.t >= INTRO) {
+            startQuestion();
+          } else {
+            setFeedback('Bersiap... gelembung turun dalam ' + Math.ceil(INTRO - st.t) + ' detik.', '');
+          }
+          return;
+        }
+
+        if (st.phase === 'falling') {
+          st.fallTime += dt;
+          const bY = basketY();
+          const snapshot = st.bubbles.slice();
+          for (let i = 0; i < snapshot.length; i++) {
+            const b = snapshot[i];
+            if (st.phase !== 'falling') break;
+            b.y += st.fallSpeed * dt;
+            if (b.col === st.basketCol && b.y >= bY - 24) {
+              catchBubble(b);
+            } else if (b.y > bY + 24) {
+              if (b.correct) {
+                resolve('terlewat', QUESTIONS[st.index], b);
+              } else {
+                st.bubbles = st.bubbles.filter(function (x) { return x !== b; });
+              }
+            }
+          }
+          return;
+        }
+
+        if (st.phase === 'result') {
+          st.t += dt;
+          if (st.t >= RESULT_TIME && st.lives > 0) nextQuestion();
+        }
+      }
+
+      function drawBubble(x, y, value, unit, correct) {
+        const r = Math.min(34, (view.w / COLS) * 0.42);
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fillStyle = cssVar('--surface');
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = cssVar('--accent');
+        ctx.stroke();
+        ctx.fillStyle = cssVar('--text');
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = '600 ' + Math.round(r * 0.5) + 'px ' + cssVar('--font-mono');
+        ctx.fillText(String(value), x, y - r * 0.15);
+        ctx.font = Math.round(r * 0.36) + 'px ' + cssVar('--font');
+        ctx.fillStyle = cssVar('--text-muted');
+        ctx.fillText(unit, x, y + r * 0.45);
+      }
+
+      function draw() {
+        const w = view.w;
+        const h = view.h;
+        ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
+        ctx.fillStyle = cssVar('--bg');
+        ctx.fillRect(0, 0, w, h);
+
+        // Garis kolom
+        ctx.setLineDash([4, 6]);
+        ctx.strokeStyle = cssVar('--border-strong');
+        ctx.lineWidth = 1;
+        for (let c = 1; c < COLS; c++) {
+          const x = (w / COLS) * c;
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, h);
+          ctx.stroke();
+        }
+        ctx.setLineDash([]);
+
+        // Gelembung
+        const q = QUESTIONS[st.index];
+        if (q && st.bubbles) {
+          st.bubbles.forEach(function (b) {
+            drawBubble(colX(b.col), b.y, b.value, UNIT[q.to], b.correct);
+          });
+        }
+
+        // Keranjang (posisi visual mengikuti kolom aktif)
+        const target = colX(st.basketCol);
+        st.basketX = st.basketX === undefined ? target : st.basketX + (target - st.basketX) * 0.25;
+        const bw = (w / COLS) * 0.7;
+        ctx.fillStyle = cssVar('--accent');
+        ctx.fillRect(st.basketX - bw / 2, basketY(), bw, 12);
+      }
+
+      function updateHud() {
+        scoreDisplay.textContent = String(st.score);
+        livesDisplay.textContent = Math.max(0, st.lives) + ' / ' + LIVES_MAX;
+        soalDisplay.textContent = Math.min(st.index + 1, QUESTIONS.length) + ' dari ' + QUESTIONS.length;
+        streakDisplay.textContent = String(st.streak);
+        if (QUESTIONS[st.index] && st.phase !== 'idle') {
+          questionDisplay.textContent = questionText(QUESTIONS[st.index]);
+        }
+        const active = st.phase !== 'idle' && st.phase !== 'over' && st.phase !== 'won';
+        pauseBtn.disabled = !active;
+        pauseBtn.textContent = st.paused ? 'Lanjutkan' : 'Jeda';
+        leftBtn.disabled = !active;
+        rightBtn.disabled = !active;
+      }
+
+      function moveBasket(delta) {
+        if (st.phase === 'idle' || st.phase === 'over' || st.phase === 'won') return;
+        st.basketCol = Math.min(COLS - 1, Math.max(0, st.basketCol + delta));
+      }
+
+      function endGame(won) {
+        st.phase = won ? 'won' : 'over';
+        st.bubbles = [];
+        if (won && st.perfect) unlock('tanpa-salah');
+
+        const best = readBest();
+        const newBest = st.score > best;
+        if (newBest) writeBest(st.score);
+
+        resultTitle.textContent = won ? 'Semua soal selesai!' : 'Nyawa habis';
+        resultBody.textContent = 'Skor: ' + st.score + '. Jawaban benar: ' + st.correctCount + ' dari ' + QUESTIONS.length +
+          '. Skor terbaik: ' + Math.max(best, st.score) + (newBest ? ' (rekor baru!)' : '') + '.';
+        resultScreen.classList.remove('hidden');
+        setFeedback(won ? 'Permainan selesai. Coba lagi untuk meningkatkan skor.' : 'Permainan berakhir. Tinjau rumus konversi lalu coba lagi.', won ? 'success' : 'error');
+        updateHud();
+      }
+
+      function togglePause() {
+        if (st.phase === 'idle' || st.phase === 'over' || st.phase === 'won') return;
+        st.paused = !st.paused;
+        setFeedback(st.paused ? 'Permainan dijeda. Tekan Lanjutkan untuk melanjutkan.' : 'Lanjut! Gerakkan keranjang ke jawaban yang benar.', '');
+        updateHud();
+      }
+
+      function resetState() {
+        st.phase = 'idle';
+        st.paused = false;
+        st.index = 0;
+        st.t = 0;
+        st.score = 0;
+        st.lives = LIVES_MAX;
+        st.streak = 0;
+        st.bestStreak = 0;
+        st.correctCount = 0;
+        st.perfect = true;
+        st.unlocked = {};
+        st.bubbles = [];
+        st.basketCol = Math.floor(COLS / 2);
+        st.basketX = undefined;
+        shuffle(QUESTIONS);
+        st.lastTs = null;
+
+        startScreen.classList.remove('hidden');
+        resultScreen.classList.add('hidden');
+        questionDisplay.textContent = 'Ubah suhu ke skala yang diminta.';
+        setFeedback(INITIAL_FEEDBACK, '');
+        renderBadges();
+        updateHud();
+      }
+
+      function startGame() {
+        resetState();
+        st.phase = 'intro';
+        startScreen.classList.add('hidden');
+        setFeedback('Permainan dimulai. Bersiap...', '');
+        updateHud();
+      }
+      window.startGame = startGame;
+
+      function frame(ts) {
+        if (st.lastTs === null) st.lastTs = ts;
+        const dt = Math.min((ts - st.lastTs) / 1000, 0.05);
+        st.lastTs = ts;
+        if (!st.paused) update(dt);
+        draw();
+        requestAnimationFrame(frame);
+      }
+
+      leftBtn.addEventListener('click', function () { moveBasket(-1); });
+      rightBtn.addEventListener('click', function () { moveBasket(1); });
+      pauseBtn.addEventListener('click', togglePause);
+      document.getElementById('reset-btn').addEventListener('click', resetState);
+
+      canvas.addEventListener('pointerdown', function (ev) {
+        const rect = canvas.getBoundingClientRect();
+        const x = ev.clientX - rect.left;
+        st.basketCol = Math.min(COLS - 1, Math.max(0, Math.floor(x / (view.w / COLS))));
+      });
+
+      window.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          moveBasket(-1);
+        } else if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          moveBasket(1);
+        } else if (e.code === 'Space' && e.target === document.body) {
+          e.preventDefault();
+          togglePause();
+        } else if (e.key === 'r' || e.key === 'R') {
+          resetState();
+        }
+      });
+
+      if ('ResizeObserver' in window) {
+        new ResizeObserver(resizeCanvas).observe(gameBox);
+      } else {
+        window.addEventListener('resize', resizeCanvas);
+      }
+
+      resetState();
+      resizeCanvas();
+      requestAnimationFrame(frame);
+    })();
+  </script>
+</body>
+</html>

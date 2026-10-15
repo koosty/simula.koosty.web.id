@@ -1,0 +1,11 @@
+# Satu entri katalog per simulasi. Kunci adalah pengenal bahasa Inggris;
+# nilainya Bahasa Indonesia karena menjadi bagian URL.
+# Katalog adalah sumber kebenaran atas metadata simulasi (docs/adr/0004).
+title: "Benda Langit Selain Planet"
+description: >-
+  Mengelompokkan satelit, planet kerdil, asteroid, meteoroid, meteor, meteorit, dan komet.
+level: smp
+grade: 7
+subject: ipa
+order: 66
+scene: "s43"

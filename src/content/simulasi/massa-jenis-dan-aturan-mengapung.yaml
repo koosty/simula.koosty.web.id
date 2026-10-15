@@ -1,0 +1,11 @@
+# Satu entri katalog per simulasi. Kunci adalah pengenal bahasa Inggris;
+# nilainya Bahasa Indonesia karena menjadi bagian URL.
+# Katalog adalah sumber kebenaran atas metadata simulasi (docs/adr/0004).
+title: "Massa Jenis dan Aturan Mengapung"
+description: >-
+  Menghitung massa jenis dan memprediksi benda mengapung, melayang, atau tenggelam.
+level: smp
+grade: 7
+subject: ipa
+order: 35
+scene: "s12"

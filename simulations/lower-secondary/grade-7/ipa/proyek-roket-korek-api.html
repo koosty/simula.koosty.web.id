@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proyek: Roket Korek Api · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Uji beban roket dari aluminium foil dan klip kertas: atur bentuk badan dan posisi klip, lalu cari beban aman maksimum.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Proyek: Roket Korek Api">
+  <meta property="og:description" content="Uji beban roket dari aluminium foil dan klip kertas: atur bentuk badan dan posisi klip, lalu cari beban aman maksimum sebelum badan bengkok.">
+  <meta property="og:locale" content="id">
+  <style>
+:root {
+  /* Colour */
+  --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+  --surface: #14141e;     /* panels, cards, step rows */
+  --panel: rgba(20, 20, 30, 0.9);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: #333;
+  --text: #ffffff;
+  --text-muted: #aaa;
+  --text-dim: #888;
+  --accent: #6366f1;      /* primary action, slider thumb, active state */
+  --accent-hover: #5558e8;
+  --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+  --success: #fbbf24;     /* completion, headings, callouts */
+  --warning: #fb923c;
+  --error: #ff6b6b;
+  --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-none: none;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type scale (system fonts only) */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-caption: 11px;   /* uppercase control labels */
+  --text-heading: 24px;
+  --font-weight-display: 600;  /* headings */
+  --font-weight-number: 500;   /* monospaced readouts */
+
+  /* Focus, motion, stacking */
+  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  --motion: 0.2s;
+  --motion-slow: 0.3s;
+  --z-overlay: 100;        /* panels, tooltips */
+  --z-modal: 1000;         /* loading screens, modal dialogs */
+}
+
+[data-theme="light"] {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-strong: #d4d4d8;
+  --text: #16161d;
+  --text-muted: #52525b;
+  --text-dim: #71717a;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.95);
+  --success: #b45309;
+  --warning: #c2410c;
+  --error: #dc2626;
+  --accent-text: #ffffff;
+  --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+h1, h2, h3 { font-weight: var(--font-weight-display); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-4);
+}
+.panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+.btn {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  min-height: 44px;            /* never below 44px, mobile */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--border-strong);
+  color: var(--text);
+  box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.btn:hover { background: var(--text-muted); }
+.btn:active { transform: scale(0.95); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); }
+
+.control-label {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+input[type="range"] {
+  width: 100%; height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Visually hidden but announced by screen readers. Use when a layout has no
+   room for a visible h1 (e.g. a full-bleed canvas) — never as an excuse to
+   drop a heading. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+#feedback-panel {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+#feedback-panel.success { border-left-color: var(--success); }
+#feedback-panel.error { border-left-color: var(--error); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+.sources {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+.sources-heading {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+.source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+.source-item a { color: var(--accent); text-decoration: none; }
+.source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+.reading-article {
+  max-width: 720px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+.reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+.reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+.reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+.reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+.reading-article blockquote {
+  border-left: 3px solid var(--border-strong);
+  padding-left: var(--space-4);
+  color: var(--text-muted);
+  margin-bottom: var(--space-4);
+}
+.reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+.reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+.reading-article pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+}
+.reading-article pre code { background: none; padding: 0; }
+.reading-article table { width: 100%; border-collapse: collapse; }
+.reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+.reading-article details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.reading-article summary {
+  cursor: pointer;
+  font-weight: var(--font-weight-display);
+  color: var(--text);
+}
+.reading-article details[open] summary { margin-bottom: var(--space-2); }
+.glossary-term {
+  text-decoration: underline dotted var(--text-dim);
+  text-decoration-thickness: 1px;
+  cursor: help;
+}
+.katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+/* highlight.js token colours — mapped to the token set, not a canned theme */
+.hljs { color: var(--text); }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+.hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+.hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+.hljs-number { color: var(--warning); }
+
+/* ---- Page layout (scene-specific; appearance from tokens above) ---- */
+.page { max-width: 1100px; margin: 0 auto; padding: var(--space-4); }
+.stack { display: grid; gap: var(--space-4); }
+.stack > * { min-width: 0; }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); align-items: start; }
+.layout > * { min-width: 0; }
+.main-col { grid-column: 1; grid-row: 2; }
+.design-col { grid-column: 1; grid-row: 1; }
+@media (min-width: 768px) {
+  .layout { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+  .main-col { grid-column: 1; grid-row: 1; }
+  .design-col { grid-column: 2; grid-row: 1; }
+}
+.steps { padding-left: var(--space-5); }
+.steps li { margin-bottom: var(--space-1); }
+.feedback-title { font-weight: var(--font-weight-display); margin-bottom: var(--space-1); }
+.note { font-size: var(--text-xs); color: var(--text-dim); }
+#rig {
+  display: block;
+  width: 100%;
+  height: 280px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg);
+  touch-action: manipulation;
+}
+@media (min-width: 768px) { #rig { height: 340px; } }
+.btn-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.option-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: var(--space-2); }
+.readout { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+.readout-item {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
+.readout-value { font-family: var(--font-mono); font-size: var(--text-heading); font-weight: var(--font-weight-number); }
+.readout-sub { font-size: var(--text-xs); color: var(--text-dim); }
+.verdict-ok { color: var(--success); }
+.verdict-bad { color: var(--error); }
+.table-wrap { overflow-x: auto; }
+.records { width: 100%; border-collapse: collapse; font-size: var(--text-xs); }
+.records th, .records td {
+  border-bottom: 1px solid var(--border);
+  padding: var(--space-2);
+  text-align: left;
+  vertical-align: top;
+}
+.records th { color: var(--text-muted); font-weight: var(--font-weight-display); }
+.preset-list { display: grid; gap: var(--space-2); }
+  </style>
+</head>
+<body>
+<main class="page stack">
+  <header class="stack">
+    <h1>Proyek: Roket Korek Api</h1>
+    <p>Kamu akan membuat roket dari aluminium foil dan klip kertas, lalu menguji seberapa besar beban yang bisa ditahan badan roket sebelum bengkok. Ubah bentuk badan dan posisi klip, tambah beban 10 g setiap langkah, lalu catat beban aman maksimum.</p>
+  </header>
+
+  <section class="panel stack" aria-labelledby="h-steps">
+    <h2 id="h-steps">Langkah membuat roket</h2>
+    <ol class="steps">
+      <li>Potong selembar aluminium foil menjadi persegi panjang (contoh: 10 cm × 15 cm).</li>
+      <li>Bentuk badan roket dengan salah satu cara: gulung longgar, gulung rapat, atau lipat menjadi pita tipis.</li>
+      <li>Pasang satu klip kertas sebagai penguat di ujung depan, di tengah badan, atau di ekor (belakang).</li>
+      <li>Gantungkan beban (misalnya koin) di tengah badan. Tambah beban sedikit demi sedikit, dengan langkah 10 g.</li>
+      <li>Hentikan pengujian sebelum badan bengkok, lalu catat beban aman maksimum. Data setelah badan bengkok tidak dipakai.</li>
+    </ol>
+  </section>
+
+  <div class="layout">
+    <aside class="stack design-col" aria-labelledby="h-design">
+      <section class="panel stack">
+        <h2 id="h-design">Rancangan roket</h2>
+        <p class="control-label" id="shape-label">Bentuk badan</p>
+        <div class="option-group" role="group" aria-labelledby="shape-label">
+          <button type="button" class="btn" id="shape-loose-btn" aria-pressed="false">Gulungan longgar</button>
+          <button type="button" class="btn" id="shape-tight-btn" aria-pressed="false">Gulungan rapat</button>
+          <button type="button" class="btn" id="shape-fold-btn" aria-pressed="false">Lipatan tipis</button>
+        </div>
+        <p class="control-label" id="clip-label">Posisi klip</p>
+        <div class="option-group" role="group" aria-labelledby="clip-label">
+          <button type="button" class="btn" id="clip-nose-btn" aria-pressed="false">Ujung depan</button>
+          <button type="button" class="btn" id="clip-middle-btn" aria-pressed="false">Tengah</button>
+          <button type="button" class="btn" id="clip-tail-btn" aria-pressed="false">Ekor</button>
+        </div>
+        <p class="control-label" id="preset-label">Contoh cepat</p>
+        <div id="preset-list" class="preset-list" role="group" aria-labelledby="preset-label"></div>
+        <p class="note">Mengganti rancangan memulai ulang pengujian beban dari 0 g. Data lama tetap ada di tabel.</p>
+      </section>
+    </aside>
+
+    <div class="stack main-col">
+      <section class="panel stack" aria-labelledby="h-rig">
+        <h2 id="h-rig">Alat uji beban</h2>
+        <canvas id="rig" role="img" aria-label="Roket lurus di atas dua penyangga dengan beban 0 gram"></canvas>
+        <div class="readout">
+          <div class="readout-item">
+            <div class="panel-heading">Beban</div>
+            <div class="readout-value" id="load-display">0 g</div>
+            <div class="readout-sub" id="load-si">0,000 kg</div>
+          </div>
+          <div class="readout-item">
+            <div class="panel-heading">Kondisi badan</div>
+            <div class="readout-value" id="bent-display">Belum dibebani</div>
+          </div>
+          <div class="readout-item">
+            <div class="panel-heading">Kekakuan (0–100)</div>
+            <div class="readout-value" id="stiffness-display">0</div>
+            <div class="readout-sub" id="stiffness-note"></div>
+          </div>
+          <div class="readout-item">
+            <div class="panel-heading">Kestabilan (0–100)</div>
+            <div class="readout-value" id="stability-display">0</div>
+            <div class="readout-sub" id="stability-note"></div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="btn btn-primary" id="load-add-btn">Tambah beban 10 g</button>
+          <button type="button" class="btn" id="record-btn">Catat beban</button>
+          <button type="button" class="btn btn-ghost" id="reset-btn">Reset semua</button>
+        </div>
+        <p class="note">Tombol Spasi menambah beban 10 g. Tombol R mereset semua.</p>
+      </section>
+
+      <div id="feedback-panel" role="status" aria-live="polite"></div>
+
+      <section class="panel stack" aria-labelledby="h-data">
+        <h2 id="h-data">Data uji</h2>
+        <div class="table-wrap">
+          <table class="records">
+            <thead>
+              <tr><th scope="col">No</th><th scope="col">Desain</th><th scope="col">Beban</th><th scope="col">Hasil</th></tr>
+            </thead>
+            <tbody id="records-body"></tbody>
+          </table>
+        </div>
+        <p class="mono-value" id="safe-max-display"></p>
+      </section>
+
+      <section class="panel stack" aria-labelledby="h-scores">
+        <h2 id="h-scores">Cara membaca skor</h2>
+        <ul class="steps">
+          <li><strong>Kekakuan</strong> (stiffness): seberapa sulit badan dilenturkan. Dihitung dari bentuk badan dan posisi klip.</li>
+          <li><strong>Kestabilan</strong> (stability): seberapa lurus badan tetap berdiri saat dibebani.</li>
+          <li><strong>Beban aman maksimum</strong>: beban terbesar yang dicatat sebelum badan bengkok.</li>
+          <li><strong>Ambang contoh</strong>: badan disebut kaku jika kekakuan ≥ 60. Badan disebut stabil jika kestabilan ≥ 50 dan klip tidak di ekor.</li>
+        </ul>
+        <p class="note">Semua nilai ambang dan skor pada simulasi ini hanya contoh, bukan data pengukuran nyata. Batas beban badan tidak ditampilkan; temukan sendiri lewat pengujian bertahap.</p>
+      </section>
+
+      <section class="panel stack" aria-labelledby="h-analysis">
+        <h2 id="h-analysis">Analisis hasil uji beban</h2>
+        <ol class="steps">
+          <li>Beban aman maksimum adalah beban terbesar yang dicatat saat badan belum bengkok.</li>
+          <li>Data yang dicatat setelah badan bengkok ditolak dan tidak dipakai untuk menentukan beban aman.</li>
+          <li>Bandingkan desain: desain dengan kekakuan dan kestabilan lebih tinggi menahan beban aman yang lebih besar.</li>
+          <li>Satuan beban adalah gram (g). Dalam SI, 1 g = 0,001 kg. Skor kekakuan dan kestabilan tidak memiliki satuan.</li>
+        </ol>
+      </section>
+    </div>
+  </div>
+</main>
+
+<script type="application/json" id="widget-config">
+{
+  "type": "simulation",
+  "concept": "kekakuan_kestabilan_beban_roket",
+  "description": "Uji beban roket dari aluminium foil dan klip kertas. Siswa mengubah bentuk badan dan posisi klip, menguji beban bertahap, dan mencatat beban aman maksimum sebelum badan bengkok. Nilai ambang dan batas beban hanya contoh.",
+  "variables": [
+    {
+      "name": "bodyShape",
+      "label": "Bentuk badan",
+      "options": [
+        { "value": "loose", "label": "Gulungan longgar" },
+        { "value": "tight", "label": "Gulungan rapat" },
+        { "value": "fold", "label": "Lipatan tipis" }
+      ],
+      "default": "loose"
+    },
+    {
+      "name": "clipPosition",
+      "label": "Posisi klip",
+      "options": [
+        { "value": "nose", "label": "Ujung depan" },
+        { "value": "middle", "label": "Tengah" },
+        { "value": "tail", "label": "Ekor (belakang)" }
+      ],
+      "default": "middle"
+    },
+    {
+      "name": "load",
+      "label": "Beban",
+      "min": 0,
+      "max": 110,
+      "step": 10,
+      "default": 0,
+      "unit": "g"
+    }
+  ],
+  "thresholds": {
+    "stiffnessMin": 60,
+    "stabilityMin": 50,
+    "note": "Nilai contoh"
+  },
+  "presets": [
+    { "name": "Kaku dan stabil", "variables": { "bodyShape": "tight", "clipPosition": "middle" } },
+    { "name": "Kaku tetapi tidak stabil", "variables": { "bodyShape": "tight", "clipPosition": "tail" } },
+    { "name": "Lentur", "variables": { "bodyShape": "loose", "clipPosition": "nose" } }
+  ]
+}
+</script>
+
+<script>
+(() => {
+  'use strict';
+
+  const CONFIG = JSON.parse(document.getElementById('widget-config').textContent);
+  const STEP = 10;
+  const STIFF_MIN = CONFIG.thresholds.stiffnessMin;
+  const STAB_MIN = CONFIG.thresholds.stabilityMin;
+
+  // Nilai contoh: skor dasar bentuk (s = kekakuan, q = kestabilan) dan tambahan dari posisi klip.
+  const SHAPES = {
+    loose: { label: 'Gulungan longgar', s: 35, q: 40, note: 'Foil digulung tanpa dipadatkan, jadi badan berongga dan mudah melentur.' },
+    tight: { label: 'Gulungan rapat', s: 70, q: 50, note: 'Foil digulung kencang dan padat, jadi badan lebih kaku dan lurus.' },
+    fold: { label: 'Lipatan tipis', s: 50, q: 45, note: 'Foil dilipat menjadi pita tipis: cukup kaku, tetapi mudah miring.' }
+  };
+  const CLIPS = {
+    nose: { label: 'ujung depan', s: 10, q: 0, note: 'Klip di ujung depan menambah kekakuan sedikit.' },
+    middle: { label: 'tengah', s: 15, q: 10, note: 'Klip di tengah memberi penguat paling besar.' },
+    tail: { label: 'ekor (belakang)', s: 5, q: -30, note: 'Klip di ekor membuat badan tidak stabil.' }
+  };
+  const THICK = { loose: 30, tight: 18, fold: 12 };
+  const CLIP_T = { nose: 0.88, middle: 0.5, tail: 0.12 };
+
+  // Model deterministik. Batas beban (limit) disembunyikan dari siswa.
+  function design(shape, clip) {
+    const sh = SHAPES[shape];
+    const cl = CLIPS[clip];
+    const stiffness = Math.min(100, Math.max(0, sh.s + cl.s));
+    const stability = Math.min(100, Math.max(0, sh.q + cl.q));
+    return {
+      stiffness,
+      stability,
+      limit: Math.round((stiffness * stability) / 500) * STEP,
+      kaku: stiffness >= STIFF_MIN,
+      stabil: stability >= STAB_MIN && clip !== 'tail'
+    };
+  }
+
+  const kg = (g) => (g / 1000).toLocaleString('id-ID', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+  const initialState = () => ({ shape: 'loose', clip: 'middle', load: 0, bent: false, records: [] });
+  let state = initialState();
+
+  // ---------- Feedback ----------
+  function setFeedback(kind, title, body) {
+    const panel = document.getElementById('feedback-panel');
+    const t = document.createElement('p');
+    t.className = 'feedback-title';
+    t.textContent = title;
+    const b = document.createElement('p');
+    b.textContent = body;
+    panel.className = kind;
+    panel.replaceChildren(t, b);
+  }
+
+  function explainDesign() {
+    const sh = SHAPES[state.shape];
+    const cl = CLIPS[state.clip];
+    const d = design(state.shape, state.clip);
+    const sign = (v) => (v < 0 ? `− ${-v}` : `+ ${v}`);
+    let text = `${sh.note} ${cl.note} Kekakuan = ${sh.s} ${sign(cl.s)} = ${d.stiffness}, ${d.kaku ? 'memenuhi' : 'belum memenuhi'} ambang kaku (≥ ${STIFF_MIN}). Kestabilan = ${sh.q} ${sign(cl.q)} = ${d.stability}, ${d.stabil ? 'memenuhi' : 'belum memenuhi'} ambang stabil (≥ ${STAB_MIN}).`;
+    if (state.clip === 'tail') text += ' Klip di ekor selalu membuat badan tidak stabil.';
+    return text;
+  }
+
+  // ---------- Actions ----------
+  function changeDesign(shape, clip, title) {
+    const hadTest = state.load > 0 || state.bent;
+    state.shape = shape;
+    state.clip = clip;
+    state.load = 0;
+    state.bent = false;
+    const extra = hadTest ? ' Pengujian diulang dari 0 g untuk desain ini.' : '';
+    setFeedback('', title, explainDesign() + extra);
+    render();
+  }
+
+  function addLoad() {
+    if (state.bent) {
+      setFeedback('error', 'Pengujian dihentikan', `Batang sudah bengkok pada ${state.load} g. Tambahan beban tidak diuji lagi. Tekan Reset semua untuk mencoba desain lain.`);
+      render();
+      return;
+    }
+    const d = design(state.shape, state.clip);
+    state.load += STEP;
+    if (state.load > d.limit) {
+      state.bent = true;
+      setFeedback('error', `Batang bengkok pada ${state.load} g`, 'Beban ini melewati batas badan. Data pada langkah ini dan setelahnya tidak boleh dipakai. Beban aman maksimum adalah beban terbesar yang dicatat sebelum badan bengkok.');
+    } else {
+      setFeedback('', `Beban ${state.load} g`, 'Badan masih lurus. Tekan Catat beban jika ingin menyimpan data ini, lalu tambah beban dengan langkah 10 g.');
+    }
+    render();
+  }
+
+  function recordLoad() {
+    if (state.load === 0) {
+      setFeedback('error', 'Tambah beban dulu', 'Data pada 0 g tidak menunjukkan kemampuan badan. Tambah beban sebelum mencatat.');
+      render();
+      return;
+    }
+    const duplicate = state.records.some((r) => r.shape === state.shape && r.clip === state.clip && r.load === state.load);
+    if (duplicate) {
+      setFeedback('error', 'Sudah dicatat', `Beban ${state.load} g sudah ada di tabel untuk desain ini.`);
+      render();
+      return;
+    }
+    const verdict = state.bent ? 'ditolak' : 'aman';
+    state.records.push({ shape: state.shape, clip: state.clip, load: state.load, verdict });
+    if (verdict === 'aman') {
+      setFeedback('success', `Data ${state.load} g diterima`, 'Badan masih lurus pada pengukuran ini, jadi data boleh dipakai untuk menentukan beban aman.');
+    } else {
+      setFeedback('error', `Data ${state.load} g DITOLAK`, 'Badan sudah bengkok pada atau sebelum pengukuran ini. Data setelah badan bengkok tidak mencerminkan kemampuan desain, jadi tidak dipakai.');
+    }
+    render();
+  }
+
+  function resetAll() {
+    state = initialState();
+    setFeedback('', 'Semua direset', 'Rancangan, beban, data, dan penjelasan kembali ke awal. ' + explainDesign());
+    render();
+  }
+
+  // ---------- Rendering ----------
+  function el(tag, text, cls) {
+    const node = document.createElement(tag);
+    if (text !== undefined) node.textContent = text;
+    if (cls) node.className = cls;
+    return node;
+  }
+
+  function renderRecords() {
+    const body = document.getElementById('records-body');
+    body.replaceChildren();
+    if (state.records.length === 0) {
+      const tr = el('tr');
+      const td = el('td', 'Belum ada data. Tambah beban, lalu tekan Catat beban.');
+      td.colSpan = 4;
+      tr.append(td);
+      body.append(tr);
+      return;
+    }
+    state.records.forEach((r, i) => {
+      const tr = el('tr');
+      const verdictOk = r.verdict === 'aman';
+      tr.append(
+        el('td', String(i + 1)),
+        el('td', `${SHAPES[r.shape].label}, klip ${CLIPS[r.clip].label}`),
+        el('td', `${r.load} g`, 'mono-value'),
+        el('td', verdictOk ? 'Aman' : 'Ditolak (bengkok)', verdictOk ? 'verdict-ok' : 'verdict-bad')
+      );
+      body.append(tr);
+    });
+  }
+
+  function render() {
+    const d = design(state.shape, state.clip);
+
+    for (const k of Object.keys(SHAPES)) {
+      const b = document.getElementById(`shape-${k}-btn`);
+      const on = state.shape === k;
+      b.setAttribute('aria-pressed', String(on));
+      b.className = on ? 'btn btn-primary' : 'btn';
+    }
+    for (const k of Object.keys(CLIPS)) {
+      const b = document.getElementById(`clip-${k}-btn`);
+      const on = state.clip === k;
+      b.setAttribute('aria-pressed', String(on));
+      b.className = on ? 'btn btn-primary' : 'btn';
+    }
+
+    document.getElementById('load-display').textContent = `${state.load} g`;
+    document.getElementById('load-si').textContent = `${kg(state.load)} kg`;
+    document.getElementById('stiffness-display').textContent = String(d.stiffness);
+    document.getElementById('stiffness-note').textContent = d.kaku ? 'Kaku' : 'Belum kaku';
+    document.getElementById('stability-display').textContent = String(d.stability);
+    document.getElementById('stability-note').textContent = d.stabil ? 'Stabil' : 'Tidak stabil';
+
+    const bentEl = document.getElementById('bent-display');
+    if (state.bent) {
+      bentEl.textContent = `Bengkok pada ${state.load} g`;
+    } else {
+      bentEl.textContent = state.load > 0 ? 'Masih lurus' : 'Belum dibebani';
+    }
+    bentEl.classList.toggle('verdict-bad', state.bent);
+
+    document.getElementById('load-add-btn').disabled = state.bent;
+    document.getElementById('rig').setAttribute(
+      'aria-label',
+      `Roket ${state.bent ? 'bengkok' : 'lurus'} dengan beban ${state.load} gram`
+    );
+
+    const safe = state.records
+      .filter((r) => r.verdict === 'aman' && r.shape === state.shape && r.clip === state.clip)
+      .reduce((m, r) => Math.max(m, r.load), -1);
+    document.getElementById('safe-max-display').textContent = safe < 0
+      ? 'Beban aman maksimum untuk desain ini: belum ada data aman.'
+      : `Beban aman maksimum untuk desain ini: ${safe} g (${kg(safe)} kg).`;
+
+    renderRecords();
+  }
+
+  // ---------- Canvas ----------
+  const canvas = document.getElementById('rig');
+  const ctx = canvas.getContext('2d');
+  const pal = {};
+  let W = 0;
+  let H = 0;
+  let sag = 0;
+
+  function readPalette() {
+    const cs = getComputedStyle(document.documentElement);
+    const v = (n) => cs.getPropertyValue(n).trim();
+    pal.bg = v('--bg');
+    pal.foil = v('--text-muted');
+    pal.line = v('--border-strong');
+    pal.support = v('--text-dim');
+    pal.text = v('--text');
+    pal.accent = v('--accent');
+    pal.accentText = v('--accent-text');
+    pal.warn = v('--warning');
+    pal.error = v('--error');
+    pal.ok = v('--success');
+    pal.mono = v('--font-mono');
+  }
+
+  function resize() {
+    const r = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    W = r.width;
+    H = r.height;
+    canvas.width = Math.max(1, Math.round(W * dpr));
+    canvas.height = Math.max(1, Math.round(H * dpr));
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    readPalette();
+  }
+
+  function targetSag(d) {
+    if (state.bent) return H * 0.16;
+    if (state.load === 0) return 0;
+    return H * 0.07 * (state.load / d.limit);
+  }
+
+  function drawRig() {
+    const thick = THICK[state.shape];
+    const x0 = W * 0.14;
+    const x1 = W * 0.86;
+    const y0 = H * 0.36;
+    const span = x1 - x0;
+    const xAt = (t) => x0 + span * t;
+    const yAt = (t) => y0 + 4 * sag * t * (1 - t);
+    const groundY = H * 0.86;
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = pal.bg;
+    ctx.fillRect(0, 0, W, H);
+
+    // Lantai dan penyangga
+    ctx.strokeStyle = pal.support;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(W * 0.05, groundY);
+    ctx.lineTo(W * 0.95, groundY);
+    ctx.stroke();
+    for (const t of [0, 1]) {
+      const x = xAt(t);
+      ctx.beginPath();
+      ctx.moveTo(x, y0 + thick / 2 + 2);
+      ctx.lineTo(x - 14, groundY);
+      ctx.lineTo(x + 14, groundY);
+      ctx.closePath();
+      ctx.stroke();
+    }
+
+    // Badan roket (polygon mengikuti lengkung)
+    const N = 40;
+    ctx.beginPath();
+    for (let i = 0; i <= N; i++) {
+      const t = i / N;
+      const x = xAt(t);
+      const y = yAt(t) - thick / 2;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    for (let i = N; i >= 0; i--) {
+      const t = i / N;
+      ctx.lineTo(xAt(t), yAt(t) + thick / 2);
+    }
+    ctx.closePath();
+    ctx.fillStyle = state.bent ? pal.error : pal.foil;
+    ctx.fill();
+    ctx.strokeStyle = pal.line;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Garis bentuk: gulungan longgar berkerut, lipatan punya satu garis lipat
+    const offsets = state.shape === 'loose' ? [-0.28, 0.28] : state.shape === 'fold' ? [0] : [];
+    if (offsets.length) {
+      ctx.strokeStyle = pal.line;
+      ctx.lineWidth = 1;
+      for (const off of offsets) {
+        ctx.beginPath();
+        for (let i = 0; i <= N; i++) {
+          const t = i / N;
+          const x = xAt(t);
+          const y = yAt(t) + off * thick;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+    }
+
+    // Hidung roket
+    ctx.fillStyle = pal.accent;
+    ctx.beginPath();
+    ctx.moveTo(x1, yAt(1) - thick / 2);
+    ctx.lineTo(x1 + 26, yAt(1));
+    ctx.lineTo(x1, yAt(1) + thick / 2);
+    ctx.closePath();
+    ctx.fill();
+
+    // Klip kertas pada posisi terpilih
+    const tc = CLIP_T[state.clip];
+    const cx = xAt(tc);
+    const cy = yAt(tc);
+    ctx.fillStyle = pal.warn;
+    ctx.fillRect(cx - 7, cy - thick / 2 - 6, 14, thick + 12);
+    ctx.strokeStyle = pal.line;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(cx - 7, cy - thick / 2 - 6, 14, thick + 12);
+
+    // Beban yang digantung di tengah
+    if (state.load > 0) {
+      const lx = xAt(0.5);
+      const ly = yAt(0.5) + thick / 2;
+      const hang = Math.min(16 + state.load * 0.3, H * 0.2);
+      ctx.strokeStyle = pal.text;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(lx, ly);
+      ctx.lineTo(lx, ly + 14);
+      ctx.stroke();
+      ctx.fillStyle = state.bent ? pal.error : pal.accent;
+      ctx.fillRect(lx - 34, ly + 14, 68, hang);
+      ctx.fillStyle = pal.accentText;
+      ctx.font = `500 13px ${pal.mono}`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`${state.load} g`, lx, ly + 14 + hang / 2);
+    }
+
+    // Label status
+    ctx.font = `500 13px ${pal.mono}`;
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = state.bent ? pal.error : pal.ok;
+    ctx.fillText(state.bent ? 'BENGKOK' : 'LURUS', W * 0.95, H * 0.05);
+  }
+
+  function frame() {
+    const d = design(state.shape, state.clip);
+    sag += (targetSag(d) - sag) * 0.12;
+    drawRig();
+    requestAnimationFrame(frame);
+  }
+
+  // ---------- Wiring ----------
+  new ResizeObserver(resize).observe(canvas);
+
+  for (const k of Object.keys(SHAPES)) {
+    document.getElementById(`shape-${k}-btn`).addEventListener('click', () => {
+      if (state.shape !== k) changeDesign(k, state.clip, `Bentuk: ${SHAPES[k].label}`);
+    });
+  }
+  for (const k of Object.keys(CLIPS)) {
+    document.getElementById(`clip-${k}-btn`).addEventListener('click', () => {
+      if (state.clip !== k) changeDesign(state.shape, k, `Klip: ${CLIPS[k].label}`);
+    });
+  }
+
+  const presetList = document.getElementById('preset-list');
+  CONFIG.presets.forEach((p, i) => {
+    const b = el('button', p.name, 'btn btn-ghost');
+    b.type = 'button';
+    b.id = `preset-${i + 1}-btn`;
+    b.addEventListener('click', () => changeDesign(p.variables.bodyShape, p.variables.clipPosition, `Contoh: ${p.name}`));
+    presetList.append(b);
+  });
+
+  document.getElementById('load-add-btn').addEventListener('click', addLoad);
+  document.getElementById('record-btn').addEventListener('click', recordLoad);
+  document.getElementById('reset-btn').addEventListener('click', resetAll);
+
+  window.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const tag = e.target.tagName;
+    if (e.code === 'Space' && !['BUTTON', 'INPUT', 'A', 'TEXTAREA'].includes(tag)) {
+      e.preventDefault();
+      addLoad();
+    } else if ((e.key === 'r' || e.key === 'R') && !['INPUT', 'TEXTAREA'].includes(tag)) {
+      resetAll();
+    }
+  });
+
+  setFeedback('', 'Rancangan awal', explainDesign());
+  render();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+# Satu entri katalog per simulasi. Kunci adalah pengenal bahasa Inggris;
+# nilainya Bahasa Indonesia karena menjadi bagian URL.
+# Katalog adalah sumber kebenaran atas metadata simulasi (docs/adr/0004).
+title: "Perubahan Fisika atau Kimia"
+description: >-
+  Memilah contoh perubahan fisika dan kimia berdasarkan ciri-cirinya.
+level: smp
+grade: 7
+subject: ipa
+order: 34
+scene: "s11"

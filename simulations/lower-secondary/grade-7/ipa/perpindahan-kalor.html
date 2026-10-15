@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perpindahan Kalor · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Membedakan konduksi, konveksi, dan radiasi sebagai tiga cara kalor berpindah beserta contohnya.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Perpindahan Kalor">
+  <meta property="og:description" content="Membedakan konduksi, konveksi, dan radiasi sebagai tiga cara kalor berpindah beserta contohnya.">
+  <meta property="og:locale" content="id">
+  <style>
+:root {
+  /* Colour */
+  --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+  --surface: #14141e;     /* panels, cards, step rows */
+  --panel: rgba(20, 20, 30, 0.9);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: #333;
+  --text: #ffffff;
+  --text-muted: #aaa;
+  --text-dim: #888;
+  --accent: #6366f1;      /* primary action, slider thumb, active state */
+  --accent-hover: #5558e8;
+  --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+  --success: #fbbf24;     /* completion, headings, callouts */
+  --warning: #fb923c;
+  --error: #ff6b6b;
+  --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-none: none;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type scale (system fonts only) */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-caption: 11px;   /* uppercase control labels */
+  --text-heading: 24px;
+  --font-weight-display: 600;  /* headings */
+  --font-weight-number: 500;   /* monospaced readouts */
+
+  /* Focus, motion, stacking */
+  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  --motion: 0.2s;
+  --motion-slow: 0.3s;
+  --z-overlay: 100;        /* panels, tooltips */
+  --z-modal: 1000;         /* loading screens, modal dialogs */
+}
+
+[data-theme="light"] {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-strong: #d4d4d8;
+  --text: #16161d;
+  --text-muted: #52525b;
+  --text-dim: #71717a;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.95);
+  --success: #b45309;
+  --warning: #c2410c;
+  --error: #dc2626;
+  --accent-text: #ffffff;
+  --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+h1, h2, h3 { font-weight: var(--font-weight-display); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-4);
+}
+.panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+.btn {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  min-height: 44px;            /* never below 44px, mobile */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--border-strong);
+  color: var(--text);
+  box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.btn:hover { background: var(--text-muted); }
+.btn:active { transform: scale(0.95); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); }
+
+.control-label {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+input[type="range"] {
+  width: 100%; height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Visually hidden but announced by screen readers. Use when a layout has no
+   room for a visible <h1> (e.g. a full-bleed canvas) — never as an excuse to
+   drop a heading. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+#feedback-panel {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+#feedback-panel.success { border-left-color: var(--success); }
+#feedback-panel.error { border-left-color: var(--error); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+.sources {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+.sources-heading {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+.source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+.source-item a { color: var(--accent); text-decoration: none; }
+.source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+.reading-article {
+  max-width: 720px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+.reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+.reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+.reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+.reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+.reading-article blockquote {
+  border-left: 3px solid var(--border-strong);
+  padding-left: var(--space-4);
+  color: var(--text-muted);
+  margin-bottom: var(--space-4);
+}
+.reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+.reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+.reading-article pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+}
+.reading-article pre code { background: none; padding: 0; }
+.reading-article table { width: 100%; border-collapse: collapse; }
+.reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+.reading-article details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.reading-article summary {
+  cursor: pointer;
+  font-weight: var(--font-weight-display);
+  color: var(--text);
+}
+.reading-article details[open] summary { margin-bottom: var(--space-2); }
+.glossary-term {
+  text-decoration: underline dotted var(--text-dim);
+  text-decoration-thickness: 1px;
+  cursor: help;
+}
+.katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+/* highlight.js token colours — mapped to the token set, not a canned theme */
+.hljs { color: var(--text); }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+.hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+.hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+.hljs-number { color: var(--warning); }
+
+/* Layout for this scene (appearance comes from the tokens above) */
+.page { min-height: 100vh; max-width: 1100px; margin: 0 auto; padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-4); }
+.page-header h1 { font-size: var(--text-heading); margin-bottom: var(--space-2); }
+.page-header p { font-size: var(--text-sm); color: var(--text-muted); max-width: 60ch; }
+
+.diagram-layout { display: flex; flex-direction: column; gap: var(--space-4); }
+@media (min-width: 900px) {
+  .diagram-layout { flex-direction: row; align-items: flex-start; }
+  .diagram-card { flex: 1 1 auto; min-width: 0; }
+  .detail-card { flex: 0 0 20rem; }
+}
+.diagram-card { display: flex; flex-direction: column; gap: var(--space-3); }
+.detail-card h2 { margin-bottom: var(--space-2); }
+#detail-body { font-size: var(--text-base); color: var(--text); line-height: 1.6; }
+
+.btn-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.btn-row .btn { flex: 1 1 8rem; }
+.note { font-size: var(--text-xs); color: var(--text-dim); }
+
+.progress-fill { height: 100%; width: 0; background: var(--accent); transition: width var(--motion); }
+
+.diagram-scroll { overflow-x: auto; }
+#diagram-svg { display: block; width: 100%; min-width: 560px; height: auto; }
+
+.edge { fill: none; stroke: var(--text-dim); stroke-width: 2; transition: opacity var(--motion); }
+.edge.is-hidden { opacity: 0; }
+.arrow-head { fill: var(--text-dim); }
+
+.node { cursor: pointer; transition: opacity var(--motion); outline: none; }
+.node.is-hidden { opacity: 0; pointer-events: none; }
+.node .node-body { transform-box: fill-box; transform-origin: center; transition: transform var(--motion); }
+.node:hover .node-body { transform: translateY(-4px); }
+.node:active .node-body { transform: scale(0.98); }
+.node rect { fill: var(--surface); stroke: var(--text-dim); stroke-width: 1.5; }
+.node.is-root rect { fill: var(--accent); stroke: var(--accent); }
+.node.is-selected rect { stroke: var(--success); stroke-width: 2.5; }
+.node:focus-visible rect { stroke: var(--accent); stroke-width: 3; }
+.node-icon { font-size: 18px; }
+.node-label { font-size: 14px; font-weight: var(--font-weight-display); fill: var(--text); }
+.node.is-root .node-label { fill: var(--accent-text); }
+
+.table-wrap { overflow-x: auto; }
+.summary-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+.summary-table th, .summary-table td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; vertical-align: top; }
+.summary-table th { color: var(--text-muted); font-weight: var(--font-weight-display); }
+</style>
+</head>
+<body>
+  <main class="page">
+    <header class="page-header">
+      <h1>Perpindahan Kalor</h1>
+      <p>Kalor selalu berpindah dari benda bersuhu tinggi ke benda bersuhu rendah. Ada tiga cara perpindahannya. Tekan Selanjutnya untuk memunculkan satu bagian diagram demi satu.</p>
+    </header>
+
+    <section class="diagram-layout" aria-label="Diagram perpindahan kalor">
+      <div class="panel diagram-card">
+        <div class="btn-row">
+          <button type="button" class="btn btn-ghost" id="prev-btn">Sebelumnya</button>
+          <button type="button" class="btn btn-primary" id="next-btn">Selanjutnya</button>
+          <button type="button" class="btn btn-ghost" id="reset-btn">Atur ulang</button>
+        </div>
+        <div class="progress-track" id="progress-track" role="progressbar" aria-label="Kemajuan penampilan diagram" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <p class="note" id="progress-display"></p>
+        <div class="diagram-scroll">
+          <svg id="diagram-svg" role="img" aria-label="Diagram: kalor dibagi menjadi konduksi, konveksi, dan radiasi, masing-masing dengan contohnya">
+            <defs>
+              <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path class="arrow-head" d="M 0 0 L 10 5 L 0 10 z"></path>
+              </marker>
+            </defs>
+          </svg>
+        </div>
+        <p class="note">Klik kotak untuk melihat rinciannya. Pintasan keyboard: panah kanan untuk selanjutnya, panah kiri untuk sebelumnya, R untuk mengatur ulang.</p>
+      </div>
+
+      <aside class="panel detail-card" aria-live="polite">
+        <h2 class="panel-heading" id="detail-title"></h2>
+        <p id="detail-body"></p>
+      </aside>
+    </section>
+
+    <section class="panel">
+      <h2 class="panel-heading">Ringkasan ketiga cara perpindahan kalor</h2>
+      <div class="table-wrap">
+        <table class="summary-table">
+          <thead>
+            <tr><th scope="col">Jenis</th><th scope="col">Perlu medium?</th><th scope="col">Partikel ikut berpindah?</th><th scope="col">Contoh</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Konduksi</td><td>Ya, biasanya zat padat</td><td>Tidak, partikel hanya bergetar</td><td>Sendok logam yang ujungnya dipanaskan</td></tr>
+            <tr><td>Konveksi</td><td>Ya, zat cair atau gas</td><td>Ya, partikel ikut mengalir</td><td>Air mendidih di dalam panci</td></tr>
+            <tr><td>Radiasi</td><td>Tidak perlu</td><td>Tidak ada partikel yang berpindah</td><td>Panas matahari sampai ke Bumi</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script type="application/json" id="widget-config">{"nodes":[{"id":"kalor","label":"Kalor","icon":"🔥","details":"Kalor adalah energi yang berpindah dari benda bersuhu tinggi ke benda bersuhu rendah. Perpindahannya terjadi melalui konduksi, konveksi, atau radiasi."},{"id":"konduksi","label":"Konduksi","icon":"🔩","details":"Perpindahan kalor melalui zat padat. Partikel hanya bergetar di tempatnya dan meneruskan getarannya ke partikel di sebelahnya. Partikel itu sendiri tidak ikut berpindah."},{"id":"konveksi","label":"Konveksi","icon":"💧","details":"Perpindahan kalor yang disertai gerak partikel zat cair atau gas. Bagian yang panas menjadi kurang padat lalu naik, sedangkan bagian yang dingin turun dan mengisi tempatnya. Gerakan ini disebut arus konveksi."},{"id":"radiasi","label":"Radiasi","icon":"☀️","details":"Perpindahan kalor tanpa memerlukan medium atau zat perantara. Radiasi dapat merambat melalui ruang hampa udara."},{"id":"ex-konduksi","label":"Sendok logam panas","icon":"🥄","details":"Ketika ujung sendok logam dicelupkan ke teh panas, gagang sendok ikut panas. Kalor merambat dari ujung ke gagang melalui konduksi."},{"id":"ex-konveksi","label":"Air mendidih","icon":"🍲","details":"Air di dasar panci yang dipanaskan naik ke permukaan, sedangkan air yang lebih dingin di atasnya turun. Peristiwa ini adalah contoh konveksi."},{"id":"ex-radiasi","label":"Panas matahari","icon":"🌞","details":"Panas dari Matahari sampai ke Bumi melalui ruang hampa yang tidak berisi udara. Ini adalah contoh radiasi."}],"edges":[{"from":"kalor","to":"konduksi"},{"from":"kalor","to":"konveksi"},{"from":"kalor","to":"radiasi"},{"from":"konduksi","to":"ex-konduksi"},{"from":"konveksi","to":"ex-konveksi"},{"from":"radiasi","to":"ex-radiasi"}],"revealOrder":["kalor","konduksi","ex-konduksi","konveksi","ex-konveksi","radiasi","ex-radiasi"]}</script>
+  <script>
+  (function () {
+    'use strict';
+
+    const CONFIG = JSON.parse(document.getElementById('widget-config').textContent);
+    const NODES = CONFIG.nodes;
+    const EDGES = CONFIG.edges;
+    const ORDER = CONFIG.revealOrder;
+    const NS = 'http://www.w3.org/2000/svg';
+    const VIEW_W = 600;
+    const NW = 170;
+    const NH = 72;
+    const ROW = 120;
+    const TOP = 50;
+
+    const byId = {};
+    const children = {};
+    const parentOf = {};
+    NODES.forEach(function (n) { byId[n.id] = n; children[n.id] = []; });
+    EDGES.forEach(function (e) { children[e.from].push(e.to); parentOf[e.to] = e.from; });
+    const root = NODES.find(function (n) { return !parentOf[n.id]; });
+
+    // Tata letak pohon: daun dibagi merata di lebar, induk di tengah anak-anaknya
+    const leafCount = NODES.filter(function (n) { return children[n.id].length === 0; }).length;
+    const colW = VIEW_W / leafCount;
+    const pos = {};
+    let slot = 0;
+    let maxDepth = 0;
+    function place(id, depth) {
+      maxDepth = Math.max(maxDepth, depth);
+      const kids = children[id];
+      if (kids.length === 0) {
+        pos[id] = { x: colW * (slot + 0.5) };
+        slot += 1;
+      } else {
+        kids.forEach(function (k) { place(k, depth + 1); });
+        pos[id] = { x: (pos[kids[0]].x + pos[kids[kids.length - 1]].x) / 2 };
+      }
+      pos[id].y = TOP + depth * ROW;
+    }
+    place(root.id, 0);
+    const VIEW_H = TOP + maxDepth * ROW + NH / 2 + 16;
+
+    const $ = function (id) { return document.getElementById(id); };
+    const setText = function (id, t) { const el = $(id); if (el) el.textContent = t; };
+
+    function el(tag, attrs) {
+      const node = document.createElementNS(NS, tag);
+      Object.keys(attrs).forEach(function (k) { node.setAttribute(k, String(attrs[k])); });
+      return node;
+    }
+
+    function edgePath(a, b) {
+      const sx = a.x, sy = a.y + NH / 2;
+      const ex = b.x, ey = b.y - NH / 2 - 6;
+      const my = (sy + ey) / 2;
+      return 'M ' + sx + ' ' + sy + ' C ' + sx + ' ' + my + ', ' + ex + ' ' + my + ', ' + ex + ' ' + ey;
+    }
+
+    const svg = $('diagram-svg');
+    svg.setAttribute('viewBox', '0 0 ' + VIEW_W + ' ' + VIEW_H);
+
+    EDGES.forEach(function (e) {
+      svg.appendChild(el('path', {
+        id: 'edge-' + e.from + '-' + e.to,
+        class: 'edge',
+        d: edgePath(pos[e.from], pos[e.to]),
+        'marker-end': 'url(#arrow)'
+      }));
+    });
+
+    NODES.forEach(function (n) {
+      const p = pos[n.id];
+      const g = el('g', {
+        id: 'node-' + n.id,
+        class: 'node' + (n.id === root.id ? ' is-root' : ''),
+        transform: 'translate(' + p.x + ',' + p.y + ')',
+        role: 'button',
+        tabindex: '0',
+        'aria-label': n.label
+      });
+      const body = el('g', { class: 'node-body' });
+      body.appendChild(el('rect', { x: -NW / 2, y: -NH / 2, width: NW, height: NH, rx: 12 }));
+      const icon = el('text', { class: 'node-icon', x: 0, y: -6, 'text-anchor': 'middle' });
+      icon.textContent = n.icon || '';
+      const label = el('text', { class: 'node-label', x: 0, y: 18, 'text-anchor': 'middle' });
+      label.textContent = n.label;
+      body.appendChild(icon);
+      body.appendChild(label);
+      g.appendChild(body);
+      g.addEventListener('click', function () { select(n.id); });
+      g.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(n.id); }
+      });
+      svg.appendChild(g);
+    });
+
+    /* ---------- State dan kontrol ---------- */
+    const state = { count: 1, selected: ORDER[0] };
+
+    function isVisible(id) { return ORDER.indexOf(id) < state.count; }
+
+    function renderDetail() {
+      const n = byId[state.selected];
+      setText('detail-title', n ? (n.icon ? n.icon + ' ' : '') + n.label : '');
+      setText('detail-body', n ? n.details : 'Pilih sebuah kotak untuk melihat rinciannya.');
+    }
+
+    function render() {
+      NODES.forEach(function (n) {
+        const g = $('node-' + n.id);
+        if (!g) return;
+        const vis = isVisible(n.id);
+        g.classList.toggle('is-hidden', !vis);
+        g.classList.toggle('is-selected', n.id === state.selected);
+        g.setAttribute('tabindex', vis ? '0' : '-1');
+        g.setAttribute('aria-hidden', vis ? 'false' : 'true');
+      });
+      EDGES.forEach(function (e) {
+        const path = $('edge-' + e.from + '-' + e.to);
+        if (path) path.classList.toggle('is-hidden', !isVisible(e.to));
+      });
+      const total = ORDER.length;
+      const pct = Math.round(state.count / total * 100);
+      setText('progress-display', 'Ditampilkan ' + state.count + ' dari ' + total + ' bagian');
+      const fill = $('progress-fill');
+      if (fill) fill.style.width = pct + '%';
+      const track = $('progress-track');
+      if (track) track.setAttribute('aria-valuenow', String(pct));
+      const nextBtn = $('next-btn');
+      if (nextBtn) nextBtn.disabled = state.count >= total;
+      const prevBtn = $('prev-btn');
+      if (prevBtn) prevBtn.disabled = state.count <= 1;
+      renderDetail();
+    }
+
+    function select(id) {
+      if (!isVisible(id)) return;
+      state.selected = id;
+      render();
+    }
+
+    function next() {
+      if (state.count >= ORDER.length) return;
+      state.count += 1;
+      state.selected = ORDER[state.count - 1];
+      render();
+    }
+
+    function prev() {
+      if (state.count <= 1) return;
+      state.count -= 1;
+      state.selected = ORDER[state.count - 1];
+      render();
+    }
+
+    // Reset penuh: jumlah bagian yang tampil dan pilihan kembali ke kondisi awal
+    function resetState() {
+      state.count = 1;
+      state.selected = ORDER[0];
+      render();
+    }
+
+    const nextBtn = $('next-btn');
+    if (nextBtn) nextBtn.addEventListener('click', next);
+    const prevBtn = $('prev-btn');
+    if (prevBtn) prevBtn.addEventListener('click', prev);
+    const resetBtn = $('reset-btn');
+    if (resetBtn) resetBtn.addEventListener('click', resetState);
+
+    window.addEventListener('keydown', function (e) {
+      const tag = e.target && e.target.tagName ? e.target.tagName.toLowerCase() : '';
+      if (tag === 'button' || tag === 'input') return;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || (e.code === 'Space' && tag === 'body')) {
+        e.preventDefault();
+        next();
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        prev();
+      } else if (e.key === 'r' || e.key === 'R') {
+        resetState();
+      }
+    });
+
+    resetState();
+  })();
+  </script>
+</body>
+</html>

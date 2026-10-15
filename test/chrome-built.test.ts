@@ -388,7 +388,7 @@ describe('a canvas bitmap is at least as wide as the box it is drawn into', () =
   // Read from the source because that is all a test can see without a browser.
   // The browser check that backs this up lives in the commit message: the
   // painted extent went from 232px of CSS width to 534px in a 554px box.
-  const SIMS = resolve(import.meta.dirname, '..', 'simulations/lower-secondary/grade-7');
+  const SIMS = resolve(import.meta.dirname, '..', 'simulations/lower-secondary/grade-7/matematika');
 
   it('never sizes a canvas from CSS alone', () => {
     // The rule for every canvas in the batch: if it is stretched to fill its

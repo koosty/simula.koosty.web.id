@@ -101,11 +101,23 @@ The path may be the tool's repository root or the course directory inside it;
 `--tool` overrides it for one run. `--check` reports what would change and
 writes nothing, which is what to run first.
 
+The stage, grade and subject are read from the course folder name when it is
+`<mapel>-<sd|smp|sma>-kelas-<romawi>`. A course named any other way says them
+with flags instead, which also override the name:
+
+```
+npm run publish -- --tool /path/to/course --subject ipa --stage lower-secondary --grade 7
+```
+
+An IPA scene and a Matematika scene may share a scene id, because a scene id
+counts one course's scenes. A published simulation is only recognised as the
+same one when the subject matches too (`docs/adr/0012`).
+
 ### What it does
 
 For each scene the tool marks `ready` in its outline, the script writes:
 
-- `simulations/<stage>/<grade>/<slug>.html`, copied byte for byte. The
+- `simulations/<stage>/<grade>/<subject>/<slug>.html`, copied byte for byte. The
   site does not reshape a simulation to suit itself; a simulation broken on its
   own terms is fixed where it lives. `docs/adr/0005` draws that line.
 - `src/content/simulasi/<slug>.yaml`, the catalog entry.

@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Variabel Bebas, Terikat, dan Kontrol · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Ubah lama penyinaran dan volume air pada percobaan kecambah, lalu amati pengaruhnya pada tinggi kecambah.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Variabel Bebas, Terikat, dan Kontrol">
+  <meta property="og:description" content="Ubah lama penyinaran dan volume air pada percobaan kecambah, lalu amati pengaruhnya pada tinggi kecambah.">
+  <meta property="og:locale" content="id">
+  <style>
+:root {
+  /* Colour */
+  --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+  --surface: #14141e;     /* panels, cards, step rows */
+  --panel: rgba(20, 20, 30, 0.9);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: #333;
+  --text: #ffffff;
+  --text-muted: #aaa;
+  --text-dim: #888;
+  --accent: #6366f1;      /* primary action, slider thumb, active state */
+  --accent-hover: #5558e8;
+  --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+  --success: #fbbf24;     /* completion, headings, callouts */
+  --warning: #fb923c;
+  --error: #ff6b6b;
+  --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-none: none;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type scale (system fonts only) */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-caption: 11px;   /* uppercase control labels */
+  --text-heading: 24px;
+  --font-weight-display: 600;  /* headings */
+  --font-weight-number: 500;   /* monospaced readouts */
+
+  /* Focus, motion, stacking */
+  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  --motion: 0.2s;
+  --motion-slow: 0.3s;
+  --z-overlay: 100;        /* panels, tooltips */
+  --z-modal: 1000;         /* loading screens, modal dialogs */
+}
+
+[data-theme="light"] {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-strong: #d4d4d8;
+  --text: #16161d;
+  --text-muted: #52525b;
+  --text-dim: #71717a;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.95);
+  --success: #b45309;
+  --warning: #c2410c;
+  --error: #dc2626;
+  --accent-text: #ffffff;
+  --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+h1, h2, h3 { font-weight: var(--font-weight-display); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-4);
+}
+.panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+.btn {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  min-height: 44px;            /* never below 44px, mobile */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--border-strong);
+  color: var(--text);
+  box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.btn:hover { background: var(--text-muted); }
+.btn:active { transform: scale(0.95); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); }
+
+.control-label {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+input[type="range"] {
+  width: 100%; height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Visually hidden but announced by screen readers. Use when a layout has no
+   room for a visible <h1> (e.g. a full-bleed canvas) — never as an excuse to
+   drop a heading. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+#feedback-panel {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+#feedback-panel.success { border-left-color: var(--success); }
+#feedback-panel.error { border-left-color: var(--error); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+.sources {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+.sources-heading {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+.source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+.source-item a { color: var(--accent); text-decoration: none; }
+.source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+.reading-article {
+  max-width: 720px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+.reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+.reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+.reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+.reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+.reading-article blockquote {
+  border-left: 3px solid var(--border-strong);
+  padding-left: var(--space-4);
+  color: var(--text-muted);
+  margin-bottom: var(--space-4);
+}
+.reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+.reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+.reading-article pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+}
+.reading-article pre code { background: none; padding: 0; }
+.reading-article table { width: 100%; border-collapse: collapse; }
+.reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+.reading-article details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.reading-article summary {
+  cursor: pointer;
+  font-weight: var(--font-weight-display);
+  color: var(--text);
+}
+.reading-article details[open] summary { margin-bottom: var(--space-2); }
+.glossary-term {
+  text-decoration: underline dotted var(--text-dim);
+  text-decoration-thickness: 1px;
+  cursor: help;
+}
+.katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+/* highlight.js token colours — mapped to the token set, not a canned theme */
+.hljs { color: var(--text); }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+.hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+.hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+.hljs-number { color: var(--warning); }
+
+/* ---- Scene layout (appearance uses tokens only) ---- */
+.page { max-width: 1040px; margin: 0 auto; padding: var(--space-4); display: grid; gap: var(--space-4); }
+.layout { display: grid; gap: var(--space-4); }
+@media (min-width: 768px) {
+  .layout { grid-template-columns: minmax(0, 320px) minmax(0, 1fr); align-items: start; }
+}
+.muted { color: var(--text-muted); font-size: var(--text-sm); }
+.control-group { display: grid; gap: var(--space-2); margin-top: var(--space-4); }
+.control-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); }
+.role { font-size: var(--text-caption); color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+input[type="range"] { height: 8px; }
+input[type="range"]::-webkit-slider-thumb { width: 24px; height: 24px; }
+input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; background: var(--accent); border: none; border-radius: 50%; }
+.toggle {
+  display: flex; align-items: center; gap: var(--space-3);
+  min-height: 44px; cursor: pointer; font-size: var(--text-sm);
+}
+.toggle input { width: 22px; height: 22px; accent-color: var(--accent); }
+.warning { color: var(--warning); font-size: var(--text-sm); }
+.actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-4); }
+.actions .btn { flex: 1 1 auto; }
+.presets { display: grid; gap: var(--space-2); margin-top: var(--space-4); }
+.presets .btn { width: 100%; text-align: left; }
+.readout { display: grid; gap: var(--space-2); font-size: var(--text-sm); margin-top: var(--space-4); }
+.readout-row { display: flex; justify-content: space-between; gap: var(--space-3); color: var(--text-muted); }
+.readout-row strong { color: var(--text); font-weight: var(--font-weight-number); }
+.stage { display: grid; gap: var(--space-3); }
+.stage-canvas { width: 100%; display: block; border-radius: var(--radius-lg); border: 1px solid var(--border); background: var(--bg); touch-action: manipulation; }
+.conclusion { font-size: var(--text-sm); color: var(--text-muted); }
+.hint { font-size: var(--text-caption); color: var(--text-dim); }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="panel">
+      <h1>Variabel Bebas, Terikat, dan Kontrol</h1>
+      <p class="muted">Dua pot kecambah ditanam bersamaan. Ubah lama penyinaran (variabel bebas) dan amati tinggi kecambah (variabel terikat). Volume air dibuat sama sebagai variabel kontrol.</p>
+    </header>
+
+    <div class="layout">
+      <section class="panel" aria-labelledby="controls-heading">
+        <h2 class="panel-heading" id="controls-heading">Atur percobaan</h2>
+
+        <div class="control-group">
+          <div class="control-head">
+            <label class="control-label" for="light-slider">Lama penyinaran per hari</label>
+            <span class="role">Variabel bebas</span>
+          </div>
+          <input type="range" id="light-slider" min="0" max="12" step="1" value="12" aria-describedby="light-display">
+          <span class="mono-value" id="light-display">12 jam per hari</span>
+        </div>
+
+        <div class="control-group">
+          <div class="control-head">
+            <label class="control-label" for="water-slider">Volume air per hari</label>
+            <span class="role">Variabel kontrol</span>
+          </div>
+          <input type="range" id="water-slider" min="0" max="100" step="5" value="50" aria-describedby="water-display">
+          <span class="mono-value" id="water-display">50 mL per hari</span>
+          <label class="toggle" for="same-water-toggle">
+            <input type="checkbox" id="same-water-toggle" checked>
+            <span>Samakan volume air di kedua pot</span>
+          </label>
+          <p class="warning" id="control-warning" hidden>Peringatan: volume air kedua pot berbeda, sehingga cahaya bukan satu-satunya perbedaan.</p>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn btn-primary" id="start-btn">Mulai</button>
+          <button type="button" class="btn btn-ghost" id="reset-btn">Reset</button>
+        </div>
+
+        <div class="presets" aria-label="Contoh pengaturan">
+          <button type="button" class="btn" id="preset-1-btn">Uji cahaya: 12 jam, air sama</button>
+          <button type="button" class="btn" id="preset-2-btn">Cahaya sama: 6 jam, air sama</button>
+          <button type="button" class="btn" id="preset-3-btn">Kontrol gagal: air berbeda</button>
+        </div>
+
+        <div class="readout">
+          <div class="readout-row"><span>Status</span><strong id="status-display">Siap dijalankan</strong></div>
+          <div class="readout-row"><span>Hari</span><strong class="mono-value" id="day-display">Hari 0 dari 14</strong></div>
+          <div class="readout-row"><span>Pot uji (cahaya diubah)</span><strong class="mono-value" id="height-a-display">2,0 cm</strong></div>
+          <div class="readout-row"><span>Pot pembanding (6 jam)</span><strong class="mono-value" id="height-b-display">2,0 cm</strong></div>
+        </div>
+        <p class="hint" style="margin-top: var(--space-3);">Spasi: mulai atau jeda · R: reset</p>
+      </section>
+
+      <section class="panel stage" aria-labelledby="stage-heading">
+        <h2 class="panel-heading" id="stage-heading">Hasil percobaan</h2>
+        <canvas class="stage-canvas" id="sim-canvas" role="img" aria-label="Gambar dua pot kecambah dengan tinggi sesuai pengaturan percobaan"></canvas>
+        <p class="conclusion" id="conclusion-display" aria-live="polite">Jalankan percobaan sampai hari ke-14 untuk melihat hasil.</p>
+      </section>
+    </div>
+  </main>
+
+  <script type="application/json" id="widget-config">
+{
+  "type": "simulation",
+  "concept": "variabel_eksperimen",
+  "description": "Simulasi dua pot kecambah. Variabel bebas (lama penyinaran) diubah peneliti, variabel terikat (tinggi kecambah) diukur, dan variabel kontrol (volume air) dibuat tetap.",
+  "variables": [
+    { "name": "light", "label": "Lama penyinaran per hari", "min": 0, "max": 12, "default": 12, "unit": "jam" },
+    { "name": "water", "label": "Volume air per hari", "min": 0, "max": 100, "default": 50, "unit": "mL" }
+  ],
+  "presets": [
+    { "name": "Uji cahaya: 12 jam, air sama", "variables": { "light": 12, "water": 50, "sameWater": true } },
+    { "name": "Cahaya sama: 6 jam, air sama", "variables": { "light": 6, "water": 50, "sameWater": true } },
+    { "name": "Kontrol gagal: air berbeda", "variables": { "light": 12, "water": 50, "sameWater": false } }
+  ]
+}
+  </script>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var DAYS = 14;
+      var DURATION_MS = 4000;
+      var BASE_CM = 2;
+      var MAX_CM = 12;
+      var LIGHT_REF = 6;
+
+      var canvas = document.getElementById('sim-canvas');
+      var ctx = canvas ? canvas.getContext('2d') : null;
+      var cssW = 0;
+      var cssH = 0;
+      var dpr = 1;
+
+      var DEFAULT_LIGHT = 12;
+      var DEFAULT_WATER = 50;
+      var state = freshState(DEFAULT_LIGHT, DEFAULT_WATER, true);
+
+      function $(id) { return document.getElementById(id); }
+
+      function setText(el, text) { if (el) el.textContent = text; }
+
+      function fmt(n) { return n.toFixed(1).replace('.', ','); }
+
+      function cssVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+      function freshState(light, water, sameWater) {
+        return { light: light, water: water, sameWater: sameWater, status: 'idle', elapsed: 0, last: 0 };
+      }
+
+      // Model proxy (bukan fisika penuh): tinggi bertambah dengan cahaya; air di bawah 40 mL mengurangi pertumbuhan.
+      function heightFor(light, water) {
+        var lightFactor = light / 12;
+        var waterFactor = Math.min(water, 40) / 40;
+        return BASE_CM + 8 * lightFactor * (0.5 + 0.5 * waterFactor);
+      }
+
+      function targets() {
+        var waterB = state.sameWater ? state.water : Math.round(state.water / 2);
+        return {
+          a: heightFor(state.light, state.water),
+          b: heightFor(LIGHT_REF, waterB)
+        };
+      }
+
+      function progress() { return Math.min(1, state.elapsed / DURATION_MS); }
+
+      function ease(t) { return t * t * (3 - 2 * t); }
+
+      function shownHeights() {
+        var t = ease(progress());
+        var tg = targets();
+        return {
+          a: BASE_CM + (tg.a - BASE_CM) * t,
+          b: BASE_CM + (tg.b - BASE_CM) * t,
+          tg: tg
+        };
+      }
+
+      function conclusionFor(tg) {
+        if (!state.sameWater) {
+          return 'Variabel kontrol tidak sama (volume air berbeda), sehingga perbedaan tinggi tidak dapat dikaitkan hanya dengan cahaya.';
+        }
+        var diff = tg.a - tg.b;
+        if (Math.abs(diff) < 0.2) {
+          return 'Tinggi kedua pot hampir sama. Pada pengaturan ini, lama penyinaran tidak membuat perbedaan berarti.';
+        }
+        if (diff > 0) {
+          return 'Pot uji lebih tinggi. Lama penyinaran yang lebih banyak menghasilkan kecambah yang lebih tinggi.';
+        }
+        return 'Pot uji lebih pendek. Penyinaran yang lebih sedikit menghasilkan kecambah yang lebih pendek.';
+      }
+
+      function resetSim() {
+        state.status = 'idle';
+        state.elapsed = 0;
+        state.last = 0;
+        updateUI();
+      }
+
+      function mainAction() {
+        if (state.status === 'ended') resetSim();
+        state.status = state.status === 'running' ? 'paused' : 'running';
+        updateUI();
+      }
+
+      function setVariables(light, water, sameWater) {
+        state.light = light;
+        state.water = water;
+        state.sameWater = sameWater;
+        var lightSlider = $('light-slider');
+        var waterSlider = $('water-slider');
+        var toggle = $('same-water-toggle');
+        if (lightSlider) lightSlider.value = String(light);
+        if (waterSlider) waterSlider.value = String(water);
+        if (toggle) toggle.checked = sameWater;
+        resetSim();
+      }
+
+      function updateUI() {
+        var shown = shownHeights();
+        var day = Math.round(progress() * DAYS);
+        var statusText = { idle: 'Siap dijalankan', running: 'Berjalan', paused: 'Dijeda', ended: 'Selesai' }[state.status];
+        var buttonText = { idle: 'Mulai', running: 'Jeda', paused: 'Lanjut', ended: 'Mulai lagi' }[state.status];
+
+        setText($('light-display'), state.light + ' jam per hari');
+        setText($('water-display'), state.water + ' mL per hari');
+        setText($('status-display'), statusText);
+        setText($('day-display'), 'Hari ' + day + ' dari ' + DAYS);
+        setText($('height-a-display'), fmt(shown.a) + ' cm');
+        setText($('height-b-display'), fmt(shown.b) + ' cm');
+        setText($('start-btn'), buttonText);
+        setText($('conclusion-display'), state.status === 'ended'
+          ? conclusionFor(shown.tg)
+          : 'Jalankan percobaan sampai hari ke-14 untuk melihat hasil.');
+
+        var warning = $('control-warning');
+        if (warning) warning.hidden = state.sameWater;
+      }
+
+      function drawPlant(x, cm, groundY, potW, potH, potLabel, lightLabel, colors) {
+        var potTop = groundY - potH;
+        var stemLen = cm * ((groundY - potH - 70) / MAX_CM);
+        var topY = potTop - stemLen;
+
+        ctx.fillStyle = colors.border;
+        ctx.fillRect(x - potW / 2, potTop, potW, potH);
+
+        ctx.strokeStyle = colors.muted;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(x, potTop);
+        ctx.lineTo(x, topY);
+        ctx.stroke();
+
+        var leafSize = 8 + 10 * (cm / MAX_CM);
+        var fractions = [0.45, 0.8];
+        ctx.fillStyle = colors.accent;
+        for (var i = 0; i < fractions.length; i++) {
+          var y = potTop - stemLen * fractions[i];
+          ctx.beginPath();
+          ctx.ellipse(x - leafSize, y - 4, leafSize, leafSize * 0.45, -0.5, 0, 2 * Math.PI);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.ellipse(x + leafSize, y - 4, leafSize, leafSize * 0.45, 0.5, 0, 2 * Math.PI);
+          ctx.fill();
+        }
+
+        ctx.fillStyle = colors.text;
+        ctx.font = '500 14px ' + colors.mono;
+        ctx.textAlign = 'center';
+        ctx.fillText(fmt(cm) + ' cm', x, topY - 10);
+
+        ctx.font = '600 14px ' + colors.font;
+        ctx.fillText(potLabel, x, groundY + 24);
+        ctx.fillStyle = colors.muted;
+        ctx.font = '13px ' + colors.font;
+        ctx.fillText(lightLabel, x, groundY + 42);
+      }
+
+      function draw() {
+        if (!ctx || !cssW) return;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        var colors = {
+          bg: cssVar('--bg'),
+          surface: cssVar('--surface'),
+          border: cssVar('--border-strong'),
+          text: cssVar('--text'),
+          muted: cssVar('--text-muted'),
+          accent: cssVar('--accent'),
+          success: cssVar('--success'),
+          font: cssVar('--font'),
+          mono: cssVar('--font-mono')
+        };
+
+        ctx.fillStyle = colors.bg;
+        ctx.fillRect(0, 0, cssW, cssH);
+
+        var groundY = cssH - 60;
+        ctx.fillStyle = colors.surface;
+        ctx.fillRect(0, groundY, cssW, cssH - groundY);
+
+        // Sun: size follows light level (variabel bebas)
+        ctx.fillStyle = colors.success;
+        ctx.beginPath();
+        ctx.arc(36, 36, 12 + state.light * 0.9, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.fillStyle = colors.text;
+        ctx.textAlign = 'left';
+        ctx.font = '600 14px ' + colors.font;
+        ctx.fillText('Cahaya: ' + state.light + ' jam per hari', 64, 32);
+        ctx.font = '13px ' + colors.font;
+        ctx.fillStyle = colors.muted;
+        ctx.fillText('Air: ' + state.water + ' mL per hari', 64, 52);
+
+        var potW = Math.min(110, cssW * 0.28);
+        var potH = 40;
+        var shown = shownHeights();
+        drawPlant(cssW * 0.3, shown.a, groundY, potW, potH, 'Pot uji', 'Cahaya ' + state.light + ' jam', colors);
+        drawPlant(cssW * 0.7, shown.b, groundY, potW, potH, 'Pot pembanding', 'Cahaya 6 jam (tetap)', colors);
+      }
+
+      function resize() {
+        if (!canvas) return;
+        dpr = window.devicePixelRatio || 1;
+        cssW = canvas.clientWidth;
+        cssH = Math.round(Math.min(420, Math.max(300, cssW * 0.7)));
+        canvas.style.height = cssH + 'px';
+        canvas.width = Math.round(cssW * dpr);
+        canvas.height = Math.round(cssH * dpr);
+        draw();
+      }
+
+      function loop(ts) {
+        if (state.status === 'running') {
+          if (!state.last) state.last = ts;
+          state.elapsed += ts - state.last;
+          state.last = ts;
+          if (state.elapsed >= DURATION_MS) {
+            state.elapsed = DURATION_MS;
+            state.status = 'ended';
+            state.last = 0;
+          }
+          updateUI();
+        } else {
+          state.last = 0;
+        }
+        draw();
+        window.requestAnimationFrame(loop);
+      }
+
+      function bindControls() {
+        var lightSlider = $('light-slider');
+        var waterSlider = $('water-slider');
+        var toggle = $('same-water-toggle');
+        if (lightSlider) lightSlider.addEventListener('input', function () {
+          setVariables(Number(lightSlider.value), state.water, state.sameWater);
+        });
+        if (waterSlider) waterSlider.addEventListener('input', function () {
+          setVariables(state.light, Number(waterSlider.value), state.sameWater);
+        });
+        if (toggle) toggle.addEventListener('change', function () {
+          setVariables(state.light, state.water, toggle.checked);
+        });
+
+        var start = $('start-btn');
+        if (start) start.addEventListener('click', mainAction);
+        var reset = $('reset-btn');
+        if (reset) reset.addEventListener('click', function () {
+          setVariables(DEFAULT_LIGHT, DEFAULT_WATER, true);
+        });
+
+        var presets = [
+          { id: 'preset-1-btn', light: 12, water: 50, same: true },
+          { id: 'preset-2-btn', light: 6, water: 50, same: true },
+          { id: 'preset-3-btn', light: 12, water: 50, same: false }
+        ];
+        presets.forEach(function (p) {
+          var btn = $(p.id);
+          if (btn) btn.addEventListener('click', function () { setVariables(p.light, p.water, p.same); });
+        });
+
+        document.addEventListener('keydown', function (e) {
+          var tag = e.target && e.target.tagName ? e.target.tagName : '';
+          var isControl = tag === 'BUTTON' || tag === 'INPUT';
+          if (e.key === ' ' && !isControl) {
+            e.preventDefault();
+            mainAction();
+          } else if ((e.key === 'r' || e.key === 'R') && tag !== 'INPUT') {
+            setVariables(DEFAULT_LIGHT, DEFAULT_WATER, true);
+          }
+        });
+      }
+
+      if (typeof ResizeObserver !== 'undefined' && canvas) {
+        new ResizeObserver(resize).observe(canvas);
+      } else {
+        window.addEventListener('resize', resize);
+      }
+
+      bindControls();
+      updateUI();
+      resize();
+      window.requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>

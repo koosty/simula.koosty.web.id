@@ -1,0 +1,11 @@
+# Satu entri katalog per simulasi. Kunci adalah pengenal bahasa Inggris;
+# nilainya Bahasa Indonesia karena menjadi bagian URL.
+# Katalog adalah sumber kebenaran atas metadata simulasi (docs/adr/0004).
+title: "Proyek: Poster Kampanye Lingkungan"
+description: >-
+  Mengidentifikasi satu masalah lingkungan, mencari solusi, dan membuat poster kampanye.
+level: smp
+grade: 7
+subject: ipa
+order: 64
+scene: "s41"

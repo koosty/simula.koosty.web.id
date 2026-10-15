@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teknik Pengukuran yang Benar · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Ikuti urutan membaca alat ukur dengan benar, termasuk menghindari paralaks dan membaca meniskus pada gelas ukur.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Teknik Pengukuran yang Benar">
+  <meta property="og:description" content="Ikuti urutan membaca alat ukur dengan benar, termasuk menghindari paralaks dan membaca meniskus pada gelas ukur.">
+  <meta property="og:locale" content="id">
+  <style>
+:root {
+  /* Colour */
+  --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+  --surface: #14141e;     /* panels, cards, step rows */
+  --panel: rgba(20, 20, 30, 0.9);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: #333;
+  --text: #ffffff;
+  --text-muted: #aaa;
+  --text-dim: #888;
+  --accent: #6366f1;      /* primary action, slider thumb, active state */
+  --accent-hover: #5558e8;
+  --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+  --success: #fbbf24;     /* completion, headings, callouts */
+  --warning: #fb923c;
+  --error: #ff6b6b;
+  --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-none: none;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type scale (system fonts only) */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-caption: 11px;   /* uppercase control labels */
+  --text-heading: 24px;
+  --font-weight-display: 600;  /* headings */
+  --font-weight-number: 500;   /* monospaced readouts */
+
+  /* Focus, motion, stacking */
+  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  --motion: 0.2s;
+  --motion-slow: 0.3s;
+  --z-overlay: 100;        /* panels, tooltips */
+  --z-modal: 1000;         /* loading screens, modal dialogs */
+}
+
+[data-theme="light"] {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-strong: #d4d4d8;
+  --text: #16161d;
+  --text-muted: #52525b;
+  --text-dim: #71717a;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.95);
+  --success: #b45309;
+  --warning: #c2410c;
+  --error: #dc2626;
+  --accent-text: #ffffff;
+  --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+h1, h2, h3 { font-weight: var(--font-weight-display); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-4);
+}
+.panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+.btn {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  min-height: 44px;            /* never below 44px, mobile */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--border-strong);
+  color: var(--text);
+  box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.btn:hover { background: var(--text-muted); }
+.btn:active { transform: scale(0.95); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); }
+
+.control-label {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+input[type="range"] {
+  width: 100%; height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Visually hidden but announced by screen readers. Use when a layout has no
+   room for a visible <h1> (e.g. a full-bleed canvas) — never as an excuse to
+   drop a heading. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+#feedback-panel {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+#feedback-panel.success { border-left-color: var(--success); }
+#feedback-panel.error { border-left-color: var(--error); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+.sources {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+.sources-heading {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+.source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+.source-item a { color: var(--accent); text-decoration: none; }
+.source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+.reading-article {
+  max-width: 720px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+.reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+.reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+.reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+.reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+.reading-article blockquote {
+  border-left: 3px solid var(--border-strong);
+  padding-left: var(--space-4);
+  color: var(--text-muted);
+  margin-bottom: var(--space-4);
+}
+.reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+.reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+.reading-article pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+}
+.reading-article pre code { background: none; padding: 0; }
+.reading-article table { width: 100%; border-collapse: collapse; }
+.reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+.reading-article details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.reading-article summary {
+  cursor: pointer;
+  font-weight: var(--font-weight-display);
+  color: var(--text);
+}
+.reading-article details[open] summary { margin-bottom: var(--space-2); }
+.glossary-term {
+  text-decoration: underline dotted var(--text-dim);
+  text-decoration-thickness: 1px;
+  cursor: help;
+}
+.katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+/* highlight.js token colours — mapped to the token set, not a canned theme */
+.hljs { color: var(--text); }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+.hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+.hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+.hljs-number { color: var(--warning); }
+
+/* ---- Scene layout (appearance uses tokens only) ---- */
+.page { max-width: 1040px; margin: 0 auto; padding: var(--space-4); display: grid; gap: var(--space-4); }
+.muted { color: var(--text-muted); font-size: var(--text-sm); }
+.diagram-layout { display: grid; gap: var(--space-4); }
+@media (min-width: 768px) {
+  .diagram-layout { grid-template-columns: minmax(0, 1fr) 300px; align-items: start; }
+}
+.diagram-wrap { display: grid; gap: var(--space-3); }
+#diagram { width: 100%; height: auto; display: block; touch-action: manipulation; }
+#diagram .edge { fill: none; stroke: var(--text-muted); stroke-width: 2; }
+#diagram-arrow path { fill: var(--text-muted); }
+#diagram .node { cursor: pointer; }
+#diagram .node:focus { outline: none; }
+#diagram .node-rect { fill: var(--surface); stroke: var(--border-strong); stroke-width: 1.5; }
+#diagram .node.is-selected .node-rect { stroke: var(--accent); stroke-width: 2.5; }
+#diagram .node:focus-visible .node-rect { stroke: var(--accent); stroke-width: 3; }
+#diagram .node-label { fill: var(--text); font-family: var(--font); font-size: 14px; font-weight: var(--font-weight-display); }
+#diagram .node-body { transition: transform var(--motion); }
+#diagram .node:hover .node-body { transform: translateY(-4px); }
+#diagram .node:active .node-body { transform: scale(0.98); }
+.details-title { font-size: var(--text-base); margin-bottom: var(--space-2); }
+.details-text { font-size: var(--text-sm); color: var(--text-muted); }
+.controls { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+.controls .btn { flex: 1 1 auto; }
+.step-indicator { font-size: var(--text-sm); color: var(--text-muted); }
+.hint { font-size: var(--text-caption); color: var(--text-dim); }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="panel">
+      <h1>Teknik Pengukuran yang Benar</h1>
+      <p class="muted">Ikuti enam langkah membaca alat ukur dengan benar. Gunakan tombol untuk membuka langkah berikutnya, atau klik sebuah langkah untuk membaca penjelasannya.</p>
+    </header>
+
+    <div class="diagram-layout">
+      <section class="panel diagram-wrap" aria-label="Diagram langkah pengukuran">
+        <svg id="diagram" viewBox="0 0 800 400" role="group" aria-label="Diagram enam langkah membaca alat ukur">
+          <defs>
+            <marker id="diagram-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z"></path>
+            </marker>
+          </defs>
+          <g id="edge-layer"></g>
+          <g id="node-layer"></g>
+        </svg>
+
+        <div class="controls">
+          <button type="button" class="btn" id="prev-btn">Langkah sebelumnya</button>
+          <button type="button" class="btn btn-primary" id="next-btn">Langkah berikutnya</button>
+          <button type="button" class="btn btn-ghost" id="reset-btn">Ulangi</button>
+        </div>
+        <p class="step-indicator mono-value" id="step-indicator" aria-live="polite">Langkah 1 dari 6</p>
+        <p class="hint">Panah kanan/bawah: berikutnya · Panah kiri/atas: sebelumnya · R: ulangi</p>
+      </section>
+
+      <aside class="panel" aria-labelledby="details-heading">
+        <h2 class="panel-heading" id="details-heading">Penjelasan</h2>
+        <h3 class="details-title" id="details-title">Pilih langkah</h3>
+        <p class="details-text" id="details-text">Klik sebuah langkah pada diagram untuk membaca penjelasannya.</p>
+      </aside>
+    </div>
+  </main>
+
+  <script type="application/json" id="widget-config">
+{
+  "nodes": [
+    { "id": "n1", "label": "Pilih alat ukur", "details": "Pilih alat yang sesuai dengan besaran yang diukur dan rentang ukurnya. Contoh: gelas ukur untuk volume cairan, penggaris untuk panjang, dan termometer untuk suhu." },
+    { "id": "n2", "label": "Atur posisi mata", "details": "Letakkan mata tegak lurus di depan skala, sejajar dengan permukaan atau penunjuk yang diukur. Jangan melihat dari samping atau dari atas." },
+    { "id": "n3", "label": "Periksa paralaks", "details": "Paralaks adalah perubahan posisi tampak suatu benda karena posisi mata yang miring. Akibatnya, bacaan bisa lebih besar atau lebih kecil dari nilai sebenarnya." },
+    { "id": "n4", "label": "Baca meniskus", "details": "Permukaan air dalam gelas ukur membentuk cekungan yang disebut meniskus. Baca skala tepat pada bagian bawah meniskus, dengan mata sejajar dengan cekungan itu." },
+    { "id": "n5", "label": "Catat dengan satuan", "details": "Tulis angka hasil ukur beserta satuannya, misalnya 25 mL. Gunakan satuan SI atau satuan yang lazim dan sesuai dengan alat ukur." },
+    { "id": "n6", "label": "Ulangi pengukuran", "details": "Ulangi pengukuran beberapa kali untuk memastikan hasilnya konsisten. Jika hasil berbeda jauh, periksa kembali posisi mata dan cara membaca skala." }
+  ],
+  "edges": [
+    { "from": "n1", "to": "n2" },
+    { "from": "n2", "to": "n3" },
+    { "from": "n3", "to": "n4" },
+    { "from": "n4", "to": "n5" },
+    { "from": "n5", "to": "n6" }
+  ],
+  "revealOrder": ["n1", "n2", "n3", "n4", "n5", "n6"]
+}
+  </script>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var NS = 'http://www.w3.org/2000/svg';
+      var NODE_WIDTH = 180;
+      var NODE_HEIGHT = 70;
+      var ARROW_OFFSET = 10;
+      var COL_X = [150, 400, 650];
+      var ROW_Y = [120, 300];
+
+      var config = JSON.parse(document.getElementById('widget-config').textContent);
+      var order = config.revealOrder;
+      var nodesById = {};
+      var positions = {};
+      var revealed = 1;
+      var selectedId = null;
+
+      function $(id) { return document.getElementById(id); }
+      function setText(el, t) { if (el) el.textContent = t; }
+
+      config.nodes.forEach(function (node, i) {
+        nodesById[node.id] = node;
+        var row = Math.floor(i / 3);
+        var col = i % 3;
+        if (row % 2 === 1) col = 2 - col; // baris kedua mengalir dari kanan ke kiri
+        positions[node.id] = { x: COL_X[col], y: ROW_Y[row] };
+      });
+
+      function getEdgePoints(from, to) {
+        var dx = to.x - from.x, dy = to.y - from.y;
+        var sx, sy, ex, ey;
+        if (Math.abs(dy) > Math.abs(dx)) {
+          sx = from.x;
+          sy = dy > 0 ? from.y + NODE_HEIGHT / 2 : from.y - NODE_HEIGHT / 2;
+          ex = to.x;
+          ey = dy > 0 ? to.y - NODE_HEIGHT / 2 - ARROW_OFFSET : to.y + NODE_HEIGHT / 2 + ARROW_OFFSET;
+        } else {
+          sx = dx > 0 ? from.x + NODE_WIDTH / 2 : from.x - NODE_WIDTH / 2;
+          sy = from.y;
+          ex = dx > 0 ? to.x - NODE_WIDTH / 2 - ARROW_OFFSET : to.x + NODE_WIDTH / 2 + ARROW_OFFSET;
+          ey = to.y;
+        }
+        return 'M ' + sx + ' ' + sy + ' L ' + ex + ' ' + ey;
+      }
+
+      function buildEdges() {
+        var layer = $('edge-layer');
+        if (!layer) return;
+        config.edges.forEach(function (edge) {
+          var path = document.createElementNS(NS, 'path');
+          path.setAttribute('id', 'edge-' + edge.from + '-' + edge.to);
+          path.setAttribute('class', 'edge');
+          path.setAttribute('marker-end', 'url(#diagram-arrow)');
+          path.setAttribute('d', getEdgePoints(positions[edge.from], positions[edge.to]));
+          path.dataset.from = edge.from;
+          path.dataset.to = edge.to;
+          layer.appendChild(path);
+        });
+      }
+
+      function buildNodes() {
+        var layer = $('node-layer');
+        if (!layer) return;
+        order.forEach(function (id, index) {
+          var node = nodesById[id];
+          var pos = positions[id];
+          if (!node || !pos) return;
+
+          var g = document.createElementNS(NS, 'g');
+          g.setAttribute('id', 'node-' + id);
+          g.setAttribute('class', 'node');
+          g.setAttribute('transform', 'translate(' + pos.x + ',' + pos.y + ')');
+          g.setAttribute('tabindex', '0');
+          g.setAttribute('role', 'button');
+          g.setAttribute('aria-label', (index + 1) + '. ' + node.label);
+          g.dataset.index = String(index);
+
+          var inner = document.createElementNS(NS, 'g');
+          inner.setAttribute('class', 'node-body');
+
+          var rect = document.createElementNS(NS, 'rect');
+          rect.setAttribute('class', 'node-rect');
+          rect.setAttribute('x', String(-NODE_WIDTH / 2));
+          rect.setAttribute('y', String(-NODE_HEIGHT / 2));
+          rect.setAttribute('width', String(NODE_WIDTH));
+          rect.setAttribute('height', String(NODE_HEIGHT));
+          rect.setAttribute('rx', '12');
+
+          var text = document.createElementNS(NS, 'text');
+          text.setAttribute('class', 'node-label');
+          text.setAttribute('text-anchor', 'middle');
+          text.setAttribute('dy', '6');
+          text.textContent = node.label;
+
+          inner.appendChild(rect);
+          inner.appendChild(text);
+          g.appendChild(inner);
+
+          g.addEventListener('click', function () { select(id); });
+          g.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              select(id);
+            }
+          });
+          layer.appendChild(g);
+        });
+      }
+
+      function select(id) {
+        selectedId = id;
+        render();
+      }
+
+      function visibleIds() { return order.slice(0, revealed); }
+
+      function render() {
+        var visible = visibleIds();
+        var total = order.length;
+
+        order.forEach(function (id, index) {
+          var g = $('node-' + id);
+          if (!g) return;
+          g.style.display = index < revealed ? '' : 'none';
+          g.classList.toggle('is-selected', id === selectedId);
+        });
+
+        var layer = $('edge-layer');
+        if (layer) {
+          var paths = layer.querySelectorAll('path');
+          for (var i = 0; i < paths.length; i++) {
+            var p = paths[i];
+            var show = visible.indexOf(p.dataset.from) !== -1 && visible.indexOf(p.dataset.to) !== -1;
+            p.style.display = show ? '' : 'none';
+          }
+        }
+
+        setText($('step-indicator'), 'Langkah ' + revealed + ' dari ' + total);
+
+        var prev = $('prev-btn');
+        if (prev) prev.disabled = revealed <= 1;
+        var next = $('next-btn');
+        if (next) next.disabled = revealed >= total;
+
+        var node = selectedId && nodesById[selectedId];
+        var selectedVisible = selectedId && visible.indexOf(selectedId) !== -1;
+        if (node && selectedVisible) {
+          var idx = order.indexOf(selectedId) + 1;
+          setText($('details-title'), idx + '. ' + node.label);
+          setText($('details-text'), node.details);
+        } else {
+          setText($('details-title'), 'Pilih langkah');
+          setText($('details-text'), 'Klik sebuah langkah pada diagram untuk membaca penjelasannya.');
+        }
+      }
+
+      function nextStep() {
+        if (revealed >= order.length) return;
+        revealed += 1;
+        selectedId = order[revealed - 1];
+        render();
+      }
+
+      function prevStep() {
+        if (revealed <= 1) return;
+        revealed -= 1;
+        if (selectedId && order.indexOf(selectedId) >= revealed) selectedId = null;
+        render();
+      }
+
+      function resetDiagram() {
+        revealed = 1;
+        selectedId = null;
+        render();
+      }
+
+      var nextBtn = $('next-btn');
+      if (nextBtn) nextBtn.addEventListener('click', nextStep);
+      var prevBtn = $('prev-btn');
+      if (prevBtn) prevBtn.addEventListener('click', prevStep);
+      var resetBtn = $('reset-btn');
+      if (resetBtn) resetBtn.addEventListener('click', resetDiagram);
+
+      document.addEventListener('keydown', function (e) {
+        var tag = e.target && e.target.tagName ? e.target.tagName : '';
+        if (tag === 'BUTTON') return;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); nextStep(); }
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); prevStep(); }
+        else if (e.key === 'r' || e.key === 'R') resetDiagram();
+      });
+
+      buildEdges();
+      buildNodes();
+      render();
+    })();
+  </script>
+</body>
+</html>

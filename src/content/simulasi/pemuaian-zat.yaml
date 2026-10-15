@@ -1,0 +1,11 @@
+# Satu entri katalog per simulasi. Kunci adalah pengenal bahasa Inggris;
+# nilainya Bahasa Indonesia karena menjadi bagian URL.
+# Katalog adalah sumber kebenaran atas metadata simulasi (docs/adr/0004).
+title: "Pemuaian Zat"
+description: >-
+  Mengamati pemuaian panjang, luas, dan volume pada zat padat, cair, dan gas.
+level: smp
+grade: 7
+subject: ipa
+order: 42
+scene: "s19"

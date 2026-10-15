@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proyek: Faktor Pelelehan Es · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Merancang percobaan yang adil untuk mengetahui faktor yang memengaruhi waktu melelehnya es, lalu mengusulkan cara memperlambat pelelehan.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Proyek: Faktor Pelelehan Es">
+  <meta property="og:description" content="Tentukan variabel bebas, jaga variabel kontrol, ambil data, dan usulkan cara memperlambat pelelehan es.">
+  <meta property="og:locale" content="id">
+  <style>
+    /* ===== Shared tokens (VISUAL-STYLE.md) ===== */
+    :root {
+      /* Colour */
+      --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+      --surface: #14141e;     /* panels, cards, step rows */
+      --panel: rgba(20, 20, 30, 0.9);
+      --border: rgba(255, 255, 255, 0.1);
+      --border-strong: #333;
+      --text: #ffffff;
+      --text-muted: #aaa;
+      --text-dim: #888;
+      --accent: #6366f1;      /* primary action, slider thumb, active state */
+      --accent-hover: #5558e8;
+      --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+      --success: #fbbf24;     /* completion, headings, callouts */
+      --warning: #fb923c;
+      --error: #ff6b6b;
+      --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+      --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+      --shadow-none: none;
+
+      /* Spacing scale */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+
+      /* Radius scale */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-pill: 999px;
+
+      /* Type scale (system fonts only) */
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --text-base: 16px;
+      --text-sm: 14px;
+      --text-xs: 13px;
+      --text-caption: 11px;   /* uppercase control labels */
+      --text-heading: 24px;
+      --font-weight-display: 600;  /* headings */
+      --font-weight-number: 500;   /* monospaced readouts */
+
+      /* Focus, motion, stacking */
+      --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+      --motion: 0.2s;
+      --motion-slow: 0.3s;
+      --z-overlay: 100;        /* panels, tooltips */
+      --z-modal: 1000;         /* loading screens, modal dialogs */
+    }
+
+    [data-theme="light"] {
+      --bg: #f7f7fb;
+      --surface: #ffffff;
+      --panel: rgba(255, 255, 255, 0.92);
+      --border: rgba(0, 0, 0, 0.12);
+      --border-strong: #d4d4d8;
+      --text: #16161d;
+      --text-muted: #52525b;
+      --text-dim: #71717a;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+      --accent-soft: rgba(79, 70, 229, 0.95);
+      --success: #b45309;
+      --warning: #c2410c;
+      --error: #dc2626;
+      --accent-text: #ffffff;
+      --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+    }
+
+    /* ===== Component classes (VISUAL-STYLE.md) ===== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font);
+      font-size: var(--text-base);
+      line-height: 1.5;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    h1, h2, h3 { font-weight: var(--font-weight-display); }
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      padding: var(--space-4);
+    }
+    .panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+    .btn {
+      font-family: inherit;
+      font-size: var(--text-sm);
+      min-height: 44px;            /* never below 44px, mobile */
+      min-width: 44px;
+      padding: var(--space-3) var(--space-5);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      background: var(--border-strong);
+      color: var(--text);
+      box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+      cursor: pointer;
+      transition: background var(--motion);
+    }
+    .btn:hover { background: var(--text-muted); }
+    .btn:active { transform: scale(0.95); }
+    .btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+    .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+    .btn-ghost { background: transparent; border-color: var(--border); }
+    .btn-ghost:hover { background: var(--surface); }
+
+    .control-label {
+      font-size: var(--text-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    input[type="range"] {
+      width: 100%; height: 6px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px; height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    /* Visually hidden but announced by screen readers. Use when a layout has no
+       room for a visible <h1> (e.g. a full-bleed canvas) — never as an excuse to
+       drop a heading. */
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+    }
+
+    #feedback-panel {
+      background: var(--surface);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+    }
+    #feedback-panel.success { border-left-color: var(--success); }
+    #feedback-panel.error { border-left-color: var(--error); }
+
+    .progress-track {
+      height: 8px;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+    .mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+    .sources {
+      margin-top: var(--space-5);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--border);
+    }
+    .sources-heading {
+      font-size: var(--text-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: var(--space-2);
+    }
+    .source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+    .source-item a { color: var(--accent); text-decoration: none; }
+    .source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+    .reading-article {
+      max-width: 720px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+    .reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+    .reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+    .reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+    .reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+    .reading-article blockquote {
+      border-left: 3px solid var(--border-strong);
+      padding-left: var(--space-4);
+      color: var(--text-muted);
+      margin-bottom: var(--space-4);
+    }
+    .reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+    .reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+    .reading-article pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      overflow-x: auto;
+      margin-bottom: var(--space-4);
+    }
+    .reading-article pre code { background: none; padding: 0; }
+    .reading-article table { width: 100%; border-collapse: collapse; }
+    .reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+    .reading-article details {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+      margin-bottom: var(--space-4);
+    }
+    .reading-article summary {
+      cursor: pointer;
+      font-weight: var(--font-weight-display);
+      color: var(--text);
+    }
+    .reading-article details[open] summary { margin-bottom: var(--space-2); }
+    .glossary-term {
+      text-decoration: underline dotted var(--text-dim);
+      text-decoration-thickness: 1px;
+      cursor: help;
+    }
+    .katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+    /* highlight.js token colours — mapped to the token set, not a canned theme */
+    .hljs { color: var(--text); }
+    .hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+    .hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+    .hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+    .hljs-number { color: var(--warning); }
+
+    /* ===== Scene layout ===== */
+    * { -webkit-tap-highlight-color: transparent; }
+    .scene { padding: var(--space-4); max-width: 1100px; margin: 0 auto; }
+    .scene-header { margin-bottom: var(--space-4); }
+    .scene-header h1 { font-size: var(--text-heading); margin-bottom: var(--space-2); }
+    .lead { color: var(--text-muted); font-size: var(--text-sm); }
+
+    .station { display: flex; flex-direction: column; gap: var(--space-4); }
+    .task-col { display: flex; flex-direction: column; gap: var(--space-3); }
+    .task-text { font-size: var(--text-sm); color: var(--text); }
+    .tool-list { list-style: none; font-size: var(--text-xs); color: var(--text-muted); }
+    .tool-list li { padding-left: var(--space-4); position: relative; margin-bottom: var(--space-1); }
+    .tool-list li::before { content: "•"; position: absolute; left: 0; color: var(--accent); }
+    .state-line { font-size: var(--text-sm); color: var(--text); margin-bottom: var(--space-1); }
+    .state-line.warn { color: var(--warning); }
+    .state-line.good { color: var(--success); }
+
+    .gauge { position: relative; height: 16px; background: var(--border-strong); border-radius: var(--radius-pill); margin: var(--space-2) 0 var(--space-1); }
+    .gauge-band { position: absolute; top: 0; bottom: 0; background: var(--accent); opacity: 0.45; border-radius: var(--radius-pill); }
+    .gauge-marker { position: absolute; top: -5px; bottom: -5px; width: 6px; margin-left: -3px; background: var(--text); border-radius: var(--radius-pill); transition: left var(--motion); }
+    .gauge-scale { display: flex; justify-content: space-between; font-size: var(--text-caption); color: var(--text-dim); margin-bottom: var(--space-3); }
+
+    .criteria { list-style: none; }
+    .criteria li { position: relative; font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); padding-left: var(--space-5); }
+    .criteria li::before { content: "○"; position: absolute; left: 0; }
+    .criteria li.is-done { color: var(--success); }
+    .criteria li.is-done::before { content: "●"; }
+
+    .step-list { list-style: none; display: flex; flex-direction: column; gap: var(--space-3); margin-bottom: var(--space-4); }
+    .step { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-4); }
+    .step.is-active { border-color: var(--accent); }
+    .step.is-done { border-color: var(--success); }
+    .step-title { font-weight: var(--font-weight-display); color: var(--text); margin-bottom: var(--space-1); }
+    .step-desc { font-size: var(--text-xs); color: var(--text-muted); margin-bottom: var(--space-3); }
+    .step-control { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-2); align-items: center; }
+    .step-control .btn { flex: 1 1 auto; }
+    .btn.is-picked { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+    .temp-value { min-width: 96px; text-align: center; font-size: var(--text-base); color: var(--text); }
+    .data-line { font-size: var(--text-xs); color: var(--text-muted); width: 100%; }
+    .step-feedback { font-size: var(--text-xs); color: var(--text-muted); min-height: 1.5em; }
+    .step-feedback.success { color: var(--success); }
+    .step-feedback.error { color: var(--error); }
+
+    @media (min-width: 768px) {
+      .station { flex-direction: row; align-items: flex-start; }
+      .task-col { width: 320px; flex-shrink: 0; }
+      .steps-col { flex: 1; min-width: 0; }
+    }
+  </style>
+</head>
+<body>
+  <main class="scene">
+    <header class="scene-header">
+      <h1>Proyek: Faktor Pelelehan Es</h1>
+      <p class="lead">Rancang percobaan yang adil. Pilih satu variabel bebas, jaga variabel kontrol, ambil data, lalu usulkan cara memperlambat pelelehan es.</p>
+    </header>
+
+    <div class="station">
+      <aside class="panel task-col" aria-label="Tugas dan stasiun pengukuran">
+        <p class="panel-heading">Tugas</p>
+        <p class="task-text" id="task-panel">Rancang percobaan untuk mengetahui faktor yang memengaruhi waktu melelehnya es. Ubah tepat satu variabel bebas, jaga variabel kontrol tetap, catat data, lalu usulkan cara memperlambat pelelehan es.</p>
+
+        <p class="panel-heading">Alat dan bahan</p>
+        <ul class="tool-list" id="tool-list">
+          <li>Dua wadah plastik sejenis: wadah kontrol dan wadah uji</li>
+          <li>Balok es 50 g di tiap wadah</li>
+          <li>Termometer ruangan</li>
+          <li>Stopwatch</li>
+          <li>Tutup wadah</li>
+        </ul>
+
+        <p class="panel-heading">Stasiun pengukuran</p>
+        <div id="state-panel" role="status" aria-live="polite">
+          <p class="state-line" id="state-variabel">Variabel bebas: belum dipilih</p>
+          <p class="state-line" id="state-suhu">Suhu ruangan: 19 °C</p>
+          <p class="state-line" id="state-data">Data: belum diambil</p>
+          <p class="state-line" id="state-usulan">Usulan: belum dipilih</p>
+        </div>
+        <div class="gauge" aria-hidden="true">
+          <div class="gauge-band" id="gauge-band"></div>
+          <div class="gauge-marker" id="gauge-marker"></div>
+        </div>
+        <div class="gauge-scale"><span>15 °C</span><span>35 °C</span></div>
+
+        <p class="mono-value" id="progress-display">0 dari 4 langkah selesai</p>
+
+        <p class="panel-heading">Kriteria keberhasilan</p>
+        <ul class="criteria" id="success-criteria">
+          <li data-criterion="step-1">Tepat satu variabel bebas dipilih</li>
+          <li data-criterion="step-2">Suhu ruangan dikonfirmasi pada 24–28 °C</li>
+          <li data-criterion="step-3">Data diambil dan kesimpulan sesuai data</li>
+          <li data-criterion="step-4">Usulan memperlambat pelelehan dipilih dengan benar</li>
+          <li data-criterion="all">Semua langkah selesai</li>
+        </ul>
+
+        <button class="btn btn-ghost" id="reset-btn" type="button">Atur ulang</button>
+      </aside>
+
+      <section class="steps-col" aria-label="Langkah kerja">
+        <ol class="step-list" id="step-list">
+          <li class="step" data-step-id="step-1">
+            <p class="step-title">1. Pilih variabel bebas</p>
+            <p class="step-desc">Tentukan satu faktor yang diubah. Kedua wadah hanya boleh berbeda pada faktor ini.</p>
+            <div class="step-control" id="step-1-control">
+              <button class="btn" id="var-ukuran-btn" type="button" aria-pressed="false">Ukuran balok es</button>
+              <button class="btn" id="var-penutup-btn" type="button" aria-pressed="false">Penutup wadah</button>
+              <button class="btn" id="var-garam-btn" type="button" aria-pressed="false">Jumlah garam</button>
+              <button class="btn btn-ghost" id="var-none-btn" type="button">Tidak mengubah apa pun</button>
+            </div>
+            <p class="step-feedback" id="step-1-feedback" aria-live="polite"></p>
+          </li>
+
+          <li class="step" data-step-id="step-2">
+            <p class="step-title">2. Jaga variabel kontrol</p>
+            <p class="step-desc">Atur suhu ruangan agar tetap dalam rentang 24–28 °C untuk kedua wadah, lalu konfirmasi.</p>
+            <div class="step-control" id="step-2-control">
+              <button class="btn" id="temp-down-btn" type="button" aria-label="Turunkan suhu 1 derajat">−1 °C</button>
+              <span class="temp-value mono-value" id="temp-display">19 °C</span>
+              <button class="btn" id="temp-up-btn" type="button" aria-label="Naikkan suhu 1 derajat">+1 °C</button>
+              <button class="btn btn-primary" id="confirm-temp-btn" type="button">Konfirmasi suhu</button>
+            </div>
+            <p class="step-feedback" id="step-2-feedback" aria-live="polite"></p>
+          </li>
+
+          <li class="step" data-step-id="step-3">
+            <p class="step-title">3. Ambil data dan simpulkan</p>
+            <p class="step-desc">Catat waktu melelehnya es pada kedua wadah, lalu tentukan apakah variabel bebas memengaruhi waktu melelehnya es.</p>
+            <div class="step-control" id="step-3-control">
+              <button class="btn" id="ambil-data-btn" type="button" disabled>Ambil data</button>
+              <p class="data-line mono-value" id="data-display">Belum ada data.</p>
+              <button class="btn" id="concl-ya-btn" type="button" disabled>Ya, variabel memengaruhi waktu</button>
+              <button class="btn" id="concl-tidak-btn" type="button" disabled>Tidak, waktunya sama</button>
+            </div>
+            <p class="step-feedback" id="step-3-feedback" aria-live="polite"></p>
+          </li>
+
+          <li class="step" data-step-id="step-4">
+            <p class="step-title">4. Usulkan cara memperlambat pelelehan</p>
+            <p class="step-desc">Pilih satu usulan yang paling tepat berdasarkan data dan penjelasan tentang kalor.</p>
+            <div class="step-control" id="step-4-control">
+              <button class="btn" id="usul-tutup-btn" type="button">Tutup wadah dengan rapat</button>
+              <button class="btn" id="usul-garam-btn" type="button">Tambahkan garam</button>
+              <button class="btn" id="usul-matahari-btn" type="button">Letakkan di bawah sinar matahari</button>
+              <button class="btn" id="usul-serpih-btn" type="button">Pecah es menjadi serpihan kecil</button>
+            </div>
+            <p class="step-feedback" id="step-4-feedback" aria-live="polite"></p>
+          </li>
+        </ol>
+
+        <div id="feedback-panel" role="status">Pilih satu variabel bebas pada langkah 1 untuk memulai.</div>
+      </section>
+    </div>
+  </main>
+
+  <script type="application/json" id="widget-config">
+  {"type":"procedural-skill","task":"Merancang percobaan untuk mengetahui faktor yang memengaruhi waktu melelehnya es, lalu mengusulkan cara memperlambat pelelehan.","description":"Percobaan yang adil hanya mengubah satu variabel bebas; variabel kontrol seperti suhu ruangan dan massa es dijaga tetap. Waktu melelehnya es dibandingkan antara wadah kontrol dan wadah uji.","tools":["Dua wadah plastik sejenis: wadah kontrol dan wadah uji","Balok es 50 g di tiap wadah","Termometer ruangan","Stopwatch","Tutup wadah"],"steps":[{"id":"step-1","title":"Pilih variabel bebas","description":"Tentukan satu faktor yang diubah. Kedua wadah hanya boleh berbeda pada faktor ini.","tools":["Dua wadah plastik sejenis"],"successCriteria":["Tepat satu variabel bebas dipilih"]},{"id":"step-2","title":"Jaga variabel kontrol","description":"Atur suhu ruangan dalam rentang 24–28 °C untuk kedua wadah, lalu konfirmasi.","tools":["Termometer ruangan"],"successCriteria":["Suhu ruangan dikonfirmasi pada 24–28 °C"]},{"id":"step-3","title":"Ambil data dan simpulkan","description":"Catat waktu melelehnya es pada kedua wadah, lalu tentukan apakah variabel bebas memengaruhi waktu melelehnya es.","tools":["Stopwatch"],"successCriteria":["Data diambil dan kesimpulan sesuai data"]},{"id":"step-4","title":"Usulkan cara memperlambat pelelehan","description":"Pilih satu usulan yang paling tepat berdasarkan data dan penjelasan tentang kalor.","tools":["Tutup wadah"],"successCriteria":["Usulan memperlambat pelelehan dipilih dengan benar"]}],"successCriteria":["Tepat satu variabel bebas dipilih","Suhu ruangan dikonfirmasi pada 24–28 °C","Data diambil dan kesimpulan sesuai data","Usulan memperlambat pelelehan dipilih dengan benar"],"errorConsequences":["Mengubah dua variabel sekaligus membuat hasil tidak dapat dikaitkan dengan satu penyebab.","Suhu di luar 24–28 °C membuat kedua wadah tidak sebanding.","Kesimpulan yang tidak sesuai data membuat laporan salah.","Usulan yang mempercepat pelelehan justru memperburuk kondisi es."]}
+  </script>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const config = JSON.parse(document.getElementById('widget-config').textContent);
+      const TEMP_MIN = 15;
+      const TEMP_MAX = 35;
+      const SAFE_MIN = 24;
+      const SAFE_MAX = 28;
+      const START_TEMP = 19;
+      const CONTROL_MINUTES = 12;
+      const UJI_MINUTES = { ukuran: 7, penutup: 18, garam: 6 };
+      const VAR_LABEL = { ukuran: 'ukuran balok es', penutup: 'penutup wadah', garam: 'jumlah garam' };
+      const USUL_ERROR = {
+        garam: 'Garam menurunkan titik leleh es, sehingga es justru lebih cepat meleleh. Usulan ini belum tepat.',
+        matahari: 'Sinar matahari menambah kalor ke es, sehingga pelelehan makin cepat. Usulan ini belum tepat.',
+        serpih: 'Serpihan kecil menambah luas permukaan yang bersentuhan dengan udara, sehingga pelelehan makin cepat. Usulan ini belum tepat.'
+      };
+      const INITIAL_FEEDBACK = 'Pilih satu variabel bebas pada langkah 1 untuk memulai.';
+
+      const feedbackPanel = document.getElementById('feedback-panel');
+      const progressDisplay = document.getElementById('progress-display');
+      const tempDisplay = document.getElementById('temp-display');
+      const dataDisplay = document.getElementById('data-display');
+      const gaugeBand = document.getElementById('gauge-band');
+      const gaugeMarker = document.getElementById('gauge-marker');
+      const stateVariabel = document.getElementById('state-variabel');
+      const stateSuhu = document.getElementById('state-suhu');
+      const stateData = document.getElementById('state-data');
+      const stateUsulan = document.getElementById('state-usulan');
+
+      const state = {
+        bebas: null,        // 'ukuran' | 'penutup' | 'garam'
+        suhu: START_TEMP,
+        confirmed: false,   // suhu sudah dikonfirmasi pada rentang aman
+        dataTaken: false,
+        conclusion: null,   // 'ya' | 'tidak'
+        usulan: null        // 'tutup' jika sudah tepat
+      };
+
+      function inRange(t) {
+        return t >= SAFE_MIN && t <= SAFE_MAX;
+      }
+
+      function stepDone() {
+        return {
+          1: state.bebas !== null,
+          2: state.confirmed && inRange(state.suhu),
+          3: state.dataTaken && state.conclusion === 'ya',
+          4: state.usulan === 'tutup'
+        };
+      }
+
+      function el(id) {
+        return document.getElementById(id);
+      }
+
+      function setFeedback(text, kind) {
+        feedbackPanel.textContent = text;
+        feedbackPanel.className = kind || '';
+      }
+
+      function setStepFeedback(n, text, kind) {
+        const node = el('step-' + n + '-feedback');
+        if (!node) return;
+        node.textContent = text;
+        node.className = 'step-feedback' + (kind ? ' ' + kind : '');
+      }
+
+      function invalidateData(reason) {
+        if (!state.dataTaken) return;
+        state.dataTaken = false;
+        state.conclusion = null;
+        state.usulan = null;
+        setStepFeedback(3, 'Data sebelumnya dibuang: ' + reason, 'error');
+      }
+
+      function pickVariable(v) {
+        if (v === 'none') {
+          if (state.bebas !== null) invalidateData('variabel bebas dihapus.');
+          state.bebas = null;
+          setStepFeedback(1, 'Tanpa variabel bebas, kedua wadah tidak dapat dibandingkan. Pilih satu variabel untuk diuji.', 'error');
+          setFeedback('Langkah 1 belum selesai: pilih satu variabel bebas.', 'error');
+          render();
+          return;
+        }
+        if (state.bebas !== v) {
+          invalidateData('variabel bebas diubah, sehingga data lama tidak lagi sesuai.');
+          state.bebas = v;
+        }
+        setStepFeedback(1, 'Variabel bebas: ' + VAR_LABEL[v] + '. Kedua wadah hanya boleh berbeda pada faktor ini.', 'success');
+        setFeedback('Variabel bebas dipilih. Lanjut ke langkah 2 untuk menjaga variabel kontrol.', 'success');
+        render();
+      }
+
+      function changeTemp(delta) {
+        state.suhu = Math.min(TEMP_MAX, Math.max(TEMP_MIN, state.suhu + delta));
+        state.confirmed = false;
+        setStepFeedback(2, 'Suhu diatur ke ' + state.suhu + ' °C. Tekan Konfirmasi suhu setelah yakin.', '');
+        render();
+      }
+
+      function confirmTemp() {
+        if (inRange(state.suhu)) {
+          state.confirmed = true;
+          setStepFeedback(2, 'Suhu ' + state.suhu + ' °C dikonfirmasi. Kedua wadah berada pada kondisi yang sama.', 'success');
+          setFeedback('Variabel kontrol terjaga. Ambil data pada langkah 3.', 'success');
+        } else {
+          state.confirmed = false;
+          const reason = state.suhu < SAFE_MIN ? 'terlalu dingin' : 'terlalu panas';
+          setStepFeedback(2, 'Suhu ' + state.suhu + ' °C di luar rentang 24–28 °C (' + reason + '). Kedua wadah tidak dapat dibandingkan. Atur ulang suhu.', 'error');
+          setFeedback('Variabel kontrol belum terjaga: suhu di luar rentang aman.', 'error');
+        }
+        render();
+      }
+
+      function takeData() {
+        const done = stepDone();
+        if (!done[1] || !done[2]) {
+          setStepFeedback(3, 'Selesaikan langkah 1 dan 2 terlebih dahulu.', 'error');
+          setFeedback('Data belum dapat diambil: langkah 1 dan 2 harus selesai.', 'error');
+          render();
+          return;
+        }
+        state.dataTaken = true;
+        state.conclusion = null;
+        const uji = UJI_MINUTES[state.bebas];
+        const selisih = Math.abs(uji - CONTROL_MINUTES);
+        setStepFeedback(3, 'Data diambil. Selisih ' + selisih + ' menit. Tentukan kesimpulan Anda.', '');
+        setFeedback('Data sudah dicatat. Bandingkan kedua wadah lalu tentukan kesimpulan.', '');
+        render();
+      }
+
+      function concludeWith(v) {
+        if (!state.dataTaken) {
+          setStepFeedback(3, 'Ambil data terlebih dahulu sebelum menarik kesimpulan.', 'error');
+          render();
+          return;
+        }
+        const uji = UJI_MINUTES[state.bebas];
+        const selisih = Math.abs(uji - CONTROL_MINUTES);
+        state.conclusion = v;
+        if (v === 'ya') {
+          setStepFeedback(3, 'Benar. Wadah uji meleleh dalam ' + uji + ' menit, sedangkan kontrol ' + CONTROL_MINUTES + ' menit. Variabel bebas memengaruhi waktu melelehnya es.', 'success');
+          setFeedback('Kesimpulan sesuai data. Lanjut ke langkah 4.', 'success');
+        } else {
+          setStepFeedback(3, 'Kesimpulan tidak sesuai data. Waktu kedua wadah berbeda ' + selisih + ' menit, sehingga laporan salah jika menyatakan tidak ada pengaruh.', 'error');
+          setFeedback('Kesimpulan belum sesuai data. Tinjau kembali data pada langkah 3.', 'error');
+        }
+        render();
+      }
+
+      function proposeWith(key) {
+        const done = stepDone();
+        if (!done[3]) {
+          setStepFeedback(4, 'Selesaikan langkah 3 terlebih dahulu: kesimpulan harus sesuai data.', 'error');
+          setFeedback('Usulan belum dapat dipilih: kesimpulan pada langkah 3 belum sesuai data.', 'error');
+          render();
+          return;
+        }
+        if (key === 'tutup') {
+          state.usulan = 'tutup';
+          setStepFeedback(4, 'Tepat! Penutup mengurangi pertukaran kalor dengan udara sekitar, sehingga es meleleh lebih lambat.', 'success');
+          setFeedback('Semua langkah selesai. Periksa kriteria keberhasilan di samping.', 'success');
+        } else {
+          state.usulan = null;
+          setStepFeedback(4, USUL_ERROR[key], 'error');
+          setFeedback('Usulan ini mempercepat pelelehan. Pilih usulan lain.', 'error');
+        }
+        render();
+      }
+
+      function setPicked(id, picked) {
+        const b = el(id);
+        if (!b) return;
+        b.classList.toggle('is-picked', picked);
+        b.setAttribute('aria-pressed', picked ? 'true' : 'false');
+      }
+
+      function render() {
+        const done = stepDone();
+        const count = [1, 2, 3, 4].filter(function (n) { return done[n]; }).length;
+
+        document.querySelectorAll('#step-list li[data-step-id]').forEach(function (li) {
+          const n = Number(li.dataset.stepId.split('-')[1]);
+          li.classList.toggle('is-done', !!done[n]);
+          li.classList.toggle('is-active', !done[n] && (n === 1 || !!done[n - 1]));
+        });
+
+        setPicked('var-ukuran-btn', state.bebas === 'ukuran');
+        setPicked('var-penutup-btn', state.bebas === 'penutup');
+        setPicked('var-garam-btn', state.bebas === 'garam');
+
+        tempDisplay.textContent = state.suhu + ' °C';
+        const tempDown = el('temp-down-btn');
+        const tempUp = el('temp-up-btn');
+        if (tempDown) tempDown.disabled = state.suhu <= TEMP_MIN;
+        if (tempUp) tempUp.disabled = state.suhu >= TEMP_MAX;
+        setPicked('confirm-temp-btn', state.confirmed);
+
+        const ambil = el('ambil-data-btn');
+        if (ambil) ambil.disabled = !(done[1] && done[2]);
+        const yaBtn = el('concl-ya-btn');
+        const tidakBtn = el('concl-tidak-btn');
+        if (yaBtn) yaBtn.disabled = !state.dataTaken;
+        if (tidakBtn) tidakBtn.disabled = !state.dataTaken;
+        setPicked('concl-ya-btn', state.conclusion === 'ya');
+        setPicked('concl-tidak-btn', state.conclusion === 'tidak');
+
+        if (state.dataTaken) {
+          const uji = UJI_MINUTES[state.bebas];
+          dataDisplay.textContent = 'Kontrol: ' + CONTROL_MINUTES + ' menit | Uji: ' + uji + ' menit | Selisih: ' + Math.abs(uji - CONTROL_MINUTES) + ' menit';
+        } else {
+          dataDisplay.textContent = 'Belum ada data.';
+        }
+
+        ['usul-tutup-btn', 'usul-garam-btn', 'usul-matahari-btn', 'usul-serpih-btn'].forEach(function (id) {
+          const b = el(id);
+          if (b) b.disabled = !done[3] || done[4];
+        });
+        setPicked('usul-tutup-btn', !!done[4]);
+
+        const leftPct = ((state.suhu - TEMP_MIN) / (TEMP_MAX - TEMP_MIN)) * 100;
+        const bandLeft = ((SAFE_MIN - TEMP_MIN) / (TEMP_MAX - TEMP_MIN)) * 100;
+        const bandWidth = ((SAFE_MAX - SAFE_MIN) / (TEMP_MAX - TEMP_MIN)) * 100;
+        if (gaugeBand) {
+          gaugeBand.style.left = bandLeft + '%';
+          gaugeBand.style.width = bandWidth + '%';
+        }
+        if (gaugeMarker) gaugeMarker.style.left = leftPct + '%';
+
+        stateVariabel.textContent = 'Variabel bebas: ' + (state.bebas ? VAR_LABEL[state.bebas] : 'belum dipilih');
+        stateSuhu.textContent = 'Suhu ruangan: ' + state.suhu + ' °C (' + (inRange(state.suhu) ? 'dalam rentang aman' : 'di luar rentang aman') + ')';
+        stateSuhu.className = 'state-line ' + (inRange(state.suhu) ? 'good' : 'warn');
+        stateData.textContent = 'Data: ' + (state.dataTaken ? 'sudah diambil' : 'belum diambil');
+        stateUsulan.textContent = 'Usulan: ' + (done[4] ? 'memperlambat pelelehan (tepat)' : 'belum dipilih');
+
+        progressDisplay.textContent = count + ' dari 4 langkah selesai';
+
+        document.querySelectorAll('#success-criteria li[data-criterion]').forEach(function (li) {
+          const key = li.dataset.criterion;
+          const isDone = key === 'all' ? count === 4 : !!done[Number(key.split('-')[1])];
+          li.classList.toggle('is-done', isDone);
+        });
+      }
+
+      function resetState() {
+        state.bebas = null;
+        state.suhu = START_TEMP;
+        state.confirmed = false;
+        state.dataTaken = false;
+        state.conclusion = null;
+        state.usulan = null;
+        [1, 2, 3, 4].forEach(function (n) { setStepFeedback(n, '', ''); });
+        setFeedback(INITIAL_FEEDBACK, '');
+        render();
+      }
+
+      el('var-ukuran-btn').addEventListener('click', function () { pickVariable('ukuran'); });
+      el('var-penutup-btn').addEventListener('click', function () { pickVariable('penutup'); });
+      el('var-garam-btn').addEventListener('click', function () { pickVariable('garam'); });
+      el('var-none-btn').addEventListener('click', function () { pickVariable('none'); });
+
+      el('temp-down-btn').addEventListener('click', function () { changeTemp(-1); });
+      el('temp-up-btn').addEventListener('click', function () { changeTemp(1); });
+      el('confirm-temp-btn').addEventListener('click', confirmTemp);
+
+      el('ambil-data-btn').addEventListener('click', takeData);
+      el('concl-ya-btn').addEventListener('click', function () { concludeWith('ya'); });
+      el('concl-tidak-btn').addEventListener('click', function () { concludeWith('tidak'); });
+
+      el('usul-tutup-btn').addEventListener('click', function () { proposeWith('tutup'); });
+      el('usul-garam-btn').addEventListener('click', function () { proposeWith('garam'); });
+      el('usul-matahari-btn').addEventListener('click', function () { proposeWith('matahari'); });
+      el('usul-serpih-btn').addEventListener('click', function () { proposeWith('serpih'); });
+
+      el('reset-btn').addEventListener('click', resetState);
+
+      window.addEventListener('keydown', function (e) {
+        const tag = e.target && e.target.tagName;
+        if (tag === 'BUTTON' || tag === 'INPUT') return;
+        if (e.key === 'r' || e.key === 'R') resetState();
+      });
+
+      resetState();
+    })();
+  </script>
+</body>
+</html>

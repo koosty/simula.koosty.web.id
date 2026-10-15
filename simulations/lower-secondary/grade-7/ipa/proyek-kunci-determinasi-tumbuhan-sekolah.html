@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proyek: Kunci Determinasi Tumbuhan Sekolah · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Membuat kunci determinasi tumbuhan di sekitar sekolah, menukarnya dengan kelompok lain, lalu memberi masukan.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Proyek: Kunci Determinasi Tumbuhan Sekolah">
+  <meta property="og:description" content="Membuat kunci determinasi tumbuhan di sekitar sekolah, menukarnya dengan kelompok lain, lalu memberi masukan.">
+  <meta property="og:locale" content="id">
+  <style>
+    :root {
+      /* Colour */
+      --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+      --surface: #14141e;     /* panels, cards, step rows */
+      --panel: rgba(20, 20, 30, 0.9);
+      --border: rgba(255, 255, 255, 0.1);
+      --border-strong: #333;
+      --text: #ffffff;
+      --text-muted: #aaa;
+      --text-dim: #888;
+      --accent: #6366f1;      /* primary action, slider thumb, active state */
+      --accent-hover: #5558e8;
+      --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+      --success: #fbbf24;     /* completion, headings, callouts */
+      --warning: #fb923c;
+      --error: #ff6b6b;
+      --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+      --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+      --shadow-none: none;
+
+      /* Spacing scale */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+
+      /* Radius scale */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-pill: 999px;
+
+      /* Type scale (system fonts only) */
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --text-base: 16px;
+      --text-sm: 14px;
+      --text-xs: 13px;
+      --text-caption: 11px;   /* uppercase control labels */
+      --text-heading: 24px;
+      --font-weight-display: 600;  /* headings */
+      --font-weight-number: 500;   /* monospaced readouts */
+
+      /* Focus, motion, stacking */
+      --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+      --motion: 0.2s;
+      --motion-slow: 0.3s;
+      --z-overlay: 100;        /* panels, tooltips */
+      --z-modal: 1000;         /* loading screens, modal dialogs */
+    }
+
+    [data-theme="light"] {
+      --bg: #f7f7fb;
+      --surface: #ffffff;
+      --panel: rgba(255, 255, 255, 0.92);
+      --border: rgba(0, 0, 0, 0.12);
+      --border-strong: #d4d4d8;
+      --text: #16161d;
+      --text-muted: #52525b;
+      --text-dim: #71717a;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+      --accent-soft: rgba(79, 70, 229, 0.95);
+      --success: #b45309;
+      --warning: #c2410c;
+      --error: #dc2626;
+      --accent-text: #ffffff;
+      --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font);
+      font-size: var(--text-base);
+      line-height: 1.5;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    h1, h2, h3 { font-weight: var(--font-weight-display); }
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      padding: var(--space-4);
+    }
+    .panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+    .btn {
+      font-family: inherit;
+      font-size: var(--text-sm);
+      min-height: 44px;            /* never below 44px, mobile */
+      min-width: 44px;
+      padding: var(--space-3) var(--space-5);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      background: var(--border-strong);
+      color: var(--text);
+      box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+      cursor: pointer;
+      transition: background var(--motion);
+    }
+    .btn:hover { background: var(--text-muted); }
+    .btn:active { transform: scale(0.95); }
+    .btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+    .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+    .btn-ghost { background: transparent; border-color: var(--border); }
+    .btn-ghost:hover { background: var(--surface); }
+
+    .control-label {
+      font-size: var(--text-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    input[type="range"] {
+      width: 100%; height: 6px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px; height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    /* Visually hidden but announced by screen readers. Use when a layout has no
+       room for a visible <h1> (e.g. a full-bleed canvas) — never as an excuse to
+       drop a heading. */
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+    }
+
+    #feedback-panel {
+      background: var(--surface);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+    }
+    #feedback-panel.success { border-left-color: var(--success); }
+    #feedback-panel.error { border-left-color: var(--error); }
+
+    .progress-track {
+      height: 8px;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+    .mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+    .sources {
+      margin-top: var(--space-5);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--border);
+    }
+    .sources-heading {
+      font-size: var(--text-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: var(--space-2);
+    }
+    .source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+    .source-item a { color: var(--accent); text-decoration: none; }
+    .source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+    .reading-article {
+      max-width: 720px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+    .reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+    .reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+    .reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+    .reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+    .reading-article blockquote {
+      border-left: 3px solid var(--border-strong);
+      padding-left: var(--space-4);
+      color: var(--text-muted);
+      margin-bottom: var(--space-4);
+    }
+    .reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+    .reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+    .reading-article pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      overflow-x: auto;
+      margin-bottom: var(--space-4);
+    }
+    .reading-article pre code { background: none; padding: 0; }
+    .reading-article table { width: 100%; border-collapse: collapse; }
+    .reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+    .reading-article details {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+      margin-bottom: var(--space-4);
+    }
+    .reading-article summary {
+      cursor: pointer;
+      font-weight: var(--font-weight-display);
+      color: var(--text);
+    }
+    .reading-article details[open] summary { margin-bottom: var(--space-2); }
+    .glossary-term {
+      text-decoration: underline dotted var(--text-dim);
+      text-decoration-thickness: 1px;
+      cursor: help;
+    }
+    .katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+    /* highlight.js token colours — mapped to the token set, not a canned theme */
+    .hljs { color: var(--text); }
+    .hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+    .hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+    .hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+    .hljs-number { color: var(--warning); }
+
+    /* ---- Scene layout (composition only; tokens and components above) ---- */
+    .app { max-width: 960px; margin: 0 auto; padding: var(--space-4); display: grid; gap: var(--space-4); grid-template-columns: minmax(0, 1fr); }
+    .app > * { min-width: 0; }
+    .layout > *, .stack > * { min-width: 0; }
+    .app h1 { font-size: var(--text-heading); margin-bottom: var(--space-2); }
+    .spec { color: var(--text-muted); font-size: var(--text-sm); margin-top: var(--space-2); }
+    .layout { display: grid; gap: var(--space-4); grid-template-columns: minmax(0, 1fr); }
+    .stack { display: grid; gap: var(--space-4); align-content: start; }
+    @media (min-width: 720px) {
+      .layout { grid-template-columns: minmax(0, 1fr) 280px; align-items: start; }
+    }
+    .panel h2 { font-size: var(--text-base); margin-bottom: var(--space-3); }
+    .panel h3 { font-size: var(--text-sm); margin: var(--space-4) 0 var(--space-2); }
+    .step-list { list-style: none; display: grid; gap: var(--space-3); }
+    .step-row {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+    }
+    .step-row.is-current { border-color: var(--accent); }
+    .step-row.is-done { border-left: 3px solid var(--success); }
+    .step-row.is-locked { opacity: 0.5; }
+    .step-head { display: grid; gap: var(--space-1); }
+    .step-head h3 { font-size: var(--text-base); margin: 0; }
+    .step-desc { color: var(--text-muted); font-size: var(--text-sm); margin: var(--space-2) 0 var(--space-3); }
+    .step-control { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .step-feedback { font-size: var(--text-xs); color: var(--text-muted); margin-top: var(--space-2); min-height: 1em; }
+    #feedback-panel { margin-top: var(--space-4); font-size: var(--text-sm); min-height: 3em; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); display: block; overflow-x: auto; }
+    .data-table th, .data-table td {
+      border: 1px solid var(--border);
+      padding: var(--space-2) var(--space-3);
+      text-align: left;
+      vertical-align: top;
+    }
+    .tool-list { list-style: none; display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .tool-chip {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-pill);
+      padding: var(--space-1) var(--space-3);
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+    }
+    #status-value { font-size: var(--text-sm); }
+    .observed { list-style: none; font-size: var(--text-sm); color: var(--text-muted); display: grid; gap: var(--space-1); }
+    .observed li::before { content: "• "; color: var(--accent); }
+    #progress-display { font-size: var(--text-sm); margin-bottom: var(--space-2); }
+    #progress-fill {
+      height: 100%;
+      width: 0;
+      background: var(--accent);
+      border-radius: var(--radius-pill);
+      transition: width var(--motion-slow);
+    }
+    #uji-display { font-size: var(--text-sm); margin-bottom: var(--space-2); }
+    #uji-fill {
+      height: 100%;
+      width: 0;
+      background: var(--success);
+      border-radius: var(--radius-pill);
+      transition: width var(--motion-slow);
+    }
+    .crit-list { list-style: none; display: grid; gap: var(--space-2); font-size: var(--text-sm); }
+    .crit { display: flex; justify-content: space-between; gap: var(--space-2); color: var(--text-muted); }
+    .crit-state { font-size: var(--text-xs); }
+    .crit.is-done { color: var(--text); }
+    .crit.is-done .crit-state { color: var(--success); }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="panel">
+      <p class="control-label">Proyek · IPA Kelas VII</p>
+      <h1>Proyek: Kunci Determinasi Tumbuhan Sekolah</h1>
+      <p>Buatlah kunci determinasi sederhana untuk tumbuhan di sekitar sekolah, tukarkan dengan kelompok lain untuk diuji silang, lalu tanggapi masukan dengan alasan yang jelas.</p>
+      <p class="spec">Kunci dianggap layak jika uji silang mencapai batas minimal 80% spesimen teridentifikasi dengan benar.</p>
+      <button id="reset-btn" class="btn btn-ghost" type="button" style="margin-top: var(--space-4);">Mulai ulang</button>
+    </header>
+
+    <div class="layout">
+      <div class="stack">
+        <section class="panel" aria-labelledby="steps-heading">
+          <h2 id="steps-heading">Langkah proyek</h2>
+          <ol id="step-list" class="step-list"></ol>
+          <div id="feedback-panel" role="status" aria-live="polite"></div>
+        </section>
+
+        <section class="panel" aria-labelledby="record-heading">
+          <h2 id="record-heading">Lembar pengamatan</h2>
+          <table class="data-table">
+            <thead>
+              <tr><th scope="col">Tumbuhan</th><th scope="col">Susunan daun</th><th scope="col">Ukuran daun</th><th scope="col">Tulang daun</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Mangga</td><td>Berseling</td><td>Besar</td><td>Menyirip</td></tr>
+              <tr><td>Kembang sepatu</td><td>Berseling</td><td>Sedang</td><td>Menjari</td></tr>
+              <tr><td>Melati</td><td>Berhadapan</td><td>Kecil</td><td>Menyirip</td></tr>
+              <tr><td>Jambu biji</td><td>Berhadapan</td><td>Sedang</td><td>Menyirip</td></tr>
+              <tr><td>Asam jawa (daun majemuk)</td><td>Berseling</td><td>Kecil</td><td>Menyirip</td></tr>
+            </tbody>
+          </table>
+        </section>
+      </div>
+
+      <aside class="stack">
+        <section class="panel" aria-labelledby="tools-heading">
+          <h2 id="tools-heading">Alat dan bahan</h2>
+          <ul id="tool-list" class="tool-list"></ul>
+        </section>
+
+        <section class="panel" id="state-panel" aria-labelledby="state-heading">
+          <h2 id="state-heading">Status proyek</h2>
+          <p id="status-value" class="mono-value"></p>
+          <h3 class="control-label">Hasil dan catatan</h3>
+          <ul id="observed-list" class="observed"></ul>
+        </section>
+
+        <section class="panel" aria-labelledby="progress-heading">
+          <h2 id="progress-heading">Progres dan kriteria</h2>
+          <p id="progress-display" class="mono-value"></p>
+          <div class="progress-track"><div id="progress-fill"></div></div>
+          <h3 class="control-label">Ketepatan uji silang</h3>
+          <p id="uji-display" class="mono-value"></p>
+          <div class="progress-track"><div id="uji-fill"></div></div>
+          <h3 class="control-label">Kriteria keberhasilan</h3>
+          <ul id="success-criteria" class="crit-list"></ul>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <script type="application/json" id="widget-config">
+{"type":"procedural-skill","task":"Membuat, menguji silang, dan memperbaiki kunci determinasi tumbuhan sekolah","description":"Pilih ciri yang stabil untuk kunci, uji dengan kelompok lain, lalu tanggapi masukan dengan alasan.","intro":"Mulai dengan memilih ciri pembeda untuk kuplet 1 dari lembar pengamatan.","tools":["Lembar pengamatan","Kaca pembesar","Penggaris","Kunci determinasi kelompok"],"ujiTotal":5,"ujiBatas":80,"steps":[{"id":"step-1","title":"Pilih ciri pembeda kuplet 1","description":"Lihat lembar pengamatan. Pilih ciri yang tetap dan mudah diamati pada semua tumbuhan.","options":[{"id":"susunan","label":"Susunan daun (berhadapan atau berseling)","correct":true,"observed":"Ciri pembeda: susunan daun","outcome":"Tepat. Susunan daun tetap pada tiap tumbuhan dan mudah diamati. Lanjutkan ke uji silang."},{"id":"ukuran","label":"Ukuran daun (besar, sedang, kecil)","correct":false,"outcome":"Ukuran daun berubah menurut umur dan posisi pada tumbuhan yang sama. Kuplet ini akan tertukar saat diuji. Pilih ciri lain."},{"id":"bunga","label":"Warna bunga","correct":false,"outcome":"Tidak semua tumbuhan berbunga pada waktu pengamatan. Kunci tidak bisa dipakai untuk spesimen yang belum berbunga. Pilih ciri lain."}]},{"id":"step-2","title":"Jalankan uji silang","description":"Tukarkan kunci dengan kelompok lain. Mereka menguji kunci dengan lima spesimen dari lembar pengamatan.","options":[{"id":"uji","label":"Jalankan uji silang pada 5 spesimen","correct":true,"benar":5,"observed":"Uji silang: 5 dari 5 spesimen benar","outcome":"Hasil 5 dari 5 spesimen teridentifikasi benar (100%). Hasil ini melewati batas 80%."},{"id":"lewati","label":"Lewati uji, serahkan kunci sekarang","correct":false,"outcome":"Tanpa uji silang, kesalahan kunci tidak terdeteksi. Kunci belum terbukti dapat dipakai orang lain. Jalankan uji."}]},{"id":"step-3","title":"Tanggapi masukan kelompok lain","description":"Kelompok lain menulis: Kuplet 2 memakai ukuran daun, padahal ukuran daun pada satu tumbuhan bisa berbeda. Pilih tanggapan yang tepat.","options":[{"id":"tulang","label":"Ganti ciri ukuran dengan tulang daun (menyirip atau menjari)","correct":true,"observed":"Revisi: ciri ukuran diganti tulang daun","outcome":"Tepat. Tulang daun tidak berubah menurut umur, sehingga kunci lebih stabil. Kuplet 2 direvisi."},{"id":"biarkan","label":"Biarkan, ukuran daun cukup jelas dilihat","correct":false,"outcome":"Ukuran daun tetap berubah menurut umur dan posisi. Kunci tetap berisiko salah pada spesimen lain. Pilih tanggapan lain."}]},{"id":"step-4","title":"Tulis catatan masukan","description":"Catatan harus dapat diuji ulang oleh kelompok lain.","options":[{"id":"catatan","label":"Tulis ciri yang diuji, hasil uji, dan alasan revisi","correct":true,"observed":"Catatan: ciri, hasil uji, dan alasan revisi","outcome":"Tepat. Catatan ini dapat diuji ulang dan ditindaklanjuti kelompok lain."},{"id":"bagus","label":"Tulis: kunci sudah bagus, tidak perlu diubah","correct":false,"outcome":"Catatan tanpa alasan tidak dapat diuji ulang. Kelompok lain tidak tahu bagian mana yang perlu diperbaiki. Pilih catatan lain."}]}],"checks":[{"text":"Kuplet 1 memakai ciri yang stabil dan dapat diamati","steps":["step-1"]},{"text":"Uji silang mencapai batas minimal 80%","steps":["step-2"]},{"text":"Masukan kelompok lain ditanggapi dengan alasan","steps":["step-3","step-4"]}],"successCriteria":["Kuplet 1 memakai ciri yang stabil dan dapat diamati","Uji silang mencapai batas minimal 80%","Masukan kelompok lain ditanggapi dengan alasan"],"errorConsequences":["Ciri yang berubah menurut umur membuat kuplet tertukar","Kunci yang tidak diuji silang belum terbukti dapat dipakai","Masukan tanpa alasan tidak dapat ditindaklanjuti"]}
+  </script>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var CONFIG = JSON.parse(document.getElementById('widget-config').textContent);
+      var STEPS = CONFIG.steps;
+      var STATUS_TEXT = {
+        menunggu: 'Menunggu keputusan pertama',
+        sedang: 'Proyek berjalan',
+        risiko: 'Perlu diperbaiki: ada ciri atau langkah yang keliru',
+        selesai: 'Proyek selesai dan siap diuji ulang'
+      };
+
+      function el(id) { return document.getElementById(id); }
+
+      function setText(id, text) {
+        var node = el(id);
+        if (node) node.textContent = text;
+      }
+
+      function initialState() {
+        return {
+          done: {},
+          lastOutcome: {},
+          feedback: CONFIG.intro,
+          feedbackKind: '',
+          status: 'menunggu',
+          observed: [],
+          ujiBenar: null
+        };
+      }
+
+      var state = initialState();
+
+      function stepIsUnlocked(index) {
+        for (var i = 0; i < index; i++) {
+          if (!state.done[STEPS[i].id]) return false;
+        }
+        return true;
+      }
+
+      function allDone() {
+        return STEPS.every(function (s) { return !!state.done[s.id]; });
+      }
+
+      function checkDone(check) {
+        return check.steps.every(function (id) { return !!state.done[id]; });
+      }
+
+      function buildTools() {
+        var list = el('tool-list');
+        if (!list) return;
+        list.textContent = '';
+        CONFIG.tools.forEach(function (tool) {
+          var li = document.createElement('li');
+          li.className = 'tool-chip';
+          li.textContent = tool;
+          list.appendChild(li);
+        });
+      }
+
+      function buildSteps() {
+        var list = el('step-list');
+        if (!list) return;
+        list.textContent = '';
+        STEPS.forEach(function (step, index) {
+          var li = document.createElement('li');
+          li.className = 'step-row';
+          li.setAttribute('data-step-id', step.id);
+
+          var head = document.createElement('div');
+          head.className = 'step-head';
+          var label = document.createElement('span');
+          label.className = 'control-label';
+          label.textContent = 'Langkah ' + (index + 1);
+          var title = document.createElement('h3');
+          title.textContent = step.title;
+          head.appendChild(label);
+          head.appendChild(title);
+
+          var desc = document.createElement('p');
+          desc.className = 'step-desc';
+          desc.textContent = step.description;
+
+          var control = document.createElement('div');
+          control.id = step.id + '-control';
+          control.className = 'step-control';
+          step.options.forEach(function (option) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn';
+            btn.textContent = option.label;
+            btn.addEventListener('click', function () { choose(step, index, option); });
+            control.appendChild(btn);
+          });
+
+          var note = document.createElement('p');
+          note.id = step.id + '-feedback';
+          note.className = 'step-feedback';
+
+          li.appendChild(head);
+          li.appendChild(desc);
+          li.appendChild(control);
+          li.appendChild(note);
+          list.appendChild(li);
+        });
+      }
+
+      function buildChecks() {
+        var list = el('success-criteria');
+        if (!list) return;
+        list.textContent = '';
+        CONFIG.checks.forEach(function (check) {
+          var li = document.createElement('li');
+          li.className = 'crit';
+          var text = document.createElement('span');
+          text.textContent = check.text;
+          var mark = document.createElement('span');
+          mark.className = 'crit-state';
+          li.appendChild(text);
+          li.appendChild(mark);
+          list.appendChild(li);
+        });
+      }
+
+      function choose(step, index, option) {
+        if (state.done[step.id] || !stepIsUnlocked(index)) return;
+        state.lastOutcome[step.id] = option.outcome;
+        if (option.correct) {
+          state.done[step.id] = true;
+          state.observed.push(option.observed);
+          if (typeof option.benar === 'number') state.ujiBenar = option.benar;
+          state.feedbackKind = 'success';
+          state.status = allDone() ? 'selesai' : 'sedang';
+        } else {
+          state.feedbackKind = 'error';
+          state.status = 'risiko';
+        }
+        state.feedback = option.outcome;
+        render();
+      }
+
+      function render() {
+        var doneCount = STEPS.filter(function (s) { return !!state.done[s.id]; }).length;
+
+        var rows = document.querySelectorAll('#step-list > li');
+        STEPS.forEach(function (step, index) {
+          var row = rows[index];
+          if (!row) return;
+          var done = !!state.done[step.id];
+          var unlocked = stepIsUnlocked(index);
+          row.classList.toggle('is-done', done);
+          row.classList.toggle('is-current', unlocked && !done);
+          row.classList.toggle('is-locked', !unlocked && !done);
+
+          var control = el(step.id + '-control');
+          if (control) {
+            control.querySelectorAll('button').forEach(function (btn) {
+              btn.disabled = done || !unlocked;
+            });
+          }
+
+          var note;
+          if (!unlocked && !done) {
+            note = 'Selesaikan langkah sebelumnya terlebih dahulu.';
+          } else {
+            note = state.lastOutcome[step.id] || 'Pilih salah satu jawaban di atas.';
+          }
+          setText(step.id + '-feedback', note);
+        });
+
+        setText('progress-display', doneCount + ' dari ' + STEPS.length + ' langkah selesai');
+        var fill = el('progress-fill');
+        if (fill) fill.style.width = Math.round((doneCount / STEPS.length) * 100) + '%';
+
+        var total = CONFIG.ujiTotal;
+        if (state.ujiBenar === null) {
+          setText('uji-display', 'Belum diuji. Batas lulus ' + CONFIG.ujiBatas + '%.');
+        } else {
+          var pct = Math.round((state.ujiBenar / total) * 100);
+          setText('uji-display', state.ujiBenar + ' dari ' + total + ' spesimen benar (' + pct + '%). Batas lulus ' + CONFIG.ujiBatas + '%.');
+        }
+        var ujiFill = el('uji-fill');
+        if (ujiFill) {
+          var width = state.ujiBenar === null ? 0 : Math.round((state.ujiBenar / total) * 100);
+          ujiFill.style.width = width + '%';
+        }
+
+        var criteria = document.querySelectorAll('#success-criteria > li');
+        CONFIG.checks.forEach(function (check, i) {
+          var li = criteria[i];
+          if (!li) return;
+          var ok = checkDone(check);
+          li.classList.toggle('is-done', ok);
+          var mark = li.querySelector('.crit-state');
+          if (mark) mark.textContent = ok ? 'Terpenuhi' : 'Belum';
+        });
+
+        var status = allDone() ? 'selesai' : state.status;
+        setText('status-value', STATUS_TEXT[status]);
+
+        var observed = el('observed-list');
+        if (observed) {
+          observed.textContent = '';
+          var items = state.observed.length ? state.observed : ['Belum ada hasil yang dicatat.'];
+          items.forEach(function (text) {
+            var li = document.createElement('li');
+            li.textContent = text;
+            observed.appendChild(li);
+          });
+        }
+
+        var panel = el('feedback-panel');
+        if (panel) {
+          panel.textContent = state.feedback;
+          panel.classList.toggle('success', state.feedbackKind === 'success');
+          panel.classList.toggle('error', state.feedbackKind === 'error');
+        }
+      }
+
+      function resetState() {
+        state = initialState();
+        render();
+      }
+
+      function init() {
+        buildTools();
+        buildSteps();
+        buildChecks();
+        var reset = el('reset-btn');
+        if (reset) reset.addEventListener('click', resetState);
+        document.addEventListener('keydown', function (e) {
+          if ((e.key === 'r' || e.key === 'R') && !e.ctrlKey && !e.metaKey && !e.altKey) resetState();
+        });
+        render();
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

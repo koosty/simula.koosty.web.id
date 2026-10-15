@@ -14,8 +14,14 @@ export interface SceneSource {
   description: string;
   /** The tool's HTML, read from the scene file. */
   html: string;
-  /** English source folder, e.g. 'lower-secondary/grade-7'. */
+  /** English source folder, then the subject folder, e.g. 'lower-secondary/grade-7/matematika'. */
   sourceFolder: string;
+  /**
+   * Subject the caller already resolved, when the course folder name does not
+   * carry one. Absent for a course named "<mapel>-<tingkat>-kelas-<romawi>",
+   * where the subject is read from the name instead.
+   */
+  subject?: string;
 }
 
 /** One simulation as the site holds it, before and after publishing. */
@@ -105,11 +111,12 @@ export function planPublish(scenes: SceneSource[], existing: CatalogEntry[]): Pu
       continue;
     }
 
-    const subject = subjectOf(scene.courseFolder);
+    const subject = scene.subject ?? subjectOf(scene.courseFolder);
     if (!subject) {
       plan.errors.push(
         `Scene "${scene.id}" berada di course "${scene.courseFolder}" yang nama mapelnya ` +
-          `tidak terbaca. Format yang diharapkan: "<mapel>-<tingkat>-kelas-<romawi>".`,
+          `tidak terbaca. Format yang diharapkan: "<mapel>-<tingkat>-kelas-<romawi>", ` +
+          `atau isi --subject saat menerbitkan.`,
       );
       continue;
     }
@@ -122,9 +129,15 @@ export function planPublish(scenes: SceneSource[], existing: CatalogEntry[]): Pu
       continue;
     }
 
+    // Scene ids are only unique inside a course: every course numbers its
+    // scenes from s1. An entry is therefore only the same simulation when it is
+    // the same subject as well, or IPA's s15 reads as a correction of
+    // Matematika's s15 and publishes IPA's HTML under the Matematika title.
     const sameScene = byScene.get(scene.id);
     const sameSlug = bySlug.get(slugFromTitle);
-    const entry = sameScene ?? (sameSlug?.scene ? undefined : sameSlug);
+    const entry =
+      (sameScene?.subject === subject ? sameScene : undefined) ??
+      (sameSlug && !sameSlug.scene && sameSlug.subject === subject ? sameSlug : undefined);
 
     if (entry && !matched.has(entry.slug)) {
       // The same simulation, corrected. Its slug, catalog entry and URL all stand.
@@ -198,7 +211,7 @@ function gradeFromSourceFolder(sourceFolder: string): number {
  * the school level is the subject. Guessing it from the level instead would
  * file an IPA scene under Matematika and publish it at a wrong address.
  */
-function subjectOf(courseFolder: string): string | null {
+export function subjectOf(courseFolder: string): string | null {
   const match = courseFolder.match(/^(.+)-(?:smp|sma|sd|smk)-/);
   if (!match) return null;
   return match[1].toLowerCase();
@@ -251,7 +264,7 @@ export function catalogPathFor(slug: string): string {
  * Where a simulation's file is written, relative to the site root.
  *
  * Under the tool's own English folder rather than the Indonesian segment: the
- * scanner walks simulations/<stage>/<grade>/ and maps the stage to its
+ * scanner walks simulations/<stage>/<grade>/<subject>/ and maps the stage to its
  * Indonesian segment at build time (docs/adr/0003), so writing under "smp"
  * would put the file where the scanner never looks and the build would report
  * a catalog entry with no file.

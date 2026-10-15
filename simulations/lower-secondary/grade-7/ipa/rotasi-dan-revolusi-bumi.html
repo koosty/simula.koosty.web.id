@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rotasi dan Revolusi Bumi · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Amati rotasi Bumi, revolusi mengelilingi Matahari selama 365,25 hari, dan kemiringan sumbu Bumi 23,5 derajat dalam 3D.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Rotasi dan Revolusi Bumi">
+  <meta property="og:description" content="Amati rotasi Bumi, revolusi mengelilingi Matahari selama 365,25 hari, dan kemiringan sumbu Bumi 23,5 derajat dalam 3D.">
+  <meta property="og:locale" content="id">
+  <style>
+:root {
+  /* Colour */
+  --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+  --surface: #14141e;     /* panels, cards, step rows */
+  --panel: rgba(20, 20, 30, 0.9);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: #333;
+  --text: #ffffff;
+  --text-muted: #aaa;
+  --text-dim: #888;
+  --accent: #6366f1;      /* primary action, slider thumb, active state */
+  --accent-hover: #5558e8;
+  --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+  --success: #fbbf24;     /* completion, headings, callouts */
+  --warning: #fb923c;
+  --error: #ff6b6b;
+  --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-none: none;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type scale (system fonts only) */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-caption: 11px;   /* uppercase control labels */
+  --text-heading: 24px;
+  --font-weight-display: 600;  /* headings */
+  --font-weight-number: 500;   /* monospaced readouts */
+
+  /* Focus, motion, stacking */
+  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  --motion: 0.2s;
+  --motion-slow: 0.3s;
+  --z-overlay: 100;        /* panels, tooltips */
+  --z-modal: 1000;         /* loading screens, modal dialogs */
+}
+
+[data-theme="light"] {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-strong: #d4d4d8;
+  --text: #16161d;
+  --text-muted: #52525b;
+  --text-dim: #71717a;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.95);
+  --success: #b45309;
+  --warning: #c2410c;
+  --error: #dc2626;
+  --accent-text: #ffffff;
+  --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+h1, h2, h3 { font-weight: var(--font-weight-display); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-4);
+}
+.panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+.btn {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  min-height: 44px;            /* never below 44px, mobile */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--border-strong);
+  color: var(--text);
+  box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.btn:hover { background: var(--text-muted); }
+.btn:active { transform: scale(0.95); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); }
+
+.control-label {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+input[type="range"] {
+  width: 100%; height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Visually hidden but announced by screen readers. Use when a layout has no
+   room for a visible h1 (e.g. a full-bleed canvas) — never as an excuse to
+   drop a heading. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+#feedback-panel {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+#feedback-panel.success { border-left-color: var(--success); }
+#feedback-panel.error { border-left-color: var(--error); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+.sources {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+.sources-heading {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+.source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+.source-item a { color: var(--accent); text-decoration: none; }
+.source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+.reading-article {
+  max-width: 720px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+.reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+.reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+.reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+.reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+.reading-article blockquote {
+  border-left: 3px solid var(--border-strong);
+  padding-left: var(--space-4);
+  color: var(--text-muted);
+  margin-bottom: var(--space-4);
+}
+.reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+.reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+.reading-article pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+}
+.reading-article pre code { background: none; padding: 0; }
+.reading-article table { width: 100%; border-collapse: collapse; }
+.reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+.reading-article details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.reading-article summary {
+  cursor: pointer;
+  font-weight: var(--font-weight-display);
+  color: var(--text);
+}
+.reading-article details[open] summary { margin-bottom: var(--space-2); }
+.glossary-term {
+  text-decoration: underline dotted var(--text-dim);
+  text-decoration-thickness: 1px;
+  cursor: help;
+}
+.katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+/* highlight.js token colours — mapped to the token set, not a canned theme */
+.hljs { color: var(--text); }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+.hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+.hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+.hljs-number { color: var(--warning); }
+
+/* Tata letak tampilan 3D (warna hanya dari token) */
+.viz-page { min-height: 100vh; display: flex; flex-direction: column; }
+.viz-head { width: 100%; max-width: 1200px; margin: 0 auto; padding: var(--space-4) var(--space-4) 0; }
+.viz-head h1 { font-size: var(--text-heading); }
+.viz-head p { color: var(--text-muted); font-size: var(--text-sm); margin-top: var(--space-1); }
+.viz-layout { flex: 1; width: 100%; max-width: 1200px; margin: 0 auto; padding: var(--space-4); display: grid; gap: var(--space-4); grid-template-columns: minmax(0, 1fr); }
+#canvas-container { position: relative; height: 56vh; min-height: 320px; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border); }
+#canvas-container canvas { display: block; width: 100%; height: 100%; }
+#loading { position: absolute; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: var(--text-base); z-index: var(--z-modal); }
+#loading .spinner { width: var(--space-6); height: var(--space-6); border: 3px solid var(--border-strong); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto var(--space-4); }
+@keyframes spin { to { transform: rotate(360deg); } }
+.side-stack { display: grid; gap: var(--space-4); align-content: start; }
+@media (min-width: 900px) {
+  .viz-layout { grid-template-columns: minmax(0, 1fr) 340px; align-items: start; }
+  #canvas-container { height: 72vh; min-height: 480px; }
+}
+#info h2 { font-size: var(--text-base); color: var(--success); margin-bottom: var(--space-2); }
+.readout-list { display: grid; gap: var(--space-2); font-size: var(--text-sm); margin-bottom: var(--space-3); }
+.readout-list .mono-value { color: var(--text); }
+#season-text { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+#tilt-text { font-size: var(--text-sm); color: var(--text); }
+.season-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+.season-btn { width: 100%; }
+.season-btn.active { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.control-stack { display: grid; gap: var(--space-2); }
+.control-row { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+.zoom-btns { display: flex; gap: var(--space-2); }
+.zoom-btns .btn { width: var(--space-6); height: var(--space-6); min-width: 44px; min-height: 44px; font-size: var(--text-heading); padding: 0; display: flex; align-items: center; justify-content: center; }
+.slider-wrap { min-height: 44px; display: flex; align-items: center; }
+.info-row { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.hint { font-size: var(--text-xs); color: var(--text-dim); }
+  </style>
+</head>
+<body>
+  <div class="viz-page">
+    <header class="viz-head">
+      <h1>Rotasi dan Revolusi Bumi</h1>
+      <p>Putar Bumi pada sumbunya, lalu lihat posisinya saat mengelilingi Matahari dan bagaimana kemiringan sumbunya memengaruhi musim.</p>
+    </header>
+
+    <main class="viz-layout">
+      <div id="canvas-container">
+        <div id="loading">
+          <div style="text-align:center;">
+            <div class="spinner"></div>
+            Memuat model Bumi…
+          </div>
+        </div>
+      </div>
+
+      <aside class="side-stack">
+        <section class="panel" id="info" aria-live="polite">
+          <h2>Bumi dan Matahari</h2>
+          <dl class="readout-list">
+            <div class="info-row"><dt>Rotasi</dt><dd class="mono-value" id="rotation-readout">–</dd></div>
+            <div class="info-row"><dt>Sudut revolusi</dt><dd class="mono-value" id="angle-readout">–</dd></div>
+            <div class="info-row"><dt>Posisi terdekat</dt><dd class="mono-value" id="season-readout">–</dd></div>
+          </dl>
+          <p id="tilt-text"></p>
+          <p id="season-text"></p>
+        </section>
+
+        <section class="panel" aria-label="Posisi Bumi dalam revolusi">
+          <p class="panel-heading">Posisi Bumi</p>
+          <div class="season-grid">
+            <button type="button" class="btn season-btn" id="season-maret-btn">Maret</button>
+            <button type="button" class="btn season-btn" id="season-juni-btn">Juni</button>
+            <button type="button" class="btn season-btn" id="season-september-btn">September</button>
+            <button type="button" class="btn season-btn" id="season-desember-btn">Desember</button>
+          </div>
+          <p class="hint" style="margin-top: var(--space-3);">Pilih posisi untuk melihat arah condong sumbu Bumi. Orbit ditampilkan lebih cepat dari kenyataannya.</p>
+        </section>
+
+        <section class="panel" aria-label="Kontrol tampilan">
+          <p class="panel-heading">Kontrol</p>
+          <div class="control-stack">
+            <div class="info-row">
+              <label class="control-label" for="spin-slider">Kecepatan rotasi</label>
+              <span class="mono-value" id="spin-readout">x1,0</span>
+            </div>
+            <div class="slider-wrap">
+              <input type="range" id="spin-slider" min="0" max="3" step="0.1" value="1" aria-label="Kecepatan rotasi">
+            </div>
+            <div class="info-row">
+              <label class="control-label" for="orbit-slider">Kecepatan revolusi</label>
+              <span class="mono-value" id="orbit-readout">x1,0</span>
+            </div>
+            <div class="slider-wrap">
+              <input type="range" id="orbit-slider" min="0" max="3" step="0.1" value="1" aria-label="Kecepatan revolusi">
+            </div>
+            <div class="control-row">
+              <button type="button" class="btn btn-primary" id="pause-btn">Jeda</button>
+              <button type="button" class="btn" id="axis-btn">Sembunyikan sumbu</button>
+              <div class="zoom-btns">
+                <button type="button" class="btn" id="zoom-in-btn" title="Perbesar" aria-label="Perbesar tampilan">+</button>
+                <button type="button" class="btn" id="zoom-out-btn" title="Perkecil" aria-label="Perkecil tampilan">−</button>
+              </div>
+              <button type="button" class="btn btn-ghost" id="reset-btn">Atur ulang</button>
+            </div>
+            <p class="hint">Tekan Spasi untuk menjeda, dan R untuk mengatur ulang.</p>
+          </div>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const TILT = THREE.MathUtils.degToRad(23.5);   // kemiringan sumbu Bumi terhadap tegak lurus bidang orbit
+    const ORBIT_R = 7;                              // jarak tampilan Bumi dari Matahari (tidak sesuai skala)
+    const SPIN_BASE = 1.0;                          // rad/detik pada kecepatan x1
+    const ORBIT_BASE = 0.08;                        // rad/detik pada kecepatan x1
+    const TAU = Math.PI * 2;
+
+    const SEASONS = {
+      maret: { label: 'Maret', theta: Math.PI / 2, text: 'Ekuinoks Maret: sinar Matahari tegak lurus di khatulistiwa, sehingga siang dan malam hampir sama panjang di seluruh Bumi.' },
+      juni: { label: 'Juni', theta: Math.PI, text: 'Solstis Juni: belahan Bumi utara condong ke Matahari, sehingga siang lebih panjang di utara. Indonesia yang dilalui khatulistiwa tetap mengalami siang dan malam yang hampir sama panjang.' },
+      september: { label: 'September', theta: Math.PI * 1.5, text: 'Ekuinoks September: seperti Maret, siang dan malam hampir sama panjang di seluruh Bumi.' },
+      desember: { label: 'Desember', theta: 0, text: 'Solstis Desember: belahan Bumi selatan condong ke Matahari, sehingga siang lebih panjang di selatan.' }
+    };
+    const DEFAULT_THETA = SEASONS.maret.theta;
+
+    const state = { spin: 0, theta: DEFAULT_THETA, spinMul: 1, orbitMul: 1, paused: false, axisOn: true };
+
+    function $(id) { return document.getElementById(id); }
+    function setText(id, t) { const n = $(id); if (n) n.textContent = t; }
+    function fmtDec(n) { return n.toFixed(1).replace('.', ','); }
+    function cssColor(n) { return '#' + n.toString(16).padStart(6, '0'); }
+    function normAngle(a) {
+      let x = a % TAU;
+      if (x > Math.PI) x -= TAU;
+      if (x < -Math.PI) x += TAU;
+      return x;
+    }
+    function tokenColor(name) {
+      const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      return new THREE.Color(v);
+    }
+
+    function checkWebGL() {
+      try {
+        const c = document.createElement('canvas');
+        return !!(window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl')));
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function measure(container) {
+      return { w: container.clientWidth || window.innerWidth, h: container.clientHeight || 320 };
+    }
+
+    function showError(message) {
+      const loading = $('loading');
+      if (!loading) return;
+      loading.style.display = 'flex';
+      loading.textContent = 'Gagal memuat tampilan 3D: ' + message + '. Muat ulang halaman untuk mencoba lagi.';
+    }
+
+    // Tekstur Bumi dari kanvas: laut, daratan, dan tudung es (tanpa berkas gambar eksternal).
+    function createEarthTexture() {
+      const c = document.createElement('canvas');
+      c.width = 512;
+      c.height = 256;
+      const g = c.getContext('2d');
+      g.fillStyle = cssColor(0x1e90ff);
+      g.fillRect(0, 0, 512, 256);
+      g.fillStyle = cssColor(0x228b22);
+      [[100, 80, 60, 40, 0], [130, 160, 30, 50, 0.3], [270, 100, 40, 70, 0], [380, 70, 80, 50, 0], [420, 170, 30, 20, 0]]
+        .forEach(function (e) {
+          g.beginPath();
+          g.ellipse(e[0], e[1], e[2], e[3], e[4], 0, Math.PI * 2);
+          g.fill();
+        });
+      g.fillStyle = cssColor(0xffffff);
+      g.fillRect(0, 0, 512, 15);
+      g.fillRect(0, 241, 512, 15);
+      g.globalAlpha = 0.3;
+      for (let i = 0; i < 20; i++) {
+        g.beginPath();
+        g.ellipse(Math.random() * 512, Math.random() * 256, 30 + Math.random() * 20, 10 + Math.random() * 10, 0, 0, Math.PI * 2);
+        g.fill();
+      }
+      g.globalAlpha = 1;
+      return new THREE.CanvasTexture(c);
+    }
+
+    function nearestSeason(theta) {
+      let best = 'maret';
+      let bestD = Infinity;
+      Object.keys(SEASONS).forEach(function (k) {
+        const d = Math.abs(normAngle(theta - SEASONS[k].theta));
+        if (d < bestD) { bestD = d; best = k; }
+      });
+      return best;
+    }
+
+    function init() {
+      const container = $('canvas-container');
+      if (!container) return;
+
+      try {
+        if (!checkWebGL()) throw new Error('WebGL tidak didukung di peramban ini');
+        const size = measure(container);
+        if (size.w === 0 || size.h === 0) throw new Error('area tampilan berukuran nol');
+
+        const scene = new THREE.Scene();
+        // Latar mengikuti token --bg dari halaman, sehingga tidak ada sambungan warna.
+        scene.background = new THREE.Color(getComputedStyle(document.body).backgroundColor);
+
+        const camera = new THREE.PerspectiveCamera(50, size.w / size.h, 0.1, 200);
+        const CAM_HOME = new THREE.Vector3(0, 14, 16);
+        camera.position.copy(CAM_HOME);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setSize(size.w, size.h);
+        container.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.minDistance = 4;
+        controls.maxDistance = 60;
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.45));
+        scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 0.5));
+        // Cahaya dari Matahari di pusat: sisi Bumi yang menghadap Matahari menjadi siang.
+        scene.add(new THREE.PointLight(0xffffff, 2.2, 0, 0));
+
+        const sun = new THREE.Mesh(
+          new THREE.SphereGeometry(1.2, 40, 40),
+          new THREE.MeshBasicMaterial({ color: 0xfdb813 })
+        );
+        scene.add(sun);
+
+        const orbitPts = [];
+        for (let k = 0; k <= 160; k++) {
+          const a = (k / 160) * TAU;
+          orbitPts.push(new THREE.Vector3(Math.cos(a) * ORBIT_R, 0, Math.sin(a) * ORBIT_R));
+        }
+        scene.add(new THREE.LineLoop(
+          new THREE.BufferGeometry().setFromPoints(orbitPts),
+          new THREE.LineBasicMaterial({ color: 0x3a3a55 })
+        ));
+
+        const earthGroup = new THREE.Group();
+        scene.add(earthGroup);
+
+        // Grup kemiringan: sumbu Bumi condong TILT dari tegak lurus bidang orbit.
+        const tiltGroup = new THREE.Group();
+        tiltGroup.rotation.z = -TILT;
+        earthGroup.add(tiltGroup);
+
+        const earth = new THREE.Mesh(
+          new THREE.SphereGeometry(0.7, 64, 64),
+          new THREE.MeshPhongMaterial({ map: createEarthTexture(), specular: 0x333333, shininess: 15 })
+        );
+        tiltGroup.add(earth);
+
+        const axisGeom = new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(0, -1.2, 0),
+          new THREE.Vector3(0, 1.2, 0)
+        ]);
+        const axis = new THREE.Line(axisGeom, new THREE.LineBasicMaterial({ color: tokenColor('--success') }));
+        tiltGroup.add(axis);
+
+        // Penanda lokasi Indonesia di khatulistiwa: cincin datar di permukaan, ikut berputar bersama Bumi.
+        const marker = new THREE.Mesh(
+          new THREE.RingGeometry(0.05, 0.08, 24),
+          new THREE.MeshBasicMaterial({ color: tokenColor('--accent'), side: THREE.DoubleSide })
+        );
+        marker.position.set(0.705, 0, 0);
+        marker.rotation.y = Math.PI / 2;
+        earth.add(marker);
+
+        function placeEarth() {
+          earthGroup.position.set(Math.cos(state.theta) * ORBIT_R, 0, Math.sin(state.theta) * ORBIT_R);
+          earth.rotation.y = state.spin;
+          axis.visible = state.axisOn;
+        }
+
+        function describeTilt() {
+          // Komponen sumbu Bumi (arah utara) terhadap arah ke Matahari.
+          const dot = -Math.sin(TILT) * Math.cos(state.theta);
+          if (Math.abs(dot) < 0.02) return 'Kedua belahan Bumi menerima sinar Matahari hampir sama (ekuinoks).';
+          if (dot > 0) return 'Belahan utara condong ke Matahari: siang lebih panjang di utara.';
+          return 'Belahan selatan condong ke Matahari: siang lebih panjang di selatan.';
+        }
+
+        function renderReadouts() {
+          const turns = Math.floor(state.spin / TAU);
+          setText('rotation-readout', turns + ' putaran (1 putaran = 24 jam)');
+          const deg = ((state.theta * 180 / Math.PI) % 360 + 360) % 360;
+          setText('angle-readout', Math.round(deg) + '°');
+          const near = nearestSeason(state.theta);
+          setText('season-readout', SEASONS[near].label);
+          setText('tilt-text', describeTilt());
+          setText('season-text', SEASONS[near].text);
+
+          ['maret', 'juni', 'september', 'desember'].forEach(function (k) {
+            const b = $('season-' + k + '-btn');
+            if (b) {
+              const on = Math.abs(normAngle(state.theta - SEASONS[k].theta)) < 0.05;
+              b.classList.toggle('active', on);
+              b.setAttribute('aria-pressed', String(on));
+            }
+          });
+
+          const pause = $('pause-btn');
+          if (pause) pause.textContent = state.paused ? 'Lanjut' : 'Jeda';
+          const axisBtn = $('axis-btn');
+          if (axisBtn) axisBtn.textContent = state.axisOn ? 'Sembunyikan sumbu' : 'Tampilkan sumbu';
+
+          const s = $('spin-slider');
+          if (s) s.value = String(state.spinMul);
+          setText('spin-readout', 'x' + fmtDec(state.spinMul));
+          const o = $('orbit-slider');
+          if (o) o.value = String(state.orbitMul);
+          setText('orbit-readout', 'x' + fmtDec(state.orbitMul));
+        }
+
+        function setSeason(key) {
+          if (!SEASONS[key]) return;
+          // (musim aktif ditentukan dari posisi revolusi, bukan dari preset terakhir)
+          state.theta = SEASONS[key].theta;
+          renderReadouts();
+        }
+
+        function setSpinMul(v) {
+          const n = Number(v);
+          if (isNaN(n)) return;
+          state.spinMul = Math.min(3, Math.max(0, n));
+          renderReadouts();
+        }
+
+        function setOrbitMul(v) {
+          const n = Number(v);
+          if (isNaN(n)) return;
+          state.orbitMul = Math.min(3, Math.max(0, n));
+          renderReadouts();
+        }
+
+        function setPaused(v) {
+          state.paused = !!v;
+          renderReadouts();
+        }
+
+        function toggleAxis() {
+          state.axisOn = !state.axisOn;
+          renderReadouts();
+        }
+
+        function zoom(factor) {
+          const offset = camera.position.clone().sub(controls.target);
+          if (offset.lengthSq() === 0) return;
+          const dist = THREE.MathUtils.clamp(offset.length() * factor, controls.minDistance, controls.maxDistance);
+          camera.position.copy(controls.target).add(offset.normalize().multiplyScalar(dist));
+        }
+
+        function resetState() {
+          state.spin = 0;
+          state.theta = DEFAULT_THETA;
+          state.spinMul = 1;
+          state.orbitMul = 1;
+          state.paused = false;
+          state.axisOn = true;
+          controls.target.set(0, 0, 0);
+          camera.position.copy(CAM_HOME);
+          renderReadouts();
+        }
+
+        // Fungsi publik sederhana: tombol dan preset memakai jalur yang sama.
+        window.setSceneState = function (key, value) {
+          if (key === 'season') setSeason(value);
+          else if (key === 'spin') setSpinMul(value);
+          else if (key === 'orbit') setOrbitMul(value);
+          else if (key === 'paused') setPaused(value);
+          else if (key === 'axis') { state.axisOn = !!value; renderReadouts(); }
+        };
+
+        Object.keys(SEASONS).forEach(function (k) {
+          const b = $('season-' + k + '-btn');
+          if (b) b.addEventListener('click', function () { setSeason(k); });
+        });
+        const spinSlider = $('spin-slider');
+        if (spinSlider) spinSlider.addEventListener('input', function () { setSpinMul(this.value); });
+        const orbitSlider = $('orbit-slider');
+        if (orbitSlider) orbitSlider.addEventListener('input', function () { setOrbitMul(this.value); });
+        const pauseBtn = $('pause-btn');
+        if (pauseBtn) pauseBtn.addEventListener('click', function () { setPaused(!state.paused); });
+        const axisBtn = $('axis-btn');
+        if (axisBtn) axisBtn.addEventListener('click', toggleAxis);
+        const zin = $('zoom-in-btn');
+        if (zin) zin.addEventListener('click', function () { zoom(0.8); });
+        const zout = $('zoom-out-btn');
+        if (zout) zout.addEventListener('click', function () { zoom(1.25); });
+        const reset = $('reset-btn');
+        if (reset) reset.addEventListener('click', resetState);
+
+        document.addEventListener('keydown', function (e) {
+          if (e.ctrlKey || e.metaKey || e.altKey) return;
+          const tag = e.target && e.target.tagName;
+          if (e.key === ' ' && tag !== 'BUTTON' && tag !== 'INPUT') {
+            e.preventDefault();
+            setPaused(!state.paused);
+          } else if (e.key === 'r' || e.key === 'R') {
+            resetState();
+          }
+        });
+
+        const ro = new ResizeObserver(function () {
+          const s = measure(container);
+          if (s.w === 0 || s.h === 0) return;
+          camera.aspect = s.w / s.h;
+          camera.updateProjectionMatrix();
+          renderer.setSize(s.w, s.h);
+        });
+        ro.observe(container);
+
+        let last = performance.now();
+        function frame(now) {
+          requestAnimationFrame(frame);
+          const dt = Math.min(0.05, (now - last) / 1000);
+          last = now;
+          if (!state.paused) {
+            state.spin += dt * SPIN_BASE * state.spinMul;
+            state.theta += dt * ORBIT_BASE * state.orbitMul;
+          }
+          placeEarth();
+          renderReadouts();
+          controls.update();
+          renderer.render(scene, camera);
+        }
+
+        placeEarth();
+        renderReadouts();
+        requestAnimationFrame(frame);
+
+        const loading = $('loading');
+        if (loading) loading.style.display = 'none';
+      } catch (error) {
+        console.error('Inisialisasi tampilan 3D gagal:', error);
+        showError(error && error.message ? error.message : 'kesalahan tidak diketahui');
+      }
+    }
+
+    init();
+  </script>
+
+  <script type="application/json" id="widget-config">
+{"type":"visualization3d","visualizationType":"custom","description":"Model Bumi mengorbit Matahari dengan sumbu condong 23,5 derajat. Pengguna dapat memutar Bumi (rotasi), mengubah posisi revolusi, dan melihat bagian Bumi yang menerima sinar Matahari.","objects":[{"id":"matahari","type":"sphere","material":{"type":"emissive","color":"0xfdb813"}},{"id":"bumi","type":"sphere","material":{"type":"textured","textureType":"earth"}},{"id":"sumbu_bumi","type":"line","material":{"type":"basic","color":"success"}},{"id":"orbit_bumi","type":"line","material":{"type":"basic","color":"0x3a3a55"}}],"interactions":[{"type":"orbit","target":"camera"},{"type":"slider","param":"spin","min":0,"max":3,"default":1},{"type":"slider","param":"orbit","min":0,"max":3,"default":1},{"type":"button","action":"pause","label":"Jeda"},{"type":"button","action":"axis","label":"Sembunyikan sumbu"},{"type":"button","action":"zoomIn","label":"Perbesar"},{"type":"button","action":"zoomOut","label":"Perkecil"},{"type":"button","action":"reset","label":"Atur ulang"}],"presets":[{"name":"Maret","state":{"season":"maret"}},{"name":"Juni","state":{"season":"juni"}},{"name":"September","state":{"season":"september"}},{"name":"Desember","state":{"season":"desember"}}]}
+  </script>
+</body>
+</html>

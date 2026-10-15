@@ -1,0 +1,11 @@
+# Satu entri katalog per simulasi. Kunci adalah pengenal bahasa Inggris;
+# nilainya Bahasa Indonesia karena menjadi bagian URL.
+# Katalog adalah sumber kebenaran atas metadata simulasi (docs/adr/0004).
+title: "Proyek: Balon Udara Sederhana"
+description: >-
+  Membuat balon udara berdiameter 30 cm yang dapat terbang sambil membawa lampu atau lilin.
+level: smp
+grade: 7
+subject: ipa
+order: 44
+scene: "s21"

@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fase Bulan dan Gerhana · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Amati delapan fase Bulan dan pahami kapan gerhana bulan terjadi saat Bulan masuk bayangan Bumi.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Fase Bulan dan Gerhana">
+  <meta property="og:description" content="Amati delapan fase Bulan dan pahami kapan gerhana bulan terjadi saat Bulan masuk bayangan Bumi.">
+  <meta property="og:locale" content="id">
+  <style>
+:root {
+  /* Colour */
+  --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+  --surface: #14141e;     /* panels, cards, step rows */
+  --panel: rgba(20, 20, 30, 0.9);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: #333;
+  --text: #ffffff;
+  --text-muted: #aaa;
+  --text-dim: #888;
+  --accent: #6366f1;      /* primary action, slider thumb, active state */
+  --accent-hover: #5558e8;
+  --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+  --success: #fbbf24;     /* completion, headings, callouts */
+  --warning: #fb923c;
+  --error: #ff6b6b;
+  --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-none: none;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type scale (system fonts only) */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-caption: 11px;   /* uppercase control labels */
+  --text-heading: 24px;
+  --font-weight-display: 600;  /* headings */
+  --font-weight-number: 500;   /* monospaced readouts */
+
+  /* Focus, motion, stacking */
+  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  --motion: 0.2s;
+  --motion-slow: 0.3s;
+  --z-overlay: 100;        /* panels, tooltips */
+  --z-modal: 1000;         /* loading screens, modal dialogs */
+}
+
+[data-theme="light"] {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-strong: #d4d4d8;
+  --text: #16161d;
+  --text-muted: #52525b;
+  --text-dim: #71717a;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.95);
+  --success: #b45309;
+  --warning: #c2410c;
+  --error: #dc2626;
+  --accent-text: #ffffff;
+  --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+h1, h2, h3 { font-weight: var(--font-weight-display); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-4);
+}
+.panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+.btn {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  min-height: 44px;            /* never below 44px, mobile */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--border-strong);
+  color: var(--text);
+  box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.btn:hover { background: var(--text-muted); }
+.btn:active { transform: scale(0.95); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); }
+
+.control-label {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+input[type="range"] {
+  width: 100%; height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Visually hidden but announced by screen readers. Use when a layout has no
+   room for a visible h1 (e.g. a full-bleed canvas) — never as an excuse to
+   drop a heading. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+#feedback-panel {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+#feedback-panel.success { border-left-color: var(--success); }
+#feedback-panel.error { border-left-color: var(--error); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+.sources {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+.sources-heading {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+.source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+.source-item a { color: var(--accent); text-decoration: none; }
+.source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+.reading-article {
+  max-width: 720px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+.reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+.reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+.reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+.reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+.reading-article blockquote {
+  border-left: 3px solid var(--border-strong);
+  padding-left: var(--space-4);
+  color: var(--text-muted);
+  margin-bottom: var(--space-4);
+}
+.reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+.reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+.reading-article pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+}
+.reading-article pre code { background: none; padding: 0; }
+.reading-article table { width: 100%; border-collapse: collapse; }
+.reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+.reading-article details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.reading-article summary {
+  cursor: pointer;
+  font-weight: var(--font-weight-display);
+  color: var(--text);
+}
+.reading-article details[open] summary { margin-bottom: var(--space-2); }
+.glossary-term {
+  text-decoration: underline dotted var(--text-dim);
+  text-decoration-thickness: 1px;
+  cursor: help;
+}
+.katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+/* highlight.js token colours — mapped to the token set, not a canned theme */
+.hljs { color: var(--text); }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+.hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+.hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+.hljs-number { color: var(--warning); }
+
+/* Tata letak simulasi (warna hanya dari token) */
+.sim-page { max-width: 1100px; margin: 0 auto; padding: var(--space-4); display: grid; gap: var(--space-4); }
+.sim-page h1 { font-size: var(--text-heading); }
+.intro p { color: var(--text-muted); margin-top: var(--space-2); }
+.sim-layout { display: grid; gap: var(--space-4); }
+@media (min-width: 900px) {
+  .sim-layout { grid-template-columns: minmax(0, 1fr) 340px; align-items: start; }
+}
+.sim-wrap { position: relative; width: 100%; height: min(62vh, 480px); min-height: 300px; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; background: var(--bg); }
+#sim-canvas { display: block; width: 100%; height: 100%; }
+.side-stack { display: grid; gap: var(--space-4); align-content: start; }
+.phase-box { display: grid; grid-template-columns: auto 1fr; gap: var(--space-3); align-items: center; }
+#phase-canvas { width: 96px; height: 96px; }
+.phase-name { font-size: var(--text-base); font-weight: var(--font-weight-display); color: var(--text); }
+.control-stack { display: grid; gap: var(--space-2); }
+.slider-wrap { min-height: 44px; display: flex; align-items: center; }
+.info-row { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.readout-list { display: grid; gap: var(--space-2); font-size: var(--text-sm); }
+.readout-list .mono-value { color: var(--text); text-align: right; }
+.preset-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+.preset-grid .btn { width: 100%; }
+.control-row { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+.hint { font-size: var(--text-xs); color: var(--text-dim); }
+#feedback-panel { padding: var(--space-3) var(--space-4); }
+#feedback-text { font-size: var(--text-sm); color: var(--text); }
+#feedback-panel.eclipse { border-left-color: var(--warning); }
+  </style>
+</head>
+<body>
+  <main class="sim-page">
+    <header class="intro">
+      <h1>Fase Bulan dan Gerhana</h1>
+      <p>Gerakkan Bulan mengelilingi Bumi. Lihat bagian Bulan yang terang dari Bumi, lalu cek apakah Bulan masuk bayangan Bumi saat purnama.</p>
+    </header>
+
+    <div class="sim-layout">
+      <div>
+        <div class="sim-wrap" id="sim-wrap">
+          <canvas id="sim-canvas" role="img" aria-label="Diagram orbit Bulan dilihat dari atas dan dari samping, dengan Matahari di sebelah kanan"></canvas>
+        </div>
+      </div>
+
+      <aside class="side-stack">
+        <section id="feedback-panel" aria-live="polite">
+          <p class="panel-heading">Penjelasan</p>
+          <p id="feedback-text"></p>
+        </section>
+
+        <section class="panel" aria-label="Fase Bulan">
+          <p class="panel-heading">Fase sekarang</p>
+          <div class="phase-box">
+            <canvas id="phase-canvas" role="img" aria-label="Bentuk Bulan seperti dilihat dari Bumi"></canvas>
+            <div>
+              <p class="phase-name" id="phase-name">–</p>
+              <p class="hint" id="phase-hint"></p>
+            </div>
+          </div>
+          <dl class="readout-list" style="margin-top: var(--space-3);">
+            <div class="info-row"><dt>Bagian Bulan yang terang</dt><dd class="mono-value" id="illum-readout">–</dd></div>
+            <div class="info-row"><dt>Umur Bulan</dt><dd class="mono-value" id="age-readout">–</dd></div>
+            <div class="info-row"><dt>Lintang Bulan dari bidang orbit Bumi</dt><dd class="mono-value" id="beta-readout">–</dd></div>
+          </dl>
+        </section>
+
+        <section class="panel" aria-label="Preset">
+          <p class="panel-heading">Contoh (mengatur ulang posisi Bulan)</p>
+          <div class="preset-grid">
+            <button type="button" class="btn" id="preset-eclipse-btn">Gerhana bulan</button>
+            <button type="button" class="btn" id="preset-no-eclipse-btn">Purnama tanpa gerhana</button>
+            <button type="button" class="btn" id="preset-new-btn">Bulan baru</button>
+            <button type="button" class="btn" id="preset-quarter-btn">Perempat awal</button>
+          </div>
+        </section>
+
+        <section class="panel" aria-label="Kontrol">
+          <p class="panel-heading">Kontrol</p>
+          <div class="control-stack">
+            <div class="info-row">
+              <label class="control-label" for="moon-speed-slider">Kecepatan Bulan</label>
+              <span class="mono-value" id="moon-speed-readout">x1,0</span>
+            </div>
+            <div class="slider-wrap">
+              <input type="range" id="moon-speed-slider" min="0" max="3" step="0.1" value="1" aria-label="Kecepatan Bulan">
+            </div>
+            <div class="info-row">
+              <label class="control-label" for="incl-slider">Kemiringan orbit Bulan</label>
+              <span class="mono-value" id="incl-readout">5,1°</span>
+            </div>
+            <div class="slider-wrap">
+              <input type="range" id="incl-slider" min="0" max="10" step="0.1" value="5.1" aria-label="Kemiringan orbit Bulan dalam derajat">
+            </div>
+            <div class="info-row">
+              <label class="control-label" for="node-slider">Posisi titik simpul</label>
+              <span class="mono-value" id="node-readout">0°</span>
+            </div>
+            <div class="slider-wrap">
+              <input type="range" id="node-slider" min="0" max="360" step="1" value="0" aria-label="Posisi titik simpul dalam derajat">
+            </div>
+            <div class="control-row">
+              <button type="button" class="btn btn-primary" id="play-btn">Jeda</button>
+              <button type="button" class="btn btn-ghost" id="reset-btn">Atur ulang</button>
+            </div>
+            <p class="hint">Titik simpul adalah tempat orbit Bulan memotong bidang orbit Bumi. Gerhana hanya mungkin jika purnama terjadi dekat titik simpul. Kemiringan dan bayangan digambar lebih besar agar mudah dilihat.</p>
+            <p class="hint">Tekan Spasi untuk memutar atau menjeda, dan R untuk mengatur ulang.</p>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <script type="application/json" id="widget-config">
+{"type":"simulation","concept":"moon_phases_eclipse","description":"Simulasi orbit Bulan mengelilingi Bumi. Pengguna dapat mengamati delapan fase Bulan dan melihat kapan gerhana bulan terjadi, yaitu saat purnama dan Bulan masuk bayangan Bumi.","variables":[{"name":"moonAngle","label":"Posisi Bulan dalam orbit","min":0,"max":360,"default":0,"unit":"°"},{"name":"inclination","label":"Kemiringan orbit Bulan","min":0,"max":10,"default":5.1,"unit":"°"},{"name":"node","label":"Posisi titik simpul","min":0,"max":360,"default":0,"unit":"°"}],"presets":[{"name":"Gerhana bulan","variables":{"moonAngle":180,"inclination":5.1,"node":0}},{"name":"Purnama tanpa gerhana","variables":{"moonAngle":90,"inclination":5.1,"node":90}},{"name":"Bulan baru","variables":{"moonAngle":0,"inclination":5.1,"node":0}},{"name":"Perempat awal","variables":{"moonAngle":90,"inclination":5.1,"node":0}}]}
+  </script>
+
+  <script>
+  (function () {
+    'use strict';
+
+    var DEG = Math.PI / 180;
+    var TAU = Math.PI * 2;
+    var SYNODIC_DAYS = 29.5;
+    var ORBIT_R = 8;          // jarak tampilan Bulan dari Bumi (tidak sesuai skala)
+    var EARTH_R = 1;
+    var MOON_R = 0.35;
+    var SHADOW_HALF = 0.5;    // setengah lebar bayangan Bumi (diperbesar agar terlihat)
+    var SPAN = 9.6;           // setengah lebar tampilan (satuan tampilan)
+    var U_RATE = TAU / 24;    // rad/detik pada kecepatan x1 (satu lintasan ~24 detik)
+    var ECLIPSE_WINDOW = 0.12; // rad di sekitar purnama untuk menilai gerhana
+
+    var PHASES = [
+      { lam: 0, name: 'Bulan baru' },
+      { lam: Math.PI / 4, name: 'Sabit awal' },
+      { lam: Math.PI / 2, name: 'Perempat awal' },
+      { lam: 3 * Math.PI / 4, name: 'Cembung awal' },
+      { lam: Math.PI, name: 'Purnama' },
+      { lam: 5 * Math.PI / 4, name: 'Cembung akhir' },
+      { lam: 3 * Math.PI / 2, name: 'Perempat akhir' },
+      { lam: 7 * Math.PI / 4, name: 'Sabit akhir' }
+    ];
+
+    var state = { u: 0, speed: 1, incl: 5.1, node: 0, playing: true };
+    var view = { W: 0, H: 0 };
+    var dpr = 1;
+    var PAL = null;
+    var canvas = null;
+    var ctx = null;
+    var phaseCanvas = null;
+    var phaseCtx = null;
+
+    function $(id) { return document.getElementById(id); }
+    function setText(id, t) { var n = $(id); if (n) n.textContent = t; }
+    function fmt1(n) { return n.toFixed(1).replace('.', ','); }
+    function norm(a) { var x = a % TAU; return x < 0 ? x + TAU : x; }
+    function normSigned(a) { var x = norm(a); return x > Math.PI ? x - TAU : x; }
+
+    // Posisi Bulan: u = sudut dari titik simpul. Keluarannya lintasan ekliptika (lam) dan lintang (beta).
+    function moonAt(u, nodeDeg, inclDeg) {
+      var i = inclDeg * DEG;
+      var o = nodeDeg * DEG;
+      return {
+        lam: o + Math.atan2(Math.cos(i) * Math.sin(u), Math.cos(u)),
+        beta: Math.asin(Math.sin(i) * Math.sin(u))
+      };
+    }
+
+    function phaseOf(lam) {
+      var l = norm(lam);
+      var best = PHASES[0];
+      var bestD = Infinity;
+      PHASES.forEach(function (p) {
+        var d = Math.abs(normSigned(l - p.lam));
+        if (d < bestD) { bestD = d; best = p; }
+      });
+      return best;
+    }
+
+    function palette() {
+      var cs = getComputedStyle(document.documentElement);
+      function g(n) { return cs.getPropertyValue(n).trim(); }
+      return {
+        bg: g('--bg'), surface: g('--surface'), border: g('--border-strong'),
+        text: g('--text'), muted: g('--text-muted'), dim: g('--text-dim'),
+        accent: g('--accent'), warning: g('--warning'), font: g('--font')
+      };
+    }
+
+    function currentMoon() {
+      return moonAt(state.u, state.node, state.incl);
+    }
+
+    function eclipseStatus(m) {
+      var lamN = norm(m.lam);
+      var nearFull = Math.abs(normSigned(lamN - Math.PI)) < ECLIPSE_WINDOW;
+      var inShadow = Math.abs(ORBIT_R * Math.sin(m.beta)) < SHADOW_HALF;
+      return { nearFull: nearFull, inShadow: inShadow };
+    }
+
+    function renderReadouts() {
+      var m = currentMoon();
+      var lamN = norm(m.lam);
+      var phase = phaseOf(lamN);
+      var illum = Math.round(100 * (1 - Math.cos(lamN)) / 2);
+      var age = Math.round(lamN / TAU * SYNODIC_DAYS);
+      var betaDeg = m.beta / DEG;
+      var st = eclipseStatus(m);
+
+      setText('phase-name', phase.name);
+      setText('illum-readout', illum + '%');
+      setText('age-readout', age + ' hari');
+      setText('beta-readout', fmt1(Math.abs(betaDeg)) + '° ' + (betaDeg < 0 ? 'selatan' : betaDeg > 0 ? 'utara' : ''));
+      setText('incl-readout', fmt1(state.incl) + '°');
+      setText('node-readout', Math.round(state.node) + '°');
+      setText('moon-speed-readout', 'x' + fmt1(state.speed));
+
+      var sp = $('moon-speed-slider'); if (sp) sp.value = String(state.speed);
+      var si = $('incl-slider'); if (si) si.value = String(state.incl);
+      var sn = $('node-slider'); if (sn) sn.value = String(Math.round(state.node));
+
+      var play = $('play-btn');
+      if (play) play.textContent = state.playing ? 'Jeda' : 'Putar';
+
+      var feedback = '';
+      var fp = $('feedback-panel');
+      if (st.nearFull) {
+        if (st.inShadow) {
+          feedback = 'Gerhana bulan! Saat purnama, Bulan masuk bayangan Bumi sehingga cahaya Matahari terhalang dan Bulan tampak merah gelap.';
+        } else {
+          feedback = 'Purnama tanpa gerhana. Bulan melewati di atas atau di bawah bayangan Bumi karena orbitnya miring.';
+        }
+      } else {
+        feedback = 'Sekarang fase ' + phase.name.toLowerCase() + '. Gerhana bulan hanya bisa terjadi saat purnama, dan Bulan harus berada dekat titik simpul orbit.';
+      }
+      setText('feedback-text', feedback);
+      if (fp) fp.classList.toggle('eclipse', st.nearFull && st.inShadow);
+
+      var hint = $('phase-hint');
+      if (hint) hint.textContent = 'Bagian yang terang selalu menghadap Matahari.';
+
+      var presets = {
+        'preset-eclipse-btn': { u: Math.PI, node: 0 },
+        'preset-no-eclipse-btn': { u: Math.PI / 2, node: 90 },
+        'preset-new-btn': { u: 0, node: 0 },
+        'preset-quarter-btn': { u: Math.PI / 2, node: 0 }
+      };
+      Object.keys(presets).forEach(function (id) {
+        var b = $(id);
+        if (!b) return;
+        var p = presets[id];
+        var on = Math.abs(normSigned(state.u - p.u)) < 0.01 && Math.abs(normSigned((state.node - p.node) * DEG)) < 0.01;
+        b.classList.toggle('active', on);
+      });
+    }
+
+    function drawPhase() {
+      if (!phaseCtx || !phaseCanvas) return;
+      var size = phaseCanvas.clientWidth;
+      var dpr2 = Math.min(window.devicePixelRatio || 1, 2);
+      phaseCtx.setTransform(dpr2, 0, 0, dpr2, 0, 0);
+      phaseCtx.clearRect(0, 0, size, size);
+      var cx = size / 2, cy = size / 2, r = size * 0.42;
+      var lam = norm(currentMoon().lam);
+      var c = Math.cos(lam);
+      var waxing = Math.sin(lam) > 0;
+      var sign = waxing ? 1 : -1;
+      var st = eclipseStatus(currentMoon());
+      var litColor = (st.nearFull && st.inShadow) ? PAL.warning : PAL.text;
+
+      phaseCtx.fillStyle = PAL.surface;
+      phaseCtx.beginPath();
+      phaseCtx.arc(cx, cy, r, 0, TAU);
+      phaseCtx.fill();
+
+      phaseCtx.fillStyle = litColor;
+      phaseCtx.beginPath();
+      phaseCtx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, sign < 0);
+      phaseCtx.fill();
+
+      var a = r * Math.abs(c);
+      if (c > 0) {
+        // sabit atau perempat: bagian terang menyusut dengan elips gelap
+        phaseCtx.fillStyle = PAL.surface;
+        phaseCtx.beginPath();
+        phaseCtx.ellipse(cx, cy, a, r, 0, -Math.PI / 2, Math.PI / 2, sign < 0);
+        phaseCtx.fill();
+      } else {
+        // cembung: elips terang menutup sisi gelap
+        phaseCtx.fillStyle = litColor;
+        phaseCtx.beginPath();
+        phaseCtx.ellipse(cx, cy, a, r, 0, -Math.PI / 2, Math.PI / 2, sign > 0);
+        phaseCtx.fill();
+      }
+
+      phaseCtx.strokeStyle = PAL.border;
+      phaseCtx.lineWidth = 1;
+      phaseCtx.beginPath();
+      phaseCtx.arc(cx, cy, r, 0, TAU);
+      phaseCtx.stroke();
+    }
+
+    function resizeCanvas() {
+      var wrap = $('sim-wrap');
+      if (wrap && canvas) {
+        var w = wrap.clientWidth;
+        var h = wrap.clientHeight;
+        if (w && h) {
+          dpr = Math.min(window.devicePixelRatio || 1, 2);
+          canvas.width = Math.round(w * dpr);
+          canvas.height = Math.round(h * dpr);
+          view.W = w;
+          view.H = h;
+        }
+      }
+      if (phaseCanvas) {
+        var s = phaseCanvas.clientWidth;
+        var d = Math.min(window.devicePixelRatio || 1, 2);
+        phaseCanvas.width = Math.round(s * d);
+        phaseCanvas.height = Math.round(s * d);
+      }
+    }
+
+    // Lintasan Bulan sebagai kurva (untuk digambar sebagai garis orbit).
+    function orbitPath(panelFn) {
+      var pts = [];
+      for (var k = 0; k <= 180; k++) {
+        var u = (k / 180) * TAU;
+        var m = moonAt(u, state.node, state.incl);
+        pts.push(panelFn(ORBIT_R * Math.cos(m.beta) * Math.cos(m.lam), ORBIT_R * Math.cos(m.beta) * Math.sin(m.lam), ORBIT_R * Math.sin(m.beta)));
+      }
+      return pts;
+    }
+
+    function drawTop(x0, y0, w, h, m) {
+      var s = Math.min(w, h) / (2 * SPAN);
+      var cx = x0 + w / 2;
+      var cy = y0 + h / 2;
+
+      ctx.fillStyle = PAL.dim;
+      ctx.font = '12px ' + PAL.font;
+      ctx.textAlign = 'left';
+      ctx.fillText('Dilihat dari atas', x0 + 8, y0 + 18);
+
+      // Cahaya Matahari dari kanan
+      ctx.strokeStyle = PAL.warning;
+      ctx.lineWidth = 2;
+      [-0.8, 0, 0.8].forEach(function (k) {
+        ctx.beginPath();
+        ctx.moveTo(cx + 7.8 * s, cy + k * s);
+        ctx.lineTo(cx + 5.2 * s, cy + k * s);
+        ctx.stroke();
+      });
+      ctx.fillStyle = PAL.warning;
+      ctx.textAlign = 'right';
+      ctx.fillText('Matahari', x0 + w - 8, cy - 1.6 * s - 6);
+
+      // Orbit Bulan
+      var pts = orbitPath(function (x, y) { return [x, y, 0]; });
+      ctx.strokeStyle = PAL.border;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      pts.forEach(function (p, idx) {
+        var px = cx + p[0] * s, py = cy - p[1] * s;
+        if (idx === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      });
+      ctx.stroke();
+
+      // Bumi
+      ctx.fillStyle = PAL.accent;
+      ctx.beginPath();
+      ctx.arc(cx, cy, EARTH_R * s, 0, TAU);
+      ctx.fill();
+
+      // Bulan
+      var mx = cx + ORBIT_R * Math.cos(m.beta) * Math.cos(m.lam) * s;
+      var my = cy - ORBIT_R * Math.cos(m.beta) * Math.sin(m.lam) * s;
+      ctx.fillStyle = PAL.text;
+      ctx.beginPath();
+      ctx.arc(mx, my, MOON_R * s, 0, TAU);
+      ctx.fill();
+      ctx.fillStyle = PAL.dim;
+      ctx.textAlign = 'center';
+      ctx.font = '11px ' + PAL.font;
+      ctx.fillText('Bumi', cx, cy + EARTH_R * s + 14);
+    }
+
+    function drawSide(x0, y0, w, h, m) {
+      var s = Math.min(w, h) / (2 * SPAN);
+      var cx = x0 + w / 2;
+      var cy = y0 + h / 2;
+
+      ctx.fillStyle = PAL.dim;
+      ctx.font = '12px ' + PAL.font;
+      ctx.textAlign = 'left';
+      ctx.fillText('Dilihat dari samping', x0 + 8, y0 + 18);
+
+      // Bayangan Bumi menjauh dari Matahari (ke kiri)
+      ctx.globalAlpha = 0.15;
+      ctx.fillStyle = PAL.warning;
+      ctx.fillRect(cx - SPAN * s, cy - SHADOW_HALF * s, SPAN * s, 2 * SHADOW_HALF * s);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = PAL.warning;
+      ctx.textAlign = 'left';
+      ctx.font = '11px ' + PAL.font;
+      ctx.fillText('Bayangan Bumi', cx - SPAN * s + 6, cy - SHADOW_HALF * s - 6);
+
+      // Bidang orbit Bumi (ekliptika)
+      ctx.strokeStyle = PAL.dim;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(x0 + 8, cy);
+      ctx.lineTo(x0 + w - 8, cy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Lintasan Bulan (dilihat dari samping)
+      var pts = orbitPath(function (x, y, z) { return [x, z]; });
+      ctx.strokeStyle = PAL.border;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      pts.forEach(function (p, idx) {
+        var px = cx + p[0] * s, py = cy - p[1] * s;
+        if (idx === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      });
+      ctx.stroke();
+
+      // Matahari di kanan: cahaya datang dari kanan
+      ctx.strokeStyle = PAL.warning;
+      ctx.lineWidth = 2;
+      [-0.8, 0, 0.8].forEach(function (k) {
+        ctx.beginPath();
+        ctx.moveTo(x0 + w - 16, cy + k * s * 1.4);
+        ctx.lineTo(x0 + w - 36, cy + k * s * 1.4);
+        ctx.stroke();
+      });
+
+      // Bumi
+      ctx.fillStyle = PAL.accent;
+      ctx.beginPath();
+      ctx.arc(cx, cy, EARTH_R * s, 0, TAU);
+      ctx.fill();
+
+      // Bulan
+      var mx = cx + ORBIT_R * Math.cos(m.beta) * Math.cos(m.lam) * s;
+      var my = cy - ORBIT_R * Math.sin(m.beta) * s;
+      var st = eclipseStatus(m);
+      ctx.fillStyle = (st.nearFull && st.inShadow) ? PAL.warning : PAL.text;
+      ctx.beginPath();
+      ctx.arc(mx, my, MOON_R * s, 0, TAU);
+      ctx.fill();
+    }
+
+    function draw() {
+      if (!ctx || !view.W) return;
+      var W = view.W, H = view.H;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.fillStyle = PAL.bg;
+      ctx.fillRect(0, 0, W, H);
+      var m = currentMoon();
+      if (W >= 640) {
+        drawTop(0, 0, W / 2, H, m);
+        drawSide(W / 2, 0, W / 2, H, m);
+      } else {
+        drawTop(0, 0, W, H / 2, m);
+        drawSide(0, H / 2, W, H / 2, m);
+      }
+    }
+
+    function setU(v) { state.u = norm(v); renderReadouts(); }
+    function setSpeed(v) { var n = Number(v); if (!isNaN(n)) { state.speed = Math.min(3, Math.max(0, n)); renderReadouts(); } }
+    function setIncl(v) { var n = Number(v); if (!isNaN(n)) { state.incl = Math.min(10, Math.max(0, n)); renderReadouts(); } }
+    function setNode(v) { var n = Number(v); if (!isNaN(n)) { state.node = Math.min(360, Math.max(0, n)); renderReadouts(); } }
+    function setPlaying(v) { state.playing = !!v; renderReadouts(); }
+    function applyPreset(u, node) {
+      state.u = norm(u);
+      state.node = node;
+      state.incl = 5.1;
+      state.speed = 1;
+      state.playing = false;
+      renderReadouts();
+      drawPhase();
+    }
+    function resetState() {
+      state.u = 0;
+      state.speed = 1;
+      state.incl = 5.1;
+      state.node = 0;
+      state.playing = true;
+      renderReadouts();
+      drawPhase();
+    }
+
+    function on(id, fn) { var n = $(id); if (n) n.addEventListener('click', fn); }
+
+    function init() {
+      canvas = $('sim-canvas');
+      phaseCanvas = $('phase-canvas');
+      if (!canvas || !phaseCanvas) return;
+      ctx = canvas.getContext('2d');
+      phaseCtx = phaseCanvas.getContext('2d');
+      PAL = palette();
+      resizeCanvas();
+      window.addEventListener('resize', function () { resizeCanvas(); drawPhase(); });
+
+      var sp = $('moon-speed-slider');
+      if (sp) sp.addEventListener('input', function () { setSpeed(this.value); });
+      var si = $('incl-slider');
+      if (si) si.addEventListener('input', function () { setIncl(this.value); });
+      var sn = $('node-slider');
+      if (sn) sn.addEventListener('input', function () { setNode(this.value); });
+
+      on('play-btn', function () { setPlaying(!state.playing); });
+      on('reset-btn', resetState);
+      on('preset-eclipse-btn', function () { applyPreset(Math.PI, 0); });
+      on('preset-no-eclipse-btn', function () { applyPreset(Math.PI / 2, 90); });
+      on('preset-new-btn', function () { applyPreset(0, 0); });
+      on('preset-quarter-btn', function () { applyPreset(Math.PI / 2, 0); });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        var tag = e.target && e.target.tagName;
+        if (e.key === ' ' && tag !== 'BUTTON' && tag !== 'INPUT') {
+          e.preventDefault();
+          setPlaying(!state.playing);
+        } else if (e.key === 'r' || e.key === 'R') {
+          resetState();
+        }
+      });
+
+      var last = performance.now();
+      var lastPhase = '';
+      function frame(now) {
+        var dt = Math.min(0.05, (now - last) / 1000);
+        last = now;
+        if (state.playing) {
+          state.u = norm(state.u + dt * U_RATE * state.speed);
+          renderReadouts();
+        }
+        draw();
+        var key = phaseOf(norm(currentMoon().lam)).name + '|' + eclipseStatus(currentMoon()).nearFull + eclipseStatus(currentMoon()).inShadow;
+        if (key !== lastPhase || state.playing) { drawPhase(); lastPhase = key; }
+        requestAnimationFrame(frame);
+      }
+
+      renderReadouts();
+      drawPhase();
+      requestAnimationFrame(frame);
+    }
+
+    init();
+  })();
+  </script>
+</body>
+</html>

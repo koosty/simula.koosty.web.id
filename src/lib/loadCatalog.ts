@@ -63,14 +63,25 @@ export async function loadCatalog(): Promise<CatalogItem[]> {
 
   const simulations: Record<string, SimulationMeta> = {};
   const fileLevels: Record<string, string> = {};
+  const fileSubjects = new Map<string, string>();
   for (const sim of found) {
     const level = levelForSourceFolder(sim.sourceFolder.split('/')[0]);
     if (!level) continue;
     simulations[sim.filename] = simulationMetaOf(sim.html);
     fileLevels[sim.filename] = level;
+    fileSubjects.set(sim.filename, sim.sourceFolder.split('/')[2]);
   }
 
   const { errors, warnings } = validateCatalog(entries, simulations);
+  for (const entry of entries) {
+    const folder = fileSubjects.get(`${entry.slug}.html`);
+    if (folder !== undefined && folder !== entry.subject) {
+      warnings.push(
+        `Katalog: entri "${entry.slug}" menulis mata pelajaran "${entry.subject}", ` +
+          `tetapi berkasnya ada di folder "${folder}".`,
+      );
+    }
+  }
 
   for (const warning of warnings) {
     console.warn(`\x1b[33mPeringatan:\x1b[0m ${warning}`);

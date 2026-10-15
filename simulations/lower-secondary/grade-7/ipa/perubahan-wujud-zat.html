@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perubahan Wujud Zat · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Menghubungkan tujuh nama perubahan wujud zat dengan arah perubahannya pada diagram interaktif padat, cair, dan gas.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Perubahan Wujud Zat">
+  <meta property="og:description" content="Menghubungkan tujuh nama perubahan wujud zat (melebur, membeku, menguap, mendidih, mengembun, menyublim, mengkristal) dengan arah perubahannya.">
+  <meta property="og:locale" content="id">
+  <style>
+    /* ===== Shared tokens (VISUAL-STYLE.md) ===== */
+    :root {
+      /* Colour */
+      --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+      --surface: #14141e;     /* panels, cards, step rows */
+      --panel: rgba(20, 20, 30, 0.9);
+      --border: rgba(255, 255, 255, 0.1);
+      --border-strong: #333;
+      --text: #ffffff;
+      --text-muted: #aaa;
+      --text-dim: #888;
+      --accent: #6366f1;      /* primary action, slider thumb, active state */
+      --accent-hover: #5558e8;
+      --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+      --success: #fbbf24;     /* completion, headings, callouts */
+      --warning: #fb923c;
+      --error: #ff6b6b;
+      --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+      --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+      --shadow-none: none;
+
+      /* Spacing scale */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+
+      /* Radius scale */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-pill: 999px;
+
+      /* Type scale (system fonts only) */
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --text-base: 16px;
+      --text-sm: 14px;
+      --text-xs: 13px;
+      --text-caption: 11px;   /* uppercase control labels */
+      --text-heading: 24px;
+      --font-weight-display: 600;  /* headings */
+      --font-weight-number: 500;   /* monospaced readouts */
+
+      /* Focus, motion, stacking */
+      --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+      --motion: 0.2s;
+      --motion-slow: 0.3s;
+      --z-overlay: 100;        /* panels, tooltips */
+      --z-modal: 1000;         /* loading screens, modal dialogs */
+    }
+
+    [data-theme="light"] {
+      --bg: #f7f7fb;
+      --surface: #ffffff;
+      --panel: rgba(255, 255, 255, 0.92);
+      --border: rgba(0, 0, 0, 0.12);
+      --border-strong: #d4d4d8;
+      --text: #16161d;
+      --text-muted: #52525b;
+      --text-dim: #71717a;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+      --accent-soft: rgba(79, 70, 229, 0.95);
+      --success: #b45309;
+      --warning: #c2410c;
+      --error: #dc2626;
+      --accent-text: #ffffff;
+      --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+    }
+
+    /* ===== Component classes (VISUAL-STYLE.md) ===== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font);
+      font-size: var(--text-base);
+      line-height: 1.5;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    h1, h2, h3 { font-weight: var(--font-weight-display); }
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      padding: var(--space-4);
+    }
+    .panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+    .btn {
+      font-family: inherit;
+      font-size: var(--text-sm);
+      min-height: 44px;            /* never below 44px, mobile */
+      min-width: 44px;
+      padding: var(--space-3) var(--space-5);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      background: var(--border-strong);
+      color: var(--text);
+      box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+      cursor: pointer;
+      transition: background var(--motion);
+    }
+    .btn:hover { background: var(--text-muted); }
+    .btn:active { transform: scale(0.95); }
+    .btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+    .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+    .btn-ghost { background: transparent; border-color: var(--border); }
+    .btn-ghost:hover { background: var(--surface); }
+
+    .control-label {
+      font-size: var(--text-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    input[type="range"] {
+      width: 100%; height: 6px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px; height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    /* Visually hidden but announced by screen readers. Use when a layout has no
+       room for a visible <h1> (e.g. a full-bleed canvas) — never as an excuse to
+       drop a heading. */
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+    }
+
+    #feedback-panel {
+      background: var(--surface);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+    }
+    #feedback-panel.success { border-left-color: var(--success); }
+    #feedback-panel.error { border-left-color: var(--error); }
+
+    .progress-track {
+      height: 8px;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+    .mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+    .sources {
+      margin-top: var(--space-5);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--border);
+    }
+    .sources-heading {
+      font-size: var(--text-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: var(--space-2);
+    }
+    .source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+    .source-item a { color: var(--accent); text-decoration: none; }
+    .source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+    .reading-article {
+      max-width: 720px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+    .reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+    .reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+    .reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+    .reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+    .reading-article blockquote {
+      border-left: 3px solid var(--border-strong);
+      padding-left: var(--space-4);
+      color: var(--text-muted);
+      margin-bottom: var(--space-4);
+    }
+    .reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+    .reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+    .reading-article pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      overflow-x: auto;
+      margin-bottom: var(--space-4);
+    }
+    .reading-article pre code { background: none; padding: 0; }
+    .reading-article table { width: 100%; border-collapse: collapse; }
+    .reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+    .reading-article details {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+      margin-bottom: var(--space-4);
+    }
+    .reading-article summary {
+      cursor: pointer;
+      font-weight: var(--font-weight-display);
+      color: var(--text);
+    }
+    .reading-article details[open] summary { margin-bottom: var(--space-2); }
+    .glossary-term {
+      text-decoration: underline dotted var(--text-dim);
+      text-decoration-thickness: 1px;
+      cursor: help;
+    }
+    .katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+    /* highlight.js token colours — mapped to the token set, not a canned theme */
+    .hljs { color: var(--text); }
+    .hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+    .hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+    .hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+    .hljs-number { color: var(--warning); }
+
+    /* ===== Scene layout ===== */
+    * { -webkit-tap-highlight-color: transparent; }
+    .scene { padding: var(--space-4); max-width: 1100px; margin: 0 auto; }
+    .scene-header { margin-bottom: var(--space-4); }
+    .scene-header h1 { font-size: var(--text-heading); margin-bottom: var(--space-2); }
+    .lead { color: var(--text-muted); font-size: var(--text-sm); }
+
+    .diagram-layout { display: flex; flex-direction: column; gap: var(--space-4); }
+    .controls { max-height: 40vh; overflow-y: auto; }
+    .action-row { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-4); }
+    .action-row .btn { flex: 1 1 0; }
+    .step-text { font-size: var(--text-sm); margin-bottom: var(--space-3); }
+    .chip-list { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-2); }
+    .chip-list .btn { flex: 1 1 calc(50% - var(--space-2)); }
+    .chip.is-selected { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+    .chip.is-matched { background: var(--surface); border-color: var(--success); color: var(--success); }
+    .hint { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-3); }
+
+    .diagram-area { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+    .diagram-box { overflow-x: auto; border-radius: var(--radius-md); }
+    #diagram { display: block; width: 100%; min-width: 520px; height: auto; }
+    .node { cursor: pointer; }
+    .node-body circle { fill: var(--surface); stroke: var(--accent); stroke-width: 2.5; }
+    .node text { fill: var(--text); font-size: 17px; font-weight: var(--font-weight-display); font-family: var(--font); }
+    .node:focus-visible { outline: none; }
+    .node:focus-visible .node-body circle { stroke: var(--success); stroke-width: 4; }
+    .edge { cursor: pointer; }
+    .edge-hit { fill: none; stroke: transparent; stroke-width: 18; }
+    .edge-line { fill: none; stroke: var(--text-muted); stroke-width: 2.5; }
+    .edge:hover .edge-line { stroke: var(--text); }
+    .edge:focus-visible { outline: none; }
+    .edge:focus-visible .edge-line { stroke: var(--success); stroke-width: 4; }
+    .edge-label {
+      fill: var(--text-muted);
+      font-size: 14px;
+      font-family: var(--font);
+      text-anchor: middle;
+      paint-order: stroke;
+      stroke: var(--surface);
+      stroke-width: 6px;
+      stroke-linejoin: round;
+    }
+    .edge.is-matched .edge-line { stroke: var(--success); }
+    .edge.is-matched .edge-label { fill: var(--success); }
+    .is-hidden { display: none; }
+
+    .detail-title { font-size: var(--text-sm); color: var(--text); margin-bottom: var(--space-1); }
+    .detail-body { font-size: var(--text-xs); color: var(--text-muted); }
+
+    @media (min-width: 768px) {
+      .diagram-layout { flex-direction: row; align-items: flex-start; }
+      .controls { width: 300px; flex-shrink: 0; max-height: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="scene">
+    <header class="scene-header">
+      <h1>Perubahan Wujud Zat</h1>
+      <p class="lead">Lengkapi diagram perubahan wujud zat langkah demi langkah. Klik panah untuk melihat penjelasannya, lalu pasangkan setiap nama perubahan dengan panah yang tepat.</p>
+    </header>
+
+    <div class="diagram-layout">
+      <aside class="panel controls" aria-label="Kontrol diagram">
+        <p class="panel-heading">Langkah tampilan</p>
+        <p class="step-text mono-value" id="step-display">Langkah 1 dari 3</p>
+        <div class="action-row">
+          <button class="btn" id="prev-btn" type="button">Sebelumnya</button>
+          <button class="btn btn-primary" id="next-btn" type="button">Langkah berikutnya</button>
+        </div>
+
+        <p class="panel-heading">Latihan: pasangkan nama dengan panah</p>
+        <p class="hint" id="practice-hint">Pilih satu nama, lalu klik panah yang sesuai pada diagram.</p>
+        <div class="chip-list" id="chip-list">
+          <button class="btn chip" type="button" id="chip-melebur" data-edge="melebur" aria-pressed="false">Melebur</button>
+          <button class="btn chip" type="button" id="chip-membeku" data-edge="membeku" aria-pressed="false">Membeku</button>
+          <button class="btn chip" type="button" id="chip-menguap" data-edge="menguap" aria-pressed="false">Menguap</button>
+          <button class="btn chip" type="button" id="chip-mendidih" data-edge="mendidih" aria-pressed="false">Mendidih</button>
+          <button class="btn chip" type="button" id="chip-mengembun" data-edge="mengembun" aria-pressed="false">Mengembun</button>
+          <button class="btn chip" type="button" id="chip-menyublim" data-edge="menyublim" aria-pressed="false">Menyublim</button>
+          <button class="btn chip" type="button" id="chip-mengkristal" data-edge="mengkristal" aria-pressed="false">Mengkristal</button>
+        </div>
+        <p class="mono-value" id="progress-display">0 dari 7 panah sudah dipasangkan</p>
+
+        <div class="action-row">
+          <button class="btn btn-ghost" id="reset-btn" type="button">Atur ulang</button>
+        </div>
+      </aside>
+
+      <section class="panel diagram-area" aria-label="Area diagram">
+        <div class="diagram-box">
+          <svg id="diagram" viewBox="0 0 640 420" role="img" aria-label="Diagram perubahan wujud zat antara padat, cair, dan gas"></svg>
+        </div>
+
+        <div class="panel" id="detail-panel" aria-live="polite">
+          <p class="detail-title" id="detail-title">Klik titik atau panah untuk melihat penjelasan.</p>
+          <p class="detail-body" id="detail-body"></p>
+        </div>
+
+        <div id="feedback-panel" role="status">Tampilkan semua wujud zat dengan Langkah berikutnya untuk membuka latihan.</div>
+      </section>
+    </div>
+  </main>
+
+  <script type="application/json" id="widget-config">
+  {"description":"Diagram perubahan wujud zat: padat, cair, dan gas dihubungkan oleh tujuh perubahan wujud dengan arahnya masing-masing.","nodes":[{"id":"padat","label":"Padat","details":"Partikel tersusun rapat dan teratur, hanya bergetar di tempatnya. Bentuk dan volume tetap."},{"id":"cair","label":"Cair","details":"Partikel saling berdekatan tetapi dapat bergerak lebih bebas. Volume tetap, bentuk mengikuti wadah."},{"id":"gas","label":"Gas","details":"Partikel berjauhan, bergerak bebas, dan menyebar. Bentuk dan volume mengikuti wadah."}],"edges":[{"id":"melebur","from":"padat","to":"cair","label":"Melebur","bend":70,"direction":"Padat menjadi cair","energy":"Menyerap kalor","example":"Es batu yang dibiarkan di udara terbuka lama-kelamaan menjadi air."},{"id":"membeku","from":"cair","to":"padat","label":"Membeku","bend":70,"direction":"Cair menjadi padat","energy":"Melepaskan kalor","example":"Air yang dimasukkan ke freezer menjadi es batu."},{"id":"menguap","from":"cair","to":"gas","label":"Menguap","bend":30,"direction":"Cair menjadi gas hanya di permukaan, pada suhu berapa pun","energy":"Menyerap kalor","example":"Air di piring lama-kelamaan habis walaupun belum mendidih."},{"id":"mendidih","from":"cair","to":"gas","label":"Mendidih","bend":120,"direction":"Cair menjadi gas di seluruh bagian cairan, pada titik didih","energy":"Menyerap kalor","example":"Gelembung besar naik dari dasar panci saat air mendidih pada 100 °C."},{"id":"mengembun","from":"gas","to":"cair","label":"Mengembun","bend":60,"direction":"Gas menjadi cair","energy":"Melepaskan kalor","example":"Embun menempel di luar gelas es teh yang dingin."},{"id":"menyublim","from":"padat","to":"gas","label":"Menyublim","bend":70,"direction":"Padat langsung menjadi gas tanpa melalui wujud cair","energy":"Menyerap kalor","example":"Kapur barus yang makin kecil tanpa meleleh terlebih dahulu."},{"id":"mengkristal","from":"gas","to":"padat","label":"Mengkristal","bend":70,"direction":"Gas langsung menjadi padat tanpa melalui wujud cair (disebut juga deposisi)","energy":"Melepaskan kalor","example":"Bunga es yang menempel di dinding dalam freezer."}],"revealOrder":["padat","cair","gas"]}
+  </script>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const config = JSON.parse(document.getElementById('widget-config').textContent);
+      const NODE_R = 52;
+      const POS = {
+        padat: { x: 130, y: 320 },
+        cair: { x: 320, y: 110 },
+        gas: { x: 510, y: 320 }
+      };
+      const TOTAL_EDGES = config.edges.length;
+      const TOTAL_NODES = config.nodes.length;
+      const INITIAL_FEEDBACK = 'Tampilkan semua wujud zat dengan Langkah berikutnya untuk membuka latihan.';
+
+      const svg = document.getElementById('diagram');
+      const stepDisplay = document.getElementById('step-display');
+      const prevBtn = document.getElementById('prev-btn');
+      const nextBtn = document.getElementById('next-btn');
+      const resetBtn = document.getElementById('reset-btn');
+      const chipList = document.getElementById('chip-list');
+      const practiceHint = document.getElementById('practice-hint');
+      const progressDisplay = document.getElementById('progress-display');
+      const detailTitle = document.getElementById('detail-title');
+      const detailBody = document.getElementById('detail-body');
+      const feedbackPanel = document.getElementById('feedback-panel');
+
+      const nodesById = {};
+      config.nodes.forEach(function (n) { nodesById[n.id] = n; });
+      const edgesById = {};
+      config.edges.forEach(function (e) { edgesById[e.id] = e; });
+
+      const state = {
+        revealCount: 1,   // jumlah wujud yang sudah ditampilkan (berurutan)
+        selected: null,   // id panah/nama yang sedang dipilih di latihan
+        matched: {}       // id panah yang sudah dipasangkan dengan benar
+      };
+
+      function unit(x, y) {
+        const len = Math.hypot(x, y) || 1;
+        return { x: x / len, y: y / len };
+      }
+
+      // Garis melengkung (kurva kuadrat) dari node asal ke node tujuan.
+      function edgeGeometry(e) {
+        const a = POS[e.from];
+        const b = POS[e.to];
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const len = Math.hypot(dx, dy);
+        const nx = -dy / len;
+        const ny = dx / len;
+        const cx = (a.x + b.x) / 2 + nx * e.bend;
+        const cy = (a.y + b.y) / 2 + ny * e.bend;
+        const su = unit(cx - a.x, cy - a.y);
+        const eu = unit(cx - b.x, cy - b.y);
+        const sx = a.x + su.x * NODE_R;
+        const sy = a.y + su.y * NODE_R;
+        const ex = b.x + eu.x * (NODE_R + 3);
+        const ey = b.y + eu.y * (NODE_R + 3);
+        const mx = 0.25 * sx + 0.5 * cx + 0.25 * ex;
+        const my = 0.25 * sy + 0.5 * cy + 0.25 * ey;
+        return {
+          d: 'M ' + sx.toFixed(1) + ' ' + sy.toFixed(1) + ' Q ' + cx.toFixed(1) + ' ' + cy.toFixed(1) + ' ' + ex.toFixed(1) + ' ' + ey.toFixed(1),
+          mid: { x: mx, y: my }
+        };
+      }
+
+      function buildDiagram() {
+        const defs = '<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--text-muted)"></path></marker></defs>';
+        const edgeMarkup = config.edges.map(function (e) {
+          const g = edgeGeometry(e);
+          return '<g id="edge-' + e.id + '" class="edge" data-edge="' + e.id + '" tabindex="0" role="button" aria-label="' + e.label + '">' +
+            '<path class="edge-hit" d="' + g.d + '"></path>' +
+            '<path class="edge-line" d="' + g.d + '" marker-end="url(#arrow)"></path>' +
+            '<text class="edge-label" x="' + g.mid.x.toFixed(1) + '" y="' + g.mid.y.toFixed(1) + '">' + e.label + '</text>' +
+            '</g>';
+        }).join('');
+        const nodeMarkup = config.nodes.map(function (n) {
+          const p = POS[n.id];
+          return '<g id="node-' + n.id + '" class="node" data-node="' + n.id + '" tabindex="0" role="button" aria-label="' + n.label + '" transform="translate(' + p.x + ',' + p.y + ')">' +
+            '<g class="node-body"><circle r="' + NODE_R + '"></circle><text text-anchor="middle" dy="6">' + n.label + '</text></g>' +
+            '</g>';
+        }).join('');
+        svg.innerHTML = defs + edgeMarkup + nodeMarkup;
+      }
+
+      function isNodeRevealed(id) {
+        return config.nodes.findIndex(function (n) { return n.id === id; }) < state.revealCount;
+      }
+
+      function setFeedback(text, kind) {
+        feedbackPanel.textContent = text;
+        feedbackPanel.className = kind || '';
+      }
+
+      function showNodeDetail(id) {
+        const n = nodesById[id];
+        if (!n) return;
+        detailTitle.textContent = n.label;
+        detailBody.textContent = n.details;
+      }
+
+      function showEdgeDetail(e) {
+        detailTitle.textContent = e.label + ': ' + e.direction;
+        detailBody.textContent = e.energy + '. Contoh: ' + e.example;
+      }
+
+      function render() {
+        const allRevealed = state.revealCount >= TOTAL_NODES;
+        if (!allRevealed) state.selected = null;
+
+        config.nodes.forEach(function (n, i) {
+          const el = document.getElementById('node-' + n.id);
+          if (el) el.classList.toggle('is-hidden', i >= state.revealCount);
+        });
+
+        config.edges.forEach(function (e) {
+          const el = document.getElementById('edge-' + e.id);
+          if (!el) return;
+          const visible = isNodeRevealed(e.from) && isNodeRevealed(e.to);
+          el.classList.toggle('is-hidden', !visible);
+          el.classList.toggle('is-matched', !!state.matched[e.id]);
+        });
+
+        stepDisplay.textContent = 'Langkah ' + state.revealCount + ' dari ' + TOTAL_NODES;
+        prevBtn.disabled = state.revealCount <= 1;
+        nextBtn.disabled = allRevealed;
+
+        const matchedCount = Object.keys(state.matched).length;
+        progressDisplay.textContent = matchedCount + ' dari ' + TOTAL_EDGES + ' panah sudah dipasangkan';
+        practiceHint.textContent = allRevealed
+          ? (state.selected ? 'Sekarang klik panah yang sesuai dengan nama ini.' : 'Pilih satu nama, lalu klik panah yang sesuai pada diagram.')
+          : 'Tampilkan semua wujud zat untuk membuka latihan.';
+
+        chipList.querySelectorAll('button[data-edge]').forEach(function (chip) {
+          const id = chip.dataset.edge;
+          const isMatched = !!state.matched[id];
+          const isSelected = state.selected === id;
+          chip.disabled = !allRevealed || isMatched;
+          chip.classList.toggle('is-selected', isSelected);
+          chip.classList.toggle('is-matched', isMatched);
+          chip.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+        });
+      }
+
+      function selectChip(id) {
+        if (state.matched[id]) return;
+        state.selected = state.selected === id ? null : id;
+        if (state.selected) {
+          setFeedback('Pilih panah yang sesuai dengan "' + edgesById[id].label + '" pada diagram.', '');
+        } else {
+          setFeedback('Pilihan dibatalkan. Pilih satu nama lagi untuk latihan.', '');
+        }
+        render();
+      }
+
+      function activateEdge(id) {
+        const e = edgesById[id];
+        if (!e) return;
+        showEdgeDetail(e);
+
+        if (state.matched[id]) {
+          setFeedback('Panah "' + e.label + '" sudah dipasangkan dengan benar.', 'success');
+        } else if (state.selected === id) {
+          state.matched[id] = true;
+          state.selected = null;
+          const done = Object.keys(state.matched).length;
+          if (done === TOTAL_EDGES) {
+            setFeedback('Tepat! Semua ' + TOTAL_EDGES + ' perubahan wujud sudah dipasangkan dengan benar.', 'success');
+          } else {
+            setFeedback('Tepat! ' + e.label + ': ' + e.direction + '. ' + e.energy + '.', 'success');
+          }
+        } else if (state.selected) {
+          const chosen = edgesById[state.selected];
+          setFeedback('Belum tepat. Panah ini menunjukkan "' + e.label + '" (' + e.direction + '), bukan "' + chosen.label + '". Pilih nama lain atau klik panah yang berbeda.', 'error');
+        } else {
+          setFeedback('Penjelasan "' + e.label + '" ditampilkan di bawah diagram. Pilih nama di latihan untuk memasangkannya.', '');
+        }
+        render();
+      }
+
+      function activateElement(el) {
+        if (el.dataset.node) {
+          showNodeDetail(el.dataset.node);
+        } else if (el.dataset.edge) {
+          activateEdge(el.dataset.edge);
+        }
+      }
+
+      function resetState() {
+        state.revealCount = 1;
+        state.selected = null;
+        state.matched = {};
+        detailTitle.textContent = 'Klik titik atau panah untuk melihat penjelasan.';
+        detailBody.textContent = '';
+        setFeedback(INITIAL_FEEDBACK, '');
+        render();
+      }
+
+      prevBtn.addEventListener('click', function () {
+        state.revealCount = Math.max(1, state.revealCount - 1);
+        render();
+      });
+
+      nextBtn.addEventListener('click', function () {
+        state.revealCount = Math.min(TOTAL_NODES, state.revealCount + 1);
+        if (state.revealCount === TOTAL_NODES) {
+          setFeedback('Semua wujud zat sudah tampil. Sekarang pasangkan nama perubahan dengan panahnya.', '');
+        }
+        render();
+      });
+
+      resetBtn.addEventListener('click', resetState);
+
+      chipList.addEventListener('click', function (ev) {
+        const chip = ev.target.closest('button[data-edge]');
+        if (chip && !chip.disabled) selectChip(chip.dataset.edge);
+      });
+
+      svg.addEventListener('click', function (ev) {
+        const el = ev.target.closest('[data-node],[data-edge]');
+        if (el) activateElement(el);
+      });
+
+      svg.addEventListener('keydown', function (ev) {
+        if (ev.key !== 'Enter' && ev.key !== ' ') return;
+        const el = ev.target.closest('[data-node],[data-edge]');
+        if (el) {
+          ev.preventDefault();
+          activateElement(el);
+        }
+      });
+
+      window.addEventListener('keydown', function (e) {
+        const tag = e.target && e.target.tagName;
+        if (tag === 'BUTTON' || tag === 'INPUT' || tag === 'circle' || tag === 'g' || tag === 'path') return;
+        if (e.key === 'r' || e.key === 'R') resetState();
+      });
+
+      buildDiagram();
+      resetState();
+    })();
+  </script>
+</body>
+</html>

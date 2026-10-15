@@ -100,14 +100,18 @@ export function resolveSimulationRequest(
     if (!stage.isDirectory() || levelForSourceFolder(stage.name) !== level) continue;
     for (const grade of readdirSync(join(rootDir, stage.name), { withFileTypes: true })) {
       if (!grade.isDirectory()) continue;
-      // No further containment check is needed, and one here would be dead
-      // code. `file` is a single segment that neither ends in anything but
-      // `.html` nor starts with a dot, and the stage and grade names both come
-      // from readdir rather than the request — so nothing left to join can
-      // climb out. Checked by exhausting the shapes that reach this line; the
-      // test asserts the outcome rather than a guard that cannot fail.
-      const candidate = join(rootDir, stage.name, grade.name, file);
-      if (existsSync(candidate) && statSync(candidate).isFile()) return candidate;
+      const gradeDir = join(rootDir, stage.name, grade.name);
+      for (const subject of readdirSync(gradeDir, { withFileTypes: true })) {
+        if (!subject.isDirectory()) continue;
+        // No further containment check is needed, and one here would be dead
+        // code. `file` is a single segment that neither ends in anything but
+        // `.html` nor starts with a dot, and the stage, grade and subject names
+        // all come from readdir rather than the request — so nothing left to join
+        // can climb out. Checked by exhausting the shapes that reach this line;
+        // the test asserts the outcome rather than a guard that cannot fail.
+        const candidate = join(gradeDir, subject.name, file);
+        if (existsSync(candidate) && statSync(candidate).isFile()) return candidate;
+      }
     }
   }
   return null;

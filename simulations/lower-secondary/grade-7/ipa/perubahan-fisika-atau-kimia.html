@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perubahan Fisika atau Kimia · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Pilah kartu contoh perubahan fisika dan kimia ke bak yang tepat sebelum kartu jatuh dari ban berjalan.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Perubahan Fisika atau Kimia">
+  <meta property="og:description" content="Game memilah contoh perubahan fisika dan kimia berdasarkan ciri-cirinya: reversibel atau tidak, dan apakah zat baru terbentuk.">
+  <meta property="og:locale" content="id">
+  <style>
+    /* ===== Shared tokens (VISUAL-STYLE.md) ===== */
+    :root {
+      /* Colour */
+      --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+      --surface: #14141e;     /* panels, cards, step rows */
+      --panel: rgba(20, 20, 30, 0.9);
+      --border: rgba(255, 255, 255, 0.1);
+      --border-strong: #333;
+      --text: #ffffff;
+      --text-muted: #aaa;
+      --text-dim: #888;
+      --accent: #6366f1;      /* primary action, slider thumb, active state */
+      --accent-hover: #5558e8;
+      --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+      --success: #fbbf24;     /* completion, headings, callouts */
+      --warning: #fb923c;
+      --error: #ff6b6b;
+      --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+      --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+      --shadow-none: none;
+
+      /* Spacing scale */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+
+      /* Radius scale */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-pill: 999px;
+
+      /* Type scale (system fonts only) */
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --text-base: 16px;
+      --text-sm: 14px;
+      --text-xs: 13px;
+      --text-caption: 11px;   /* uppercase control labels */
+      --text-heading: 24px;
+      --font-weight-display: 600;  /* headings */
+      --font-weight-number: 500;   /* monospaced readouts */
+
+      /* Focus, motion, stacking */
+      --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+      --motion: 0.2s;
+      --motion-slow: 0.3s;
+      --z-overlay: 100;        /* panels, tooltips */
+      --z-modal: 1000;         /* loading screens, modal dialogs */
+    }
+
+    [data-theme="light"] {
+      --bg: #f7f7fb;
+      --surface: #ffffff;
+      --panel: rgba(255, 255, 255, 0.92);
+      --border: rgba(0, 0, 0, 0.12);
+      --border-strong: #d4d4d8;
+      --text: #16161d;
+      --text-muted: #52525b;
+      --text-dim: #71717a;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+      --accent-soft: rgba(79, 70, 229, 0.95);
+      --success: #b45309;
+      --warning: #c2410c;
+      --error: #dc2626;
+      --accent-text: #ffffff;
+      --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+    }
+
+    /* ===== Component classes (VISUAL-STYLE.md) ===== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font);
+      font-size: var(--text-base);
+      line-height: 1.5;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    h1, h2, h3 { font-weight: var(--font-weight-display); }
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      padding: var(--space-4);
+    }
+    .panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+    .btn {
+      font-family: inherit;
+      font-size: var(--text-sm);
+      min-height: 44px;            /* never below 44px, mobile */
+      min-width: 44px;
+      padding: var(--space-3) var(--space-5);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      background: var(--border-strong);
+      color: var(--text);
+      box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+      cursor: pointer;
+      transition: background var(--motion);
+    }
+    .btn:hover { background: var(--text-muted); }
+    .btn:active { transform: scale(0.95); }
+    .btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+    .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+    .btn-ghost { background: transparent; border-color: var(--border); }
+    .btn-ghost:hover { background: var(--surface); }
+
+    .control-label {
+      font-size: var(--text-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    input[type="range"] {
+      width: 100%; height: 6px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px; height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    /* Visually hidden but announced by screen readers. Use when a layout has no
+       room for a visible <h1> (e.g. a full-bleed canvas) — never as an excuse to
+       drop a heading. */
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+    }
+
+    #feedback-panel {
+      background: var(--surface);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+    }
+    #feedback-panel.success { border-left-color: var(--success); }
+    #feedback-panel.error { border-left-color: var(--error); }
+
+    .progress-track {
+      height: 8px;
+      background: var(--border-strong);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+    .mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+    .sources {
+      margin-top: var(--space-5);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--border);
+    }
+    .sources-heading {
+      font-size: var(--text-caption);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: var(--space-2);
+    }
+    .source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+    .source-item a { color: var(--accent); text-decoration: none; }
+    .source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+    .reading-article {
+      max-width: 720px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+    .reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+    .reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+    .reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+    .reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+    .reading-article blockquote {
+      border-left: 3px solid var(--border-strong);
+      padding-left: var(--space-4);
+      color: var(--text-muted);
+      margin-bottom: var(--space-4);
+    }
+    .reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+    .reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+    .reading-article pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      overflow-x: auto;
+      margin-bottom: var(--space-4);
+    }
+    .reading-article pre code { background: none; padding: 0; }
+    .reading-article table { width: 100%; border-collapse: collapse; }
+    .reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+    .reading-article details {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+      margin-bottom: var(--space-4);
+    }
+    .reading-article summary {
+      cursor: pointer;
+      font-weight: var(--font-weight-display);
+      color: var(--text);
+    }
+    .reading-article details[open] summary { margin-bottom: var(--space-2); }
+    .glossary-term {
+      text-decoration: underline dotted var(--text-dim);
+      text-decoration-thickness: 1px;
+      cursor: help;
+    }
+    .katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+    /* highlight.js token colours — mapped to the token set, not a canned theme */
+    .hljs { color: var(--text); }
+    .hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+    .hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+    .hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+    .hljs-number { color: var(--warning); }
+
+    /* ===== Scene layout ===== */
+    * { -webkit-tap-highlight-color: transparent; }
+    .scene { padding: var(--space-4); max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-4); }
+    .scene-header h1 { font-size: var(--text-heading); margin-bottom: var(--space-2); }
+    .lead { color: var(--text-muted); font-size: var(--text-sm); }
+
+    .hud { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: var(--space-2); margin-bottom: var(--space-4); }
+    .hud-item { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); }
+    .hud-value { font-size: var(--text-base); color: var(--text); }
+
+    .belt-wrap { position: relative; margin-bottom: var(--space-4); }
+    .belt {
+      position: relative;
+      height: 136px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: repeating-linear-gradient(90deg, var(--bg) 0 24px, var(--surface) 24px 48px);
+    }
+    .card {
+      position: absolute;
+      top: var(--space-3);
+      left: 66%;
+      width: 34%;
+      min-height: 44px;
+      padding: var(--space-2);
+      font-size: var(--text-xs);
+      line-height: 1.3;
+      text-align: left;
+      white-space: normal;
+      border-radius: var(--radius-md);
+    }
+    .card.is-selected { border-color: var(--accent); box-shadow: var(--focus-ring); }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-3);
+      padding: var(--space-4);
+      text-align: center;
+      z-index: var(--z-overlay);
+    }
+    .overlay p { font-size: var(--text-sm); color: var(--text-muted); max-width: 480px; }
+    .overlay h2 { font-size: var(--text-heading); color: var(--text); }
+    .hidden { display: none !important; }
+
+    .bins { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-bottom: var(--space-4); }
+    .bins .btn { min-height: 56px; font-size: var(--text-base); }
+    .action-row { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-4); }
+    .action-row .btn { flex: 1 1 0; }
+
+    .badges { margin-top: var(--space-4); }
+    .badge-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-2); }
+    .badge { font-size: var(--text-xs); color: var(--text-dim); padding: var(--space-2) var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-md); }
+    .badge.is-unlocked { color: var(--success); border-color: var(--success); }
+  </style>
+</head>
+<body>
+  <main class="scene">
+    <header class="scene-header">
+      <h1>Perubahan Fisika atau Kimia</h1>
+      <p class="lead">Kartu contoh perubahan bergerak di ban berjalan. Pilah setiap kartu ke bak yang sesuai sebelum jatuh dari ujung ban.</p>
+    </header>
+
+    <section class="panel" aria-label="Permainan pemilahan perubahan">
+      <div class="hud">
+        <div class="hud-item"><p class="control-label">Skor</p><p class="hud-value mono-value" id="score-display">0</p></div>
+        <div class="hud-item"><p class="control-label">Nyawa</p><p class="hud-value mono-value" id="lives-display">3 / 3</p></div>
+        <div class="hud-item"><p class="control-label">Level</p><p class="hud-value mono-value" id="level-display">1 dari 3</p></div>
+        <div class="hud-item"><p class="control-label">Kartu tersisa</p><p class="hud-value mono-value" id="sisa-display">12</p></div>
+        <div class="hud-item"><p class="control-label">Beruntun</p><p class="hud-value mono-value" id="streak-display">0</p></div>
+      </div>
+
+      <div class="belt-wrap">
+        <div class="belt" id="belt" aria-label="Ban berjalan berisi kartu perubahan"></div>
+
+        <div class="overlay" id="start-screen">
+          <h2>Pemilah Perubahan</h2>
+          <p>Pilih satu kartu di ban, lalu tekan bak <strong>Perubahan fisika</strong> atau <strong>Perubahan kimia</strong>. Kartu yang jatuh tanpa dipilah mengurangi nyawa. Tiga detik pertama aman.</p>
+          <p>Perubahan fisika: tidak ada zat baru dan biasanya dapat kembali. Perubahan kimia: terbentuk zat baru.</p>
+          <button class="btn btn-primary" type="button" onclick="startGame()">Mulai permainan</button>
+        </div>
+
+        <div class="overlay hidden" id="result-screen" role="alert">
+          <h2 id="result-title">Permainan berakhir</h2>
+          <p id="result-body"></p>
+          <button class="btn btn-primary" type="button" onclick="startGame()">Main lagi</button>
+        </div>
+      </div>
+
+      <div class="bins">
+        <button class="btn" id="bin-fisika-btn" type="button" disabled>Bak Perubahan fisika (F)</button>
+        <button class="btn" id="bin-kimia-btn" type="button" disabled>Bak Perubahan kimia (K)</button>
+      </div>
+
+      <div class="action-row">
+        <button class="btn" id="pause-btn" type="button" disabled>Jeda</button>
+        <button class="btn btn-ghost" id="reset-btn" type="button">Atur ulang</button>
+      </div>
+
+      <div id="feedback-panel" role="status">Tekan Mulai permainan untuk memulai.</div>
+
+      <div class="badges">
+        <p class="panel-heading">Lencana</p>
+        <ul class="badge-list" id="badge-list"></ul>
+      </div>
+    </section>
+  </main>
+
+  <script type="application/json" id="widget-config">
+  {"type":"game","gameType":"sorting","description":"Pilah kartu contoh perubahan fisika dan kimia ke bak yang tepat sebelum kartu jatuh dari ban berjalan. Perubahan fisika tidak membentuk zat baru; perubahan kimia membentuk zat baru.","gameConfig":{"controls":["card-select","bin-fisika-btn","bin-kimia-btn","pause-btn","reset-btn"],"targets":[{"id":"fisika","label":"Bak Perubahan fisika"},{"id":"kimia","label":"Bak Perubahan kimia"}],"initialConditions":{"lives":3,"graceSeconds":3},"successCondition":"Semua kartu dipilah sebelum nyawa habis","levels":[{"size":4,"spawnEvery":4.5,"travel":10},{"size":4,"spawnEvery":4,"travel":8.5},{"size":4,"spawnEvery":3.5,"travel":7}],"items":[{"id":"i1","text":"Es batu mencair menjadi air","kind":"fisika","reason":"Hanya wujud zat yang berubah dari padat menjadi cair. Zat air tetap sama dan dapat membeku kembali."},{"id":"i2","text":"Kayu dibakar menjadi arang, abu, dan asap","kind":"kimia","reason":"Zat baru terbentuk, dan perubahannya sulit dikembalikan seperti semula."},{"id":"i3","text":"Gula larut dalam air teh","kind":"fisika","reason":"Gula tersebar sebagai partikel di dalam air tanpa menjadi zat baru. Gula dapat diperoleh lagi dengan menguapkan airnya."},{"id":"i4","text":"Besi berkarat berwarna cokelat kemerahan","kind":"kimia","reason":"Besi bereaksi dengan oksigen dan uap air membentuk zat baru, yaitu karat."},{"id":"i5","text":"Kertas dirobek menjadi potongan kecil","kind":"fisika","reason":"Ukuran dan bentuk berubah, tetapi zatnya tetap kertas."},{"id":"i6","text":"Susu basi berbau asam dan menggumpal","kind":"kimia","reason":"Bakteri mengubah susu menjadi zat baru yang berbeda dari susu segar."},{"id":"i7","text":"Air menguap dari panci yang terbuka","kind":"fisika","reason":"Air berubah wujud menjadi uap, tetapi zat airnya tetap sama."},{"id":"i8","text":"Telur direbus dan putihnya mengeras","kind":"kimia","reason":"Protein pada putih telur berubah secara kimia dan tidak kembali seperti semula."},{"id":"i9","text":"Garam dilarutkan, lalu airnya diuapkan hingga kristal garam muncul","kind":"fisika","reason":"Garam diperoleh kembali dalam bentuk yang sama, tanpa berubah jenis."},{"id":"i10","text":"Kembang api menyala dan menghasilkan asap serta cahaya","kind":"kimia","reason":"Reaksi kimia menghasilkan zat baru dan energi."},{"id":"i11","text":"Balon ditiup hingga mengembang","kind":"fisika","reason":"Bentuk balon berubah karena udara masuk, tetapi tidak terbentuk zat baru."},{"id":"i12","text":"Cuka dicampur soda kue menghasilkan gelembung gas","kind":"kimia","reason":"Gas baru, yaitu karbon dioksida, terbentuk dari reaksi kimia."}],"achievements":[{"id":"cepat","name":"Pemilah Cepat","description":"Pilah kartu dalam sepertiga pertama waktu tempuh"},{"id":"beruntun","name":"Beruntun Lima","description":"Benar lima kali berturut-turut"},{"id":"sempurna","name":"Tanpa Salah","description":"Selesaikan semua kartu tanpa kesalahan atau kartu terlewat"},{"id":"selesai","name":"Penyelesai","description":"Selesaikan seluruh kartu dengan nyawa tersisa"}]}}
+  </script>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const config = JSON.parse(document.getElementById('widget-config').textContent);
+      const gc = config.gameConfig;
+      const ITEMS = gc.items;
+      const LIVES_MAX = gc.initialConditions.lives;
+      const GRACE = gc.initialConditions.graceSeconds;
+      const LEVELS = gc.levels;
+      const BEST_KEY = 'ipa-s11-skor-terbaik';
+      const BIN_NAME = { fisika: 'perubahan fisika', kimia: 'perubahan kimia' };
+      const INITIAL_FEEDBACK = 'Tekan Mulai permainan untuk memulai.';
+
+      const achievementsById = {};
+      gc.achievements.forEach(function (a) { achievementsById[a.id] = a; });
+
+      const belt = document.getElementById('belt');
+      const startScreen = document.getElementById('start-screen');
+      const resultScreen = document.getElementById('result-screen');
+      const resultTitle = document.getElementById('result-title');
+      const resultBody = document.getElementById('result-body');
+      const binFisika = document.getElementById('bin-fisika-btn');
+      const binKimia = document.getElementById('bin-kimia-btn');
+      const pauseBtn = document.getElementById('pause-btn');
+      const resetBtn = document.getElementById('reset-btn');
+      const feedbackPanel = document.getElementById('feedback-panel');
+      const scoreDisplay = document.getElementById('score-display');
+      const livesDisplay = document.getElementById('lives-display');
+      const levelDisplay = document.getElementById('level-display');
+      const sisaDisplay = document.getElementById('sisa-display');
+      const streakDisplay = document.getElementById('streak-display');
+      const badgeList = document.getElementById('badge-list');
+
+      const st = { cards: [] };
+
+      function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const tmp = arr[i];
+          arr[i] = arr[j];
+          arr[j] = tmp;
+        }
+        return arr;
+      }
+
+      function levelIndexFor(index) {
+        let acc = 0;
+        for (let i = 0; i < LEVELS.length; i++) {
+          acc += LEVELS[i].size;
+          if (index < acc) return i;
+        }
+        return LEVELS.length - 1;
+      }
+
+      function setFeedback(text, kind) {
+        feedbackPanel.textContent = text;
+        feedbackPanel.className = kind || '';
+      }
+
+      function unlock(id) {
+        if (st.unlocked[id]) return '';
+        st.unlocked[id] = true;
+        renderBadges();
+        const a = achievementsById[id];
+        return a ? ' Lencana baru: ' + a.name + '.' : '';
+      }
+
+      function renderBadges() {
+        badgeList.innerHTML = '';
+        gc.achievements.forEach(function (a) {
+          const li = document.createElement('li');
+          li.className = 'badge' + (st.unlocked[a.id] ? ' is-unlocked' : '');
+          li.textContent = a.name + ': ' + a.description;
+          badgeList.appendChild(li);
+        });
+      }
+
+      function readBest() {
+        try {
+          return Number(localStorage.getItem(BEST_KEY)) || 0;
+        } catch (err) {
+          return 0;
+        }
+      }
+
+      function writeBest(value) {
+        try {
+          localStorage.setItem(BEST_KEY, String(value));
+        } catch (err) {
+          /* penyimpanan tidak tersedia; skor terbaik tidak disimpan */
+        }
+      }
+
+      function updateHud() {
+        scoreDisplay.textContent = String(st.score);
+        livesDisplay.textContent = Math.max(0, st.lives) + ' / ' + LIVES_MAX;
+        levelDisplay.textContent = (levelIndexFor(Math.min(st.spawned, ITEMS.length - 1)) + 1) + ' dari ' + LEVELS.length;
+        sisaDisplay.textContent = String(ITEMS.length - st.processed);
+        streakDisplay.textContent = String(st.streak);
+
+        const playing = st.phase === 'playing';
+        const paused = st.phase === 'paused';
+        binFisika.disabled = !playing;
+        binKimia.disabled = !playing;
+        pauseBtn.disabled = !(playing || paused);
+        pauseBtn.textContent = paused ? 'Lanjutkan' : 'Jeda';
+      }
+
+      function refreshSelection() {
+        st.cards.forEach(function (c) {
+          c.el.classList.toggle('is-selected', c.id === st.selected);
+        });
+      }
+
+      function removeCard(card) {
+        st.cards = st.cards.filter(function (c) { return c !== card; });
+        card.el.remove();
+        st.processed += 1;
+        if (st.selected === card.id) st.selected = null;
+      }
+
+      function spawnCard() {
+        const index = st.spawned;
+        const item = st.order[index];
+        const level = LEVELS[levelIndexFor(index)];
+        st.seq += 1;
+
+        const el = document.createElement('button');
+        el.type = 'button';
+        el.className = 'btn card';
+        el.id = 'card-' + st.seq;
+        el.textContent = item.text;
+        el.setAttribute('aria-label', 'Kartu: ' + item.text + '. Pilih lalu tekan bak yang sesuai.');
+
+        const card = { id: st.seq, item: item, p: 0, travel: level.travel, el: el };
+        el.addEventListener('click', function () { selectCard(card); });
+        el.style.left = '66%';
+        belt.appendChild(el);
+
+        st.cards.push(card);
+        st.spawned += 1;
+        st.nextSpawn = st.elapsed + level.spawnEvery;
+      }
+
+      function selectCard(card) {
+        if (st.phase !== 'playing') return;
+        st.selected = st.selected === card.id ? null : card.id;
+        refreshSelection();
+        setFeedback(st.selected
+          ? 'Kartu dipilih: "' + card.item.text + '". Sekarang tekan bak yang sesuai.'
+          : 'Pilihan kartu dibatalkan.', '');
+      }
+
+      function checkEnd() {
+        if (st.phase !== 'playing') return;
+        if (st.lives <= 0) {
+          endGame(false);
+        } else if (st.spawned >= ITEMS.length && st.cards.length === 0) {
+          endGame(true);
+        }
+      }
+
+      function missCard(card) {
+        removeCard(card);
+        st.lives -= 1;
+        st.streak = 0;
+        st.perfect = false;
+        setFeedback('Kartu "' + card.item.text + '" jatuh dari ujung ban tanpa dipilah. Nyawa berkurang. Pilah kartu sebelum mencapai ujung.', 'error');
+        updateHud();
+        checkEnd();
+      }
+
+      function sortInto(kind) {
+        if (st.phase !== 'playing') return;
+        const card = st.cards.find(function (c) { return c.id === st.selected; });
+        if (!card) {
+          setFeedback('Pilih kartu di ban berjalan dahulu, lalu tekan bak yang sesuai.', '');
+          return;
+        }
+
+        if (card.item.kind === kind) {
+          const early = card.p < 1 / 3;
+          st.score += early ? 15 : 10;
+          st.streak += 1;
+          st.bestStreak = Math.max(st.bestStreak, st.streak);
+          st.sorted += 1;
+          let msg = 'Benar! ' + card.item.reason + (early ? ' Bonus +5 karena cepat.' : '');
+          if (early) msg += unlock('cepat');
+          if (st.streak === 5) msg += unlock('beruntun');
+          setFeedback(msg, 'success');
+        } else {
+          st.lives -= 1;
+          st.streak = 0;
+          st.perfect = false;
+          setFeedback('Salah! "' + card.item.text + '" termasuk ' + BIN_NAME[card.item.kind] + '. ' + card.item.reason + ' Nyawa berkurang.', 'error');
+        }
+
+        removeCard(card);
+        updateHud();
+        checkEnd();
+      }
+
+      function endGame(won) {
+        st.phase = won ? 'won' : 'over';
+        st.selected = null;
+        st.cards.forEach(function (c) { c.el.remove(); });
+        st.cards = [];
+        if (won) {
+          unlock('selesai');
+          if (st.perfect) unlock('sempurna');
+        }
+
+        const best = readBest();
+        const newBest = st.score > best;
+        if (newBest) writeBest(st.score);
+
+        resultTitle.textContent = won ? 'Semua kartu selesai dipilah!' : 'Nyawa habis';
+        resultBody.textContent = 'Skor: ' + st.score + '. Kartu dipilah benar: ' + st.sorted + ' dari ' + ITEMS.length +
+          '. Skor terbaik: ' + Math.max(best, st.score) + (newBest ? ' (rekor baru!)' : '') + '.';
+        resultScreen.classList.remove('hidden');
+        setFeedback(won ? 'Permainan selesai. Coba lagi untuk meningkatkan skor.' : 'Permainan berakhir. Coba lagi dengan lebih teliti.', won ? 'success' : 'error');
+        updateHud();
+      }
+
+      function togglePause() {
+        if (st.phase === 'playing') {
+          st.phase = 'paused';
+          setFeedback('Permainan dijeda. Tekan Lanjutkan untuk melanjutkan.', '');
+        } else if (st.phase === 'paused') {
+          st.phase = 'playing';
+          setFeedback('Lanjut! Pilah kartu sebelum mencapai ujung ban.', '');
+        }
+        updateHud();
+      }
+
+      function resetState() {
+        st.cards.forEach(function (c) { c.el.remove(); });
+        st.cards = [];
+        st.phase = 'idle';
+        st.score = 0;
+        st.lives = LIVES_MAX;
+        st.streak = 0;
+        st.bestStreak = 0;
+        st.spawned = 0;
+        st.sorted = 0;
+        st.processed = 0;
+        st.elapsed = 0;
+        st.nextSpawn = GRACE;
+        st.selected = null;
+        st.unlocked = {};
+        st.perfect = true;
+        st.lastTs = null;
+        st.seq = 0;
+        st.order = shuffle(ITEMS.slice());
+
+        startScreen.classList.remove('hidden');
+        resultScreen.classList.add('hidden');
+        setFeedback(INITIAL_FEEDBACK, '');
+        renderBadges();
+        updateHud();
+      }
+
+      function startGame() {
+        resetState();
+        st.phase = 'playing';
+        startScreen.classList.add('hidden');
+        setFeedback('Permainan dimulai. Kartu pertama tiba dalam beberapa detik.', '');
+        updateHud();
+      }
+      window.startGame = startGame;
+
+      function frame(ts) {
+        if (st.lastTs === null) st.lastTs = ts;
+        const dt = Math.min((ts - st.lastTs) / 1000, 0.1);
+        st.lastTs = ts;
+
+        if (st.phase === 'playing') {
+          st.elapsed += dt;
+          if (st.spawned < ITEMS.length && st.elapsed >= st.nextSpawn) spawnCard();
+
+          const snapshot = st.cards.slice();
+          for (let i = 0; i < snapshot.length; i++) {
+            if (st.phase !== 'playing') break;
+            const c = snapshot[i];
+            c.p += dt / c.travel;
+            if (c.p >= 1) {
+              missCard(c);
+            } else {
+              c.el.style.left = ((1 - c.p) * 66).toFixed(2) + '%';
+            }
+          }
+          updateHud();
+        }
+        requestAnimationFrame(frame);
+      }
+
+      binFisika.addEventListener('click', function () { sortInto('fisika'); });
+      binKimia.addEventListener('click', function () { sortInto('kimia'); });
+      pauseBtn.addEventListener('click', togglePause);
+      resetBtn.addEventListener('click', resetState);
+
+      window.addEventListener('keydown', function (e) {
+        if (e.key === 'f' || e.key === 'F') {
+          e.preventDefault();
+          sortInto('fisika');
+        } else if (e.key === 'k' || e.key === 'K') {
+          e.preventDefault();
+          sortInto('kimia');
+        } else if (e.code === 'Space' && e.target === document.body) {
+          e.preventDefault();
+          togglePause();
+        } else if (e.key === 'r' || e.key === 'R') {
+          resetState();
+        }
+      });
+
+      resetState();
+      requestAnimationFrame(frame);
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proyek: Poster Kampanye Lingkungan · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Pilih satu masalah lingkungan, kumpulkan data pengamatan, pilih solusi terbaik, lalu susun poster kampanye lingkungan.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Proyek: Poster Kampanye Lingkungan">
+  <meta property="og:description" content="Pilih satu masalah lingkungan, kumpulkan data pengamatan, pilih solusi terbaik, lalu susun poster kampanye lingkungan.">
+  <meta property="og:locale" content="id">
+  <style>
+:root {
+  /* Colour */
+  --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+  --surface: #14141e;     /* panels, cards, step rows */
+  --panel: rgba(20, 20, 30, 0.9);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: #333;
+  --text: #ffffff;
+  --text-muted: #aaa;
+  --text-dim: #888;
+  --accent: #6366f1;      /* primary action, slider thumb, active state */
+  --accent-hover: #5558e8;
+  --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+  --success: #fbbf24;     /* completion, headings, callouts */
+  --warning: #fb923c;
+  --error: #ff6b6b;
+  --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-none: none;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type scale (system fonts only) */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-caption: 11px;   /* uppercase control labels */
+  --text-heading: 24px;
+  --font-weight-display: 600;  /* headings */
+  --font-weight-number: 500;   /* monospaced readouts */
+
+  /* Focus, motion, stacking */
+  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  --motion: 0.2s;
+  --motion-slow: 0.3s;
+  --z-overlay: 100;        /* panels, tooltips */
+  --z-modal: 1000;         /* loading screens, modal dialogs */
+}
+
+[data-theme="light"] {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-strong: #d4d4d8;
+  --text: #16161d;
+  --text-muted: #52525b;
+  --text-dim: #71717a;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.95);
+  --success: #b45309;
+  --warning: #c2410c;
+  --error: #dc2626;
+  --accent-text: #ffffff;
+  --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+h1, h2, h3 { font-weight: var(--font-weight-display); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-4);
+}
+.panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+.btn {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  min-height: 44px;            /* never below 44px, mobile */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--border-strong);
+  color: var(--text);
+  box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.btn:hover { background: var(--text-muted); }
+.btn:active { transform: scale(0.95); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); }
+
+.control-label {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+input[type="range"] {
+  width: 100%; height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Visually hidden but announced by screen readers. Use when a layout has no
+   room for a visible h1 (e.g. a full-bleed canvas) — never as an excuse to
+   drop a heading. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+#feedback-panel {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+#feedback-panel.success { border-left-color: var(--success); }
+#feedback-panel.error { border-left-color: var(--error); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+.sources {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+.sources-heading {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+.source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+.source-item a { color: var(--accent); text-decoration: none; }
+.source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+.reading-article {
+  max-width: 720px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+.reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+.reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+.reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+.reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+.reading-article blockquote {
+  border-left: 3px solid var(--border-strong);
+  padding-left: var(--space-4);
+  color: var(--text-muted);
+  margin-bottom: var(--space-4);
+}
+.reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+.reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+.reading-article pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+}
+.reading-article pre code { background: none; padding: 0; }
+.reading-article table { width: 100%; border-collapse: collapse; }
+.reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+.reading-article details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.reading-article summary {
+  cursor: pointer;
+  font-weight: var(--font-weight-display);
+  color: var(--text);
+}
+.reading-article details[open] summary { margin-bottom: var(--space-2); }
+.glossary-term {
+  text-decoration: underline dotted var(--text-dim);
+  text-decoration-thickness: 1px;
+  cursor: help;
+}
+.katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+/* highlight.js token colours — mapped to the token set, not a canned theme */
+.hljs { color: var(--text); }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+.hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+.hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+.hljs-number { color: var(--warning); }
+
+/* Tata letak halaman proyek ini (hanya warna dari token) */
+.page { max-width: 960px; margin: 0 auto; padding: var(--space-4); display: grid; gap: var(--space-4); }
+.page-head h1 { font-size: var(--text-heading); }
+.page-head p { color: var(--text-muted); margin-top: var(--space-2); }
+.layout { display: grid; gap: var(--space-4); }
+@media (min-width: 760px) {
+  .layout { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); align-items: start; }
+}
+.step-list { list-style: none; display: grid; gap: var(--space-3); }
+.step-row { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-4); transition: opacity var(--motion), border-color var(--motion); }
+.step-row.is-done { border-color: var(--success); }
+.step-row.is-locked { opacity: 0.45; }
+.step-head { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-2); }
+.step-head h3 { font-size: var(--text-base); }
+.step-num { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; width: var(--space-6); height: var(--space-6); border-radius: var(--radius-pill); background: var(--border-strong); color: var(--text); font-size: var(--text-sm); }
+.step-row.is-done .step-num { background: var(--success); color: var(--bg); }
+.step-desc { color: var(--text-muted); font-size: var(--text-sm); margin-bottom: var(--space-3); }
+.step-feedback { font-size: var(--text-xs); color: var(--text-muted); margin-top: var(--space-3); min-height: var(--space-5); }
+.step-feedback.error { color: var(--error); }
+.step-feedback.success { color: var(--success); }
+.control-stack, .choice-group { display: grid; gap: var(--space-2); }
+.btn-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.choice-btn { text-align: left; white-space: normal; width: 100%; }
+.measure-row { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.readout { font-size: var(--text-heading); color: var(--text); }
+.gauge-track { margin: var(--space-1) 0; }
+.fill { height: 100%; width: 0; background: var(--accent); border-radius: var(--radius-pill); transition: width var(--motion-slow); }
+.slider-wrap { min-height: 44px; display: flex; align-items: center; }
+.threshold-note { font-size: var(--text-xs); color: var(--text-dim); }
+.check-item { display: flex; align-items: center; gap: var(--space-3); min-height: 44px; font-size: var(--text-sm); cursor: pointer; }
+.check-item input { width: var(--space-5); height: var(--space-5); accent-color: var(--accent); flex: 0 0 auto; }
+.check-item input:disabled { cursor: not-allowed; }
+.check-item input:disabled + span { opacity: 0.45; }
+.side-stack { display: grid; gap: var(--space-4); }
+.progress-head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); flex-wrap: wrap; }
+#tool-list { padding-left: var(--space-5); color: var(--text-muted); font-size: var(--text-sm); }
+.state-list { display: grid; gap: var(--space-2); font-size: var(--text-sm); }
+.state-list dt { color: var(--text-muted); font-size: var(--text-caption); text-transform: uppercase; letter-spacing: 0.5px; }
+.state-list dd { margin-bottom: var(--space-2); }
+.criteria-list { list-style: none; display: grid; gap: var(--space-2); }
+.criterion { display: grid; grid-template-columns: auto 1fr auto; gap: var(--space-2); align-items: center; font-size: var(--text-sm); color: var(--text-muted); }
+.criterion-mark { width: var(--space-3); height: var(--space-3); border-radius: 50%; border: 1px solid var(--border-strong); }
+.criterion.is-complete { color: var(--text); }
+.criterion.is-complete .criterion-mark { background: var(--success); border-color: var(--success); }
+.criterion-status { font-size: var(--text-caption); text-transform: uppercase; color: var(--text-dim); }
+.criterion.is-complete .criterion-status { color: var(--success); }
+#overall-status { font-size: var(--text-sm); color: var(--text-muted); margin-top: var(--space-3); }
+#overall-status.complete { color: var(--success); }
+.reset-row { display: flex; justify-content: flex-end; }
+.hint { font-size: var(--text-xs); color: var(--text-dim); }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="page-head">
+      <h1>Proyek: Poster Kampanye Lingkungan</h1>
+      <p>Kerjakan lima langkah berurutan. Setiap keputusanmu menentukan apakah poster siap dipasang.</p>
+    </header>
+
+    <section class="panel" id="task-panel" aria-labelledby="task-title">
+      <p class="panel-heading" id="task-title">Tugas</p>
+      <p>Buatlah poster kampanye yang memuat satu masalah lingkungan nyata di sekitarmu, beserta solusi yang bisa dijalankan. Poster harus mudah dibaca dari jarak 3 meter.</p>
+      <p class="panel-heading">Alat dan bahan</p>
+      <ul id="tool-list">
+        <li>Lembar pengamatan dan buku catatan</li>
+        <li>Kertas HVS atau karton A3</li>
+        <li>Pensil warna dan spidol</li>
+        <li>Penggaris</li>
+      </ul>
+    </section>
+
+    <div class="layout">
+      <ol class="step-list" id="step-list">
+        <li class="step-row" data-step-id="step-1">
+          <div class="step-head">
+            <span class="step-num mono-value">1</span>
+            <h3>Pilih masalah lingkungan</h3>
+          </div>
+          <p class="step-desc">Pilih satu masalah yang nyata, lokal, dan bisa diamati langsung oleh kelompokmu.</p>
+          <div id="step-1-control" class="choice-group">
+            <button type="button" class="btn choice-btn" id="problem-local-btn">Sampah plastik menumpuk di selokan dekat rumah</button>
+            <button type="button" class="btn choice-btn" id="problem-global-btn">Pemanasan global di seluruh dunia</button>
+            <button type="button" class="btn choice-btn" id="problem-remote-btn">Hujan asam di kota lain yang belum pernah dikunjungi</button>
+          </div>
+          <p class="step-feedback" id="step-1-feedback" aria-live="polite"></p>
+        </li>
+
+        <li class="step-row" data-step-id="step-2">
+          <div class="step-head">
+            <span class="step-num mono-value">2</span>
+            <h3>Kumpulkan data pengamatan</h3>
+          </div>
+          <p class="step-desc">Catat minimal 3 pengamatan langsung di lokasi. Kabar dari orang lain tanpa bukti tidak boleh dijadikan dasar poster.</p>
+          <div id="step-2-control" class="control-stack">
+            <div class="measure-row">
+              <span class="control-label">Jumlah pengamatan</span>
+              <span class="readout mono-value" id="observation-count">0 / 3</span>
+            </div>
+            <div class="progress-track gauge-track"><div class="fill" id="observation-gauge"></div></div>
+            <div class="btn-row">
+              <button type="button" class="btn btn-primary" id="observe-btn">Catat 1 pengamatan</button>
+              <button type="button" class="btn" id="redo-btn">Ulangi pengamatan</button>
+              <button type="button" class="btn btn-ghost" id="rumor-btn">Pakai kabar dari grup chat</button>
+              <button type="button" class="btn btn-primary" id="save-data-btn">Simpan data</button>
+            </div>
+          </div>
+          <p class="step-feedback" id="step-2-feedback" aria-live="polite"></p>
+        </li>
+
+        <li class="step-row" data-step-id="step-3">
+          <div class="step-head">
+            <span class="step-num mono-value">3</span>
+            <h3>Pilih solusi terbaik</h3>
+          </div>
+          <p class="step-desc">Pilih solusi yang bisa dijalankan siswa bersama warga dan benar-benar mengurangi masalah.</p>
+          <div id="step-3-control" class="choice-group">
+            <button type="button" class="btn choice-btn" id="solution-kerja-btn">Kerja bakti rutin dan memasang tempat sampah di sekitar selokan</button>
+            <button type="button" class="btn choice-btn" id="solution-pabrik-btn">Meminta pemerintah menutup semua pabrik plastik</button>
+            <button type="button" class="btn choice-btn" id="solution-buang-btn">Memindahkan sampah ke sungai lain agar tidak menumpuk</button>
+          </div>
+          <p class="step-feedback" id="step-3-feedback" aria-live="polite"></p>
+        </li>
+
+        <li class="step-row" data-step-id="step-4">
+          <div class="step-head">
+            <span class="step-num mono-value">4</span>
+            <h3>Susun poster kampanye</h3>
+          </div>
+          <p class="step-desc">Centang elemen yang sudah ada di postermu, lalu periksa kelengkapannya.</p>
+          <div id="step-4-control" class="control-stack">
+            <label class="check-item"><input type="checkbox" id="check-judul"><span>Judul yang jelas</span></label>
+            <label class="check-item"><input type="checkbox" id="check-gambar"><span>Gambar masalah dan solusinya</span></label>
+            <label class="check-item"><input type="checkbox" id="check-slogan"><span>Slogan singkat</span></label>
+            <label class="check-item"><input type="checkbox" id="check-ajakan"><span>Ajakan bertindak</span></label>
+            <button type="button" class="btn btn-primary" id="check-poster-btn">Periksa kelengkapan poster</button>
+          </div>
+          <p class="step-feedback" id="step-4-feedback" aria-live="polite"></p>
+        </li>
+
+        <li class="step-row" data-step-id="step-5">
+          <div class="step-head">
+            <span class="step-num mono-value">5</span>
+            <h3>Uji keterbacaan</h3>
+          </div>
+          <p class="step-desc">Atur tinggi huruf judul, lalu uji apakah poster terbaca dari jarak 3 meter.</p>
+          <div id="step-5-control" class="control-stack">
+            <div class="measure-row">
+              <label class="control-label" for="font-size-slider">Tinggi huruf judul</label>
+              <span class="readout mono-value" id="font-readout">2,0 cm</span>
+            </div>
+            <div class="slider-wrap">
+              <input type="range" id="font-size-slider" min="1" max="8" step="0.5" value="2" aria-label="Tinggi huruf judul dalam sentimeter">
+            </div>
+            <p class="threshold-note">Ambang latihan: huruf judul minimal 5,0 cm agar terbaca dari 3 meter.</p>
+            <button type="button" class="btn btn-primary" id="test-read-btn">Uji keterbacaan dari 3 meter</button>
+          </div>
+          <p class="step-feedback" id="step-5-feedback" aria-live="polite"></p>
+        </li>
+      </ol>
+
+      <aside class="side-stack">
+        <section id="feedback-panel" aria-live="polite">
+          <p class="panel-heading">Umpan balik</p>
+          <p id="feedback-text"></p>
+        </section>
+
+        <section class="panel" id="state-panel" aria-label="Status proyek">
+          <p class="panel-heading">Status proyek</p>
+          <dl class="state-list">
+            <div><dt>Masalah</dt><dd id="state-problem"></dd></div>
+            <div><dt>Data</dt><dd id="state-data"></dd></div>
+            <div><dt>Solusi</dt><dd id="state-solution"></dd></div>
+            <div><dt>Poster</dt><dd id="state-poster"></dd></div>
+            <div><dt>Tinggi huruf</dt><dd id="state-font"></dd></div>
+            <div><dt>Status</dt><dd id="state-status"></dd></div>
+          </dl>
+        </section>
+
+        <section class="panel" aria-label="Kemajuan">
+          <div class="progress-head">
+            <span class="control-label">Kemajuan</span>
+            <span class="mono-value" id="progress-display"></span>
+          </div>
+          <div class="progress-track"><div class="fill" id="progress-bar"></div></div>
+        </section>
+
+        <section class="panel" aria-label="Kriteria keberhasilan">
+          <p class="panel-heading">Kriteria keberhasilan</p>
+          <ul class="criteria-list" id="success-criteria">
+            <li class="criterion" data-criterion="step-1"><span class="criterion-mark"></span><span>Masalah lokal dan spesifik sudah dipilih</span><span class="criterion-status">Belum</span></li>
+            <li class="criterion" data-criterion="step-2"><span class="criterion-mark"></span><span>Data dikumpulkan dari pengamatan langsung, minimal 3 kali</span><span class="criterion-status">Belum</span></li>
+            <li class="criterion" data-criterion="step-3"><span class="criterion-mark"></span><span>Solusi yang realistis sudah dipilih</span><span class="criterion-status">Belum</span></li>
+            <li class="criterion" data-criterion="step-4"><span class="criterion-mark"></span><span>Poster memuat judul, gambar, slogan, dan ajakan bertindak</span><span class="criterion-status">Belum</span></li>
+            <li class="criterion" data-criterion="step-5"><span class="criterion-mark"></span><span>Huruf judul terbaca dari jarak 3 meter</span><span class="criterion-status">Belum</span></li>
+          </ul>
+          <p id="overall-status"></p>
+        </section>
+
+        <div class="reset-row">
+          <button type="button" class="btn btn-ghost" id="reset-btn">Atur ulang proyek</button>
+        </div>
+        <p class="hint">Tekan tombol R di keyboard untuk mengatur ulang.</p>
+      </aside>
+    </div>
+  </main>
+
+  <script type="application/json" id="widget-config">
+{"type":"procedural-skill","task":"Membuat poster kampanye lingkungan yang memuat satu masalah lingkungan nyata di sekitarmu beserta solusi yang bisa dijalankan.","description":"Kamu memilih satu masalah lingkungan lokal, mengumpulkan data pengamatan langsung, memilih solusi yang realistis, menyusun poster, lalu menguji apakah poster mudah dibaca dari jarak 3 meter.","tools":["Lembar pengamatan dan buku catatan","Kertas HVS atau karton A3","Pensil warna dan spidol","Penggaris"],"steps":[{"id":"step-1","title":"Pilih masalah lingkungan","description":"Pilih satu masalah yang nyata, lokal, dan bisa diamati langsung.","tools":["Lembar pengamatan"],"successCriteria":["Masalah dapat diamati dari lingkungan sekitar"]},{"id":"step-2","title":"Kumpulkan data pengamatan","description":"Catat minimal 3 pengamatan langsung. Kabar tanpa bukti tidak boleh dijadikan dasar poster.","tools":["Lembar pengamatan","Pensil"],"successCriteria":["Minimal 3 pengamatan langsung tercatat"]},{"id":"step-3","title":"Pilih solusi terbaik","description":"Pilih solusi yang bisa dijalankan siswa dan benar-benar mengurangi masalah.","tools":["Daftar solusi"],"successCriteria":["Solusi realistis dan aman dipilih"]},{"id":"step-4","title":"Susun poster kampanye","description":"Pastikan poster memiliki judul, gambar, slogan, dan ajakan bertindak.","tools":["Kertas HVS atau karton A3","Spidol"],"successCriteria":["Keempat elemen poster sudah lengkap"]},{"id":"step-5","title":"Uji keterbacaan","description":"Atur tinggi huruf judul lalu uji apakah poster terbaca dari jarak 3 meter.","tools":["Penggaris"],"successCriteria":["Huruf judul minimal 5,0 cm"]}],"successCriteria":["Masalah lokal dan spesifik sudah dipilih","Data dikumpulkan dari pengamatan langsung, minimal 3 kali","Solusi yang realistis sudah dipilih","Poster memuat judul, gambar, slogan, dan ajakan bertindak","Huruf judul terbaca dari jarak 3 meter"],"errorConsequences":["Masalah yang terlalu luas membuat kampanye tidak fokus","Data dari kabar tanpa bukti berisiko dianggap hoaks","Solusi yang tidak realistis atau memindahkan pencemaran tidak bisa dilanjutkan","Poster tanpa ajakan bertindak tidak mendorong perubahan","Huruf yang terlalu kecil membuat poster gagal dipasang"]}
+  </script>
+
+  <script>
+(function () {
+  'use strict';
+
+  var STEP_IDS = ['step-1', 'step-2', 'step-3', 'step-4', 'step-5'];
+  var CHECK_KEYS = ['judul', 'gambar', 'slogan', 'ajakan'];
+  var OBS_TARGET = 3;
+  var READ_MIN_CM = 5;
+  var FONT_DEFAULT = 2;
+
+  var state = null;
+
+  function $(id) { return document.getElementById(id); }
+  function setText(id, text) { var n = $(id); if (n) n.textContent = text; }
+  function setDisabled(id, v) { var n = $(id); if (n) n.disabled = !!v; }
+  function fmtCm(n) { return n.toFixed(1).replace('.', ',') + ' cm'; }
+
+  function fresh() {
+    return {
+      done: {},
+      stepMsg: {},
+      problem: '',
+      observations: 0,
+      rumorUsed: false,
+      solution: '',
+      checks: { judul: false, gambar: false, slogan: false, ajakan: false },
+      fontSize: FONT_DEFAULT,
+      feedback: { kind: '', text: 'Mulai dari langkah 1: pilih satu masalah lingkungan yang bisa kamu amati di sekitar sekolah.' },
+      status: 'Belum ada tindakan.'
+    };
+  }
+
+  function countChecks() {
+    var c = 0;
+    CHECK_KEYS.forEach(function (k) { if (state.checks[k]) c++; });
+    return c;
+  }
+
+  function doneCount() {
+    var c = 0;
+    STEP_IDS.forEach(function (id) { if (state.done[id]) c++; });
+    return c;
+  }
+
+  // A step is live when every earlier step is done and this one is not yet done.
+  function isLive(i) {
+    var unlocked = i === 0 || !!state.done[STEP_IDS[i - 1]];
+    return unlocked && !state.done[STEP_IDS[i]];
+  }
+
+  function complete(stepId, msg, status) {
+    state.done[stepId] = true;
+    state.stepMsg[stepId] = { kind: 'success', text: msg };
+    state.feedback = { kind: 'success', text: msg };
+    state.status = status;
+    render();
+  }
+
+  function consequence(stepId, msg, status) {
+    state.stepMsg[stepId] = { kind: 'error', text: msg };
+    state.feedback = { kind: 'error', text: msg };
+    state.status = status;
+    render();
+  }
+
+  function note(stepId, msg, status) {
+    state.stepMsg[stepId] = { kind: '', text: msg };
+    state.feedback = { kind: '', text: msg };
+    if (status) state.status = status;
+    render();
+  }
+
+  // ---- Step 1: decision ----
+  function pickProblem(key) {
+    if (state.done['step-1']) return;
+    if (key === 'lokal') {
+      state.problem = 'Sampah plastik di selokan dekat rumah';
+      complete('step-1', 'Masalah lokal dipilih. Masalah ini bisa diamati langsung, jadi data bisa dikumpulkan.', 'Masalah sudah ditetapkan.');
+    } else if (key === 'global') {
+      consequence('step-1', 'Masalah ini terlalu luas. Kelompokmu tidak bisa mengamatinya langsung, sehingga kampanye kehilangan fokus. Pilih ulang masalah yang lebih lokal.', 'Masalah terlalu luas: pilihan ditolak.');
+    } else {
+      consequence('step-1', 'Masalah ini tidak bisa diamati dari lingkungan sekolah, sehingga data tidak bisa diverifikasi. Pilih ulang masalah yang ada di sekitarmu.', 'Masalah tidak bisa diverifikasi: pilihan ditolak.');
+    }
+  }
+
+  // ---- Step 2: measurement proxy + decision ----
+  function observe() {
+    if (state.done['step-2'] || state.rumorUsed || state.observations >= OBS_TARGET) return;
+    state.observations += 1;
+    var n = state.observations;
+    note('step-2', 'Pengamatan ke-' + n + ' dicatat. ' + (n < OBS_TARGET ? 'Kumpulkan ' + (OBS_TARGET - n) + ' lagi.' : 'Jumlah minimal sudah tercapai.'));
+  }
+
+  function useRumor() {
+    if (state.done['step-2']) return;
+    state.rumorUsed = true;
+    consequence('step-2', 'Kabar tanpa bukti tidak bisa diverifikasi. Poster bisa dianggap hoaks, dan data ini tidak boleh disimpan. Tekan "Ulangi pengamatan" lalu catat data langsung.', 'Kepercayaan data rendah: penyimpanan dikunci.');
+  }
+
+  function redoObservations() {
+    if (state.done['step-2']) return;
+    state.observations = 0;
+    state.rumorUsed = false;
+    note('step-2', 'Pengamatan diulang dari nol. Catat data langsung di lokasi.', 'Data diulang: belum ada pengamatan tersimpan.');
+  }
+
+  function saveData() {
+    if (state.done['step-2'] || state.rumorUsed || state.observations < OBS_TARGET) return;
+    complete('step-2', 'Data dari ' + OBS_TARGET + ' pengamatan langsung disimpan sebagai dasar poster.', 'Data pengamatan tersimpan.');
+  }
+
+  // ---- Step 3: decision ----
+  function chooseSolution(key) {
+    if (state.done['step-3']) return;
+    if (key === 'kerja') {
+      state.solution = 'Kerja bakti rutin dan tempat sampah di sekitar selokan';
+      complete('step-3', 'Solusi ini bisa dijalankan siswa bersama warga dan sekolah, serta langsung membersihkan selokan.', 'Solusi realistis dipilih.');
+    } else if (key === 'pabrik') {
+      consequence('step-3', 'Solusi ini tidak bisa dijalankan siswa dan tidak membersihkan selokan sekarang. Pilih solusi yang bisa dikerjakan.', 'Solusi belum realistis: tidak bisa dilanjutkan.');
+    } else {
+      consequence('step-3', 'Memindahkan sampah ke sungai lain hanya memindahkan pencemaran. Tindakan ini tidak aman dan tidak boleh dilakukan.', 'Status tidak aman: pencemaran berpindah. Pilih ulang solusi.');
+    }
+  }
+
+  // ---- Step 4: checklist judgment ----
+  function toggleCheck(key) {
+    if (state.done['step-4']) return;
+    state.checks[key] = !state.checks[key];
+    render();
+  }
+
+  function checkPoster() {
+    if (state.done['step-4']) return;
+    var n = countChecks();
+    if (n === CHECK_KEYS.length) {
+      complete('step-4', 'Poster lengkap: ada judul, gambar, slogan, dan ajakan bertindak.', 'Poster lengkap dan siap diuji.');
+    } else {
+      consequence('step-4', 'Poster belum lengkap (' + n + ' dari 4 elemen). Tanpa ajakan bertindak, pembaca tidak tahu apa yang harus dilakukan. Lengkapi poster dulu.', 'Poster belum bisa dipublikasikan.');
+    }
+  }
+
+  // ---- Step 5: measurement with threshold ----
+  function setFontSize(v) {
+    if (state.done['step-5']) return;
+    state.fontSize = Number(v);
+    render();
+  }
+
+  function testReadability() {
+    if (state.done['step-5']) return;
+    var cm = state.fontSize;
+    if (cm >= READ_MIN_CM) {
+      complete('step-5', 'Huruf judul ' + fmtCm(cm) + ' terbaca dari 3 meter. Poster siap dipasang.', 'Uji keterbacaan lulus.');
+    } else {
+      consequence('step-5', 'Huruf judul ' + fmtCm(cm) + ' tidak terbaca dari 3 meter. Poster akan gagal dipasang di mading. Perbesar huruf judul lalu uji ulang.', 'Uji gagal: huruf judul terlalu kecil.');
+    }
+  }
+
+  // ---- Single render path ----
+  function render() {
+    var done = doneCount();
+
+    STEP_IDS.forEach(function (id, i) {
+      var isDone = !!state.done[id];
+      var live = isLive(i);
+      var row = document.querySelector('[data-step-id="' + id + '"]');
+      if (row) {
+        row.classList.toggle('is-done', isDone);
+        row.classList.toggle('is-locked', !live && !isDone);
+      }
+      var fb = $(id + '-feedback');
+      var msg = state.stepMsg[id];
+      if (fb) {
+        fb.textContent = msg ? msg.text : '';
+        fb.classList.toggle('error', !!msg && msg.kind === 'error');
+        fb.classList.toggle('success', !!msg && msg.kind === 'success');
+      }
+      var ctrl = $(id + '-control');
+      if (ctrl) {
+        ctrl.querySelectorAll('button, input').forEach(function (c) { c.disabled = !live; });
+      }
+    });
+
+    // Step 2 specifics
+    var live2 = isLive(1);
+    var obsReady = state.observations >= OBS_TARGET;
+    setDisabled('observe-btn', !live2 || obsReady || state.rumorUsed);
+    setDisabled('rumor-btn', !live2 || state.rumorUsed);
+    setDisabled('redo-btn', !live2 || (state.observations === 0 && !state.rumorUsed));
+    setDisabled('save-data-btn', !live2 || state.rumorUsed || !obsReady);
+    setText('observation-count', state.observations + ' / ' + OBS_TARGET);
+    var gauge = $('observation-gauge');
+    if (gauge) gauge.style.width = (Math.min(state.observations / OBS_TARGET, 1) * 100) + '%';
+
+    // Step 4 specifics
+    CHECK_KEYS.forEach(function (k) {
+      var box = $('check-' + k);
+      if (box) box.checked = !!state.checks[k];
+    });
+
+    // Step 5 specifics
+    var slider = $('font-size-slider');
+    if (slider) slider.value = String(state.fontSize);
+    setText('font-readout', fmtCm(state.fontSize));
+
+    // Progress and success criteria, gated by real state
+    setText('progress-display', done + ' dari ' + STEP_IDS.length + ' langkah selesai');
+    var bar = $('progress-bar');
+    if (bar) bar.style.width = ((done / STEP_IDS.length) * 100) + '%';
+
+    document.querySelectorAll('[data-criterion]').forEach(function (li) {
+      var ok = !!state.done[li.getAttribute('data-criterion')];
+      li.classList.toggle('is-complete', ok);
+      var st = li.querySelector('.criterion-status');
+      if (st) st.textContent = ok ? 'Tercapai' : 'Belum';
+    });
+
+    var overall = $('overall-status');
+    if (overall) {
+      var all = done === STEP_IDS.length;
+      overall.textContent = all ? 'Semua kriteria terpenuhi. Poster siap dipasang.' : 'Belum semua kriteria terpenuhi.';
+      overall.classList.toggle('complete', all);
+    }
+
+    // State panel
+    var dataText = state.observations + ' pengamatan';
+    if (state.rumorUsed) dataText += ' (dari kabar tanpa bukti: kepercayaan rendah)';
+    else if (state.done['step-2']) dataText += ' (langsung, sudah tersimpan)';
+    setText('state-problem', state.problem || 'Belum dipilih');
+    setText('state-data', dataText);
+    setText('state-solution', state.solution || 'Belum dipilih');
+    setText('state-poster', countChecks() + ' dari 4 elemen');
+    setText('state-font', fmtCm(state.fontSize));
+    setText('state-status', state.status);
+
+    // Feedback panel
+    var fp = $('feedback-panel');
+    if (fp) {
+      fp.classList.toggle('success', state.feedback.kind === 'success');
+      fp.classList.toggle('error', state.feedback.kind === 'error');
+    }
+    setText('feedback-text', state.feedback.text);
+  }
+
+  function resetState() {
+    state = fresh();
+    render();
+  }
+
+  function on(id, fn) {
+    var n = $(id);
+    if (n) n.addEventListener('click', fn);
+  }
+
+  on('problem-local-btn', function () { pickProblem('lokal'); });
+  on('problem-global-btn', function () { pickProblem('global'); });
+  on('problem-remote-btn', function () { pickProblem('jauh'); });
+  on('observe-btn', observe);
+  on('rumor-btn', useRumor);
+  on('redo-btn', redoObservations);
+  on('save-data-btn', saveData);
+  on('solution-kerja-btn', function () { chooseSolution('kerja'); });
+  on('solution-pabrik-btn', function () { chooseSolution('pabrik'); });
+  on('solution-buang-btn', function () { chooseSolution('buang'); });
+  on('check-poster-btn', checkPoster);
+  on('test-read-btn', testReadability);
+  on('reset-btn', resetState);
+
+  var slider = $('font-size-slider');
+  if (slider) slider.addEventListener('input', function () { setFontSize(this.value); });
+
+  CHECK_KEYS.forEach(function (k) {
+    var box = $('check-' + k);
+    if (box) box.addEventListener('change', function () { toggleCheck(k); });
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if ((e.key === 'r' || e.key === 'R') && !e.ctrlKey && !e.metaKey && !e.altKey) resetState();
+  });
+
+  state = fresh();
+  render();
+})();
+  </script>
+</body>
+</html>

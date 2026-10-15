@@ -1,0 +1,11 @@
+# Satu entri katalog per simulasi. Kunci adalah pengenal bahasa Inggris;
+# nilainya Bahasa Indonesia karena menjadi bagian URL.
+# Katalog adalah sumber kebenaran atas metadata simulasi (docs/adr/0004).
+title: "Grafik Batang dan Grafik Garis"
+description: >-
+  Memilih jenis grafik sesuai jenis variabel bebas.
+level: smp
+grade: 7
+subject: ipa
+order: 29
+scene: "s6"

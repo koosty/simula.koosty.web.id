@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Langkah Metode Ilmiah · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Susun langkah metode ilmiah secara berurutan, dari observasi hingga evaluasi, lewat latihan yang menunjukkan akibat setiap pilihan.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Langkah Metode Ilmiah">
+  <meta property="og:description" content="Susun langkah metode ilmiah secara berurutan, dari observasi hingga evaluasi, lewat latihan yang menunjukkan akibat setiap pilihan.">
+  <meta property="og:locale" content="id">
+  <style>
+:root {
+  /* Colour */
+  --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+  --surface: #14141e;     /* panels, cards, step rows */
+  --panel: rgba(20, 20, 30, 0.9);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: #333;
+  --text: #ffffff;
+  --text-muted: #aaa;
+  --text-dim: #888;
+  --accent: #6366f1;      /* primary action, slider thumb, active state */
+  --accent-hover: #5558e8;
+  --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+  --success: #fbbf24;     /* completion, headings, callouts */
+  --warning: #fb923c;
+  --error: #ff6b6b;
+  --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-none: none;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type scale (system fonts only) */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-caption: 11px;   /* uppercase control labels */
+  --text-heading: 24px;
+  --font-weight-display: 600;  /* headings */
+  --font-weight-number: 500;   /* monospaced readouts */
+
+  /* Focus, motion, stacking */
+  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  --motion: 0.2s;
+  --motion-slow: 0.3s;
+  --z-overlay: 100;        /* panels, tooltips */
+  --z-modal: 1000;         /* loading screens, modal dialogs */
+}
+
+[data-theme="light"] {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-strong: #d4d4d8;
+  --text: #16161d;
+  --text-muted: #52525b;
+  --text-dim: #71717a;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.95);
+  --success: #b45309;
+  --warning: #c2410c;
+  --error: #dc2626;
+  --accent-text: #ffffff;
+  --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+h1, h2, h3 { font-weight: var(--font-weight-display); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-4);
+}
+.panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+.btn {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  min-height: 44px;            /* never below 44px, mobile */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--border-strong);
+  color: var(--text);
+  box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.btn:hover { background: var(--text-muted); }
+.btn:active { transform: scale(0.95); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); }
+
+.control-label {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+input[type="range"] {
+  width: 100%; height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Visually hidden but announced by screen readers. Use when a layout has no
+   room for a visible <h1> (e.g. a full-bleed canvas) — never as an excuse to
+   drop a heading. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+#feedback-panel {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+#feedback-panel.success { border-left-color: var(--success); }
+#feedback-panel.error { border-left-color: var(--error); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+.sources {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+.sources-heading {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+.source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+.source-item a { color: var(--accent); text-decoration: none; }
+.source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+.reading-article {
+  max-width: 720px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+.reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+.reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+.reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+.reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+.reading-article blockquote {
+  border-left: 3px solid var(--border-strong);
+  padding-left: var(--space-4);
+  color: var(--text-muted);
+  margin-bottom: var(--space-4);
+}
+.reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+.reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+.reading-article pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+}
+.reading-article pre code { background: none; padding: 0; }
+.reading-article table { width: 100%; border-collapse: collapse; }
+.reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+.reading-article details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.reading-article summary {
+  cursor: pointer;
+  font-weight: var(--font-weight-display);
+  color: var(--text);
+}
+.reading-article details[open] summary { margin-bottom: var(--space-2); }
+.glossary-term {
+  text-decoration: underline dotted var(--text-dim);
+  text-decoration-thickness: 1px;
+  cursor: help;
+}
+.katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+/* highlight.js token colours — mapped to the token set, not a canned theme */
+.hljs { color: var(--text); }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+.hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+.hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+.hljs-number { color: var(--warning); }
+
+/* ---- Scene layout (appearance uses tokens only) ---- */
+.page { max-width: 960px; margin: 0 auto; padding: var(--space-4); display: grid; gap: var(--space-4); }
+.board { display: grid; gap: var(--space-4); }
+@media (min-width: 768px) {
+  .board { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); align-items: start; }
+}
+.muted { color: var(--text-muted); font-size: var(--text-sm); }
+.tool-list { padding-left: var(--space-5); color: var(--text-muted); font-size: var(--text-sm); }
+.step-list { list-style: none; display: grid; gap: var(--space-3); }
+.step-row {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  transition: opacity var(--motion), border-color var(--motion);
+}
+.step-row.is-active { border-color: var(--accent); }
+.step-row.is-done { border-color: var(--success); }
+.step-row.is-locked { opacity: 0.5; }
+.step-head { display: flex; align-items: center; gap: var(--space-3); }
+.step-head h3 { font-size: var(--text-base); }
+.step-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 32px; min-height: 32px;
+  border-radius: var(--radius-pill);
+  background: var(--border-strong);
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-number);
+}
+.step-row.is-active .step-num { background: var(--accent); color: var(--accent-text); }
+.step-row.is-done .step-num { background: var(--success); color: var(--bg); }
+.step-desc { color: var(--text-muted); font-size: var(--text-sm); margin-top: var(--space-2); }
+.step-control { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
+.step-control .btn { flex: 1 1 100%; text-align: left; white-space: normal; }
+@media (min-width: 560px) { .step-control .btn { flex: 1 1 auto; } }
+.step-feedback { margin-top: var(--space-2); font-size: var(--text-xs); min-height: 1em; color: var(--text-muted); }
+.step-feedback.error { color: var(--error); }
+.step-feedback.success { color: var(--success); }
+.progress-row { display: grid; gap: var(--space-2); margin-top: var(--space-4); }
+.progress-fill {
+  height: 100%; width: 0;
+  background: var(--accent);
+  border-radius: var(--radius-pill);
+  transition: width var(--motion-slow);
+}
+.side { display: grid; gap: var(--space-4); align-content: start; }
+.readout { display: grid; gap: var(--space-2); font-size: var(--text-sm); }
+.readout-row { display: flex; justify-content: space-between; gap: var(--space-3); color: var(--text-muted); }
+.readout-row strong { color: var(--text); font-weight: var(--font-weight-number); }
+.criteria-list { list-style: none; display: grid; gap: var(--space-2); font-size: var(--text-sm); color: var(--text-muted); }
+.criterion.done { color: var(--success); }
+.data-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+.data-table th, .data-table td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+.actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="panel" id="task-panel">
+      <h1>Langkah Metode Ilmiah</h1>
+      <p class="muted">Susun langkah metode ilmiah secara berurutan, dari observasi sampai evaluasi. Meneliti pengaruh cahaya terhadap tinggi kecambah kacang hijau adalah contoh tugasnya.</p>
+      <p class="control-label" style="margin-top: var(--space-3);">Alat dan bahan</p>
+      <ul class="tool-list" id="tool-list">
+        <li>Kecambah kacang hijau berumur 7 hari</li>
+        <li>Penggaris 30 cm</li>
+        <li>Buku catatan dan tabel data</li>
+      </ul>
+    </section>
+
+    <div class="board">
+      <section class="panel" aria-labelledby="steps-heading">
+        <h2 class="panel-heading" id="steps-heading">Langkah kerja</h2>
+        <ol class="step-list" id="step-list">
+          <li class="step-row" data-step-id="step-1">
+            <div class="step-head"><span class="step-num">1</span><h3>Observasi</h3></div>
+            <p class="step-desc">Amati kecambah di tempat terang dan di tempat gelap. Pilih pernyataan yang berasal dari pengamatan, bukan perasaan atau tebakan.</p>
+            <div id="step-1-control" class="step-control">
+              <button type="button" class="btn step-action" data-kind="choice" data-step="1" data-correct="false" data-err="Ditolak: kalimat itu perasaan atau tebakan, bukan hasil pengamatan. Pengamatan belum sah. Pilih pernyataan lain." aria-label="Pilih pernyataan tentang perasaan kecambah">Kecambah di tempat gelap pasti merasa sedih</button>
+              <button type="button" class="btn step-action" data-kind="choice" data-step="1" data-correct="true" data-ok="Benar. Ini hasil pengamatan yang dapat dilihat langsung. Lanjut ke langkah 2." aria-label="Pilih pernyataan hasil pengamatan">Kecambah di tempat terang berdaun hijau dan batangnya lebih pendek</button>
+            </div>
+            <p class="step-feedback" id="step-1-feedback" aria-live="polite"></p>
+          </li>
+
+          <li class="step-row" data-step-id="step-2">
+            <div class="step-head"><span class="step-num">2</span><h3>Hipotesis</h3></div>
+            <p class="step-desc">Rumuskan dugaan yang dapat diuji dengan percobaan dan pengukuran.</p>
+            <div id="step-2-control" class="step-control">
+              <button type="button" class="btn step-action" data-kind="choice" data-step="2" data-correct="false" data-err="Ditolak: kalimat ini tidak dapat diuji dengan pengukuran. Hipotesis harus berupa dugaan sebab-akibat yang dapat diukur." aria-label="Pilih hipotesis yang tidak dapat diuji">Kecambah yang bagus itu enak dilihat</button>
+              <button type="button" class="btn step-action" data-kind="choice" data-step="2" data-correct="true" data-ok="Benar. Hipotesis ini memuat faktor yang dapat diubah dan hasil yang dapat diukur. Lanjut ke langkah 3." aria-label="Pilih hipotesis yang dapat diuji">Jika cahaya lebih banyak, kecambah akan tumbuh lebih tinggi</button>
+            </div>
+            <p class="step-feedback" id="step-2-feedback" aria-live="polite"></p>
+          </li>
+
+          <li class="step-row" data-step-id="step-3">
+            <div class="step-head"><span class="step-num">3</span><h3>Rancang percobaan</h3></div>
+            <p class="step-desc">Tentukan variabel bebas, yaitu faktor yang sengaja kamu ubah.</p>
+            <div id="step-3-control" class="step-control">
+              <button type="button" class="btn step-action" data-kind="choice" data-step="3" data-correct="false" data-err="Ditolak: tinggi kecambah adalah variabel terikat, yaitu hasil yang diukur. Rancangan ini tidak dapat menguji hipotesis." aria-label="Pilih tinggi kecambah sebagai variabel bebas">Tinggi kecambah sebagai variabel bebas</button>
+              <button type="button" class="btn step-action" data-kind="choice" data-step="3" data-correct="true" data-ok="Tepat. Cahaya adalah variabel bebas. Tinggi kecambah adalah variabel terikat, dan jenis pot, jumlah air, serta jenis kecambah dibuat tetap sebagai variabel kontrol." aria-label="Pilih jumlah cahaya sebagai variabel bebas">Jumlah cahaya sebagai variabel bebas</button>
+            </div>
+            <p class="step-feedback" id="step-3-feedback" aria-live="polite"></p>
+          </li>
+
+          <li class="step-row" data-step-id="step-4">
+            <div class="step-head"><span class="step-num">4</span><h3>Percobaan dan pengukuran</h3></div>
+            <p class="step-desc">Ukur tinggi kecambah di tempat terang dari pangkal batang sampai ujung daun tertinggi. Bacaan yang sah berada dalam rentang 4,0 sampai 6,0 cm.</p>
+            <div id="step-4-control" class="step-control">
+              <button type="button" class="btn btn-primary step-action" id="measure-btn" data-kind="measure" data-step="4">Ukur tinggi kecambah</button>
+            </div>
+            <p class="step-feedback" id="step-4-feedback" aria-live="polite"></p>
+          </li>
+
+          <li class="step-row" data-step-id="step-5">
+            <div class="step-head"><span class="step-num">5</span><h3>Data</h3></div>
+            <p class="step-desc">Catat hanya hasil pengukuran yang sah ke dalam tabel data.</p>
+            <div id="step-5-control" class="step-control">
+              <button type="button" class="btn btn-primary step-action" id="record-btn" data-kind="record" data-step="5">Catat ke tabel data</button>
+            </div>
+            <p class="step-feedback" id="step-5-feedback" aria-live="polite"></p>
+          </li>
+
+          <li class="step-row" data-step-id="step-6">
+            <div class="step-head"><span class="step-num">6</span><h3>Kesimpulan</h3></div>
+            <p class="step-desc">Bandingkan data dengan hipotesis, lalu tentukan kesimpulan yang sesuai dengan jumlah data.</p>
+            <div id="step-6-control" class="step-control">
+              <button type="button" class="btn step-action" data-kind="choice" data-step="6" data-correct="false" data-err="Ditolak: satu pengukuran belum cukup untuk membuktikan hipotesis. Kesimpulan harus sesuai dengan data dan batas jumlah data." aria-label="Pilih kesimpulan bahwa hipotesis sudah terbukti sepenuhnya">Hipotesis sudah terbukti benar sepenuhnya</button>
+              <button type="button" class="btn step-action" data-kind="choice" data-step="6" data-correct="true" data-ok="Tepat. Data mendukung hipotesis, tetapi jumlah datanya masih sedikit sehingga perlu diuji ulang. Lanjut ke langkah 7." aria-label="Pilih kesimpulan yang mendukung hipotesis dengan batas data">Data mendukung hipotesis, tetapi data masih sedikit dan perlu diuji ulang</button>
+            </div>
+            <p class="step-feedback" id="step-6-feedback" aria-live="polite"></p>
+          </li>
+
+          <li class="step-row" data-step-id="step-7">
+            <div class="step-head"><span class="step-num">7</span><h3>Evaluasi</h3></div>
+            <p class="step-desc">Tinjau kembali seluruh langkah, lalu pilih tindakan evaluasi yang paling tepat.</p>
+            <div id="step-7-control" class="step-control">
+              <button type="button" class="btn step-action" data-kind="choice" data-step="7" data-correct="false" data-err="Ditolak: setiap percobaan perlu dievaluasi. Tanpa evaluasi, kesimpulan belum dapat dipercaya." aria-label="Pilih opsi bahwa percobaan tidak perlu dievaluasi">Percobaan sudah sempurna sehingga tidak perlu dievaluasi</button>
+              <button type="button" class="btn step-action" data-kind="choice" data-step="7" data-correct="true" data-ok="Evaluasi tepat. Ulangan dengan lebih banyak kecambah memperkuat kesimpulan dan mengurangi pengaruh kebetulan." aria-label="Pilih opsi evaluasi dengan ulangan">Periksa kelemahan percobaan, lalu usulkan ulangan dengan lebih banyak kecambah</button>
+            </div>
+            <p class="step-feedback" id="step-7-feedback" aria-live="polite"></p>
+          </li>
+        </ol>
+
+        <div class="progress-row">
+          <p id="progress-display" class="mono-value">0 dari 7 langkah selesai</p>
+          <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="progress-fill"></div></div>
+        </div>
+      </section>
+
+      <aside class="side">
+        <div id="feedback-panel" role="status" aria-live="polite">Pilih salah satu jawaban pada langkah 1 untuk memulai.</div>
+
+        <section class="panel" id="state-panel" aria-labelledby="state-heading">
+          <h2 class="panel-heading" id="state-heading">Status percobaan</h2>
+          <div class="readout">
+            <div class="readout-row"><span>Status</span><strong id="status-display">Menunggu: langkah 1 aktif</strong></div>
+            <div class="readout-row"><span>Tinggi terakhir</span><strong class="mono-value" id="reading-display">–</strong></div>
+            <div class="readout-row"><span>Rentang sah</span><strong class="mono-value">4,0–6,0 cm</strong></div>
+          </div>
+          <table class="data-table" style="margin-top: var(--space-4);">
+            <thead><tr><th>Kondisi</th><th>Tinggi (cm)</th></tr></thead>
+            <tbody id="data-table-body"></tbody>
+          </table>
+        </section>
+
+        <section class="panel" aria-labelledby="criteria-heading">
+          <h2 class="panel-heading" id="criteria-heading">Kriteria keberhasilan</h2>
+          <ul class="criteria-list" id="success-criteria">
+            <li class="criterion" id="criterion-1">○ Pengamatan berasal dari bukti yang dapat diamati</li>
+            <li class="criterion" id="criterion-2">○ Hipotesis dapat diuji</li>
+            <li class="criterion" id="criterion-3">○ Variabel bebas, terikat, dan kontrol ditentukan</li>
+            <li class="criterion" id="criterion-4">○ Pengukuran berada dalam rentang sah dan dicatat</li>
+            <li class="criterion" id="criterion-5">○ Kesimpulan sesuai dengan data</li>
+            <li class="criterion" id="criterion-6">○ Percobaan dievaluasi</li>
+          </ul>
+        </section>
+
+        <div class="actions">
+          <button type="button" class="btn btn-ghost" id="reset-btn">Mulai ulang (R)</button>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script type="application/json" id="widget-config">
+{
+  "type": "procedural-skill",
+  "task": "Menyusun dan menjalankan langkah metode ilmiah secara berurutan",
+  "description": "Meneliti pengaruh cahaya terhadap tinggi kecambah kacang hijau, dari observasi sampai evaluasi.",
+  "tools": ["Kecambah kacang hijau berumur 7 hari", "Penggaris 30 cm", "Buku catatan dan tabel data"],
+  "steps": [
+    {"id": "step-1", "title": "Observasi", "description": "Amati kecambah di tempat terang dan gelap, lalu pilih pernyataan hasil pengamatan.", "tools": [], "successCriteria": ["Pengamatan berasal dari bukti yang dapat diamati"]},
+    {"id": "step-2", "title": "Hipotesis", "description": "Rumuskan dugaan yang dapat diuji.", "tools": [], "successCriteria": ["Hipotesis dapat diuji"]},
+    {"id": "step-3", "title": "Rancang percobaan", "description": "Tentukan variabel bebas, terikat, dan kontrol.", "tools": [], "successCriteria": ["Variabel bebas, terikat, dan kontrol ditentukan"]},
+    {"id": "step-4", "title": "Percobaan dan pengukuran", "description": "Ukur tinggi kecambah; bacaan sah berada dalam rentang 4,0 sampai 6,0 cm.", "tools": ["Penggaris 30 cm"], "successCriteria": ["Bacaan berada dalam rentang sah"]},
+    {"id": "step-5", "title": "Data", "description": "Catat hasil pengukuran yang sah ke tabel data.", "tools": ["Buku catatan dan tabel data"], "successCriteria": ["Pengukuran sah tercatat"]},
+    {"id": "step-6", "title": "Kesimpulan", "description": "Simpulkan sesuai data dan batas jumlah data.", "tools": [], "successCriteria": ["Kesimpulan sesuai dengan data"]},
+    {"id": "step-7", "title": "Evaluasi", "description": "Periksa kelemahan percobaan dan usulkan ulangan.", "tools": [], "successCriteria": ["Percobaan dievaluasi"]}
+  ],
+  "successCriteria": [
+    "Pengamatan berasal dari bukti yang dapat diamati",
+    "Hipotesis dapat diuji",
+    "Variabel bebas, terikat, dan kontrol ditentukan",
+    "Pengukuran berada dalam rentang sah dan dicatat",
+    "Kesimpulan sesuai dengan data",
+    "Percobaan dievaluasi"
+  ],
+  "errorConsequences": [
+    "Pernyataan perasaan atau tebakan ditolak sebagai pengamatan",
+    "Hipotesis yang tidak dapat diukur ditolak",
+    "Variabel terikat yang dipilih sebagai variabel bebas membuat rancangan ditolak",
+    "Bacaan di luar rentang 4,0 sampai 6,0 cm dianggap tidak sah dan harus diukur ulang",
+    "Kesimpulan tanpa batas jumlah data ditolak",
+    "Percobaan tanpa evaluasi belum dapat dipercaya"
+  ]
+}
+  </script>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var TOTAL = 7;
+      var READINGS = [3.2, 5.4];
+      var RANGE_MIN = 4.0;
+      var RANGE_MAX = 6.0;
+      var CRITERIA_STEPS = [[1], [2], [3], [4, 5], [6], [7]];
+      var INITIAL_TEXT = 'Pilih salah satu jawaban pada langkah 1 untuk memulai.';
+
+      var state = null;
+
+      function $(id) { return document.getElementById(id); }
+
+      function setText(el, text) { if (el) el.textContent = text; }
+
+      function fmt(n) { return n.toFixed(1).replace('.', ','); }
+
+      function freshState() {
+        return {
+          done: [false, false, false, false, false, false, false, false],
+          readingsTaken: 0,
+          reading: null,
+          records: [],
+          status: '',
+          feedback: { step: 0, text: INITIAL_TEXT, kind: '' }
+        };
+      }
+
+      function activeStep() {
+        for (var n = 1; n <= TOTAL; n++) {
+          if (!state.done[n]) return n;
+        }
+        return 0;
+      }
+
+      function doneCount() {
+        var c = 0;
+        for (var n = 1; n <= TOTAL; n++) { if (state.done[n]) c++; }
+        return c;
+      }
+
+      function setFeedback(step, text, kind, status) {
+        state.feedback = { step: step, text: text, kind: kind };
+        if (status !== undefined) state.status = status;
+        renderState();
+      }
+
+      function handleChoice(btn) {
+        var n = Number(btn.getAttribute('data-step'));
+        if (n !== activeStep()) {
+          setFeedback(n, 'Langkah ini belum terbuka. Selesaikan langkah sebelumnya terlebih dahulu.', 'error', 'Terkunci: selesaikan langkah ' + activeStep() + ' dahulu');
+          return;
+        }
+        if (btn.getAttribute('data-correct') === 'true') {
+          state.done[n] = true;
+          setFeedback(n, btn.getAttribute('data-ok'), 'success', n < TOTAL ? 'Langkah ' + n + ' sah' : 'Semua langkah selesai');
+        } else {
+          setFeedback(n, btn.getAttribute('data-err'), 'error', 'Ditolak pada langkah ' + n + ': perbaiki pilihan');
+        }
+      }
+
+      function handleMeasure() {
+        if (activeStep() !== 4) {
+          setFeedback(4, 'Pengukuran dilakukan pada langkah 4 setelah rancangan selesai.', 'error', '');
+          return;
+        }
+        if (state.readingsTaken >= READINGS.length) return;
+        var value = READINGS[state.readingsTaken];
+        state.readingsTaken++;
+        state.reading = value;
+        if (value >= RANGE_MIN && value <= RANGE_MAX) {
+          state.done[4] = true;
+          setFeedback(4, 'Bacaan ' + fmt(value) + ' cm berada dalam rentang sah. Catat data pada langkah 5.', 'success', 'Langkah 4 sah');
+        } else {
+          setFeedback(4, 'Bacaan ' + fmt(value) + ' cm di luar rentang 4,0 sampai 6,0 cm. Pengukuran ini tidak sah. Ukur ulang dengan penggaris tegak lurus batang.', 'error', 'Pengukuran ditolak: perlu ukur ulang');
+        }
+      }
+
+      function handleRecord() {
+        if (activeStep() !== 5) {
+          setFeedback(5, 'Data hanya dicatat pada langkah 5 setelah pengukuran sah.', 'error', '');
+          return;
+        }
+        state.records.push({ label: 'Pot terang', value: state.reading });
+        state.done[5] = true;
+        setFeedback(5, 'Data tercatat: pot terang, tinggi ' + fmt(state.reading) + ' cm.', 'success', 'Langkah 5 sah. Lanjut ke langkah 6.');
+      }
+
+      function renderSteps(active) {
+        for (var n = 1; n <= TOTAL; n++) {
+          var row = document.querySelector('[data-step-id="step-' + n + '"]');
+          var isActive = n === active;
+          var isDone = state.done[n];
+          if (row) {
+            row.classList.toggle('is-done', isDone);
+            row.classList.toggle('is-active', isActive);
+            row.classList.toggle('is-locked', !isDone && !isActive);
+          }
+          var buttons = document.querySelectorAll('.step-action[data-step="' + n + '"]');
+          for (var i = 0; i < buttons.length; i++) {
+            var btn = buttons[i];
+            var disabled = !isActive;
+            if (btn.id === 'measure-btn' && state.readingsTaken >= READINGS.length) disabled = true;
+            btn.disabled = disabled;
+          }
+          var fb = $('step-' + n + '-feedback');
+          if (fb) {
+            var mine = state.feedback.step === n;
+            fb.textContent = mine ? state.feedback.text : '';
+            fb.className = 'step-feedback' + (mine && state.feedback.kind ? ' ' + state.feedback.kind : '');
+          }
+        }
+      }
+
+      function renderState() {
+        var active = activeStep();
+        var count = doneCount();
+
+        renderSteps(active);
+
+        setText($('progress-display'), count + ' dari ' + TOTAL + ' langkah selesai');
+        var fill = $('progress-fill');
+        if (fill) fill.style.width = (count / TOTAL * 100) + '%';
+
+        var panel = $('feedback-panel');
+        if (panel) {
+          panel.textContent = state.feedback.text;
+          panel.className = state.feedback.kind || '';
+        }
+
+        var statusText = state.status || (active ? 'Menunggu: langkah ' + active + ' aktif' : 'Selesai');
+        setText($('status-display'), statusText);
+        setText($('reading-display'), state.reading === null ? '–' : fmt(state.reading) + ' cm');
+
+        var tbody = $('data-table-body');
+        if (tbody) {
+          tbody.textContent = '';
+          if (state.records.length === 0) {
+            var emptyRow = document.createElement('tr');
+            var emptyCell = document.createElement('td');
+            emptyCell.colSpan = 2;
+            emptyCell.textContent = 'Belum ada data';
+            emptyRow.appendChild(emptyCell);
+            tbody.appendChild(emptyRow);
+          } else {
+            for (var r = 0; r < state.records.length; r++) {
+              var tr = document.createElement('tr');
+              var tdLabel = document.createElement('td');
+              tdLabel.textContent = state.records[r].label;
+              var tdValue = document.createElement('td');
+              tdValue.className = 'mono-value';
+              tdValue.textContent = fmt(state.records[r].value);
+              tr.appendChild(tdLabel);
+              tr.appendChild(tdValue);
+              tbody.appendChild(tr);
+            }
+          }
+        }
+
+        for (var c = 0; c < CRITERIA_STEPS.length; c++) {
+          var item = $('criterion-' + (c + 1));
+          if (!item) continue;
+          var met = CRITERIA_STEPS[c].every(function (s) { return state.done[s]; });
+          item.classList.toggle('done', met);
+          item.textContent = (met ? '✓ ' : '○ ') + item.textContent.replace(/^[✓○]\s*/, '');
+        }
+      }
+
+      function resetState() {
+        state = freshState();
+        renderState();
+      }
+
+      document.querySelectorAll('.step-action').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var kind = btn.getAttribute('data-kind');
+          if (kind === 'choice') handleChoice(btn);
+          else if (kind === 'measure') handleMeasure();
+          else if (kind === 'record') handleRecord();
+        });
+      });
+
+      var resetBtn = $('reset-btn');
+      if (resetBtn) resetBtn.addEventListener('click', resetState);
+
+      document.addEventListener('keydown', function (e) {
+        var tag = e.target && e.target.tagName ? e.target.tagName : '';
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+        if (e.key === 'r' || e.key === 'R') resetState();
+      });
+
+      resetState();
+    })();
+  </script>
+</body>
+</html>

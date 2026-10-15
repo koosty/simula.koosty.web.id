@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proyek: Balon Udara Sederhana · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Membuat balon udara kertas berdiameter 30 cm, mengatur jarak nyala yang aman, lalu menguji dan mencatat hasil terbangnya.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Proyek: Balon Udara Sederhana">
+  <meta property="og:description" content="Membuat balon udara kertas berdiameter 30 cm, mengatur jarak nyala yang aman, lalu menguji dan mencatat hasil terbangnya.">
+  <meta property="og:locale" content="id">
+  <style>
+:root {
+  /* Colour */
+  --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+  --surface: #14141e;     /* panels, cards, step rows */
+  --panel: rgba(20, 20, 30, 0.9);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: #333;
+  --text: #ffffff;
+  --text-muted: #aaa;
+  --text-dim: #888;
+  --accent: #6366f1;      /* primary action, slider thumb, active state */
+  --accent-hover: #5558e8;
+  --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+  --success: #fbbf24;     /* completion, headings, callouts */
+  --warning: #fb923c;
+  --error: #ff6b6b;
+  --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-none: none;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type scale (system fonts only) */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-caption: 11px;   /* uppercase control labels */
+  --text-heading: 24px;
+  --font-weight-display: 600;  /* headings */
+  --font-weight-number: 500;   /* monospaced readouts */
+
+  /* Focus, motion, stacking */
+  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  --motion: 0.2s;
+  --motion-slow: 0.3s;
+  --z-overlay: 100;        /* panels, tooltips */
+  --z-modal: 1000;         /* loading screens, modal dialogs */
+}
+
+[data-theme="light"] {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-strong: #d4d4d8;
+  --text: #16161d;
+  --text-muted: #52525b;
+  --text-dim: #71717a;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.95);
+  --success: #b45309;
+  --warning: #c2410c;
+  --error: #dc2626;
+  --accent-text: #ffffff;
+  --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+h1, h2, h3 { font-weight: var(--font-weight-display); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-4);
+}
+.panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+.btn {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  min-height: 44px;            /* never below 44px, mobile */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--border-strong);
+  color: var(--text);
+  box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.btn:hover { background: var(--text-muted); }
+.btn:active { transform: scale(0.95); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); }
+
+.control-label {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+input[type="range"] {
+  width: 100%; height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Visually hidden but announced by screen readers. Use when a layout has no
+   room for a visible <h1> (e.g. a full-bleed canvas) — never as an excuse to
+   drop a heading. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+#feedback-panel {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+#feedback-panel.success { border-left-color: var(--success); }
+#feedback-panel.error { border-left-color: var(--error); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+.sources {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+.sources-heading {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+.source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+.source-item a { color: var(--accent); text-decoration: none; }
+.source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+.reading-article {
+  max-width: 720px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+.reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+.reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+.reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+.reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+.reading-article blockquote {
+  border-left: 3px solid var(--border-strong);
+  padding-left: var(--space-4);
+  color: var(--text-muted);
+  margin-bottom: var(--space-4);
+}
+.reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+.reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+.reading-article pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+}
+.reading-article pre code { background: none; padding: 0; }
+.reading-article table { width: 100%; border-collapse: collapse; }
+.reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+.reading-article details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.reading-article summary {
+  cursor: pointer;
+  font-weight: var(--font-weight-display);
+  color: var(--text);
+}
+.reading-article details[open] summary { margin-bottom: var(--space-2); }
+.glossary-term {
+  text-decoration: underline dotted var(--text-dim);
+  text-decoration-thickness: 1px;
+  cursor: help;
+}
+.katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+/* highlight.js token colours — mapped to the token set, not a canned theme */
+.hljs { color: var(--text); }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+.hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+.hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+.hljs-number { color: var(--warning); }
+
+/* Layout for this scene (appearance comes from the tokens above) */
+.page { min-height: 100vh; max-width: 1200px; margin: 0 auto; padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-4); }
+.page-header h1 { font-size: var(--text-heading); margin-bottom: var(--space-2); }
+.page-header p { font-size: var(--text-sm); color: var(--text-muted); max-width: 66ch; }
+
+/* Papan kerja: tugas dan alat, langkah, lalu status (urutan tetap di layar sempit) */
+.desk { display: flex; flex-direction: column; gap: var(--space-4); }
+@media (min-width: 960px) {
+  .desk { display: grid; grid-template-columns: minmax(14rem, 1fr) minmax(0, 1.6fr) minmax(16rem, 1fr); align-items: start; }
+}
+.desk > .panel { min-width: 0; }
+
+.list-plain { padding-left: var(--space-5); font-size: var(--text-sm); color: var(--text-muted); }
+.list-plain li { margin-bottom: var(--space-1); }
+.safety-note { margin-top: var(--space-3); padding: var(--space-3) var(--space-4); border-left: 3px solid var(--warning); border-radius: var(--radius-md); background: var(--surface); font-size: var(--text-sm); color: var(--text); }
+
+.step-list { list-style: none; display: flex; flex-direction: column; gap: var(--space-3); }
+.step-row { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); }
+.step-row.is-done { border-color: var(--success); }
+.step-title { font-weight: var(--font-weight-display); display: block; margin-bottom: var(--space-2); }
+.step-row.is-done .step-title::after { content: "  ✔ selesai"; color: var(--success); font-size: var(--text-xs); font-weight: var(--font-weight-number); }
+.step-desc { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+.step-control { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.step-control label { font-size: var(--text-sm); color: var(--text-muted); }
+.step-control input[type="number"] {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  min-height: 44px;
+  width: 7rem;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--bg);
+  color: var(--text);
+}
+.step-control input[type="number"]:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.step-control input[type="range"] { flex: 1 1 10rem; min-height: 44px; }
+.step-control input[type="range"]:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.step-feedback { margin-top: var(--space-2); font-size: var(--text-sm); color: var(--text-muted); min-height: 1.5em; }
+.btn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+
+.state-list { list-style: none; display: flex; flex-direction: column; gap: var(--space-2); font-size: var(--text-sm); }
+.state-list li { display: flex; justify-content: space-between; gap: var(--space-2); border-bottom: 1px solid var(--border); padding-bottom: var(--space-2); }
+.state-list .mono-value { text-align: right; }
+
+.meter { margin-top: var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); }
+.meter-value { font-size: var(--text-base); }
+.meter-fill { height: 100%; width: 0; background: var(--accent); transition: width var(--motion); }
+.zone-band { font-size: var(--text-caption); color: var(--text-dim); }
+
+.progress-fill { height: 100%; width: 0; background: var(--accent); transition: width var(--motion); }
+.criteria { list-style: none; display: flex; flex-direction: column; gap: var(--space-2); font-size: var(--text-sm); }
+.criteria li { padding-left: var(--space-5); position: relative; color: var(--text-muted); }
+.criteria li::before { content: "○"; position: absolute; left: 0; color: var(--text-dim); }
+.criteria li[data-status="done"] { color: var(--text); }
+.criteria li[data-status="done"]::before { content: "●"; color: var(--success); }
+.criteria li[data-status="blocked"]::before { content: "▲"; color: var(--error); }
+.criteria li[data-status="blocked"] { color: var(--error); }
+
+#feedback-panel { margin-top: var(--space-4); font-size: var(--text-sm); min-height: 3em; }
+#feedback-panel.error { color: var(--text); }
+.log-list { padding-left: var(--space-5); font-size: var(--text-sm); color: var(--text-muted); }
+.log-list li { margin-bottom: var(--space-1); }
+.side-heading { margin-top: var(--space-4); margin-bottom: var(--space-2); }
+.reset-row { margin-top: var(--space-4); }
+.reset-row .btn { width: 100%; }
+</style>
+</head>
+<body>
+  <main class="page">
+    <header class="page-header">
+      <h1>Proyek: Balon Udara Sederhana</h1>
+      <p>Buat balon udara dari kertas tipis berdiameter 30 cm. Putuskan kertas dan jarak nyala yang tepat, lalu uji terbangnya dan catat hasilnya.</p>
+    </header>
+
+    <div class="desk">
+      <section class="panel" id="task-panel" aria-labelledby="task-heading">
+        <h2 class="panel-heading" id="task-heading">Tugas</h2>
+        <p>Membuat balon udara sederhana dari kertas tipis yang dapat terbang sambil membawa lampu atau lilin.</p>
+        <h3 class="panel-heading side-heading">Alat dan bahan</h3>
+        <ul class="list-plain" id="tool-list">
+          <li>Kertas tisu atau kertas tipis</li>
+          <li>Kertas HVS (sebagai pembanding berat)</li>
+          <li>Gunting dan penggaris</li>
+          <li>Lem kertas atau selotip ringan</li>
+          <li>Lilin kecil atau lampu, dengan pengawasan orang dewasa</li>
+        </ul>
+        <p class="safety-note"><strong>Keselamatan:</strong> kerjakan bersama orang dewasa. Jauhkan kertas dan rambut dari nyala api. Jangan menerbangkan balon di dalam ruangan, dekat pepohonan, atau dekat kabel listrik.</p>
+      </section>
+
+      <section class="panel" aria-labelledby="steps-heading">
+        <h2 class="panel-heading" id="steps-heading">Langkah kerja</h2>
+        <ol class="step-list" id="step-list">
+          <li class="step-row" data-step-id="step-1">
+            <span class="step-title">1. Pilih kertas dan potong 8 irisan</span>
+            <p class="step-desc">Pilih kertas yang ringan. Kertas yang terlalu berat tidak akan terangkat oleh udara panas.</p>
+            <div class="step-control" id="step-1-control">
+              <button type="button" class="btn btn-ghost" id="paper-tisu-btn" aria-pressed="false">Kertas tisu</button>
+              <button type="button" class="btn btn-ghost" id="paper-hvs-btn" aria-pressed="false">Kertas HVS</button>
+            </div>
+            <p class="step-feedback" id="step-1-feedback"></p>
+          </li>
+          <li class="step-row" data-step-id="step-2">
+            <span class="step-title">2. Rekatkan dan periksa diameter</span>
+            <p class="step-desc">Rekatkan irisan menjadi bola, lalu ukur diameternya dengan penggaris. Diameter harus 28–32 cm.</p>
+            <div class="step-control" id="step-2-control">
+              <label for="diameter-input">Diameter (cm)</label>
+              <input type="number" id="diameter-input" min="10" max="50" step="0.5" inputmode="decimal" aria-describedby="diameter-status">
+              <button type="button" class="btn btn-ghost" id="check-diameter-btn">Periksa diameter</button>
+            </div>
+            <p class="step-feedback" id="step-2-feedback"></p>
+          </li>
+          <li class="step-row" data-step-id="step-3">
+            <span class="step-title">3. Atur jarak nyala yang aman</span>
+            <p class="step-desc">Geser jarak lilin atau lampu dari mulut balon. Pantau suhu udara di meteran, lalu kunci jarak yang berada di zona aman.</p>
+            <div class="step-control" id="step-3-control">
+              <label for="distance-slider">Jarak nyala (cm)</label>
+              <input type="range" id="distance-slider" min="2" max="30" step="1" value="12">
+              <span class="mono-value" id="distance-display">12 cm</span>
+              <button type="button" class="btn btn-ghost" id="lock-distance-btn">Kunci jarak</button>
+            </div>
+            <p class="step-feedback" id="step-3-feedback"></p>
+          </li>
+          <li class="step-row" data-step-id="step-4">
+            <span class="step-title">4. Uji terbang dan catat hasil</span>
+            <p class="step-desc">Lepaskan balon di tempat terbuka yang aman, amati tinggi terbangnya, lalu catat hasilnya.</p>
+            <div class="step-control" id="step-4-control">
+              <button type="button" class="btn btn-primary" id="test-flight-btn">Lepas dan uji terbang</button>
+              <label for="height-input">Tinggi (m)</label>
+              <input type="number" id="height-input" min="0.1" max="10" step="0.1" value="2" inputmode="decimal">
+              <button type="button" class="btn btn-ghost" id="record-btn">Catat hasil</button>
+            </div>
+            <p class="step-feedback" id="step-4-feedback"></p>
+          </li>
+        </ol>
+      </section>
+
+      <aside class="panel" aria-labelledby="status-heading">
+        <h2 class="panel-heading" id="status-heading">Status balon</h2>
+        <ul class="state-list" id="state-panel">
+          <li><span>Kertas</span><span class="mono-value" id="paper-status">Belum dipilih</span></li>
+          <li><span>Diameter</span><span class="mono-value" id="diameter-status">Belum diperiksa</span></li>
+          <li><span>Nyala</span><span class="mono-value" id="flame-status">Belum dikunci</span></li>
+          <li><span>Risiko</span><span class="mono-value" id="risk-status">Belum dinilai</span></li>
+          <li><span>Uji terbang</span><span class="mono-value" id="flight-status">Belum diuji</span></li>
+        </ul>
+
+        <div class="meter" aria-label="Meteran suhu udara">
+          <p class="control-label">Suhu udara dalam balon (perkiraan)</p>
+          <p class="mono-value meter-value" id="temp-readout">— °C</p>
+          <div class="progress-track"><div class="meter-fill" id="temp-fill"></div></div>
+          <p class="zone-band">Zona aman untuk terbang: 80–110 °C</p>
+        </div>
+
+        <h3 class="panel-heading side-heading">Kemajuan</h3>
+        <p class="mono-value" id="progress-display">Selesai 0 dari 4 langkah</p>
+        <div class="progress-track" id="progress-track" role="progressbar" aria-label="Kemajuan langkah" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+
+        <h3 class="panel-heading side-heading">Kriteria keberhasilan</h3>
+        <ul class="criteria" id="success-criteria">
+          <li id="criterion-sc-1" data-status="pending">Kertas ringan (tisu) dipilih</li>
+          <li id="criterion-sc-2" data-status="pending">Diameter balon 28–32 cm</li>
+          <li id="criterion-sc-3" data-status="pending">Jarak nyala terkunci di zona aman (suhu 80–110 °C)</li>
+          <li id="criterion-sc-4" data-status="pending">Balon naik dan hasil uji dicatat</li>
+          <li id="criterion-sc-5" data-status="pending">Semua langkah selesai</li>
+        </ul>
+
+        <h3 class="panel-heading side-heading">Catatan uji</h3>
+        <ol class="log-list" id="log-list"></ol>
+
+        <div id="feedback-panel" role="status" aria-live="polite"></div>
+
+        <div class="reset-row">
+          <button type="button" class="btn btn-ghost" id="reset-btn">Atur ulang</button>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script type="application/json" id="widget-config">{"type":"procedural-skill","task":"Membuat balon udara sederhana dari kertas tipis yang dapat terbang sambil membawa lampu atau lilin","description":"Membuat balon udara berdiameter 30 cm, menentukan jarak nyala yang aman, lalu menguji dan mencatat hasil terbangnya.","tools":["Kertas tisu atau kertas tipis","Kertas HVS (sebagai pembanding berat)","Gunting dan penggaris","Lem kertas atau selotip ringan","Lilin kecil atau lampu, dengan pengawasan orang dewasa"],"steps":[{"id":"step-1","title":"Pilih kertas dan potong 8 irisan","description":"Pilih kertas yang ringan, lalu potong 8 irisan berukuran sama.","tools":["Kertas tisu","Gunting"],"successCriteria":["Kertas ringan (tisu) dipilih"]},{"id":"step-2","title":"Rekatkan dan periksa diameter","description":"Rekatkan irisan menjadi bola, lalu ukur diameternya. Diameter harus 28–32 cm.","tools":["Lem kertas","Penggaris"],"successCriteria":["Diameter balon 28–32 cm"]},{"id":"step-3","title":"Atur jarak nyala yang aman","description":"Atur jarak lilin atau lampu dari mulut balon sampai suhu udara berada di zona aman 80–110 °C, lalu kunci jaraknya.","tools":["Lilin kecil atau lampu"],"successCriteria":["Jarak nyala terkunci di zona aman (suhu 80–110 °C)"]},{"id":"step-4","title":"Uji terbang dan catat hasil","description":"Lepaskan balon di tempat terbuka yang aman, amati tinggi terbangnya, lalu catat hasilnya.","tools":["Penggaris atau meteran"],"successCriteria":["Balon naik dan hasil uji dicatat"]}],"successCriteria":["Kertas ringan (tisu) dipilih","Diameter balon 28–32 cm","Jarak nyala terkunci di zona aman (suhu 80–110 °C)","Balon naik dan hasil uji dicatat","Semua langkah selesai"],"errorConsequences":["Kertas HVS terlalu berat: balon tidak akan terangkat","Diameter di luar 28–32 cm: bentuk tidak simetris dan udara panas tidak tertahan merata","Nyala kurang dari 5 cm: kertas berisiko menghitam dan terbakar","Nyala terlalu jauh: suhu udara terlalu rendah sehingga balon tidak naik","Uji terbang sebelum syarat terpenuhi: balon tidak naik"]}</script>
+  <script>
+  (function () {
+    'use strict';
+
+    const CONFIG = JSON.parse(document.getElementById('widget-config').textContent);
+    const STEP_IDS = CONFIG.steps.map(function (s) { return s.id; });
+    const DIAM_MIN = 28, DIAM_MAX = 32;
+    const TEMP_MIN = 80, TEMP_MAX = 110;
+    const BURN_CM = 5;
+    const DIST_DEFAULT = 12;
+    const INITIAL_FB = 'Mulai dari langkah 1: pilih kertas. Balon harus ringan agar dapat terangkat oleh udara panas.';
+
+    const $ = function (id) { return document.getElementById(id); };
+    const setText = function (id, t) { const el = $(id); if (el) el.textContent = t; };
+    const setPressed = function (id, on) { const el = $(id); if (el) el.setAttribute('aria-pressed', String(on)); };
+
+    // Perkiraan suhu udara di dalam balon untuk jarak nyala d (cm), deterministik
+    function tempFor(d) { return 140 - 3.5 * d; }
+
+    function zoneOf(d) {
+      if (d < BURN_CM) return 'burn';
+      const t = tempFor(d);
+      if (t > TEMP_MAX) return 'hot';
+      if (t < TEMP_MIN) return 'cold';
+      return 'safe';
+    }
+    const ZONE_LABEL = { burn: 'terlalu dekat', hot: 'terlalu panas', cold: 'terlalu dingin', safe: 'zona aman' };
+
+    function initialState() {
+      return {
+        paper: null,            // 'tisu' | 'hvs' | null
+        diameter: null,         // hasil ukur (cm)
+        diameterOk: false,
+        distance: DIST_DEFAULT, // jarak nyala (cm)
+        distanceLocked: false,
+        flightOk: false,        // uji terbang terakhir berhasil
+        flightRecorded: false,
+        attempts: 0,
+        log: [],
+        stepFb: {},
+        fb: { text: INITIAL_FB, tone: '' }
+      };
+    }
+
+    const state = initialState();
+
+    function setFb(text, tone) { state.fb = { text: text, tone: tone || '' }; }
+    function setStepFb(stepId, text) { state.stepFb[stepId] = text; }
+    function addLog(text) { state.log.push(text); }
+
+    // Hasil uji tidak berlaku lagi jika syarat utamanya berubah
+    function invalidateFlight() {
+      state.flightOk = false;
+      state.flightRecorded = false;
+    }
+
+    function stepDone() {
+      return {
+        'step-1': state.paper === 'tisu',
+        'step-2': state.diameterOk,
+        'step-3': state.distanceLocked,
+        'step-4': state.flightRecorded
+      };
+    }
+
+    /* ---------- Aksi pembelajar ---------- */
+    function choosePaper(kind) {
+      if (state.paper !== kind) invalidateFlight();
+      state.paper = kind;
+      if (kind === 'tisu') {
+        const msg = 'Kertas tisu dipilih (berat sekitar 4 g). Potong 8 irisan berukuran sama, lalu rekatkan menjadi bola.';
+        setFb(msg, 'success');
+        setStepFb('step-1', msg);
+      } else {
+        const msg = 'Kertas HVS berat sekitar 12 g per lembar. Balon dari bahan ini terlalu berat, sehingga udara panas tidak cukup untuk mengangkatnya. Pilih kertas tisu.';
+        setFb(msg, 'error');
+        setStepFb('step-1', msg);
+      }
+      render();
+    }
+
+    function checkDiameter() {
+      const raw = $('diameter-input') ? $('diameter-input').value : '';
+      const v = Number(raw);
+      if (raw === '' || !isFinite(v) || v <= 0) {
+        const msg = 'Masukkan diameter hasil ukur dalam cm terlebih dahulu.';
+        setFb(msg, 'error');
+        setStepFb('step-2', msg);
+        render();
+        return;
+      }
+      invalidateFlight();
+      state.diameter = v;
+      if (v >= DIAM_MIN && v <= DIAM_MAX) {
+        state.diameterOk = true;
+        const msg = 'Diameter ' + v.toLocaleString('id-ID') + ' cm sesuai (28–32 cm). Bentuk balon cukup simetris.';
+        setFb(msg, 'success');
+        setStepFb('step-2', msg);
+      } else {
+        state.diameterOk = false;
+        const msg = 'Diameter ' + v.toLocaleString('id-ID') + ' cm di luar 28–32 cm. Bentuk tidak simetris, sehingga udara panas tidak tertahan merata. Rekatkan ulang irisan.';
+        setFb(msg, 'error');
+        setStepFb('step-2', msg);
+      }
+      render();
+    }
+
+    function lockDistance() {
+      const d = state.distance;
+      const zone = zoneOf(d);
+      const t = Math.round(tempFor(d));
+      if (zone === 'safe') {
+        state.distanceLocked = true;
+        const msg = 'Jarak ' + d + ' cm terkunci. Suhu udara sekitar ' + t + ' °C berada di zona aman 80–110 °C.';
+        setFb(msg, 'success');
+        setStepFb('step-3', msg);
+      } else {
+        state.distanceLocked = false;
+        let msg;
+        if (zone === 'burn') msg = 'Jarak ' + d + ' cm terlalu dekat. Suhu sekitar ' + t + ' °C dapat menggosongkan kertas dan membuat balon terbakar. Jauhkan nyala, lalu kunci lagi.';
+        else if (zone === 'hot') msg = 'Suhu sekitar ' + t + ' °C di atas 110 °C. Kertas berisiko menghitam. Tambah jarak sedikit, lalu kunci lagi.';
+        else msg = 'Suhu sekitar ' + t + ' °C di bawah 80 °C. Udara belum cukup panas untuk mengangkat balon. Dekatkan nyala, lalu kunci lagi.';
+        setFb(msg, 'error');
+        setStepFb('step-3', msg);
+      }
+      render();
+    }
+
+    function moveDistance(value) {
+      state.distance = value;
+      if (state.distanceLocked || state.flightOk) {
+        state.distanceLocked = false;
+        invalidateFlight();
+        const msg = 'Jarak diubah sehingga kunci dan hasil uji sebelumnya tidak berlaku. Tekan Kunci jarak untuk mengunci jarak baru.';
+        setFb(msg, '');
+        setStepFb('step-3', msg);
+      }
+      render();
+    }
+
+    function testFlight() {
+      state.attempts += 1;
+      const problems = [];
+      if (state.paper !== 'tisu') problems.push('kertas terlalu berat');
+      if (!state.diameterOk) problems.push('bentuk balon belum simetris');
+      if (!state.distanceLocked) problems.push('suhu udara belum berada di zona aman');
+      state.flightRecorded = false;
+      if (problems.length) {
+        state.flightOk = false;
+        const reason = problems.join('; ');
+        addLog('Uji ' + state.attempts + ': balon tidak naik (' + reason + ').');
+        const msg = 'Balon tidak naik: ' + problems.join(', ') + '. Balon hanya terkulai. Perbaiki langkah yang belum sesuai, lalu uji lagi.';
+        setFb(msg, 'error');
+        setStepFb('step-4', msg);
+      } else {
+        state.flightOk = true;
+        const msg = 'Balon naik dan melayang di udara. Amati tinggi terbangnya, isi tinggi di kotak, lalu tekan Catat hasil.';
+        setFb(msg, 'success');
+        setStepFb('step-4', msg);
+      }
+      render();
+    }
+
+    function recordFlight() {
+      if (!state.flightOk) {
+        const msg = 'Belum ada uji terbang yang berhasil untuk dicatat. Lakukan uji terbang terlebih dahulu.';
+        setFb(msg, 'error');
+        setStepFb('step-4', msg);
+        render();
+        return;
+      }
+      const raw = $('height-input') ? $('height-input').value : '';
+      const h = Number(raw);
+      if (raw === '' || !isFinite(h) || h < 0.1 || h > 10) {
+        const msg = 'Isi tinggi terbang antara 0,1 m dan 10 m, lalu catat hasilnya.';
+        setFb(msg, 'error');
+        setStepFb('step-4', msg);
+        render();
+        return;
+      }
+      state.flightRecorded = true;
+      addLog('Hasil dicatat: tinggi terbang ' + h.toLocaleString('id-ID') + ' m.');
+      const msg = 'Hasil uji terbang sudah dicatat. Langkah 4 selesai.';
+      setFb(msg, 'success');
+      setStepFb('step-4', msg);
+      render();
+    }
+
+    // Reset penuh: semua status, kemajuan, kriteria, catatan, dan input kembali ke awal
+    function resetState() {
+      Object.assign(state, initialState());
+      const diam = $('diameter-input'); if (diam) diam.value = '';
+      const dist = $('distance-slider'); if (dist) dist.value = String(DIST_DEFAULT);
+      const height = $('height-input'); if (height) height.value = '2';
+      render();
+    }
+
+    /* ---------- Tampilan ---------- */
+    function riskText() {
+      const zone = zoneOf(state.distance);
+      if (zone === 'burn') return 'Bahaya: nyala terlalu dekat';
+      if (state.distanceLocked) return 'Aman: suhu dalam zona aman';
+      if (zone === 'hot') return 'Waspada: suhu di atas zona aman';
+      return 'Belum aman: suhu di luar zona';
+    }
+
+    const CRITERIA = [
+      { id: 'sc-1', ok: function () { return state.paper === 'tisu'; } },
+      { id: 'sc-2', ok: function () { return state.diameterOk; } },
+      { id: 'sc-3', ok: function () { return state.distanceLocked; }, blocked: function () { return zoneOf(state.distance) === 'burn' && !state.distanceLocked; } },
+      { id: 'sc-4', ok: function () { return state.flightRecorded; } },
+      { id: 'sc-5', ok: function () { const d = stepDone(); return STEP_IDS.every(function (id) { return d[id]; }); } }
+    ];
+    const STATUS_LABEL = { done: 'tercapai', blocked: 'terhambat', pending: 'belum' };
+
+    function render() {
+      const done = stepDone();
+      let count = 0;
+      STEP_IDS.forEach(function (id) {
+        const row = document.querySelector('[data-step-id="' + id + '"]');
+        if (row) row.classList.toggle('is-done', !!done[id]);
+        if (done[id]) count += 1;
+        setText(id + '-feedback', state.stepFb[id] || '');
+      });
+
+      const pct = Math.round(count / STEP_IDS.length * 100);
+      setText('progress-display', 'Selesai ' + count + ' dari ' + STEP_IDS.length + ' langkah');
+      const fill = $('progress-fill'); if (fill) fill.style.width = pct + '%';
+      const track = $('progress-track'); if (track) track.setAttribute('aria-valuenow', String(pct));
+
+      setPressed('paper-tisu-btn', state.paper === 'tisu');
+      setPressed('paper-hvs-btn', state.paper === 'hvs');
+
+      setText('paper-status', state.paper === 'tisu' ? 'Kertas tisu (±4 g)' : state.paper === 'hvs' ? 'Kertas HVS (±12 g)' : 'Belum dipilih');
+      setText('diameter-status', state.diameter === null ? 'Belum diperiksa' : state.diameter.toLocaleString('id-ID') + ' cm, ' + (state.diameterOk ? 'sesuai' : 'di luar 28–32 cm'));
+
+      const slider = $('distance-slider');
+      if (slider && Number(slider.value) !== state.distance) slider.value = String(state.distance);
+      setText('distance-display', state.distance + ' cm');
+      const temp = tempFor(state.distance);
+      setText('temp-readout', Math.round(temp) + ' °C (' + ZONE_LABEL[zoneOf(state.distance)] + ')');
+      const tempFill = $('temp-fill');
+      if (tempFill) tempFill.style.width = Math.max(0, Math.min(100, temp / 140 * 100)) + '%';
+      setText('flame-status', state.distanceLocked ? 'Terkunci ' + state.distance + ' cm' : 'Belum dikunci');
+      setText('risk-status', riskText());
+      setText('flight-status', state.flightRecorded ? 'Terbang, dicatat' : state.flightOk ? 'Naik, belum dicatat' : state.attempts > 0 ? 'Belum naik' : 'Belum diuji');
+
+      CRITERIA.forEach(function (c) {
+        const li = $('criterion-' + c.id);
+        if (!li) return;
+        let status = 'pending';
+        if (c.ok()) status = 'done';
+        else if (c.blocked && c.blocked()) status = 'blocked';
+        li.setAttribute('data-status', status);
+        li.textContent = li.textContent.split(' — ')[0] + ' — ' + STATUS_LABEL[status];
+      });
+
+      const fb = $('feedback-panel');
+      if (fb) {
+        fb.textContent = state.fb.text;
+        fb.classList.toggle('success', state.fb.tone === 'success');
+        fb.classList.toggle('error', state.fb.tone === 'error');
+      }
+
+      const list = $('log-list');
+      if (list) {
+        list.textContent = '';
+        state.log.forEach(function (entry) {
+          const li = document.createElement('li');
+          li.textContent = entry;
+          list.appendChild(li);
+        });
+      }
+    }
+
+    /* ---------- Pasang aksi ---------- */
+    function on(id, fn) { const el = $(id); if (el) el.addEventListener('click', fn); }
+    on('paper-tisu-btn', function () { choosePaper('tisu'); });
+    on('paper-hvs-btn', function () { choosePaper('hvs'); });
+    on('check-diameter-btn', checkDiameter);
+    on('lock-distance-btn', lockDistance);
+    on('test-flight-btn', testFlight);
+    on('record-btn', recordFlight);
+    on('reset-btn', resetState);
+
+    const distSlider = $('distance-slider');
+    if (distSlider) distSlider.addEventListener('input', function () { moveDistance(Number(distSlider.value)); });
+
+    window.addEventListener('keydown', function (e) {
+      const tag = e.target && e.target.tagName ? e.target.tagName.toLowerCase() : '';
+      if ((e.key === 'r' || e.key === 'R') && tag !== 'input') resetState();
+    });
+
+    resetState();
+  })();
+  </script>
+</body>
+</html>

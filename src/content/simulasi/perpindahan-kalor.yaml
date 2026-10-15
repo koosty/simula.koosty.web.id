@@ -1,0 +1,11 @@
+# Satu entri katalog per simulasi. Kunci adalah pengenal bahasa Inggris;
+# nilainya Bahasa Indonesia karena menjadi bagian URL.
+# Katalog adalah sumber kebenaran atas metadata simulasi (docs/adr/0004).
+title: "Perpindahan Kalor"
+description: >-
+  Membedakan konduksi, konveksi, dan radiasi.
+level: smp
+grade: 7
+subject: ipa
+order: 41
+scene: "s18"

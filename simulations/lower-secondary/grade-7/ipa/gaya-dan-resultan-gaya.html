@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gaya dan Resultan Gaya · IPA Kelas VII Merdeka</title>
+  <meta name="description" content="Menjumlahkan gaya-gaya vektor untuk mencari resultan gaya pada sebuah benda secara visual dan numerik.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Gaya dan Resultan Gaya">
+  <meta property="og:description" content="Menjumlahkan gaya-gaya vektor untuk mencari resultan gaya pada sebuah benda secara visual dan numerik.">
+  <meta property="og:locale" content="id">
+  <style>
+:root {
+  /* Colour */
+  --bg: #0a0a1a;          /* page background; also the 3D canvas background */
+  --surface: #14141e;     /* panels, cards, step rows */
+  --panel: rgba(20, 20, 30, 0.9);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: #333;
+  --text: #ffffff;
+  --text-muted: #aaa;
+  --text-dim: #888;
+  --accent: #6366f1;      /* primary action, slider thumb, active state */
+  --accent-hover: #5558e8;
+  --accent-soft: rgba(139, 92, 246, 0.95);  /* tooltips, transient overlays */
+  --success: #fbbf24;     /* completion, headings, callouts */
+  --warning: #fb923c;
+  --error: #ff6b6b;
+  --accent-text: #ffffff;  /* text/icon colour sitting on --accent fills */
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-none: none;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type scale (system fonts only) */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-caption: 11px;   /* uppercase control labels */
+  --text-heading: 24px;
+  --font-weight-display: 600;  /* headings */
+  --font-weight-number: 500;   /* monospaced readouts */
+
+  /* Focus, motion, stacking */
+  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  --motion: 0.2s;
+  --motion-slow: 0.3s;
+  --z-overlay: 100;        /* panels, tooltips */
+  --z-modal: 1000;         /* loading screens, modal dialogs */
+}
+
+[data-theme="light"] {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-strong: #d4d4d8;
+  --text: #16161d;
+  --text-muted: #52525b;
+  --text-dim: #71717a;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.95);
+  --success: #b45309;
+  --warning: #c2410c;
+  --error: #dc2626;
+  --accent-text: #ffffff;
+  --shadow-soft: 0 4px 16px rgba(15, 15, 35, 0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+h1, h2, h3 { font-weight: var(--font-weight-display); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-4);
+}
+.panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+.btn {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  min-height: 44px;            /* never below 44px, mobile */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--border-strong);
+  color: var(--text);
+  box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+  cursor: pointer;
+  transition: background var(--motion);
+}
+.btn:hover { background: var(--text-muted); }
+.btn:active { transform: scale(0.95); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); }
+
+.control-label {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+input[type="range"] {
+  width: 100%; height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Visually hidden but announced by screen readers. Use when a layout has no
+   room for a visible <h1> (e.g. a full-bleed canvas) — never as an excuse to
+   drop a heading. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+#feedback-panel {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+#feedback-panel.success { border-left-color: var(--success); }
+#feedback-panel.error { border-left-color: var(--error); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+.sources {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+.sources-heading {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+.source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+.source-item a { color: var(--accent); text-decoration: none; }
+.source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+.reading-article {
+  max-width: 720px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+.reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+.reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+.reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+.reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+.reading-article blockquote {
+  border-left: 3px solid var(--border-strong);
+  padding-left: var(--space-4);
+  color: var(--text-muted);
+  margin-bottom: var(--space-4);
+}
+.reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+.reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+.reading-article pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+}
+.reading-article pre code { background: none; padding: 0; }
+.reading-article table { width: 100%; border-collapse: collapse; }
+.reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+.reading-article details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.reading-article summary {
+  cursor: pointer;
+  font-weight: var(--font-weight-display);
+  color: var(--text);
+}
+.reading-article details[open] summary { margin-bottom: var(--space-2); }
+.glossary-term {
+  text-decoration: underline dotted var(--text-dim);
+  text-decoration-thickness: 1px;
+  cursor: help;
+}
+.katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+/* highlight.js token colours — mapped to the token set, not a canned theme */
+.hljs { color: var(--text); }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+.hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+.hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+.hljs-number { color: var(--warning); }
+
+/* Layout for this scene (appearance comes from the tokens above) */
+.page { min-height: 100vh; max-width: 1100px; margin: 0 auto; padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-4); }
+.page-header h1 { font-size: var(--text-heading); margin-bottom: var(--space-2); }
+.page-header p { font-size: var(--text-sm); color: var(--text-muted); max-width: 62ch; }
+
+.sim-shell { display: flex; flex-direction: column; gap: var(--space-4); }
+@media (min-width: 768px) { .sim-shell { flex-direction: row; align-items: stretch; } }
+
+.sim-controls { display: flex; flex-direction: column; gap: var(--space-4); max-height: 40vh; overflow-y: auto; }
+@media (min-width: 768px) { .sim-controls { flex-shrink: 0; width: 20rem; max-height: none; } }
+
+.sim-stage { position: relative; flex: 1 1 auto; min-width: 0; min-height: 320px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--bg); overflow: hidden; }
+#sim-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.stage-readout { position: absolute; top: var(--space-3); left: var(--space-3); right: var(--space-3); display: flex; flex-wrap: wrap; gap: var(--space-2); pointer-events: none; }
+.readout-chip { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-1) var(--space-3); font-size: var(--text-xs); color: var(--text-muted); }
+.readout-chip .mono-value { color: var(--text); }
+
+.state-badge { font-size: var(--text-caption); text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+.state-badge[data-state="running"] { color: var(--accent); }
+.state-badge[data-state="paused"] { color: var(--warning); }
+.state-badge[data-state="ended"] { color: var(--success); }
+
+.control-group { display: flex; flex-direction: column; gap: var(--space-1); }
+.slider-row { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); }
+.slider-wrap { min-height: 44px; display: flex; align-items: center; }
+.slider-wrap input[type="range"] { margin: 0; }
+input[type="range"]:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+.btn-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.btn-row .btn { flex: 1 1 8rem; }
+.preset-list { display: flex; flex-direction: column; gap: var(--space-2); }
+.preset-list .btn { width: 100%; text-align: left; }
+.btn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+
+.equation { font-family: var(--font-mono); font-weight: var(--font-weight-number); font-size: var(--text-xs); color: var(--text-muted); overflow-wrap: anywhere; }
+.note { font-size: var(--text-xs); color: var(--text-dim); }
+
+.progress-fill { height: 100%; width: 0; background: var(--accent); transition: width var(--motion); }
+.result-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: var(--space-3); margin-top: var(--space-4); }
+.result-cell { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); }
+.result-cell .mono-value { font-size: var(--text-base); }
+.table-wrap { overflow-x: auto; margin-top: var(--space-4); }
+.summary-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+.summary-table th, .summary-table td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: right; }
+.summary-table th:first-child, .summary-table td:first-child { text-align: left; }
+.summary-table th { color: var(--text-muted); font-weight: var(--font-weight-display); }
+.summary-table td { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+.lesson-list { padding-left: var(--space-5); margin-bottom: var(--space-3); font-size: var(--text-sm); }
+.lesson-list li { margin-bottom: var(--space-1); }
+details.qa { margin-top: var(--space-3); }
+details.qa summary { cursor: pointer; color: var(--text); font-weight: var(--font-weight-display); }
+details.qa p { margin-top: var(--space-2); color: var(--text-muted); }
+</style>
+</head>
+<body>
+  <main class="page">
+    <header class="page-header">
+      <h1>Gaya dan Resultan Gaya</h1>
+      <p>Gaya adalah vektor, sehingga dua gaya tidak selalu dijumlahkan begitu saja. Atur besar dan arah dua gaya, lalu cari resultannya.</p>
+    </header>
+
+    <section class="sim-shell" aria-label="Simulasi resultan gaya">
+      <aside class="panel sim-controls" aria-label="Pengaturan gaya">
+        <div class="control-group">
+          <div class="slider-row">
+            <label class="control-label" for="f1-slider">Gaya 1 F₁</label>
+            <span class="mono-value" id="f1-display"></span>
+          </div>
+          <div class="slider-wrap"><input type="range" id="f1-slider"></div>
+        </div>
+        <div class="control-group">
+          <div class="slider-row">
+            <label class="control-label" for="th1-slider">Arah F₁ (dari sumbu +x)</label>
+            <span class="mono-value" id="th1-display"></span>
+          </div>
+          <div class="slider-wrap"><input type="range" id="th1-slider"></div>
+        </div>
+        <div class="control-group">
+          <div class="slider-row">
+            <label class="control-label" for="f2-slider">Gaya 2 F₂</label>
+            <span class="mono-value" id="f2-display"></span>
+          </div>
+          <div class="slider-wrap"><input type="range" id="f2-slider"></div>
+        </div>
+        <div class="control-group">
+          <div class="slider-row">
+            <label class="control-label" for="th2-slider">Arah F₂ (dari sumbu +x)</label>
+            <span class="mono-value" id="th2-display"></span>
+          </div>
+          <div class="slider-wrap"><input type="range" id="th2-slider"></div>
+        </div>
+        <div class="control-group">
+          <p class="control-label">Contoh gaya</p>
+          <div class="preset-list" id="preset-list"></div>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="btn btn-primary" id="start-btn">Mulai</button>
+          <button type="button" class="btn btn-ghost" id="reset-btn">Atur ulang</button>
+        </div>
+        <p class="equation" id="eq-display"></p>
+        <p class="note">Pintasan keyboard: Spasi untuk mulai atau jeda, R untuk mengatur ulang.</p>
+      </aside>
+
+      <div class="sim-stage" id="stage">
+        <canvas id="sim-canvas" role="img" aria-label="Benda dengan dua gaya dan resultan gaya digambar sebagai panah"></canvas>
+        <div class="stage-readout">
+          <span class="readout-chip"><span class="state-badge" id="state-badge" data-state="idle">Siap</span></span>
+          <span class="readout-chip">R = <span class="mono-value" id="mag-chip">0 N</span></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Kemajuan dan hasil">
+      <div class="progress-track" id="energy-track" role="progressbar" aria-label="Kemajuan gerak benda" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="progress-fill" id="energy-fill"></div>
+      </div>
+      <div class="result-grid">
+        <div class="result-cell">
+          <p class="control-label">Besar resultan R</p>
+          <p class="mono-value" id="mag-display">0 N</p>
+        </div>
+        <div class="result-cell">
+          <p class="control-label">Arah resultan θ</p>
+          <p class="mono-value" id="ang-display">—</p>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="summary-table">
+          <thead>
+            <tr><th scope="col">Gaya</th><th scope="col">Komponen x (N)</th><th scope="col">Komponen y (N)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>F₁</td><td id="f1x-display">0</td><td id="f1y-display">0</td></tr>
+            <tr><td>F₂</td><td id="f2x-display">0</td><td id="f2y-display">0</td></tr>
+            <tr><td>Resultan R</td><td id="rx-display">0</td><td id="ry-display">0</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="feedback-panel" role="status" aria-live="polite"></div>
+    </section>
+
+    <section class="panel">
+      <h2 class="panel-heading">Keterangan</h2>
+      <ul class="lesson-list">
+        <li>Gaya adalah besaran vektor: memiliki besar dan arah. Satuan gaya dalam SI adalah newton (N).</li>
+        <li>Resultan gaya R adalah jumlah vektor semua gaya yang bekerja pada benda. Penjumlahan dilakukan per komponen: R<sub>x</sub> = ΣF<sub>x</sub> dan R<sub>y</sub> = ΣF<sub>y</sub>, lalu R = √(R<sub>x</sub>² + R<sub>y</sub>²).</li>
+        <li>Contoh: gaya 6 N dan 8 N yang saling tegak lurus menghasilkan R = 10 N, bukan 14 N.</li>
+      </ul>
+      <details class="qa">
+        <summary>Bagaimana jika dua gaya berlawanan arah dan sama besar?</summary>
+        <p>Keduanya saling meniadakan. Resultannya nol sehingga benda dalam keadaan seimbang: tetap diam, atau bergerak lurus beraturan jika sudah bergerak.</p>
+      </details>
+    </section>
+  </main>
+
+  <script type="application/json" id="widget-config">{"type":"simulation","concept":"gaya_resultan","description":"Menjumlahkan gaya-gaya vektor untuk mencari resultan gaya pada sebuah benda.","variables":[{"name":"f1","label":"Gaya 1 F₁","min":0,"max":10,"default":6,"step":1,"unit":"N"},{"name":"th1","label":"Arah F₁ (dari sumbu +x)","min":0,"max":359,"default":0,"step":1,"unit":"°"},{"name":"f2","label":"Gaya 2 F₂","min":0,"max":10,"default":8,"step":1,"unit":"N"},{"name":"th2","label":"Arah F₂ (dari sumbu +x)","min":0,"max":359,"default":90,"step":1,"unit":"°"}],"presets":[{"name":"Searah: 4 N + 3 N","variables":{"f1":4,"th1":0,"f2":3,"th2":0}},{"name":"Tegak lurus: 6 N + 8 N","variables":{"f1":6,"th1":0,"f2":8,"th2":90}},{"name":"Berlawanan: 5 N dan 5 N","variables":{"f1":5,"th1":0,"f2":5,"th2":180}}]}</script>
+  <script>
+  (function () {
+    'use strict';
+
+    const CONFIG = JSON.parse(document.getElementById('widget-config').textContent);
+    const VARS = CONFIG.variables;
+    const T_RUN = 3;          // detik untuk animasi gerak benda
+    const DEG = Math.PI / 180;
+    const EPS = 1e-9;
+
+    const DEFAULTS = {};
+    VARS.forEach(function (v) { DEFAULTS[v.name] = v.default; });
+    const params = Object.assign({}, DEFAULTS);
+    const state = { running: false, ended: false, t: 0 };
+    let activePreset = -1;
+    let notice = '';
+
+    const nf0 = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 });
+    const nf2 = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 });
+    const fmt0 = function (n) { return nf0.format(n); };
+    const fmt2 = function (n) { return nf2.format(Math.abs(n) < 0.005 ? 0 : n); };
+
+    const $ = function (id) { return document.getElementById(id); };
+    const setText = function (id, t) { const el = $(id); if (el) el.textContent = t; };
+
+    /* ---------- Penjumlahan vektor per komponen ---------- */
+    function forces() {
+      const a1 = params.th1 * DEG, a2 = params.th2 * DEG;
+      const f1x = params.f1 * Math.cos(a1), f1y = params.f1 * Math.sin(a1);
+      const f2x = params.f2 * Math.cos(a2), f2y = params.f2 * Math.sin(a2);
+      const rx = f1x + f2x, ry = f1y + f2y;
+      const mag = Math.hypot(rx, ry);
+      let ang = null;
+      if (mag > EPS) ang = ((Math.atan2(ry, rx) / DEG) % 360 + 360) % 360;
+      return { f1x: f1x, f1y: f1y, f2x: f2x, f2y: f2y, rx: rx, ry: ry, mag: mag < EPS ? 0 : mag, ang: ang };
+    }
+
+    const isPaused = function () { return !state.running && !state.ended && state.t > 0; };
+    const stateName = function () {
+      if (state.ended) return 'ended';
+      if (state.running) return 'running';
+      return isPaused() ? 'paused' : 'idle';
+    };
+
+    /* ---------- Canvas ---------- */
+    const canvas = $('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let W = 0, H = 0, dpr = 1;
+    let COL = {};
+
+    function readColors() {
+      const cs = getComputedStyle(document.documentElement);
+      const v = function (n) { return cs.getPropertyValue(n).trim(); };
+      COL = { bg: v('--bg'), text: v('--text'), dim: v('--text-dim'), line: v('--border-strong'), surface: v('--surface'), cool: v('--accent'), warm: v('--warning'), ok: v('--success') };
+    }
+
+    function resize() {
+      const r = canvas.getBoundingClientRect();
+      dpr = window.devicePixelRatio || 1;
+      W = r.width;
+      H = r.height;
+      canvas.width = Math.max(1, Math.round(W * dpr));
+      canvas.height = Math.max(1, Math.round(H * dpr));
+      readColors();
+    }
+
+    // Panah dari (x0, y0) ke (x1, y1), dengan kepala panah
+    function arrow(x0, y0, x1, y1, color, width, dashed) {
+      const ang = Math.atan2(y1 - y0, x1 - x0);
+      const head = 11;
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = width;
+      ctx.setLineDash(dashed ? [6, 5] : []);
+      ctx.beginPath();
+      ctx.moveTo(x0, y0);
+      ctx.lineTo(x1, y1);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x1 - head * Math.cos(ang - 0.45), y1 - head * Math.sin(ang - 0.45));
+      ctx.lineTo(x1 - head * Math.cos(ang + 0.45), y1 - head * Math.sin(ang + 0.45));
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function drawStage() {
+      if (!W || !H) return;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.fillStyle = COL.bg;
+      ctx.fillRect(0, 0, W, H);
+
+      const f = forces();
+      const minDim = Math.min(W, H);
+      const scale = (minDim * 0.34) / Math.max(1, params.f1, params.f2, f.mag);
+
+      // Benda bergerak searah resultan (sebagai animasi)
+      const p = state.t / T_RUN;
+      const offMax = Math.min(minDim * 0.2, minDim * 0.04 * f.mag);
+      const dx = f.mag > 0 ? f.rx / f.mag : 0;
+      const dy = f.mag > 0 ? f.ry / f.mag : 0;
+      const cx = W / 2 + dx * offMax * p;
+      const cy = H / 2 - dy * offMax * p;
+
+      // Kotak acuan (posisi awal)
+      const box = minDim * 0.1;
+      ctx.strokeStyle = COL.line;
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
+      ctx.strokeRect(W / 2 - box / 2, H / 2 - box / 2, box, box);
+      ctx.setLineDash([]);
+
+      // Gaya-gaya dari pusat benda (diagram gaya bebas)
+      arrow(cx, cy, cx + f.f1x * scale, cy - f.f1y * scale, COL.cool, 3, false);
+      arrow(cx, cy, cx + f.f2x * scale, cy - f.f2y * scale, COL.warm, 3, false);
+      if (f.mag > 0) arrow(cx, cy, cx + f.rx * scale, cy - f.ry * scale, COL.ok, 3, true);
+
+      // Benda
+      ctx.fillStyle = COL.surface;
+      ctx.strokeStyle = COL.text;
+      ctx.lineWidth = 2;
+      ctx.fillRect(cx - box / 2, cy - box / 2, box, box);
+      ctx.strokeRect(cx - box / 2, cy - box / 2, box, box);
+
+      // Label
+      ctx.font = '13px system-ui, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillStyle = COL.cool;
+      ctx.fillText('F₁', cx + f.f1x * scale + 6, cy - f.f1y * scale - 6);
+      ctx.fillStyle = COL.warm;
+      ctx.fillText('F₂', cx + f.f2x * scale + 6, cy - f.f2y * scale - 6);
+      if (f.mag > 0) {
+        ctx.fillStyle = COL.ok;
+        ctx.fillText('R', cx + f.rx * scale + 6, cy - f.ry * scale - 6);
+      }
+    }
+
+    /* ---------- Teks dan kontrol ---------- */
+    function message() {
+      if (notice) return notice;
+      const f = forces();
+      if (state.ended) {
+        if (f.mag === 0) return 'Selesai. Resultan nol, sehingga benda seimbang dan tidak berpindah ke arah mana pun.';
+        return 'Selesai. Resultan R = ' + fmt2(f.mag) + ' N membentuk sudut ' + fmt2(f.ang) + '° dari sumbu +x. Benda bergerak searah resultan.';
+      }
+      if (state.running) return 'Benda bergerak searah resultan gaya. Panah putus-putus adalah resultan R.';
+      if (isPaused()) return 'Gerak dijeda. Tekan Lanjutkan untuk meneruskan.';
+      return 'Atur besar dan arah dua gaya, lalu tekan Mulai. Panah putus-putus menunjukkan resultan.';
+    }
+
+    function renderControls() {
+      const name = stateName();
+      const labels = { idle: 'Siap', running: 'Berjalan', paused: 'Dijeda', ended: 'Selesai' };
+      const badge = $('state-badge');
+      if (badge) {
+        badge.textContent = labels[name];
+        badge.setAttribute('data-state', name);
+      }
+      const btn = $('start-btn');
+      if (btn) {
+        btn.textContent = state.ended ? 'Mulai ulang' : state.running ? 'Jeda' : isPaused() ? 'Lanjutkan' : 'Mulai';
+      }
+      const fb = $('feedback-panel');
+      if (fb) {
+        fb.textContent = message();
+        fb.classList.toggle('success', state.ended);
+      }
+      document.querySelectorAll('#preset-list button').forEach(function (b, i) {
+        b.setAttribute('aria-pressed', String(i === activePreset));
+      });
+    }
+
+    function renderSliders() {
+      VARS.forEach(function (v) {
+        const slider = $(v.name + '-slider');
+        if (slider && Number(slider.value) !== params[v.name]) slider.value = String(params[v.name]);
+        setText(v.name + '-display', fmt0(params[v.name]) + ' ' + v.unit);
+      });
+    }
+
+    function renderReadouts() {
+      const f = forces();
+      setText('f1x-display', fmt2(f.f1x));
+      setText('f1y-display', fmt2(f.f1y));
+      setText('f2x-display', fmt2(f.f2x));
+      setText('f2y-display', fmt2(f.f2y));
+      setText('rx-display', fmt2(f.rx));
+      setText('ry-display', fmt2(f.ry));
+      setText('mag-display', fmt2(f.mag) + ' N');
+      setText('mag-chip', fmt2(f.mag) + ' N');
+      setText('ang-display', f.ang === null ? '—' : fmt2(f.ang) + '°');
+      setText('eq-display', 'R = √(Rx² + Ry²) = √(' + fmt2(f.rx) + '² + ' + fmt2(f.ry) + '²) = ' + fmt2(f.mag) + ' N');
+      const pct = Math.round(state.t / T_RUN * 100);
+      const fill = $('energy-fill');
+      if (fill) fill.style.width = pct + '%';
+      const track = $('energy-track');
+      if (track) track.setAttribute('aria-valuenow', String(pct));
+    }
+
+    function render() {
+      renderControls();
+      renderSliders();
+      renderReadouts();
+    }
+
+    function resetRun(msg) {
+      state.running = false;
+      state.ended = false;
+      state.t = 0;
+      notice = msg || '';
+      render();
+    }
+
+    function setParams(values, msg) {
+      VARS.forEach(function (v) { params[v.name] = values[v.name]; });
+      resetRun(msg);
+    }
+
+    // Reset penuh: gaya, posisi benda, progres, dan umpan balik kembali ke kondisi awal
+    function resetState() {
+      activePreset = -1;
+      setParams(DEFAULTS, '');
+    }
+
+    function mainAction() {
+      if (state.ended) resetRun('');
+      notice = '';
+      state.running = !state.running;
+      render();
+    }
+
+    VARS.forEach(function (v) {
+      const slider = $(v.name + '-slider');
+      if (!slider) return;
+      slider.min = String(v.min);
+      slider.max = String(v.max);
+      slider.step = String(v.step);
+      slider.value = String(v.default);
+      slider.addEventListener('input', function () {
+        activePreset = -1;
+        params[v.name] = Number(slider.value);
+        resetRun('Gaya diubah. Benda dikembalikan ke posisi awal; tekan Mulai untuk mencoba lagi.');
+      });
+    });
+
+    function renderPresets() {
+      const list = $('preset-list');
+      if (!list) return;
+      (CONFIG.presets || []).forEach(function (p, i) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'btn btn-ghost';
+        b.id = 'preset-' + (i + 1) + '-btn';
+        b.textContent = p.name;
+        b.setAttribute('aria-pressed', 'false');
+        b.addEventListener('click', function () {
+          activePreset = i;
+          setParams(Object.assign({}, DEFAULTS, p.variables), 'Contoh "' + p.name + '" dimuat. Tekan Mulai untuk melihat gerak benda.');
+        });
+        list.appendChild(b);
+      });
+    }
+
+    const startBtn = $('start-btn');
+    if (startBtn) startBtn.addEventListener('click', mainAction);
+    const resetBtn = $('reset-btn');
+    if (resetBtn) resetBtn.addEventListener('click', resetState);
+
+    window.addEventListener('keydown', function (e) {
+      const tag = e.target && e.target.tagName ? e.target.tagName.toLowerCase() : '';
+      if (e.code === 'Space' && tag !== 'button' && tag !== 'input' && tag !== 'a') {
+        e.preventDefault();
+        mainAction();
+      } else if ((e.key === 'r' || e.key === 'R') && tag !== 'input') {
+        resetState();
+      }
+    });
+
+    /* ---------- Loop animasi ---------- */
+    let lastTs = 0;
+    function frame(ts) {
+      const dt = lastTs ? Math.min((ts - lastTs) / 1000, 0.05) : 0;
+      lastTs = ts;
+      if (state.running) {
+        state.t = Math.min(T_RUN, state.t + dt);
+        if (state.t >= T_RUN) {
+          state.running = false;
+          state.ended = true;
+          notice = '';
+          render();
+        }
+      }
+      drawStage();
+      renderReadouts();
+      requestAnimationFrame(frame);
+    }
+
+    new ResizeObserver(resize).observe(canvas);
+    readColors();
+    resize();
+    renderPresets();
+    setParams(DEFAULTS, '');
+    requestAnimationFrame(frame);
+  })();
+  </script>
+</body>
+</html>

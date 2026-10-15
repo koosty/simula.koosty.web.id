@@ -20,6 +20,10 @@ export default [
       // edited here, so they are not ours to lint.
       'simulations/**',
       '.scratch/**',
+      // Skills installed by a tool, not project code. They carry their own
+      // vendored browser scripts, which no project lint rule is written for.
+      '.agents/**',
+      'skills-lock.json',
       // Generated output, none of it written by hand.
       'dist/**',
       'node_modules/**',
