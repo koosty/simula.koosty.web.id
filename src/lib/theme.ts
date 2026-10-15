@@ -1,10 +1,11 @@
 /**
- * The site's palette, and the arithmetic that holds it readable.
+ * The site's palettes, and the arithmetic that holds them readable.
  *
- * A dark palette: the Neo-Arcade STEM design system (docs/adr/0015). The
- * simulations use the same values, so an embedded simulation and the page
- * around it share one surface. The test suite checks every text role against
- * the ratio its use needs.
+ * Two palettes from the Neo-Arcade STEM design system in the Stitch prototype
+ * (docs/adr/0017, docs/adr/0019). The dark one is the default and the one the
+ * simulations use, so an embedded simulation and the page around it share one
+ * surface. The light one is for the rest of the site. The test suite checks
+ * every text role against the ratio its use needs, in both palettes.
  */
 
 /** A colour this module can do contrast arithmetic on. */
@@ -30,6 +31,7 @@ export type TokenName =
   | 'link'
   | 'linkHover'
   | 'accent'
+  | 'accentText'
   | 'secondary'
   | 'tertiary'
   | 'focusRing'
@@ -39,7 +41,7 @@ export type TokenName =
 /** A token that is a plain colour, which contrastRatio can be handed. */
 export type OpaqueToken = Extract<
   TokenName,
-  'bg' | 'surface' | 'text' | 'textMuted' | 'textDim' | 'link' | 'accent' | 'focusRing'
+  'bg' | 'surface' | 'text' | 'textMuted' | 'textDim' | 'link' | 'accent' | 'accentText' | 'focusRing'
 >;
 
 /**
@@ -53,13 +55,17 @@ export type SurfaceToken = Extract<TokenName, 'bg' | 'surface'>;
 /** The tokens a page draws as a foreground on a surface. */
 export type ForegroundToken = Extract<TokenName, 'text' | 'textMuted' | 'textDim' | 'link'>;
 
+/** A full set of values, one per token, under the names the site paints with. */
+export type Palette = Record<TokenName, string>;
+
 /**
- * The site's colours, under the names the rest of the site paints with.
+ * The dark palette: the default, and the one the simulations write into their
+ * own :root block by hand.
  *
- * Written as literal values here and checked by test/theme.test.ts. The same
- * values are written into the :root block of every simulation.
+ * Checked by test/theme.test.ts. Changing a value here means changing the same
+ * value in every simulation under simulations/.
  */
-export const TOKENS: Record<TokenName, string> = {
+export const TOKENS: Palette = {
   bg: '#12131d',
   surface: '#1a1b25',
   panel: '#1e1f2a',
@@ -71,27 +77,77 @@ export const TOKENS: Record<TokenName, string> = {
   link: '#00f0ff',
   linkHover: '#dbfcff',
   accent: '#00f0ff',
+  accentText: '#12131d',
   secondary: '#ff4a8d',
   tertiary: '#f3db00',
   focusRing: '#00f0ff',
   radius: '8px',
   radiusSmall: '4px',
-} as const satisfies Record<TokenName, string>;
+} as const satisfies Palette;
 
 /**
- * The palette as CSS custom properties, written into the <head> of every page.
+ * The light palette: the Stitch lobby's light screen (docs/adr/0019).
  *
- * There is one theme. The selector is a parameter so a test can write a second
- * block under another selector without changing this function.
+ * Two values differ from the design system's written guide, which lists
+ * cyan #0099b8 and magenta #c01573. The screen uses #0092ac and #b8126b, and
+ * they are the ones checked here. White text on the guide's cyan is 3.36:1,
+ * so the accent carries dark text (`accentText`) instead.
  */
-export function themeCustomProperties(
-  tokens: Record<TokenName, string> = TOKENS,
-  selector = ':root',
-): string {
+export const TOKENS_LIGHT: Palette = {
+  bg: '#f8fafc',
+  surface: '#ffffff',
+  panel: '#f1f5f9',
+  border: '#cbd5e1',
+  borderStrong: '#475569',
+  text: '#0f172a',
+  textMuted: '#334155',
+  textDim: '#64748b',
+  link: '#00657a',
+  linkHover: '#004e5f',
+  accent: '#0092ac',
+  accentText: '#0f172a',
+  secondary: '#b8126b',
+  tertiary: '#d97706',
+  focusRing: '#0092ac',
+  radius: '8px',
+  radiusSmall: '4px',
+} as const satisfies Palette;
+
+/**
+ * The palette as a CSS custom property block under a selector.
+ *
+ * The selector is a parameter so the site can write each palette under its own
+ * selector, and so a test can write a block without touching the defaults.
+ */
+export function themeCustomProperties(tokens: Palette = TOKENS, selector = ':root'): string {
   const declarations = Object.entries(tokens)
     .map(([name, value]) => `  --${name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}: ${value};`)
     .join('\n');
   return `${selector} {\n${declarations}\n}`;
+}
+
+/**
+ * Every palette rule the site writes into <head>.
+ *
+ * The dark palette is the default. A reader who has chosen light, or whose
+ * system asks for light and who has not chosen dark, gets the light palette.
+ * The choice is stored by the header toggle as `data-theme` on <html>, and an
+ * explicit choice beats the system setting.
+ *
+ * `color-scheme` follows the same rules, so form controls and scrollbars match
+ * the palette in use.
+ */
+export function themeStylesheet(): string {
+  const lightSelector = "[data-theme='light']";
+  const darkSelector = ":root, [data-theme='dark']";
+  const systemLight = ":root:not([data-theme='dark'])";
+  return [
+    `${darkSelector} {\n  color-scheme: dark;\n}`,
+    themeCustomProperties(TOKENS, darkSelector),
+    `${lightSelector} {\n  color-scheme: light;\n}`,
+    themeCustomProperties(TOKENS_LIGHT, lightSelector),
+    `@media (prefers-color-scheme: light) {\n  ${systemLight} {\n  color-scheme: light;\n  }\n${themeCustomProperties(TOKENS_LIGHT, systemLight)}\n}`,
+  ].join('\n');
 }
 
 /**
@@ -122,8 +178,8 @@ export function isHexColour(value: string): value is HexColour {
  * at this call instead of a wrong number in a passing assertion. Exported so the
  * palette's own assertions read the tokens through the same door the code does.
  */
-export function asHex(token: OpaqueToken): HexColour {
-  const value: string = TOKENS[token];
+export function asHex(token: OpaqueToken, palette: Palette = TOKENS): HexColour {
+  const value: string = palette[token];
   if (!isHexColour(value)) {
     throw new Error(`Token --${token} harus warna hex, bukan: ${value}`);
   }
@@ -195,10 +251,10 @@ export function ratioRequiredFor(role: ForegroundToken): number {
  * A pairing missing from here is a pairing nothing checks, so this is the first
  * list to update when a new surface is introduced.
  */
-export function textSurfaces(): Record<SurfaceToken, HexColour> {
+export function textSurfaces(palette: Palette = TOKENS): Record<SurfaceToken, HexColour> {
   return {
-    bg: asHex('bg'),
-    surface: asHex('surface'),
+    bg: asHex('bg', palette),
+    surface: asHex('surface', palette),
   };
 }
 
@@ -217,17 +273,4 @@ export function surfaceTokens(): SurfaceToken[] {
 /** The roles that are drawn as foregrounds on a surface. */
 export function foregroundTokens(): ForegroundToken[] {
   return ['text', 'textMuted', 'textDim', 'link'];
-}
-
-/**
- * The tokens as a CSS custom property block.
- *
- * Emitted into the page by Base.astro, so a page writes `var(--text-muted)`
- * rather than repeating a value that the palette already states. The names are
- * the simulations' own: `--bg`, `--surface`, `--text-muted`.
- */
-export function tokenCustomProperties(tokens: Record<TokenName, string>): string {
-  return Object.entries(tokens)
-    .map(([name, value]) => `  --${name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}: ${value};`)
-    .join('\n');
 }

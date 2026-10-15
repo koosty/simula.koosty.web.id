@@ -1,6 +1,6 @@
 ---
 import { loadCatalogEntries } from '../lib/loadCatalog';
-import { themeCustomProperties } from '../lib/theme';
+import { themeStylesheet } from '../lib/theme';
 import { navLinksFor } from '../lib/nav';
 
 interface Props {
@@ -32,7 +32,16 @@ const navLinks = navLinksFor(catalog, Astro.url.pathname);
         build fails with "Invalid empty selector". Ticket 06 hit this the same
         way, writing {FALLBACK_HEIGHT}px into a <style> block and finding it
         silently dropped rather than caught. */}
-    <style set:html={themeCustomProperties()}></style>
+    <style set:html={themeStylesheet()}></style>
+    {/* Runs before first paint, so a stored choice does not flash the other palette. */}
+    <script is:inline>
+      try {
+        const stored = localStorage.getItem('theme');
+        if (stored === 'light' || stored === 'dark') document.documentElement.dataset.theme = stored;
+      } catch {
+        // Storage can be blocked; the system setting then applies.
+      }
+    </script>
     <link rel="stylesheet" href="/fonts/fonts.css" />
     <title>{title}</title>
     <meta name="description" content={description} />
@@ -61,8 +70,29 @@ const navLinks = navLinksFor(catalog, Astro.url.pathname);
           ))
         }
       </ul>
+      <button type="button" id="theme-toggle" class="theme-toggle">Mode terang</button>
     </nav>
     <slot />
+    <script>
+      const root = document.documentElement;
+      const toggle = document.getElementById('theme-toggle');
+      if (toggle) {
+        const systemLight = matchMedia('(prefers-color-scheme: light)').matches;
+        const shown = root.dataset.theme ?? (systemLight ? 'light' : 'dark');
+        toggle.textContent = shown === 'light' ? 'Mode gelap' : 'Mode terang';
+        toggle.addEventListener('click', () => {
+          const now = root.dataset.theme ?? (systemLight ? 'light' : 'dark');
+          const next = now === 'light' ? 'dark' : 'light';
+          root.dataset.theme = next;
+          try {
+            localStorage.setItem('theme', next);
+          } catch {
+            // Storage can be blocked; the choice then lasts for this page only.
+          }
+          toggle.textContent = next === 'light' ? 'Mode gelap' : 'Mode terang';
+        });
+      }
+    </script>
   </body>
 </html>
 
@@ -196,8 +226,27 @@ const navLinks = navLinksFor(catalog, Astro.url.pathname);
   .site-nav a[aria-current='page'] {
     background: var(--accent);
     border-color: var(--accent);
-    color: var(--bg);
+    color: var(--accent-text);
     font-weight: 700;
+  }
+
+  /* The light and dark switch. It shows the mode it will change to. */
+  .theme-toggle {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    letter-spacing: 0.06em;
+    min-height: 44px;
+    padding: 8px 14px;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-small);
+    cursor: pointer;
+  }
+
+  .theme-toggle:hover {
+    color: var(--text);
+    border-color: var(--secondary);
   }
 
   /* On a phone the tabs stay on one scrolling row, so the header does not

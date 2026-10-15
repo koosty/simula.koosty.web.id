@@ -48,6 +48,7 @@ Each record is a single Markdown file numbered from `0001`. Where an ADR is cite
 | 0016 | [The site uses tab navigation and card grids](../../docs/adr/0016-tab-navigation-and-card-grids.md) | **Superseded by 0017** | [src/layouts/Base.astro](../../src/layouts/Base.astro), [src/pages/index.astro](../../src/pages/index.astro) |
 | 0017 | [The Stitch arcade prototype is the v1.0.0 design](../../docs/adr/0017-stitch-arcade-prototype-is-the-v1-design.md) | Current | [src/lib/theme.ts](../../src/lib/theme.ts), [src/layouts/Base.astro](../../src/layouts/Base.astro), [src/pages/index.astro](../../src/pages/index.astro) |
 | 0018 | [The simulation page places an information column beside the frame](../../docs/adr/0018-simulation-page-workspace-beside-the-frame.md) | Current | [src/pages/[tingkat]/[kelas]/[mataPelajaran]/[slug].astro](../../src/pages/[tingkat]/[kelas]/[mataPelajaran]/[slug].astro) |
+| 0019 | [The site has a light and a dark palette](../../docs/adr/0019-site-has-a-light-and-a-dark-palette.md) | Current | [src/lib/theme.ts](../../src/lib/theme.ts), [src/layouts/Base.astro](../../src/layouts/Base.astro), [test/theme.test.ts](../../test/theme.test.ts) |
 
 Sources: [docs/adr/](), [docs/adr/0009-chrome-paints-with-the-simulations-palette.md:1-3](), [docs/adr/0010-site-keeps-its-own-dark-palette.md:1-3]()
 

@@ -100,7 +100,7 @@ describe('no page hardcodes a colour', () => {
    * — so these are the one place a literal is correct and the check skips them.
    */
   function isPaletteDeclaration(selector: string): boolean {
-    return selector.startsWith(':root');
+    return selector.startsWith(':root') || selector === "[data-theme='light']";
   }
 
   /**

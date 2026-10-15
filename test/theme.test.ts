@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   asHex,
   TOKENS,
+  TOKENS_LIGHT,
   contrastRatio,
   isHexColour,
   surfaceTokens,
@@ -12,6 +13,7 @@ import {
   AA_NORMAL_TEXT,
   AA_NON_TEXT,
   themeCustomProperties,
+  themeStylesheet,
 } from '../src/lib/theme';
 
 describe('the palette', () => {
@@ -21,6 +23,7 @@ describe('the palette', () => {
     expect(Object.keys(TOKENS).sort()).toEqual(
       [
         'accent',
+        'accentText',
         'bg',
         'border',
         'borderStrong',
@@ -43,7 +46,19 @@ describe('the palette', () => {
   it('keeps the accent visible against the page without using it for text', () => {
     // The accent marks the featured rule and the focus outline. A non-text
     // colour still has to be seen, so it must meet the 3:1 bar against the page.
-    expect(contrastRatio(asHex('accent'), asHex('bg'))).toBeGreaterThanOrEqual(AA_NON_TEXT);
+    for (const palette of [TOKENS, TOKENS_LIGHT]) {
+      expect(contrastRatio(asHex('accent', palette), asHex('bg', palette))).toBeGreaterThanOrEqual(AA_NON_TEXT);
+    }
+  });
+
+  it('puts text that meets the bar on the accent, in both palettes', () => {
+    // A button label on the accent is text. White on the light palette's cyan is
+    // 3.68:1, which is why the accent carries its own text colour.
+    for (const palette of [TOKENS, TOKENS_LIGHT]) {
+      expect(contrastRatio(asHex('accentText', palette), asHex('accent', palette))).toBeGreaterThanOrEqual(
+        AA_NORMAL_TEXT,
+      );
+    }
   });
 });
 
@@ -98,18 +113,20 @@ describe('contrastRatio', () => {
 });
 
 describe('every colour the chrome puts on a surface', () => {
-  it('meets the ratio that use needs', () => {
+  it('meets the ratio that use needs, in both palettes', () => {
     // Criterion: text meets a readable contrast ratio against its background on
     // every page. Each pairing below is one this site actually renders, named
     // so a failure says which text on which surface went unreadable.
     const failures: string[] = [];
 
-    for (const [name, surface] of Object.entries(textSurfaces())) {
-      for (const role of ['text', 'textMuted', 'textDim', 'link'] as const) {
-        const required = ratioRequiredFor(role);
-        const actual = contrastRatio(asHex(role), surface);
-        if (actual < required) {
-          failures.push(`${TOKENS[role]} (${role}) on ${surface} (${name}): ${actual.toFixed(2)} < ${required}`);
+    for (const [mode, palette] of Object.entries({ dark: TOKENS, light: TOKENS_LIGHT })) {
+      for (const [name, surface] of Object.entries(textSurfaces(palette))) {
+        for (const role of ['text', 'textMuted', 'textDim', 'link'] as const) {
+          const required = ratioRequiredFor(role);
+          const actual = contrastRatio(asHex(role, palette), surface);
+          if (actual < required) {
+            failures.push(`${mode}: ${palette[role]} (${role}) on ${surface} (${name}): ${actual.toFixed(2)} < ${required}`);
+          }
         }
       }
     }
@@ -120,17 +137,23 @@ describe('every colour the chrome puts on a surface', () => {
 
 describe('the non-text colours', () => {
   it('separate a surface from its background enough to be seen', () => {
-    // A border at 1.5 is decoration nobody can find. The focus ring is held to
-    // the same bar as any other non-text element.
-    for (const surface of Object.values(textSurfaces())) {
-      expect(contrastRatio(asHex('focusRing'), surface), surface).toBeGreaterThanOrEqual(AA_NON_TEXT);
+    // A border at 1.5 is decoration nobody can find. The accent and the focus
+    // ring are held to the same bar as any other non-text element.
+    for (const palette of [TOKENS, TOKENS_LIGHT]) {
+      for (const surface of Object.values(textSurfaces(palette))) {
+        for (const role of ['accent', 'focusRing'] as const) {
+          expect(contrastRatio(asHex(role, palette), surface), surface).toBeGreaterThanOrEqual(AA_NON_TEXT);
+        }
+      }
     }
   });
 
   it('holds the focus ring to the strongest bar a ring may be judged by', () => {
     // The ring is drawn outside the element, so what matters is that it is
     // visible against whatever sits behind it, which is the page background.
-    expect(contrastRatio(asHex('focusRing'), asHex('bg'))).toBeGreaterThanOrEqual(AA_NON_TEXT);
+    for (const palette of [TOKENS, TOKENS_LIGHT]) {
+      expect(contrastRatio(asHex('focusRing', palette), asHex('bg', palette))).toBeGreaterThanOrEqual(AA_NON_TEXT);
+    }
   });
 });
 
@@ -169,13 +192,13 @@ describe('themeCustomProperties', () => {
     expect(properties.length).toBe(Object.keys(TOKENS).length);
   });
 
-  it('can write a second theme under a different selector', () => {
-    // The selector is a parameter, so a second block can be written under another
-    // selector without changing the function. Nothing writes one today.
-    const light = themeCustomProperties({ ...TOKENS, bg: '#f7f7fb', text: '#16161d' }, "[data-theme='light']");
-    expect(light).toContain("[data-theme='light'] {");
-    expect(light).toContain('--bg: #f7f7fb;');
-    expect(light).toContain('--text: #16161d;');
+  it('writes the light palette for a reader who chose it or whose system asks for it', () => {
+    // The light palette sits under the explicit attribute and under the system
+    // query. The header toggle sets the attribute, so both selectors must exist.
+    const css = themeStylesheet();
+    expect(css).toContain("[data-theme='light'] {");
+    expect(css).toContain('@media (prefers-color-scheme: light) {');
+    expect(css).toContain(`--bg: ${TOKENS_LIGHT.bg};`);
   });
 
   it('writes the dark palette under :root by default', () => {

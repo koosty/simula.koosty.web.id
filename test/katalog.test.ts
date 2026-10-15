@@ -89,9 +89,10 @@ describe('the Katalog page is built', () => {
     expect(page).toContain('Tidak ada simulasi yang cocok');
     expect(page).toMatch(/<p class="no-match"[^>]*hidden/);
     // The reveal is the one place the visible count is turned into "nothing
-    // matched": the message shows only when that count is zero.
-    const bundle = page.match(/<script type="module">([\s\S]*?)<\/script>/)?.[1] ?? '';
-    expect(bundle).toMatch(/\.hidden=[A-Za-z_$][\w$]*!==0/);
+    // matched": the message shows only when that count is zero. The header
+    // carries its own module script, so the reveal is searched across all of them.
+    const bundles = [...page.matchAll(/<script type="module">([\s\S]*?)<\/script>/g)].map((m) => m[1]).join('\n');
+    expect(bundles).toMatch(/\.hidden=[A-Za-z_$][\w$]*!==0/);
   });
 
   it('offers a choice for every subject the catalog holds, and no others', () => {
