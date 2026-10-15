@@ -9,7 +9,7 @@
   <meta name="description" content="Latihan bertingkat untuk operasi hitung campur bilangan bulat, dari yang sederhana sampai yang butuh beberapa langkah.">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Operasi Hitung Bilangan Bulat">
-  <meta property="og:description" content="Latihan bertingkat untuk operasi hitung campur bilangan bulat, dari yang sederhana sampai yang butuh beberapa langkah. Tiap benar, tingkat kesulitan naik.">
+  <meta property="og:description" content="Latihan bertingkat untuk operasi hitung campur bilangan bulat, dari yang sederhana sampai yang butuh beberapa langkah. Dua jawaban benar berturut-turut menaikkan tingkat kesulitan.">
   <meta property="og:locale" content="id">
   <style>
 :root {
@@ -293,7 +293,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
   <div class="wrap">
     <header>
       <h1>Operasi Hitung Bilangan Bulat</h1>
-      <p>Kerjakan soal campur bilangan bulat. Setiap jawaban benar membuat tingkat kesulitan naik satu anak tangga.</p>
+      <p>Kerjakan soal campur bilangan bulat. Dua jawaban benar berturut-turut membuat tingkat kesulitan naik satu anak tangga.</p>
     </header>
 
     <section class="panel" aria-labelledby="stat-heading">
@@ -351,7 +351,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     "description": "Latihan bertingkat untuk operasi hitung campur bilangan bulat, dari yang sederhana sampai yang butuh beberapa langkah.",
     "variables": [
       { "name": "level", "label": "Tingkat kesulitan", "min": 1, "max": 3, "default": 1, "unit": "" },
-      { "name": "round", "label": "Ronde", "min": 1, "max": 0, "default": 1, "unit": "" }
+      { "name": "round", "label": "Ronde", "min": 1, "max": null, "default": 1, "unit": "" }
     ],
     "presets": [
       { "name": "Mulai dari tingkat 1", "variables": { "level": 1 } },
@@ -416,24 +416,18 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
         c = randInt(-8, 8) || 3;
         d = randInt(2, 9);
         op = pick(["+", "−"]);
-        e = op === "−" ? randInt(1, 8) : randInt(-8, -1);
+        e = randInt(1, 8) * (Math.random() < 0.5 ? -1 : 1);
         tokens = [c, op, d, "×", e];
       } else {
         // Three operations with parentheses around the middle pair.
         f = randInt(-6, 6) || 4;
-        g = randInt(2, 9);
         h = randInt(2, 6);
-        k = randInt(0, 6);          // keep the last term positive so it reads clearly
         p1 = pick(["+", "−"]);
         p2 = pick(["×", "÷"]);
         p3 = pick(["+", "−"]);
-        if (p2 === "÷") {
-          // choose a divisor of g so the quotient stays a whole number
-          var divisors = [1, 2, 3, 4, 5, 6, 7, 8, 9].filter(function (d) {
-            return g % d === 0 && d > 1 && d <= 6;
-          });
-          h = pick(divisors);
-        }
+        k = randInt(0, 6);          // keep the last term positive so it reads clearly
+        // For ÷, build the dividend as h × q so the quotient is always a whole number.
+        g = p2 === "÷" ? h * randInt(2, 9) : randInt(2, 9);
         tokens = [f, p1, "(", g, p2, h, ")", p3, k];
       }
 
@@ -469,7 +463,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
           flat[j - 1] = flat[j - 1] * flat[j + 1];
           flat.splice(j, 2);
         } else if (flat[j] === "÷") {
-          var divisor = flat[j + 1] || 1;
+          var divisor = flat[j + 1];
           flat[j - 1] = Math.round((flat[j - 1] / divisor) * 100) / 100;
           flat.splice(j, 2);
         }
@@ -583,13 +577,13 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     // Replace the parenthesised group with its value, then flatten to text.
     function renderPlain(toks, openIdx, closeIdx, iv) {
       var copy = toks.slice();
-      copy.splice(openIdx, closeIdx - openIdx + 2, iv);
+      copy.splice(openIdx, closeIdx - openIdx + 1, iv);
       return copy.map(plainToken).join(" ");
     }
 
     function roundEstimate(v) {
       if (v === 0) return 0;
-      var mag = Math.pow(10, Math.floor(Math.log10(Math.abs(v))) - 1);
+      var mag = Math.pow(10, Math.floor(Math.log10(Math.abs(v))));
       var q = v / mag;
       var snapped = Math.abs(q) < 1.5 ? 1 : (Math.abs(q) < 3.5 ? 2 : (Math.abs(q) < 7.5 ? 5 : 10));
       return snapped * Math.sign(q) * mag;

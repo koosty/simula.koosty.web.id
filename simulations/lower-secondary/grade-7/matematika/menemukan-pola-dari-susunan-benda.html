@@ -392,7 +392,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     function figureLayout(W, count) {
       var pad = 10;
       var gap = 8;
-      var boxW = Math.max(56, (W - pad * 2 - gap * (count - 1)) / count);
+      var boxW = (W - pad * 2 - gap * (count - 1)) / count;
       return { pad: pad, gap: gap, boxW: boxW };
     }
 
@@ -480,9 +480,10 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
 
         /* label */
         ctx.fillStyle = isNewest ? warn : muted;
-        ctx.font = "700 12px " + token("--font-mono");
+        ctx.font = "600 11px " + token("--font");
         ctx.textAlign = "center";
-        ctx.fillText("Gambar " + i + ": " + n, cx, boxY + boxH + 14);
+        ctx.fillText("Gambar " + i, cx, boxY + boxH + 12);
+        ctx.fillText(String(n), cx, boxY + boxH + 26);
 
         ctx.restore();
       }
@@ -565,7 +566,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
 
     function addFigure() {
       if (state.figures >= MAX_FIG) {
-        setFeedback("Sudah lima gambar. Tebak jumlah pada gambar berikutnya, lalu tebak lagi dari gambar 1 untuk mengubah bentuk.", null);
+        setFeedback("Sudah lima gambar. Tebak jumlah pada gambar berikutnya, atau kembali ke gambar 1 untuk mulai lagi.", null);
         return;
       }
       state.checked = false;
@@ -580,9 +581,9 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       var sh = shape();
       var nextN = sh.count(state.figures + 1);
       var raw = document.getElementById("guess-input").value.trim();
-      var v = parseInt(raw, 10);
-      if (raw === "" || isNaN(v)) {
-        setFeedback("Tulis dulu tebakanmu berupa angka.", null);
+      var v = Number(raw);
+      if (!/^\d+$/.test(raw)) {
+        setFeedback("Tulis dulu tebakanmu berupa angka bulat.", null);
         return;
       }
       state.checked = true;
@@ -655,6 +656,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
 
     document.addEventListener("keydown", function (e) {
       if (e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.key === " ") { e.preventDefault(); addFigure(); }
       if (e.key === "r" || e.key === "R") resetState();
     });

@@ -154,7 +154,7 @@ tbody tr.new{animation:flash var(--motion-slow) ease-out}
     <p>Topik menentukan cara mengumpulkan datamu. Perhatikan bedanya: data kualitatif berupa kategori, data kuantitatif berupa angka.</p>
     <div class="row" id="topic-list"></div>
     <div class="row fill" style="margin-top:var(--space-3)">
-      <button class="btn btn-primary" id="topic-next-btn" onclick="confirmTopic()">Lanjut ke pertanyaan</button>
+      <button class="btn btn-primary" id="topic-next-btn">Lanjut ke pertanyaan</button>
     </div>
   </section>
 
@@ -166,15 +166,15 @@ tbody tr.new{animation:flash var(--motion-slow) ease-out}
     <input type="text" id="question-input" placeholder="Contoh: Makanan apa yang paling disukai kelas 7A?">
     <p class="hint" id="question-help" style="margin-top:var(--space-2)"></p>
     <div class="row" style="margin-top:var(--space-3)">
-      <button class="btn btn-ghost" id="suggest-btn" onclick="suggestQuestion()">Beri contoh pertanyaan</button>
-      <button class="btn" id="question-next-btn" onclick="confirmQuestion()">Lanjut ke pengumpulan data</button>
+      <button class="btn btn-ghost" id="suggest-btn">Beri contoh pertanyaan</button>
+      <button class="btn" id="question-next-btn">Lanjut ke pengumpulan data</button>
     </div>
   </section>
 
   <!-- STEP 3 -->
   <section class="card locked" id="step-3-control">
     <h3>Tahap 3 &mdash; Kumpulkan data</h3>
-    <p id="collect-intro">Isi satu baris untuk setiap siswa. Gunakan tombol acak untuk mengisi data kelas contoh.</p>
+    <p id="collect-intro">Isi satu baris untuk setiap siswa. Gunakan tombol Isi contoh data untuk mengisi data kelas contoh.</p>
     <div class="two">
       <div>
         <label class="control-label" for="siswa-input">Nama siswa</label>
@@ -182,14 +182,14 @@ tbody tr.new{animation:flash var(--motion-slow) ease-out}
         <label class="control-label" for="nilai-input" style="margin-top:var(--space-2)" id="value-label">Jawaban</label>
         <input type="text" id="nilai-input" placeholder="Isi jawaban">
         <div class="row fill" style="margin-top:var(--space-3)">
-          <button class="btn btn-primary" id="add-btn" onclick="addRow()">Tambah data</button>
+          <button class="btn btn-primary" id="add-btn">Tambah data</button>
         </div>
       </div>
       <div>
         <p class="hint">Data kelas contoh</p>
         <div class="row fill">
-          <button class="btn" id="acak-btn" onclick="fillRandom()">Acak data kelas</button>
-          <button class="btn btn-ghost" id="clear-data-btn" onclick="clearRows()">Kosongkan</button>
+          <button class="btn" id="acak-btn">Isi contoh data</button>
+          <button class="btn btn-ghost" id="clear-data-btn">Kosongkan</button>
         </div>
         <p class="hint" id="class-hint" style="margin-top:var(--space-2)"></p>
       </div>
@@ -199,7 +199,7 @@ tbody tr.new{animation:flash var(--motion-slow) ease-out}
       <tbody id="data-body"></tbody>
     </table>
     <div class="row" style="margin-top:var(--space-4)">
-      <button class="btn btn-primary" id="data-next-btn" onclick="confirmData()">Lanjut ke tabel ringkasan</button>
+      <button class="btn btn-primary" id="data-next-btn">Lanjut ke tabel ringkasan</button>
     </div>
   </section>
 
@@ -214,8 +214,8 @@ tbody tr.new{animation:flash var(--motion-slow) ease-out}
     <h3 style="margin-top:var(--space-4)">Kesimpulan</h3>
     <p id="conclusion" class="mono" style="font-size:var(--text-sm)"></p>
     <div class="row fill" style="margin-top:var(--space-4)">
-      <button class="btn" id="print-btn" onclick="toggleSelesai()">Tandai investigasi selesai</button>
-      <button class="btn btn-ghost" id="reset-btn" onclick="resetState()">Reset semua</button>
+      <button class="btn" id="print-btn">Tandai investigasi selesai</button>
+      <button class="btn btn-ghost" id="reset-btn">Reset semua</button>
     </div>
     <p class="hint" id="done-hint" style="margin-top:var(--space-2)"></p>
   </section>
@@ -264,7 +264,7 @@ document.addEventListener('DOMContentLoaded', function () {
       min: 4, max: 11, unit: 'jam',
       valueLabel: 'Jam tidur (jam)', column: 'Jam tidur (jam)' },
     { id: 'olahraga', label: 'Olahraga favorit', badge: 'kualitatif', kind: 'kategori',
-      options: ['Bulu tangkis', 'Sepak bola', 'Renang', 'Basket', 'Voli', 'Badminton'],
+      options: ['Bulu tangkis', 'Sepak bola', 'Renang', 'Basket', 'Voli'],
       question: 'Olahraga apa yang paling disukai siswa kelas 7A?',
       pool: ['Bulu tangkis', 'Sepak bola', 'Renang', 'Basket', 'Voli'],
       valueLabel: 'Olahraga favorit', column: 'Olahraga favorit' }
@@ -289,6 +289,7 @@ document.addEventListener('DOMContentLoaded', function () {
       var el = document.getElementById('step-' + i + '-control');
       el.classList.toggle('locked', i > n);
       el.classList.toggle('done', i < n);
+      el.inert = i < n;
       document.getElementById('step-' + i + '-pill').classList.toggle('on', i === n);
     });
     state.step = n;
@@ -411,22 +412,12 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
     var t = topic();
-    if (t.kind === 'angka') {
-      var num = parseFloat(nilai.replace(',', '.'));
-      if (isNaN(num) || num < t.min || num > t.max) {
-        feedback('Untuk data kuantitatif, isi angka antara ' + t.min + ' dan ' + t.max + ' ' + t.unit + '.', 'error');
-        return;
-      }
-      nilai = String(num);
-    } else {
-      var cap = nilai.charAt(0).toUpperCase() + nilai.slice(1).toLowerCase();
-      if (t.options.indexOf(cap) < 0) {
-        feedback('Data kualitatif harus salah satu kategori: ' + t.options.join(', ') + '.', 'error');
-        return;
-      }
-      nilai = cap;
+    var res = parseValue(nilai, t);
+    if (res.error) {
+      feedback(res.error, 'error');
+      return;
     }
-    state.rows.push({ nama: nama, nilai: nilai });
+    state.rows.push({ nama: nama, nilai: res.value });
     document.getElementById('siswa-input').value = '';
     document.getElementById('nilai-input').value = '';
     renderTable();
@@ -461,6 +452,19 @@ document.addEventListener('DOMContentLoaded', function () {
       feedback('Kumpulkan sedikitnya 3 data sebelum menyusun tabel.', 'error');
       return;
     }
+    var t = topic();
+    for (var i = 0; i < state.rows.length; i++) {
+      var row = state.rows[i];
+      var nama = row.nama.trim();
+      var res = parseValue(row.nilai.trim(), t);
+      if (!nama || res.error) {
+        feedback('Baris ' + (i + 1) + ' belum benar: ' + (!nama ? 'nama siswa kosong.' : res.error), 'error');
+        return;
+      }
+      row.nama = nama;
+      row.nilai = res.value;
+    }
+    renderTable();
     buildSummary();
     showStage(4);
     feedback('Tabel ringkasan selesai. Baca kolom jumlah dan cari pola tertingginya.');
@@ -474,24 +478,25 @@ document.addEventListener('DOMContentLoaded', function () {
     head.innerHTML = ''; body.innerHTML = '';
 
     if (t.kind === 'angka') {
-      var vals = state.rows.map(function (r) { return parseFloat(r.nilai); }).filter(function (n) { return !isNaN(n); });
+      var vals = state.rows.map(function (r) { return toNum(r.nilai); });
+      var n = vals.length;
       var sum = vals.reduce(function (a, b) { return a + b; }, 0);
-      var mean = sum / vals.length;
+      var mean = sum / n;
       var sorted = vals.slice().sort(function (a, b) { return a - b; });
-      var median = sorted.length % 2 ? sorted[(sorted.length - 1) / 2]
-        : (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2;
-      var freq = {};
-      var modus = sorted[0], modusN = 0;
-      sorted.forEach(function (v) { freq[v] = (freq[v] || 0) + 1; if (freq[v] > modusN) { modusN = freq[v]; modus = v; } });
+      var median = n % 2 ? sorted[(n - 1) / 2] : (sorted[n / 2 - 1] + sorted[n / 2]) / 2;
+      var m = modes(vals.map(String), function (a, b) { return Number(a) - Number(b); });
+      var modusText = m.values.length
+        ? m.values.map(function (v) { return fmt(Number(v)); }).join(', ') + ' ' + t.unit
+        : 'tidak ada';
       var rowsDef = [
-        ['Jumlah data', vals.length],
+        ['Jumlah data', n],
         ['Jumlah seluruh nilai', fmt(sum)],
         ['Rerata (mean)', fmt(mean) + ' ' + t.unit],
         ['Median', fmt(median) + ' ' + t.unit],
-        ['Modus', modus + ' ' + t.unit],
-        ['Nilai terbesar', sorted[sorted.length - 1] + ' ' + t.unit],
-        ['Nilai terkecil', sorted[0] + ' ' + t.unit],
-        ['Jangkauan', (sorted[sorted.length - 1] - sorted[0]) + ' ' + t.unit]
+        ['Modus', modusText],
+        ['Nilai terbesar', fmt(sorted[n - 1]) + ' ' + t.unit],
+        ['Nilai terkecil', fmt(sorted[0]) + ' ' + t.unit],
+        ['Jangkauan', fmt(sorted[n - 1] - sorted[0]) + ' ' + t.unit]
       ];
       head.innerHTML = '<th>Ukuran</th><th>Nilai</th>';
       rowsDef.forEach(function (r) {
@@ -502,12 +507,13 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       document.getElementById('conclusion').textContent =
         state.question + ' \u2192 rerata ' + fmt(mean) + ' ' + t.unit + ', median ' + fmt(median) + ' ' + t.unit +
-        ', modus ' + modus + ' ' + t.unit + '.';
+        ', modus ' + modusText + '.';
     } else {
       var counts = {};
       state.rows.forEach(function (r) { counts[r.nilai] = (counts[r.nilai] || 0) + 1; });
       var keys = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a] || a.localeCompare(b); });
       var total = state.rows.length;
+      var mk = modes(state.rows.map(function (r) { return r.nilai; }), function (a, b) { return a.localeCompare(b); });
       head.innerHTML = '<th>Kategori</th><th>Jumlah</th><th>Persentase</th>';
       keys.forEach(function (k) {
         var tr = document.createElement('tr');
@@ -520,11 +526,34 @@ document.addEventListener('DOMContentLoaded', function () {
       tr2.className = 'summary';
       tr2.innerHTML = '<td>Jumlah</td><td class="val">' + total + '</td><td class="val">100%</td>';
       body.appendChild(tr2);
-      document.getElementById('conclusion').textContent =
-        state.question + ' \u2192 modus: ' + keys[0] + ' (' + counts[keys[0]] + ' siswa).';
+      document.getElementById('conclusion').textContent = state.question + ' \u2192 modus: ' +
+        (mk.values.length ? mk.values.join(', ') + ' (' + mk.count + ' siswa).' : 'tidak ada, semua jawaban hanya muncul sekali.');
     }
   }
-  function fmt(n) { return Math.round(n * 100) / 100; }
+  function toNum(s) { return parseFloat(String(s).replace(',', '.')); }
+  function fmt(n) { return String(Math.round(n * 100) / 100).replace('.', ','); }
+  /* Validasi satu jawaban; mengembalikan {value} yang sudah baku atau {error}. */
+  function parseValue(raw, t) {
+    if (t.kind === 'angka') {
+      var num = /^\d+([.,]\d+)?$/.test(raw) ? toNum(raw) : NaN;
+      if (isNaN(num) || num < t.min || num > t.max) {
+        return { error: 'Untuk data kuantitatif, isi angka antara ' + t.min + ' dan ' + t.max + ' ' + t.unit + '.' };
+      }
+      return { value: fmt(num) };
+    }
+    var cap = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+    if (t.options.indexOf(cap) < 0) {
+      return { error: 'Data kualitatif harus salah satu kategori: ' + t.options.join(', ') + '.' };
+    }
+    return { value: cap };
+  }
+  /* Modus = nilai dengan frekuensi tertinggi (bisa lebih dari satu); kosong bila tidak ada yang berulang. */
+  function modes(values, cmp) {
+    var counts = {}, max = 0;
+    values.forEach(function (v) { counts[v] = (counts[v] || 0) + 1; if (counts[v] > max) max = counts[v]; });
+    var list = max > 1 ? Object.keys(counts).filter(function (k) { return counts[k] === max; }).sort(cmp) : [];
+    return { count: max, values: list };
+  }
 
   function toggleSelesai() {
     if (state.selesai) {
@@ -532,12 +561,12 @@ document.addEventListener('DOMContentLoaded', function () {
       document.getElementById('print-btn').textContent = 'Tandai investigasi selesai';
       document.getElementById('done-hint').textContent = '';
       document.getElementById('step-progress').style.width = '75%';
-      feedback('Tandai investigasi selesai untuk membekukan hasil kerjamu.');
+      feedback('Tanda selesai dicabut. Hasil tetap ada di tabel ringkasan.');
       return;
     }
     state.selesai = true;
     document.getElementById('print-btn').textContent = 'Buka lagi hasil';
-    document.getElementById('done-hint').textContent = 'Investigasi selesai. Hasilmu sudah tersimpan di halaman ini.';
+    document.getElementById('done-hint').textContent = 'Investigasi selesai. Hasilmu ditampilkan di halaman ini dan hilang jika halaman dimuat ulang.';
     document.getElementById('step-progress').style.width = '100%';
     [1, 2, 3, 4].forEach(function (i) { document.getElementById('step-' + i + '-pill').classList.add('on'); });
     feedback('Kerja bagus! Kamu sudah merumuskan pertanyaan, mengumpulkan data, dan menyajikannya dalam tabel.', 'success');
@@ -571,6 +600,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
   buildTopics();
   showStage(1);
+  document.getElementById('topic-next-btn').addEventListener('click', confirmTopic);
+  document.getElementById('suggest-btn').addEventListener('click', suggestQuestion);
+  document.getElementById('question-next-btn').addEventListener('click', confirmQuestion);
+  document.getElementById('add-btn').addEventListener('click', addRow);
+  document.getElementById('acak-btn').addEventListener('click', fillRandom);
+  document.getElementById('clear-data-btn').addEventListener('click', clearRows);
+  document.getElementById('data-next-btn').addEventListener('click', confirmData);
+  document.getElementById('print-btn').addEventListener('click', toggleSelesai);
+  document.getElementById('reset-btn').addEventListener('click', resetState);
 });
 </script>
 </body>

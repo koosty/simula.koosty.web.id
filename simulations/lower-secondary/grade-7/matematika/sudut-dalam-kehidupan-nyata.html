@@ -344,25 +344,25 @@
     "gameConfig": {
       "controls": ["angle-handle", "sudut-slider", "answer-input", "option-buttons"],
       "targets": [
-        { "id": "sudut-1", "type": "unknown-angle", "vertex": "persimpangan", "value": 40, "tolerance": 1 },
-        { "id": "sudut-2", "type": "unknown-angle", "vertex": "kemiringan", "value": 75, "tolerance": 1 },
-        { "id": "sudut-3", "type": "unknown-angle", "vertex": "atap", "value": 50, "tolerance": 1 },
-        { "id": "sudut-4", "type": "unknown-angle", "vertex": "tangga", "value": 50, "tolerance": 1 },
-        { "id": "sudut-5", "type": "unknown-angle", "vertex": "persimpangan", "value": 60, "tolerance": 1 },
-        { "id": "sudut-6", "type": "unknown-angle", "vertex": "atap", "value": 70, "tolerance": 1 },
-        { "id": "sudut-7", "type": "unknown-angle", "vertex": "tangga", "value": 40, "tolerance": 1 },
+        { "id": "sudut-1", "type": "unknown-angle", "vertex": "atap", "value": 50, "tolerance": 1 },
+        { "id": "sudut-2", "type": "unknown-angle", "vertex": "atap", "value": 70, "tolerance": 1 },
+        { "id": "sudut-3", "type": "unknown-angle", "vertex": "tangga", "value": 50, "tolerance": 1 },
+        { "id": "sudut-4", "type": "unknown-angle", "vertex": "persimpangan", "value": 40, "tolerance": 1 },
+        { "id": "sudut-5", "type": "unknown-angle", "vertex": "tangga", "value": 40, "tolerance": 1 },
+        { "id": "sudut-6", "type": "unknown-angle", "vertex": "kemiringan", "value": 75, "tolerance": 1 },
+        { "id": "sudut-7", "type": "unknown-angle", "vertex": "persimpangan", "value": 60, "tolerance": 1 },
         { "id": "sudut-8", "type": "unknown-angle", "vertex": "simpang-tiga", "value": 40, "tolerance": 1 }
       ],
       "initialConditions": { "level": 1, "score": 0, "benar": 0, "salah": 0 },
       "successCondition": "sudut yang dijawab berbeda paling banyak 1 derajat dari sudut sebenarnya",
       "levels": [
-        { "id": "s13-1", "scene": "persimpangan", "rule": "komplemen" },
-        { "id": "s13-2", "scene": "kemiringan", "rule": "komplemen" },
-        { "id": "s13-3", "scene": "atap", "rule": "jumlah-segitiga" },
-        { "id": "s13-4", "scene": "tangga", "rule": "komplemen" },
-        { "id": "s13-5", "scene": "persimpangan", "rule": "pelurus" },
-        { "id": "s13-6", "scene": "atap", "rule": "jumlah-segitiga" },
-        { "id": "s13-7", "scene": "tangga", "rule": "komplemen" },
+        { "id": "s13-1", "scene": "atap", "rule": "jumlah-segitiga" },
+        { "id": "s13-2", "scene": "atap", "rule": "jumlah-segitiga" },
+        { "id": "s13-3", "scene": "tangga", "rule": "komplemen" },
+        { "id": "s13-4", "scene": "persimpangan", "rule": "komplemen" },
+        { "id": "s13-5", "scene": "tangga", "rule": "komplemen" },
+        { "id": "s13-6", "scene": "kemiringan", "rule": "komplemen" },
+        { "id": "s13-7", "scene": "persimpangan", "rule": "pelurus" },
         { "id": "s13-8", "scene": "simpang-tiga", "rule": "garis-lurus" }
       ]
     },
@@ -391,29 +391,32 @@
 
     /* ------------------------------------------------------------------
        Delapan tantangan. Setiap level memberi beberapa sudut yang sudah
-       diketahui (digambar penuh) dan satu sudut yang dicari (busur ungu).
+       diketahui (digambar penuh) dan satu sudut yang dicari (busur ungu). */
 
     /* Sudut atap dan tangga ikut dihitung agar busur selalu cocok dengan
        gambar. Sumbu x ke kanan, sumbu y ke bawah; sudut diukur dari arah
        kanan dan berputar berlawanan arah jarum jam. */
-    var ATAP = { atapX: 320, atapY: 160, kakiY: 280, lebarDasar: 200 };
+    var ATAP = { atapX: 320, kakiY: 280, lebarDasar: 200 };
     var TANGGA = { lantaiY: 330, kakiX: 200, panjang: 260 };
 
     function isiSudutAtap(lv) {
-      /* Skala dari lebar dasar tetap, bukan tinggi tetap, supaya atap
-         tetap proporsional untuk setiap pasangan sudut. */
-      var tinggi = ATAP.lebarDasar * Math.tan(lv.sudutKiri * RAD) *
-        Math.tan(lv.sudutKanan * RAD) / (Math.tan(lv.sudutKiri * RAD) + Math.tan(lv.sudutKanan * RAD));
-      var atap = { x: ATAP.atapX, y: ATAP.kakiY - tinggi };
+      /* Alas atap tetap selebar ATAP.lebarDasar. Tinggi dan letak puncak
+         dihitung dari dua sudut alas, supaya gambar sesuai besar sudutnya. */
+      var tanKiri = Math.tan(lv.sudutKiri * RAD);
+      var tanKanan = Math.tan(lv.sudutKanan * RAD);
+      var tinggi = ATAP.lebarDasar / (1 / tanKiri + 1 / tanKanan);
       var kiri = ATAP.atapX - ATAP.lebarDasar / 2;
       var kanan = ATAP.atapX + ATAP.lebarDasar / 2;
+      var atap = { x: kiri + tinggi / tanKiri, y: ATAP.kakiY - tinggi };
       lv.atap = atap;
       lv.known = [
         { x: kiri, y: ATAP.kakiY, a0: 0, a1: lv.sudutKiri, label: lv.sudutKiri + '\u00B0', r: 66 },
         { x: kanan, y: ATAP.kakiY, a0: 180 - lv.sudutKanan, a1: 180, label: lv.sudutKanan + '\u00B0', r: 66 }
       ];
+      /* Sudut puncak diukur dari sisi kiri atap (180 + sudut kiri)
+         sampai sisi kanan (360 - sudut kanan). */
       lv.unknown = {
-        x: atap.x, y: atap.y, a0: 180 + lv.sudutKanan, arah: 1,
+        x: atap.x, y: atap.y, a0: 180 + lv.sudutKiri, arah: 1,
         benar: 180 - lv.sudutKiri - lv.sudutKanan, r: 62
       };
       lv.kaki = { kiri: kiri, kanan: kanan };
@@ -428,7 +431,7 @@
       lv.atas = atas;
       if (diketahuiDinding) {
         lv.known = [{
-          x: atas.x, y: atas.y, a0: 180, a1: 270,
+          x: atas.x, y: atas.y, a0: 180 + lv.sudutLantai, a1: 270,
           label: (90 - lv.sudutLantai) + '\u00B0', r: 74
         }];
         lv.unknown = { x: TANGGA.kakiX, y: TANGGA.lantaiY, a0: 0, arah: 1, benar: lv.sudutLantai, r: 74 };
@@ -437,7 +440,7 @@
           x: TANGGA.kakiX, y: TANGGA.lantaiY, a0: 0, a1: lv.sudutLantai,
           label: lv.sudutLantai + '\u00B0', r: 74
         }];
-        lv.unknown = { x: atas.x, y: atas.y, a0: 270, arah: 1, benar: 90 - lv.sudutLantai, r: 74 };
+        lv.unknown = { x: atas.x, y: atas.y, a0: 180 + lv.sudutLantai, arah: 1, benar: 90 - lv.sudutLantai, r: 74 };
       }
       return lv;
     }
@@ -468,7 +471,7 @@
         id: 'atap-65-45',
         adegan: 'atap',
         nama: 'Atap Rumah',
-        petunjuk: 'Jumlah tiga sudut dalam segitiga selalu 180&deg;. Jangan tertipu dengan gambar yang tidak berskala.',
+        petunjuk: 'Jumlah tiga sudut dalam segitiga selalu 180&deg;. Gambar atap sudah sesuai dengan besar sudutnya.',
         teks: 'Atap rumah panggung memiliki sudut kiri 65&deg; dan kanan 45&deg;. Berapa besar sudut puncaknya?',
         sudutKiri: 65,
         sudutKanan: 45,
@@ -492,18 +495,18 @@
         id: 'persimpangan-90',
         adegan: 'persimpangan',
         nama: 'Persimpangan Jalan',
-        petunjuk: 'Jalan yang satu tegak lurus jalan yang lain. Dua sudut siku selalu dijumlahkan, bukan dikurangi.',
+        petunjuk: 'Dua jalan yang saling tegak lurus membentuk sudut siku 90&deg;. Sudut siku itu terbagi dua bagian yang jumlahnya 90&deg;, bukan 180&deg;.',
         teks: 'Di persimpangan jalan desa, satu jalan membagi sudut siku menjadi dua bagian. Sudut yang sudah diketahui 50&deg;. Berapa besar sudut yang kedua?',
         known: [{ x: 320, y: 300, a0: 40, a1: 90, label: '50\u00B0' }],
         unknown: { x: 320, y: 300, a0: 0, arah: 1, benar: 40 },
         opsi: [40, 50, 90, 130],
-        jelaskan: 'Jalan membentuk sudut siku, jadi 40&deg; + 50&deg; + 90&deg; = 180&deg;. Sudut yang dicari besarnya 40&deg;.'
+        jelaskan: 'Dua bagian sudut siku itu berjumlah 90&deg;: 50&deg; + sudut yang dicari = 90&deg;. Jadi sudut yang dicari = 90&deg; &minus; 50&deg; = 40&deg;.'
       },
       {
         id: 'kemiringan-90',
         adegan: 'kemiringan',
         nama: 'Kemiringan Jalan',
-        petunjuk: 'Jalan miring membentuk sudut siku dengan garis vertikal. Gunakan 90&deg; dikurangi sudut miring.',
+        petunjuk: 'Garis datar tegak lurus garis vertikal. Sudut miring jalan ditambah sudut dengan garis vertikal sama dengan 90&deg;.',
         teks: 'Jalan menuju pasar menanjak 15&deg; dari garis datar. Berapa besar sudut antara jalan itu dan garis vertikal di titik yang sama?',
         known: [{ x: 150, y: 320, a0: 0, a1: 15, label: '15\u00B0' }],
         unknown: { x: 150, y: 320, a0: 15, arah: 1, benar: 75 },
@@ -618,8 +621,8 @@
         atap.x + ',' + atap.y + ' ' + kaki.kanan.toFixed(1) + ',' + dasar + '"/>';
       s += '<line class="dinding" x1="' + kaki.kiri.toFixed(1) + '" y1="' + dasar + '" x2="' + kaki.kiri.toFixed(1) + '" y2="' + tanah + '"/>';
       s += '<line class="dinding" x1="' + kaki.kanan.toFixed(1) + '" y1="' + dasar + '" x2="' + kaki.kanan.toFixed(1) + '" y2="' + tanah + '"/>';
-      s += '<line class="permukaan" x1="' + (kaki.kiri - 30).toFixed(1) + '" y1="' + dasar + '" x2="' + atap.x + '" y2="' + atap.y + '"/>';
-      s += '<line class="permukaan" x1="' + atap.x + '" y1="' + atap.y + '" x2="' + (kaki.kanan + 30).toFixed(1) + '" y2="' + dasar + '"/>';
+      s += '<line class="permukaan" x1="' + kaki.kiri.toFixed(1) + '" y1="' + dasar + '" x2="' + atap.x.toFixed(1) + '" y2="' + atap.y.toFixed(1) + '"/>';
+      s += '<line class="permukaan" x1="' + atap.x.toFixed(1) + '" y1="' + atap.y.toFixed(1) + '" x2="' + kaki.kanan.toFixed(1) + '" y2="' + dasar + '"/>';
       s += '<line class="tengah" x1="' + kaki.kiri.toFixed(1) + '" y1="' + dasar + '" x2="' + kaki.kanan.toFixed(1) + '" y2="' + dasar + '"/>';
       s += '<line class="permukaan" x1="' + (kaki.kiri - 40).toFixed(1) + '" y1="' + tanah + '" x2="' + (kaki.kanan + 40).toFixed(1) + '" y2="' + tanah + '"/>';
       s += '<rect class="pintu" x="' + ((kaki.kiri + kaki.kanan) / 2 - 16).toFixed(1) + '" y="' + (tanah - 46) + '" width="32" height="46" rx="4"/>';
@@ -747,9 +750,6 @@
       els.knobHit = document.getElementById('knob-hit');
 
       els.knobHit.addEventListener('pointerdown', mulaiSeretBusur);
-      window.addEventListener('pointermove', geserBusur);
-      window.addEventListener('pointerup', selesaiSeretBusur);
-      window.addEventListener('pointercancel', selesaiSeretBusur);
 
       gambarBusur();
     }
@@ -842,6 +842,8 @@
       state.tampil = 20;
       slider.value = 20;
       answerInput.value = '';
+      answerInput.disabled = false;
+      slider.disabled = false;
 
       sceneTitle.textContent = lv.nama;
       questionTitle.textContent = 'Tantangan ' + (state.index + 1);
@@ -891,7 +893,12 @@
         feedback.textContent = 'Isi dulu besar sudutnya dengan angka derajat, lalu tekan Periksa Jawaban.';
         return;
       }
-      setSudutDicoba(Math.abs(n) <= 175 ? Math.abs(n) : 175);
+      if (n < 0 || n > 180) {
+        feedback.className = 'error';
+        feedback.textContent = 'Besar sudut harus antara 0\u00B0 dan 180\u00B0.';
+        return;
+      }
+      setSudutDicoba(n);
       if (Math.abs(n - lv.unknown.benar) <= TOLERANSI) {
         state.terkunci = true;
         state.selesai = true;
@@ -906,6 +913,7 @@
         els.unlabel.textContent = lv.unknown.benar + '\u00B0';
         checkBtn.disabled = true;
         answerInput.disabled = true;
+        slider.disabled = true;
         if (state.index === LEVELS.length - 1) {
           nextBtn.disabled = false;
           nextBtn.textContent = 'Ulangi dari Tantangan 1';
@@ -962,7 +970,7 @@
       progressDisplay.textContent = state.benar + ' / ' + LEVELS.length;
       progressFill.style.width = Math.round(state.benar / LEVELS.length * 100) + '%';
       try {
-        window.localStorage.setItem('s13-skor-terbaik', String(terbaik()));
+        window.localStorage.setItem('s13-skor-terbaik', String(Math.max(terbaik(), state.skor)));
       } catch (e) { /* penyimpanan tidak tersedia, permainan tetap jalan */ }
     }
 
@@ -1002,6 +1010,9 @@
     checkBtn.addEventListener('click', function () { periksa(); });
     nextBtn.addEventListener('click', lewatLevel);
     resetBtn.addEventListener('click', resetPermainan);
+    window.addEventListener('pointermove', geserBusur);
+    window.addEventListener('pointerup', selesaiSeretBusur);
+    window.addEventListener('pointercancel', selesaiSeretBusur);
     answerInput.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') periksa();
     });

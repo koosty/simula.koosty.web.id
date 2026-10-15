@@ -149,13 +149,13 @@ input[type="text"]:focus-visible,input[type="number"]:focus-visible{outline:none
         <h3>Sisi yang belum diketahui</h3>
         <div class="answer-row">
           <input type="text" id="missing-input" inputmode="decimal" placeholder="contoh: 12" aria-label="Isi panjang sisi yang belum diketahui">
-          <button class="btn btn-primary" id="check-btn" onclick="checkMissing()">Cek</button>
+          <button class="btn btn-primary" id="check-btn">Cek</button>
         </div>
         <div class="steps" id="cross-steps"></div>
       </div>
       <div class="row fill">
-        <button class="btn" id="hint-btn" onclick="showHint()">Petunjuk</button>
-        <button class="btn btn-ghost" id="reset-btn" onclick="resetState()">Reset</button>
+        <button class="btn" id="hint-btn">Petunjuk</button>
+        <button class="btn btn-ghost" id="reset-btn">Reset</button>
       </div>
     </section>
   </div>
@@ -166,8 +166,8 @@ input[type="text"]:focus-visible,input[type="number"]:focus-visible{outline:none
     <h2>Syarat dua segitiga sebangun</h2>
     <ul>
       <li>Bentuknya sama: ketiga sudutnya sama besar.</li>
-      <li>Sisi yang bersesuaian memiliki perbandingan yang sama semua: <span class="mono">a/a&prime; = b/b&prime; = c/c&prime;</span></li>
-      <li>Perbandingan itu disebut <strong>faktor skala</strong> (perkalian).</li>
+      <li>Sisi yang bersesuaian memiliki perbandingan yang sama semua: <span class="mono">a&prime;/a = b&prime;/b = c&prime;/c</span></li>
+      <li>Perbandingan itu disebut <strong>faktor skala</strong>: sisi segitiga kecil = sisi segitiga besar × faktor skala.</li>
     </ul>
     <p class="hint">Ingat: kongruen berarti ukuran juga sama (faktor skala 1). Sebangun berarti ukuran boleh berbeda, tetapi bentuknya sama.</p>
   </section>
@@ -189,34 +189,37 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   function fmt(n) { return Math.round(n * 100) / 100; }
 
-  /* ---------- contexts: unit triangle in "unit" units, scaled by 1cm = 3px base ---------- */
+  /* ---------- contexts: side lengths in satuan; geometry scaled to fit the canvas ---------- */
   var SCENES = [
     {
       id: 'denah',
       label: 'Denah sekolah',
-      story: 'Denah sekolah memakai skala 1 : 500. Panjang sisi a di denah 8 cm. Berapa panjang a\u2032?',
+      story: 'Taman berbentuk segitiga siku-siku digambar dua kali: denah asli (a = 8 cm, b = 6 cm, c = 10 cm) dan salinannya dengan faktor skala di panel. Berapa panjang a\u2032 pada salinan?',
       icon: 'denah',
       unit: { a: 8, b: 6, c: 10 },
-      missing: { key: 'a', small: 'a\u2032', unit: 'cm' },
-      hint: 'Gunakan a/a\u2032 = c/c\u2032, lalu bagi dengan faktor skala yang sedang aktif.'
+      satuan: 'cm',
+      missing: { key: 'a', small: 'a\u2032' },
+      hint: 'Semua sisi dikali faktor skala yang sama. Jadi a\u2032 = a × faktor skala, dan c\u2032/c juga sama dengan faktor itu.'
     },
     {
       id: 'bendera',
       label: 'Tiang bendera',
-      story: 'Tiang bendera sekolah 15 m. Pada model skala 1 : 100, tiangnya hanya 15 cm. Berapa panjang sisi miring c\u2032?',
+      story: 'Tiang bendera 12 m, bayangannya 9 m, dan sisi miring dari ujung tiang ke ujung bayangan 15 m. Model dibuat dengan faktor skala di panel. Berapa sisi miring c\u2032 pada model?',
       icon: 'bendera',
       unit: { a: 9, b: 12, c: 15 },
-      missing: { key: 'c', small: 'c\u2032', unit: 'm' },
-      hint: 'Sisilah: a dengan a\u2032, b dengan b\u2032, dan c dengan c\u2032. Pilih pasangan yang sudah diketahui.'
+      satuan: 'm',
+      missing: { key: 'c', small: 'c\u2032' },
+      hint: 'Pasangkan a dengan a\u2032 dan b dengan b\u2032. Cukup satu pasangan yang sudah diketahui untuk mencari c\u2032.'
     },
     {
       id: 'rambu',
       label: 'Rambu jalan',
-      story: 'Papan rambu di tikungan jauh dan terlihat kecil. Panjangnya 60 cm, tiangnya 80 cm. Berapa tinggi tiang pada model?',
+      story: 'Model rambu jalan berbentuk segitiga siku-siku dibuat dengan faktor skala di panel. Ukuran asli: alas 60 cm, tinggi tiang 80 cm, dan sisi miring 100 cm. Berapa tinggi tiang b\u2032 pada model?',
       icon: 'rambu',
       unit: { a: 60, b: 80, c: 100 },
-      missing: { key: 'b', small: 'b\u2032', unit: 'cm' },
-      hint: 'Perbandingan tidak bergantung pada jarak. Yang penting tiap sisi punya faktor yang sama.'
+      satuan: 'cm',
+      missing: { key: 'b', small: 'b\u2032' },
+      hint: 'Perbandingan tidak bergantung pada ukuran. Yang penting tiap sisi punya faktor yang sama.'
     }
   ];
 
@@ -238,7 +241,7 @@ document.addEventListener('DOMContentLoaded', function () {
      Corner P = right angle. Sides: a (leg), b (leg), c (hypotenuse).        */
   function triPoints(sizeFactor) {
     var sc = SCENES[state.scene].unit;
-    var k = sizeFactor * 2.6 / Math.max(sc.a, sc.b);
+    var k = sizeFactor * 180 / Math.max(sc.a, sc.b);
     var A = sc.a * k, B = sc.b * k;
     return { pts: [[0, 0], [A, 0], [0, -B]], a: sc.a, b: sc.b, c: sc.c, A: A, B: B };
   }
@@ -272,7 +275,7 @@ document.addEventListener('DOMContentLoaded', function () {
     ctx.lineTo(originX, originY - r);
     ctx.lineWidth = 2; ctx.stroke();
 
-    /* equal-angle arcs at the two acute corners (they are equal in a right triangle) */
+    /* arc marks at the two acute corners (sudut lancip, bukan sudut siku-siku) */
     if (angleMarks) {
       [1, 2].forEach(function (vi) {
         var vx = originX + p[vi][0], vy = originY + p[vi][1];
@@ -342,20 +345,20 @@ document.addEventListener('DOMContentLoaded', function () {
     /* fit both triangles side by side */
     var totalW = big.A + small.A + 90;
     var maxH = Math.max(big.B, small.B);
-    var fit = Math.min(1, (W - 40) / totalW, (H - 70) / (maxH || 1));
+    var fit = Math.min(1, (W - 80) / totalW, (H - 70) / (maxH || 1));
     fit = Math.max(0.35, fit);
 
-    var ox1 = 24, oy = H - 34;
-    var ox2 = 24 + (big.A + 90) * fit;
+    var ox1 = 56 / fit, oy = (H - 34) / fit;
+    var ox2 = ox1 + big.A + 90;
 
     ctx.save();
     ctx.scale(fit, fit);
     drawTriangle(big, ox1, oy, mix(token('--accent'), token('--bg'), 0.25), token('--accent'),
-      [fmt(sc.unit.a) + ' cm', fmt(sc.unit.b) + ' cm', fmt(sc.unit.c) + ' cm'], true);
+      [fmt(sc.unit.a) + ' ' + sc.satuan, fmt(sc.unit.b) + ' ' + sc.satuan, fmt(sc.unit.c) + ' ' + sc.satuan], true);
     var smallLabels = [
-      fmt(sc.unit.a * state.scaleShown) + ' cm',
-      fmt(sc.unit.b * state.scaleShown) + ' cm',
-      fmt(sc.unit.c * state.scaleShown) + ' cm'
+      fmt(sc.unit.a * state.scale) + ' ' + sc.satuan,
+      fmt(sc.unit.b * state.scale) + ' ' + sc.satuan,
+      fmt(sc.unit.c * state.scale) + ' ' + sc.satuan
     ];
     if (state.checked) {
       var mk = sc.missing.key;
@@ -374,14 +377,15 @@ document.addEventListener('DOMContentLoaded', function () {
     ctx.fillText(sc.label, 52, 30);
     ctx.font = '12px ' + token('--font-mono');
     ctx.fillStyle = token('--text-dim');
-    ctx.fillText('skala ' + state.scaleShown.toFixed(2) + '\u00D7', W - 62, 30);
+    ctx.textAlign = 'right';
+    ctx.fillText('skala ' + state.scaleShown.toFixed(2) + '\u00D7', W - 16, 30);
 
     /* connecting hint between triangles */
     ctx.strokeStyle = token('--border-strong');
     ctx.setLineDash([4, 5]); ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(24 + big.A * fit + 14, oy - big.B * fit * 0.4);
-    ctx.lineTo(ox2 - 12, oy - small.B * fit * 0.4);
+    ctx.moveTo(56 + big.A * fit + 14, H - 34 - big.B * fit * 0.4);
+    ctx.lineTo(ox2 * fit - 12, H - 34 - small.B * fit * 0.4);
     ctx.stroke(); ctx.setLineDash([]);
   }
 
@@ -398,18 +402,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
   /* ---------- steps / cross-multiplication ---------- */
   function renderSteps() {
-    var sc = SCENES[state.scene];
-    var u = sc.unit, m = sc.missing;
-    var smallVal = fmt(u[m.key] * state.scale);
-    var knownKey = m.key === 'c' ? 'a' : 'c';
-    var knownBig = u[knownKey], knownSmall = fmt(u[knownKey] * state.scale);
     var host = document.getElementById('cross-steps');
     if (!state.checked) { host.innerHTML = ''; return; }
+    var sc = SCENES[state.scene];
+    var u = sc.unit, m = sc.missing;
+    var K = m.key === 'c' ? 'a' : 'c';
+    var Kb = u[K], Ks = fmt(Kb * state.scale);
+    var Mb = u[m.key], x = fmt(Mb * state.scale);
     host.innerHTML =
-      '<span class="on">1. ' + knownKey + ' / ' + knownBig + ' = ' + knownKey + '&prime; / ' + knownSmall + '</span>' +
-      '<span class="on">2. ' + m.key + ' / ' + u[m.key] + ' = ' + m.small + ' / x</span>' +
-      '<span class="on">3. ' + m.key + ' &times; x = ' + u[m.key] + ' &times; ' + knownSmall + '</span>' +
-      '<span class="on">4. x = ' + smallVal + ' ' + m.unit + '</span>';
+      '<span class="on">1. ' + m.small + ' / ' + m.key + ' = ' + K + '&prime; / ' + K + '</span>' +
+      '<span class="on">2. ' + m.small + ' / ' + Mb + ' = ' + Ks + ' / ' + Kb + '</span>' +
+      '<span class="on">3. ' + m.small + ' &times; ' + Kb + ' = ' + Mb + ' &times; ' + Ks + '</span>' +
+      '<span class="on">4. ' + m.small + ' = (' + Mb + ' &times; ' + Ks + ') / ' + Kb + ' = ' + x + ' ' + sc.satuan + '</span>';
   }
 
   function checkMissing() {
@@ -417,8 +421,8 @@ document.addEventListener('DOMContentLoaded', function () {
     var input = document.getElementById('missing-input');
     var val = parseFloat(String(input.value).replace(',', '.'));
     var f = document.getElementById('feedback-panel');
-    renderSteps();
     state.checked = true;
+    renderSteps();
     f.classList.remove('success', 'error');
     if (isNaN(val)) {
       f.classList.add('error');
@@ -427,16 +431,16 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
     var want = fmt(sc.unit[sc.missing.key] * state.scale);
-    var tol = Math.max(0.05, Math.abs(want) * 0.02);
-    if (Math.abs(val - want) <= tol) {
+    /* nilai tepat dibulatkan ke 2 desimal; toleransi hanya untuk pembulatan */
+    if (Math.abs(val - want) < 0.005) {
       state.pulse = 40;
       f.classList.add('success');
-      f.textContent = 'Benar! ' + sc.missing.small + ' = ' + fmt(want) + ' ' + sc.missing.unit +
+      f.textContent = 'Benar! ' + sc.missing.small + ' = ' + want + ' ' + sc.satuan +
         '. Perhatikan: tiap sisi dikali faktor skala yang sama, jadi kedua segitiga sebangun.';
     } else {
+      var K = sc.missing.key === 'c' ? 'a' : 'c';
       f.classList.add('error');
-      f.textContent = 'Belum tepat. Coba pakai perbandingan ' + (sc.missing.key === 'c' ? 'a' : 'c') +
-        ' yang sudah diketahui, lalu perkalian silang. Lihat langkah-langkah di panel kiri.';
+      f.textContent = 'Belum tepat. Coba pakai perbandingan ' + K + ' yang sudah diketahui, lalu perkalian silang. Lihat langkah-langkah di bagian "Sisi yang belum diketahui".';
     }
     draw();
   }
@@ -510,6 +514,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
   buildSceneButtons();
   setFeedbackStory();
+  document.getElementById('check-btn').addEventListener('click', checkMissing);
+  document.getElementById('hint-btn').addEventListener('click', showHint);
+  document.getElementById('reset-btn').addEventListener('click', resetState);
   new ResizeObserver(resize).observe(canvas);
   resize();
   if (raf) cancelAnimationFrame(raf);

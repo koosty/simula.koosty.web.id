@@ -273,7 +273,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       </div>
       <div class="param-row" style="margin-top: var(--space-3)">
         <label class="control-label" for="sudut-slider">Sudut garis potong (derajat)</label>
-        <input type="range" id="sudut-slider" min="15" max="165" step="1" value="55" aria-label="Sudut garis potong">
+        <input type="range" id="sudut-slider" min="40" max="140" step="1" value="55" aria-label="Sudut garis potong">
       </div>
     </section>
 
@@ -302,7 +302,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     "startMode": "angle-relations",
     "description": "Murid memeriksa hubungan sudut berpotongan, sehadap, dan bersebrangan, termasuk pelurus dan penyiku.",
     "variables": [
-      { "name": "sudut", "label": "Sudut garis potong", "min": 15, "max": 165, "default": 55, "unit": "\u00B0" }
+      { "name": "sudut", "label": "Sudut garis potong", "min": 40, "max": 140, "default": 55, "unit": "\u00B0" }
     ],
     "presets": [
       { "name": "Garis sejajar", "variables": { "mode": "sejajar" } },
@@ -318,6 +318,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
 
     var SVGNS = 'http://www.w3.org/2000/svg';
     var VB = { w: 640, h: 400 };
+    var SUDUT_MIN = 40, SUDUT_MAX = 140;
     var state = {
       mode: 'sejajar',
       sudut: 55,
@@ -362,8 +363,8 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     function geometry() {
       if (state.mode === 'sejajar') {
         var top = pt(VB.w / 2, 110);
-        var dir = pt(Math.cos(rad(state.sudut)), -Math.sin(rad(state.sudut)));
-        var bottom = pt(top.x + dir.x * 240, top.y + dir.y * 240);
+        // Titik potong bawah ada di garis kedua (y = 290), bergeser 180 * cot(a) dari titik atas.
+        var bottom = pt(top.x - 180 * Math.cos(rad(state.sudut)) / Math.sin(rad(state.sudut)), 290);
         return { top: top, bottom: bottom, y1: 110, y2: 290 };
       }
       var c = pt(VB.w / 2, 200);
@@ -388,18 +389,19 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
         gLines.appendChild(line(30, g.y2, VB.w - 30, g.y2, 'line-base'));
         // tanda panah bahwa kedua garis sejajar
         arrowMark(70, g.y1); arrowMark(70, g.y2);
-        drawCross(g.top, angles.atas, a, 1);
-        drawCross(g.bottom, angles.bawah, a, -1);
+        gLines.appendChild(transversal(g.top, a));
+        drawCross(g.top, angles.atas, a, ['1', '2', '3', '4']);
+        drawCross(g.bottom, angles.bawah, a, ['5', '6', '7', '8']);
         gHandle.appendChild(el('circle', { cx: g.bottom.x, cy: g.bottom.y, r: 9, class: 'pt' }));
       } else {
         figTitle.textContent = 'Dua garis berpotongan';
         gLines.appendChild(line(g.top.x, g.top.y, g.bottom.x, g.bottom.y, 'line-trans'));
-        // garis kedua tegak lurus arah potong
-        var p1 = polar(g.center, a + 90, 210);
-        var p2 = polar(g.center, a - 90, 210);
+        // garis kedua mendatar, sehingga sudut potong a dibaca terhadap garis ini
+        var p1 = polar(g.center, 0, 210);
+        var p2 = polar(g.center, 180, 210);
         gLines.appendChild(line(p1.x, p1.y, p2.x, p2.y, 'line-base'));
         gLines.appendChild(el('circle', { cx: g.center.x, cy: g.center.y, r: 6, class: 'pt' }));
-        drawCrossCenter(g.center, angles.atas, a);
+        drawCross(g.center, angles.atas, a, ['1', '2', '3', '4']);
       }
 
       slider.value = String(state.sudut);
@@ -415,32 +417,23 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       }));
     }
 
-    // Empat sudut pada satu titik potong: kanan-atas, kiri-atas, kiri-bawah, kanan-bawah.
+    // Garis potong panjang: kedua titik potong tetap berada di dalam garis ini.
+    function transversal(o, a) {
+      var L = 1000;
+      return line(o.x - L * Math.cos(rad(a)), o.y + L * Math.sin(rad(a)),
+        o.x + L * Math.cos(rad(a)), o.y - L * Math.sin(rad(a)), 'line-trans');
+    }
+
+    // Empat sudut pada satu titik potong, dimulai dari arah kanan lalu berlawanan arah jarum jam:
+    // [0, a], [a, 180], [180, 180+a], [180+a, 360] terhadap garis mendatar dan garis potong.
     function drawCross(o, ang, a, names) {
-      gLines.appendChild(line(o.x - 300 * Math.cos(rad(a)), o.y + 300 * Math.sin(rad(a)),
-        o.x + 300 * Math.cos(rad(a)), o.y - 300 * Math.sin(rad(a)), 'line-trans'));
       var R = 44;
-      var starts = [0, 180, 180, 0];
-      var ends = [a, 180 - a, 360 - a, 360 - a];
+      var starts = [0, a, 180, 180 + a];
+      var ends = [a, 180, 180 + a, 360];
       for (var i = 0; i < 4; i++) {
         drawArc(o, starts[i], ends[i], i % 2 === 0 ? 'arc-a' : 'arc-b', R);
         var mid = (starts[i] + ends[i]) / 2;
         var lp = polar(o, mid, R + 18);
-        var t = el('text', { x: lp.x, y: lp.y + 5, class: 'lbl' });
-        t.textContent = '\u2220' + names[i] + ' = ' + ang[i] + '\u00B0';
-        gLabels.appendChild(t);
-      }
-    }
-
-    function drawCrossCenter(o, ang, a) {
-      var names = ['1', '2', '3', '4'];
-      var R = 46;
-      var starts = [a, 180, 180 + a, 360];
-      var ends = [180, 180 + a, 360, 360 + a];
-      for (var i = 0; i < 4; i++) {
-        drawArc(o, starts[i], ends[i], i % 2 === 0 ? 'arc-a' : 'arc-b', R);
-        var mid = (starts[i] + ends[i]) / 2;
-        var lp = polar(o, mid, R + 20);
         var t = el('text', { x: lp.x, y: lp.y + 5, class: 'lbl' });
         t.textContent = '\u2220' + names[i] + ' = ' + ang[i] + '\u00B0';
         gLabels.appendChild(t);
@@ -473,16 +466,17 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     }
 
     function renderExplain(angles) {
-      var a = angles.atas[0], b = 180 - a;
       if (state.mode === 'sejajar') {
-        explainEl.textContent = '\u22201 = \u22203 = ' + a + '\u00B0 (bersebrangan), \u22202 = \u22204 = ' + b +
-          '\u00B0, dan \u22201 + \u22202 = 180\u00B0 (pelurus). Sudut sehadap: \u22201 = \u22205 = \u22202 = \u22206 = ' + a + '\u00B0.';
+        var a = angles.atas[0], b = 180 - a;
+        explainEl.textContent = 'Sudut berpotongan: ∠1 = ∠3 = ' + a + '° dan ∠2 = ∠4 = ' + b +
+          '° (bertolak belakang, sama besar). Sudut sehadap: ∠1 = ∠5, ∠2 = ∠6, ∠3 = ∠7, ∠4 = ∠8. ' +
+          'Sudut bersebrangan: ∠3 = ∠5 dan ∠4 = ∠6. Sudut pelurus: ∠1 + ∠2 = 180°.';
+        if (a === 90) {
+          explainEl.textContent += ' Karena a = 90°, semua sudut 90°. Dua sudut yang berdampingan berjumlah 180°, jadi keduanya pelurus, bukan penyiku.';
+        }
       } else {
-        explainEl.textContent = '\u22201 = \u22203 = ' + a + '\u00B0 (bersebrangan), \u22202 = \u22204 = ' + b +
-          '\u00B0. \u22201 + \u22202 = 180\u00B0 (pelurus). Saat a = 90\u00B0 semua sudut bersebelahan disebut sudut penyiku.';
-      }
-      if (state.sudut === 90) {
-        explainEl.textContent += ' Sekarang \u22201 = 90\u00B0, jadi setiap pasangan sudut bersebelahan disebut sudut penyiku.';
+        explainEl.textContent = 'Dua garis berpotongan: sudut yang bertolak belakang sama besar (∠1 = ∠3, ∠2 = ∠4). ' +
+          'Sudut yang berdampingan berjumlah 180° (pelurus). Sudut penyiku adalah dua sudut yang berjumlah 90°.';
       }
     }
 
@@ -504,17 +498,17 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       } else {
         deg = ((deg % 180) + 180) % 180;
       }
-      return Math.round(Math.max(15, Math.min(165, deg)));
+      return Math.round(deg);
     }
     fig.addEventListener('pointerdown', function (e) {
       dragging = true;
       fig.classList.add('dragging');
       fig.setPointerCapture(e.pointerId);
-      angleFrom(svgPoint(e));
+      angleFrom(angleFromEvent(svgPoint(e)));
     });
     fig.addEventListener('pointermove', function (e) {
       if (!dragging) return;
-      angleFrom(svgPoint(e));
+      angleFrom(angleFromEvent(svgPoint(e)));
     });
     function endDrag(e) {
       if (!dragging) return;
@@ -528,6 +522,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     fig.addEventListener('pointercancel', endDrag);
 
     function angleFrom(v) {
+      v = Math.max(SUDUT_MIN, Math.min(SUDUT_MAX, v));
       if (v === state.sudut) return;
       state.sudut = v;
       drawFigure();
@@ -536,12 +531,12 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
 
     /* ---------------- kuis ---------------- */
     var QUIZ = [
-      { t: 'pada dua garis sejajar', q: '\u22203 = 62\u00B0. Sudut sehadap dengan \u22203 adalah \u2220 berapa, dan berapa nilainya?', opts: ['\u22201 = 62\u00B0', '\u22202 = 118\u00B0', '\u22204 = 62\u00B0'], correct: 0, why: 'Sudut sehadap punya arah yang sama dan keduanya sepad, jadi \u22201 = \u22203 = 62\u00B0.' },
-      { t: 'pada dua garis sejajar', q: '\u22204 = 118\u00B0. Sudut bersebrangan dengan \u22204 adalah \u2220 berapa, dan berapa nilainya?', opts: ['\u22205 = 118\u00B0', '\u22201 = 62\u00B0', '\u22208 = 118\u00B0'], correct: 0, why: '\u22205 berhadapan lurus dengan \u22204, jadi nilainya sama: 118\u00B0.' },
-      { t: 'pada dua garis sejajar', q: '\u22202 = 75\u00B0. Sudut pelurus dengan \u22202 adalah \u2220 berapa, dan berapa nilainya?', opts: ['\u22204 = 75\u00B0', '\u22206 = 105\u00B0', '\u22208 = 105\u00B0'], correct: 1, why: 'Dua sudut pelurus jumlahnya 180\u00B0, jadi 180\u00B0 \u2212 75\u00B0 = 105\u00B0.' },
-      { t: 'pada dua garis sejajar', q: '\u22207 = 130\u00B0. Sudut berpadanan dengan \u22207 (yaitu \u22208) bernilai berapa?', opts: ['\u22208 = 50\u00B0', '\u22208 = 130\u00B0', '\u22208 = 100\u00B0'], correct: 1, why: '\u22207 dan \u22208 letaknya berpadanan pada garis sejajar yang sama, nilainya sama: 130\u00B0.' },
-      { t: 'pada dua garis berpotongan', q: '\u22201 = 48\u00B0. Sudut pelurus dengan \u22201 adalah \u2220 berapa, dan berapa nilainya?', opts: ['\u22202 = 132\u00B0', '\u22202 = 48\u00B0', '\u22203 = 48\u00B0'], correct: 0, why: 'Pelurus berjumlah 180\u00B0, jadi 180\u00B0 \u2212 48\u00B0 = 132\u00B0.' },
-      { t: 'pada dua garis berpotongan', q: '\u22204 = 95\u00B0. Sudut penyiku yang berimpit dengan \u22204 bernilai berapa?', opts: ['\u22204 = 90\u00B0', '\u22201 = 85\u00B0', '\u22202 = 95\u00B0'], correct: 0, why: 'Sudut penyiku tepat 90\u00B0. Karena \u22204 = 95\u00B0, sudut di sebelahnya 180\u00B0 \u2212 95\u00B0 = 85\u00B0, bukan 90\u00B0 \u2014 jadi \u22204 sendiri bukan penyiku.' }
+      { q: '∠1 = 62°. Sudut sehadap dengan ∠1 pada titik potong bawah adalah ∠ berapa, dan berapa nilainya?', opts: ['∠5 = 62°', '∠5 = 118°', '∠6 = 62°'], correct: 0, why: '∠1 dan ∠5 sama-sama berada di kanan atas titik potongnya, jadi sehadap dan sama besar: 62°.' },
+      { q: '∠4 = 118°. Sudut bersebrangan dengan ∠4 adalah ∠ berapa, dan berapa nilainya?', opts: ['∠6 = 118°', '∠5 = 118°', '∠2 = 62°'], correct: 0, why: '∠4 dan ∠6 berada di antara dua garis sejajar, di sisi garis potong yang berlawanan. Sudut bersebrangan sama besar: 118°.' },
+      { q: '∠1 = 62°. Pelurus dengan ∠1 adalah ∠ berapa, dan berapa nilainya?', opts: ['∠2 = 118°', '∠2 = 62°', '∠5 = 118°'], correct: 0, why: '∠1 dan ∠2 berdampingan pada garis lurus yang sama, jadi jumlahnya 180°: 180° − 62° = 118°.' },
+      { q: '∠8 = 118°. Sudut sehadap dengan ∠8 adalah ∠ berapa, dan berapa nilainya?', opts: ['∠4 = 118°', '∠4 = 62°', '∠1 = 118°'], correct: 0, why: '∠4 dan ∠8 sama-sama berada di kanan bawah titik potongnya, jadi sehadap dan sama besar: 118°.' },
+      { q: '∠1 = 35°. Sudut penyiku dengan ∠1 bernilai berapa?', opts: ['55°', '145°', '35°'], correct: 0, why: 'Dua sudut penyiku berjumlah 90°: 90° − 35° = 55°. Sudut 145° itu pelurus dengan 35°, bukan penyiku.' },
+      { q: 'Garis potong tegak lurus, sehingga ∠1 = 90°. Apa hubungan ∠1 dan ∠2?', opts: ['Pelurus, jumlahnya 180°', 'Penyiku, jumlahnya 90°', 'Sehadap, sama besar'], correct: 0, why: '∠1 dan ∠2 berdampingan, jadi jumlahnya 180°. Keduanya pelurus. Penyiku hanya untuk dua sudut yang jumlahnya 90°.' }
     ];
 
     function renderQuiz() {

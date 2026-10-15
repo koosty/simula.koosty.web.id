@@ -277,7 +277,6 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
         <div class="canvas-wrap" style="margin-top: var(--space-4);">
           <canvas id="canvas" height="360" role="img" aria-label="Bar pecahan dan garis bilangan dari 0 sampai 1"></canvas>
         </div>
-  "description": "Satu bilangan rasional ditampilkan sekaligus sebagai pecahan, desimal, dan persen di atas satu garis bilangan, lalu dibandingkan dengan bilangan lain.",
         <div class="field" style="margin-top: var(--space-4); margin-bottom: var(--space-3);">
           <label class="control-label" for="compare-select">Bandingkan dengan bilangan lain</label>
           <select id="compare-select" aria-label="Pilih bilangan lain untuk dibandingkan"></select>
@@ -368,6 +367,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     function pctText(v) {
       var p = v * 100;
       if (Math.abs(p - Math.round(p)) < 1e-9) return String(Math.round(p)) + "%";
+      if (decIsExact(v)) return p.toFixed(2).replace(/0+$/, "").replace(".", ",") + "%";
       return p.toFixed(1).replace(".", ",") + "%";
     }
     function fracText(a, b) { return a + "/" + b; }
@@ -521,8 +521,9 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       document.getElementById("decimal-note").textContent = decIsExact(v)
         ? state.a + " : " + state.b + " = " + decText(v)
         : state.a + " : " + state.b + " tidak habis dibagi";
-      document.getElementById("percent-display").textContent = pctText(v);
-      document.getElementById("percent-note").textContent = "setara " + pctText(v) + " dari 100 bagian";
+      var approx = decIsExact(v) ? "" : "≈ ";
+      document.getElementById("percent-display").textContent = approx + pctText(v);
+      document.getElementById("percent-note").textContent = "setara " + approx + pctText(v) + " dari 100 bagian";
       document.getElementById("b-display").textContent = String(state.b);
       document.getElementById("a-display").textContent = String(state.a);
       updateCompare(v);

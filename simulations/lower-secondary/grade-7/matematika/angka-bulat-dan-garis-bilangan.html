@@ -262,7 +262,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
   <div class="wrap">
     <header>
       <h1>Angka Bulat dan Garis Bilangan</h1>
-      <p>Geser penanda di garis bilangan. Setelah itu tekan <strong>Jalankan</strong> untuk melihat arah dan hasil_hitunganmu langkah demi langkah.</p>
+      <p>Geser penanda di garis bilangan. Setelah itu tekan <strong>Jalankan</strong> untuk melihat arah dan hasil hitunganmu langkah demi langkah.</p>
     </header>
 
     <section class="panel stage" aria-labelledby="stage-heading">
@@ -339,7 +339,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       <h3 style="margin-top: var(--space-4);">Contoh soal</h3>
       <ul style="margin-left: var(--space-4); color: var(--text-muted); font-size: var(--text-sm);">
         <li>Bilangan positif di sebelah kanan nol, bilangan negatif di sebelah kiri nol.</li>
-        <li>Menambah berarti bergerak ke kanan, mengurangi berarti bergerak ke kiri.</li>
+        <li>Menambah bilangan positif atau mengurangi bilangan negatif berarti bergerak ke kanan; menambah bilangan negatif atau mengurangi bilangan positif berarti bergerak ke kiri.</li>
         <li>Jarak dihitung dari nilai awal sampai nilai akhir, tanpa melihat arah.</li>
       </ul>
     </section>
@@ -505,7 +505,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       drawTrace();
     }
 
-    function sign(v) { return v < 0 ? "−" : "+"; }
+    function paren(v) { return v < 0 ? "(" + v + ")" : String(v); }
 
     function fmt(v) { return (v > 0 ? "+" : "") + v; }
 
@@ -515,22 +515,21 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       else if (state.op === "sub") { res = a - b; }
       else { res = a * b; }
       // For addition and subtraction the journey starts at the first number.
-      // For multiplication it starts at 0 and takes a jumps of size b.
+      // For multiplication it starts at 0 and takes |a| jumps of size jump.
       var start = state.op === "mul" ? 0 : a;
+      var jump = a < 0 ? -b : b;
       dir = res > start ? "kanan" : (res < start ? "kiri" : "tidak bergerak");
-      return { a: a, b: b, res: res, dir: dir, start: start, dist: Math.abs(res - start) };
+      return { a: a, b: b, res: res, dir: dir, start: start, jump: jump, dist: Math.abs(res - start) };
     }
 
     function buildPath(c) {
       var path = [c.start];
-      var i, steps, jump;
+      var i, steps, delta;
       if (state.op === "mul") {
         steps = Math.abs(c.a);
-        jump = c.a < 0 ? -c.b : c.b;
-        if (steps === 0) return [c.start, c.start];
-        for (i = 1; i <= steps; i++) path.push(c.start + jump * i);
+        for (i = 1; i <= steps; i++) path.push(c.start + c.jump * i);
       } else {
-        var delta = state.op === "add" ? c.b : -c.b;
+        delta = state.op === "add" ? c.b : -c.b;
         steps = Math.abs(delta);
         for (i = 1; i <= steps; i++) path.push(path[path.length - 1] + (delta > 0 ? 1 : -1));
       }
@@ -542,7 +541,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       startDisplay.textContent = fmt(c.start);
       directionDisplay.textContent = c.dir === "tidak bergerak" ? "diam" : c.dir;
       distanceDisplay.textContent = String(c.dist);
-      resultDisplay.textContent = state.hasRun ? fmt(c.res) : "?";
+      resultDisplay.textContent = state.ended ? fmt(c.res) : "?";
       if (text) feedback.textContent = text;
     }
 
@@ -580,9 +579,6 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
           }
           state.value = state.path[state.pathIndex];
           render();
-          var c = compute();
-          resultDisplay.textContent = fmt(c.res);
-          startDisplay.textContent = fmt(state.path[state.pathIndex]);
         }
         state.rafId = requestAnimationFrame(perStep);
       };
@@ -596,10 +592,14 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       setReadouts();
       var beyond = c.res > MAX || c.res < MIN;
       feedback.className = beyond ? "error" : "success";
-      var msg = state.op === "mul"
-        ? c.a + " " + opWord() + " " + c.b + " = " + fmt(c.res) +
-          ". Penanda mulai dari 0 dan melompat " + fmt(c.b) + " sebanyak " + Math.abs(c.a) + " kali. "
-        : c.a + " " + opWord() + " " + c.b + " = " + fmt(c.res) + ". ";
+      var expr = paren(c.a) + " " + opWord() + " " + paren(c.b) + " = " + c.res;
+      var msg = expr + ". ";
+      if (state.op === "mul") {
+        msg = expr + ". Penanda mulai dari 0 dan melompat " + fmt(c.jump) + " sebanyak " + Math.abs(c.a) + " kali. ";
+        if (c.a < 0) {
+          msg += "Karena bilangan pertama negatif, arah lompatan dibalik dari " + fmt(c.b) + " menjadi " + fmt(c.jump) + ". ";
+        }
+      }
       if (c.dir === "tidak bergerak") {
         msg += "Penanda tidak bergerak karena hasilnya sama dengan titik awal.";
       } else {
@@ -609,7 +609,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
         msg += " Ingat: dua bilangan negatif yang dikalikan hasilnya positif.";
       }
       if (beyond) {
-        msg += " Hasil " + fmt(c.res) + " berada di luar garis ini (hanya sampai " + MAX + " sampai " + MIN + ").";
+        msg += " Hasil " + fmt(c.res) + " berada di luar garis ini (garis hanya dari " + MIN + " sampai " + MAX + ").";
       }
       feedback.textContent = msg;
     }
@@ -636,8 +636,8 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       state.ended = false;
       state.running = true;
       feedback.className = "";
-      feedback.textContent = "Mulai dari " + fmt(c.start) + ", bergerak ke " + c.dir + ".";
-      resultDisplay.textContent = "?";
+      var arah = c.dir === "tidak bergerak" ? "tidak bergerak" : "bergerak ke " + c.dir;
+      feedback.textContent = "Mulai dari " + fmt(c.start) + ", " + arah + ".";
       setReadouts("");
       render();
       setRunButton();
@@ -702,7 +702,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       clearTrace();
       setReadouts("");
       feedback.className = "";
-      feedback.textContent = "Bilangan pertama " + sign(state.first) + " " + Math.abs(state.first) + ".";
+      feedback.textContent = "Bilangan pertama sekarang " + fmt(state.first) + ".";
       render();
       setRunButton();
     });
@@ -716,7 +716,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       clearTrace();
       setReadouts("");
       feedback.className = "";
-      feedback.textContent = "Bilangan kedua " + sign(state.second) + " " + Math.abs(state.second) + ".";
+      feedback.textContent = "Bilangan kedua sekarang " + fmt(state.second) + ".";
       render();
       setRunButton();
     });
@@ -772,6 +772,8 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       state.ended = false;
       clearTrace();
       setReadouts("");
+      feedback.className = "";
+      feedback.textContent = "Penanda digeser ke " + fmt(state.value) + ".";
       render();
       setRunButton();
     }
@@ -826,6 +828,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     }
 
     buildTicks();
+    setReadouts("");
     render();
     setRunButton();
   })();

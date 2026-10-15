@@ -124,7 +124,7 @@ li{margin-bottom:var(--space-1)}
 
   <div class="cols">
     <section class="stage">
-      <canvas id="shape-canvas" aria-label="KanvasDua bangun datar yang dapat digeser dan diputar"></canvas>
+      <canvas id="shape-canvas" aria-label="Kanvas: dua bangun datar yang dapat digeser dan diputar"></canvas>
       <div id="result-overlay" class="overlay" role="status">
         <div class="inner">
           <div class="big" id="overlay-icon">&#10003;</div>
@@ -142,7 +142,7 @@ li{margin-bottom:var(--space-1)}
       <div>
         <h3>Bangun yang digerakkan</h3>
         <div class="row fill">
-          <button class="btn btn-ghost" id="shape-btn" onclick="cycleActive()">Geser: merah</button>
+          <button class="btn btn-ghost" id="shape-btn">Geser: merah</button>
         </div>
         <p class="hint">Seret bentuk di kanvas untuk menggeser. Bila sedang aktif, gunakan tombol putar.</p>
       </div>
@@ -156,9 +156,9 @@ li{margin-bottom:var(--space-1)}
         <p class="mono tag" id="scale-display">1.00&times;</p>
       </div>
       <div class="row fill">
-        <button class="btn btn-primary" id="superimpose-btn" onclick="superimpose()">T superimpose</button>
-        <button class="btn" id="swap-btn" onclick="swapShapes()">Tukar posisi</button>
-        <button class="btn btn-ghost" id="reset-btn" onclick="resetState()">Reset</button>
+        <button class="btn btn-primary" id="superimpose-btn">T superimpose</button>
+        <button class="btn" id="swap-btn">Tukar posisi</button>
+        <button class="btn btn-ghost" id="reset-btn">Reset</button>
       </div>
     </section>
   </div>
@@ -172,8 +172,8 @@ li{margin-bottom:var(--space-1)}
     <p class="quiz-q" id="quiz-question">Tekan <strong>Mulai kuis</strong> untuk memulai.</p>
     <div class="row fill" id="quiz-options"></div>
     <div class="row fill" style="margin-top:var(--space-3)">
-      <button class="btn btn-primary" id="quiz-start-btn" onclick="startQuiz()">Mulai kuis</button>
-      <button class="btn btn-ghost" id="quiz-reset-btn" onclick="resetQuiz()">Reset kuis</button>
+      <button class="btn btn-primary" id="quiz-start-btn">Mulai kuis</button>
+      <button class="btn btn-ghost" id="quiz-reset-btn">Reset kuis</button>
     </div>
   </section>
 
@@ -185,7 +185,13 @@ li{margin-bottom:var(--space-1)}
       <li>Cara praktis: superimpose. Bila tepat berimpit, bangunnya kongruen.</li>
     </ul>
     <h3>Kongruensi segitiga</h3>
-    <p class="hint">SSS, SAS, ASA, dan SAA membuat dua segitiga kongruen.</p>
+    <ul>
+      <li><strong>SSS</strong> (sisi-sisi-sisi): ketiga sisi berpasangan sama panjang.</li>
+      <li><strong>SAS</strong> (sisi-sudut-sisi): dua sisi dan sudut apitnya sama besar.</li>
+      <li><strong>ASA</strong> (sudut-sisi-sudut): dua sudut dan sisi apitnya sama.</li>
+      <li><strong>AAS</strong> (sudut-sudut-sisi): dua pasang sudut dan satu pasang sisi yang bersesuaian sama.</li>
+    </ul>
+    <p class="hint">Jika salah satu syarat ini dipenuhi, dua segitiga kongruen. Dua sudut saja tidak cukup.</p>
   </section>
 </main>
 
@@ -208,58 +214,48 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ---------- shape library ----------
-     Each shape: local unit polygon points, plus optional side/angle labels.
-     "variant" 0 = original, 1 = a deliberately non-congruent partner.        */
+     Each shape: polygon points in local px and side labels in edge order (edge i runs
+     from point i to point i+1). Bangun B has its own points, so a non-congruent partner
+     is a genuinely different polygon whose labels match its drawn sides. */
   var PAIRS = [
     {
       name: 'Segitiga sama sisi',
-      tip: 'Semua sisi sama panjang dan semua sudut 60&deg;. Pasangannya kongruen.',
-      a: { kind: 'poly', pts: [[-55, 45], [55, 45], [0, -55]], variant: 0, labels: ['3 cm', '3 cm', '3 cm'] },
-      b: { kind: 'poly', pts: [[-55, 45], [55, 45], [0, -55]], variant: 0, labels: ['3 cm', '3 cm', '3 cm'] }
+      tip: 'Semua sisi sama panjang dan semua sudut 60\u00B0. Pasangannya kongruen.',
+      a: { pts: [[-55, 45], [55, 45], [0, -50.26]], labels: ['3 cm', '3 cm', '3 cm'] },
+      b: { pts: [[-55, 45], [55, 45], [0, -50.26]], labels: ['3 cm', '3 cm', '3 cm'] }
     },
     {
       name: 'Segitiga sembarang',
       tip: 'Sisi-sisinya berbeda-beda, tetapi keduanya punya ukuran yang persis sama.',
-      a: { kind: 'poly', pts: [[-60, 40], [50, 40], [5, -50]], variant: 0, labels: ['4 cm', '6 cm', '5 cm'] },
-      b: { kind: 'poly', pts: [[-60, 40], [50, 40], [5, -50]], variant: 0, labels: ['4 cm', '6 cm', '5 cm'] }
+      a: { pts: [[-40, 40], [40, 40], [-27.5, -59.22]], labels: ['4 cm', '6 cm', '5 cm'] },
+      b: { pts: [[-40, 40], [40, 40], [-27.5, -59.22]], labels: ['4 cm', '6 cm', '5 cm'] }
     },
     {
       name: 'Persegi',
       tip: 'Empat sisi sama panjang, empat sudut siku. Kongruen setelah berimpit.',
-      a: { kind: 'poly', pts: [[-45, -45], [45, -45], [45, 45], [-45, 45]], variant: 0, labels: ['4 cm', '4 cm', '4 cm', '4 cm'] },
-      b: { kind: 'poly', pts: [[-45, -45], [45, -45], [45, 45], [-45, 45]], variant: 0, labels: ['4 cm', '4 cm', '4 cm', '4 cm'] }
+      a: { pts: [[-45, -45], [45, -45], [45, 45], [-45, 45]], labels: ['4 cm', '4 cm', '4 cm', '4 cm'] },
+      b: { pts: [[-45, -45], [45, -45], [45, 45], [-45, 45]], labels: ['4 cm', '4 cm', '4 cm', '4 cm'] }
     },
     {
       name: 'Persegi panjang',
-      tip: 'Sisi berhadapan sama panjang. Yang satu 6 cm &times; 3 cm.',
-      a: { kind: 'poly', pts: [[-60, -30], [60, -30], [60, 30], [-60, 30]], variant: 0, labels: ['6 cm', '3 cm', '6 cm', '3 cm'] },
-      b: { kind: 'poly', pts: [[-60, -30], [60, -30], [60, 30], [-60, 30]], variant: 0, labels: ['6 cm', '3 cm', '6 cm', '3 cm'] }
+      tip: 'Sisi berhadapan sama panjang. Yang satu 6 cm \u00D7 3 cm.',
+      a: { pts: [[-60, -30], [60, -30], [60, 30], [-60, 30]], labels: ['6 cm', '3 cm', '6 cm', '3 cm'] },
+      b: { pts: [[-60, -30], [60, -30], [60, 30], [-60, 30]], labels: ['6 cm', '3 cm', '6 cm', '3 cm'] }
     },
     {
       name: 'Trapesium',
       tip: 'Trapesium sama kaki: dua sisi miring sama panjang, sisi atas lebih pendek.',
-      a: { kind: 'poly', pts: [[-60, 40], [60, 40], [38, -30], [-38, -30]], variant: 0, labels: ['8 cm', '5 cm', '5 cm', '8 cm'] },
-      b: { kind: 'poly', pts: [[-60, 40], [60, 40], [38, -30], [-38, -30]], variant: 0, labels: ['8 cm', '5 cm', '5 cm', '8 cm'] }
+      a: { pts: [[-60, 40], [60, 40], [38, -30], [-38, -30]], labels: ['8 cm', '5 cm', '5 cm', '5 cm'] },
+      b: { pts: [[-60, 40], [60, 40], [38, -30], [-38, -30]], labels: ['8 cm', '5 cm', '5 cm', '5 cm'] }
     },
     {
       name: 'Segitiga tidak kongruen',
-      tip: 'Bentuknya sama, tetapi satu sisinya lebih panjang. Jadi tidak kongruen.',
-      a: { kind: 'poly', pts: [[-60, 40], [50, 40], [5, -50]], variant: 0, labels: ['4 cm', '6 cm', '5 cm'] },
-      b: { kind: 'poly', pts: [[-60, 40], [50, 40], [5, -50]], variant: 1, labels: ['4 cm', '7 cm', '5 cm'] }
+      tip: 'Hanya satu sisi yang berbeda: 6 cm pada Bangun A, 7 cm pada Bangun B. Jadi tidak kongruen.',
+      a: { pts: [[-40, 40], [40, 40], [-27.5, -59.22]], labels: ['4 cm', '6 cm', '5 cm'] },
+      b: { pts: [[-40, 40], [40, 40], [-60, -57.98]], labels: ['4 cm', '7 cm', '5 cm'] }
     }
   ];
 
-  /* Points used for drawing each variant (a variant changes real geometry). */
-  function pointsOf(shape) {
-    var pts = shape.pts.map(function (p) { return [p[0], p[1]]; });
-    if (shape.kind === 'poly' && shape.variant === 1) {
-      /* one side stretched: push the far-right vertex outward and shrink the
-         opposite side, so exactly one corresponding side differs */
-      pts[1] = [pts[1][0] + 34, pts[1][1] - 10];
-      pts[2] = [pts[2][0] + 10, pts[2][1] + 14];
-    }
-    return pts;
-  }
   function edgeLen(pts, i) {
     var p = pts[i], q = pts[(i + 1) % pts.length];
     return Math.hypot(q[0] - p[0], q[1] - p[1]);
@@ -282,9 +278,8 @@ document.addEventListener('DOMContentLoaded', function () {
     rotation: { a: 0, b: 0 },
     scale: { a: 1, b: 1 },
     pos: { a: null, b: null },
-    overlay: null,      /* {from:{x,y}, to:{x,y}, rot, t, dur, verify} */
+    overlay: null,      /* {from:{x,y,rot}, to:{x,y,rot}, start (ms), dur (ms), verify} */
     result: null,       /* null | {ok:boolean} */
-    mismatch: -1,
     dragging: null,
     hover: null
   };
@@ -315,7 +310,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function shapePoints(which) {
     var pair = PAIRS[state.pairIndex];
     var shape = which === 'a' ? pair.a : pair.b;
-    return scaleTo(pointsOf(shape), state.scale[which]);
+    return scaleTo(shape.pts, state.scale[which]);
   }
 
   function drawPolygon(which, opts) {
@@ -325,7 +320,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var pair = PAIRS[state.pairIndex];
     var shape = which === 'a' ? pair.a : pair.b;
     var isActive = state.active === which;
-    var hi = (opts && opts.mismatch === which) ? state.mismatch : -1;
+    var hi = (opts && opts.mismatch === which) ? state.result.side : -1;
 
     ctx.save();
     ctx.translate(pos.x, pos.y);
@@ -387,7 +382,7 @@ document.addEventListener('DOMContentLoaded', function () {
     ctx.fillText(which === 'a' ? 'Bangun A (merah)' : 'Bangun B (kuning)', pos.x, pos.y + 96);
     ctx.fillStyle = token('--text-dim');
     ctx.font = '11px ' + token('--font-mono');
-    ctx.fillText('rotasi ' + state.rotation[which] + '&deg;', pos.x, pos.y + 112);
+    ctx.fillText('rotasi ' + state.rotation[which] + '\u00B0', pos.x, pos.y + 112);
   }
 
   function localToScreen(which, lp) {
@@ -432,9 +427,9 @@ document.addEventListener('DOMContentLoaded', function () {
   function superimpose() {
     if (state.overlay) return;
     hideOverlay();
-    state.result = null; state.mismatch = -1;
+    state.result = null;
     state.overlay = {
-      t: 0, dur: 850,
+      start: performance.now(), dur: 850, /* ms */
       from: { x: state.pos.a.x, y: state.pos.a.y, rot: state.rotation.a },
       to: { x: state.pos.b.x, y: state.pos.b.y, rot: state.rotation.b },
       verify: false
@@ -447,8 +442,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function tick(now) {
     if (!state.overlay) return;
     var o = state.overlay;
-    o.t += 1;
-    var p = Math.min(1, o.t / o.dur);
+    var p = Math.min(1, (now - o.start) / o.dur);
     var e = easeInOut(p);
     state.pos.a.x = o.from.x + (o.to.x - o.from.x) * e;
     state.pos.a.y = o.from.y + (o.to.y - o.from.y) * e - Math.sin(Math.PI * p) * 26;
@@ -542,7 +536,7 @@ document.addEventListener('DOMContentLoaded', function () {
     state.rotation.a = state.rotation.b = 0;
     state.scale.a = state.scale.b = 1;
     state.pos.a = homePos('a'); state.pos.b = homePos('b');
-    state.result = null; state.mismatch = -1; state.overlay = null;
+    state.result = null; state.overlay = null;
     syncSliders();
     buildPairButtons();
     hideOverlay();
@@ -613,12 +607,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
   /* ---------- quiz ---------- */
   var QUIZ = [
-    { q: 'Dua segitiga sama sisi memiliki sisi 3 cm. Apakah keduanya kongruen?', opts: ['Ya, kongruen', 'Tidak, kongruen'], a: 0,
-      why: 'Semua sisi sama panjang (3 cm) dan semua sudut 60&deg;, jadi kongruen.' },
+    { q: 'Dua segitiga sama sisi memiliki sisi 3 cm. Apakah keduanya kongruen?', opts: ['Ya, kongruen', 'Tidak kongruen'], a: 0,
+      why: 'Semua sisi sama panjang (3 cm) dan semua sudut 60\u00B0, jadi kongruen.' },
     { q: 'Dua persegi panjang: 6 cm &times; 3 cm dan 6 cm &times; 4 cm. Kongruen?', opts: ['Kongruen', 'Tidak kongruen'], a: 1,
       why: 'Lebarnya berbeda (3 cm vs 4 cm), jadi sisi tidak sama panjang.' },
     { q: 'Sudut A sebuah segitiga lancip, sudut B segitiga lain juga lancip, sama besarnya. Dua segitiga ini kongruen?', opts: ['Pasti kongruen', 'Belum tentu kongruen'], a: 1,
-      why: 'Sudut sama saja belum tentu. Perlu sisi atau sudut lainnya juga sama (SSS, SAS, ASA, SAA).' },
+      why: 'Sudut sama saja belum tentu. Perlu juga sisi yang sama: SSS, SAS, ASA, atau AAS.' },
     { q: 'Dua segitiga sama sisi dengan panjang sisi berbeda (3 cm dan 5 cm). Kongruen?', opts: ['Kongruen', 'Tidak kongruen'], a: 1,
       why: 'Bentuk sama tapi ukuran berbeda. Kongruen menuntut ukuran juga sama.' },
     { q: 'Dua trapesium sama kaki dengan sisi atas, bawah, dan miring sama ukurannya. Kongruen?', opts: ['Kongruen', 'Tidak kongruen'], a: 0,
@@ -627,8 +621,10 @@ document.addEventListener('DOMContentLoaded', function () {
       why: 'Hanya segitiga sama sisi yang punya tiga sisi sama panjang. Persegi panjang bukan segitiga.' }
   ];
   var quiz = { active: false, i: 0, score: 0, answered: false };
+  var quizTimer = null; /* pending delay before the next question */
 
   function startQuiz() {
+    clearTimeout(quizTimer);
     quiz.active = true; quiz.i = 0; quiz.score = 0; quiz.answered = false;
     document.getElementById('quiz-start-btn').textContent = 'Ulangi kuis';
     renderQuiz();
@@ -676,9 +672,9 @@ document.addEventListener('DOMContentLoaded', function () {
       if (k === q.a) btn.classList.add('btn-primary');
     }
     if (quiz.i < QUIZ.length - 1) {
-      setTimeout(function () { quiz.i++; renderQuiz(); }, 1600);
+      quizTimer = setTimeout(function () { quiz.i++; renderQuiz(); }, 1600);
     } else {
-      setTimeout(function () {
+      quizTimer = setTimeout(function () {
         f.classList.remove('success', 'error');
         f.classList.add('success');
         f.textContent = 'Kuis selesai! Skor akhir ' + quiz.score + ' dari ' + QUIZ.length + '. Tekan Ulangi kuis untuk mengulang.';
@@ -687,6 +683,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
   function resetQuiz() {
+    clearTimeout(quizTimer);
     quiz.active = false; quiz.i = 0; quiz.score = 0; quiz.answered = false;
     document.getElementById('quiz-start-btn').textContent = 'Mulai kuis';
     document.getElementById('quiz-question').innerHTML = 'Tekan <strong>Mulai kuis</strong> untuk memulai.';
@@ -705,10 +702,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
   /* ---------- keyboard ---------- */
   document.addEventListener('keydown', function (e) {
-    if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+    var tag = e.target && e.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
     if (e.key === 'r' || e.key === 'R') { e.preventDefault(); resetState(); }
-    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); superimpose(); }
+    /* Space/Enter on a focused button must activate that button, not superimpose */
+    if ((e.key === ' ' || e.key === 'Enter') && tag !== 'BUTTON') { e.preventDefault(); superimpose(); }
   });
+
+  document.getElementById('shape-btn').addEventListener('click', cycleActive);
+  document.getElementById('superimpose-btn').addEventListener('click', superimpose);
+  document.getElementById('swap-btn').addEventListener('click', swapShapes);
+  document.getElementById('reset-btn').addEventListener('click', resetState);
+  document.getElementById('quiz-start-btn').addEventListener('click', startQuiz);
+  document.getElementById('quiz-reset-btn').addEventListener('click', resetQuiz);
 
   buildPairButtons();
   syncSliders();

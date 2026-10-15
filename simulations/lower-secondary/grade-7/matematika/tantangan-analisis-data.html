@@ -296,6 +296,7 @@ var dpr=1,CW=0,CH=0;
 /* ====================== util ====================== */
 function T(){var c=getComputedStyle(document.documentElement);return{
   surface:c.getPropertyValue('--surface').trim(),
+  panel:c.getPropertyValue('--panel').trim(),
   border:c.getPropertyValue('--border').trim(),
   strong:c.getPropertyValue('--border-strong').trim(),
   text:c.getPropertyValue('--text').trim(),
@@ -307,6 +308,7 @@ function T(){var c=getComputedStyle(document.documentElement);return{
   error:c.getPropertyValue('--error').trim()};}
 function clamp(v,a,b){return v<a?a:(v>b?b:v);}
 function fmt(v){return Math.abs(v-Math.round(v))<0.05?String(Math.round(v)):v.toFixed(1).replace('.',',');}
+function eqFmt(v){return (Math.abs(v-Math.round(v))<0.05?'= ':'≈ ')+fmt(v);}
 function randInt(a,b){return a+Math.floor(Math.random()*(b-a+1));}
 function pick(a){return a[Math.floor(Math.random()*a.length)];}
 function sum(a){var s=0;for(var i=0;i<a.length;i++)s+=a[i];return s;}
@@ -328,8 +330,10 @@ function makeRead(){
   var labels=(S.level===4)?['Buku','Pena','Penghapus']:['7A','7B','7C'];
   var lo=S.level===4?3:5,hi=S.level===4?12:20;
   var values=[],i;
-  for(i=0;i<3;i++)values.push(randInt(lo,hi));
-  if(range(values)===0)values[2]=values[0]+3;
+  do{
+    values=[];
+    for(i=0;i<3;i++)values.push(randInt(lo,hi));
+  }while(values[0]===values[1]||values[1]===values[2]||values[0]===values[2]);
   var target,question;
   if(S.level===2){
     target=values.indexOf(Math.max.apply(null,values));
@@ -337,6 +341,9 @@ function makeRead(){
   }else if(S.level===3){
     target=values.indexOf(Math.min.apply(null,values));
     question='Bacalah diagram. Bagian mana yang paling sedikit? Klik bagian itu langsung.';
+  }else if(S.level===4){
+    target=randInt(0,2);
+    question='Bacalah diagram. Berapa banyak '+labels[target].toLowerCase()+' yang ada? Klik bagian itu langsung.';
   }else{
     target=randInt(0,2);
     question='Bacalah diagram. Berapa jumlah siswa di kelas '+labels[target]+'? Klik bagian itu langsung.';
@@ -387,7 +394,7 @@ function compareReason(d){
     var w=(d.ma>d.mb)?na:nb;
     return na+' rerata '+fmt(d.ma)+' dan '+nb+' rerata '+fmt(d.mb)+'. Rerata lebih tinggi berarti lebih baik, jadi '+w+' lebih baik.';
   }
-  var base=na+' rerata '+fmt(d.ma)+' dan '+nb+' rerata '+fmt(d.mb)+'. Selisih rerata kurang dari 1, jadi bandingkan jangkauan: '+na+' '+d.ra+', '+nb+' '+d.rb+'. ';
+  var base=na+' rerata '+fmt(d.ma)+' dan '+nb+' rerata '+fmt(d.mb)+'. Selisih rerata tidak lebih dari 1, jadi bandingkan jangkauan: '+na+' '+d.ra+', '+nb+' '+d.rb+'. ';
   if(d.correct===2)return base+'Jangkauan sama besar, jadi keduanya sama saja.';
   return base+'Jangkauan lebih kecil berarti lebih konsisten, jadi '+((d.correct===0)?na:nb)+' lebih baik.';
 }
@@ -487,7 +494,7 @@ function answerRead(idx){
   S.tries++;
   if(idx===d.target){
     S.pulse={idx:idx,t:0};
-    var p=S.hitPoint(idx);
+    var p=hitPoint(idx);
     burst(p,T().success);
     flyToScore(p);
     correct(d.labels[idx]+' = '+fmt(d.answer)+'. Klikmu tepat pada bagian itu.',1000);
@@ -507,7 +514,7 @@ function submitGuess(){
     burstAtAxis(S.guess,T().success);
     correct('Tepat! Rerata datanya '+fmt(d.correct)+'. Selisih penandamu '+fmt(diff)+'.',1000);
   }else{
-    loseLife('Belum tepat. '+d.values.join(' + ')+' = '+sum(d.values)+'. rerata = jumlah / banyak data = '+sum(d.values)+' / '+d.values.length+' = '+fmt(d.correct)+'.');
+    loseLife('Belum tepat. '+d.values.join(' + ')+' = '+sum(d.values)+'. rerata = jumlah / banyak data = '+sum(d.values)+' / '+d.values.length+' '+eqFmt(d.correct)+'.');
     S.locked=true;
     later(function(){if(!S.over)loadLevel(S.level);},2600);
   }
@@ -758,11 +765,11 @@ function drawPieChart(values,labels,R,o){
   var tot=sum(values),a=-Math.PI/2,slices=[],acc=0;
   var sweep=S.sweep*TAU;
   ctx.save();
-  ctx.beginPath();
   for(i=0;i<n;i++){
     var a0=acc/tot*TAU,a1=(acc+values[i])/tot*TAU;acc+=values[i];
-    var d0=a+a0,dd=Math.min(a1,sweep);
+    var d0=a+a0,dd=Math.min(a1,sweep)-a0;
     if(dd<=0)continue;
+    ctx.beginPath();
     ctx.moveTo(cx,cy);
     ctx.arc(cx,cy,r,d0,d0+dd);
     ctx.closePath();
@@ -779,7 +786,7 @@ function drawPieChart(values,labels,R,o){
   if(labels){
     for(i=0;i<n;i++){
       var mid2=-Math.PI/2+(acc0(values,i)/tot)*TAU+((values[i]/tot)*TAU)/2;
-      label(truncate(labels[i],(R.x1-R.x0)/(n*1.4),11),R.x0+((R.x1-R.x0)/(n*1.4))*(i+0.5),R.y0+14,11,t.muted,'center');
+      label(truncate(labels[i],90,12),cx+Math.cos(mid2)*(r+26),cy+Math.sin(mid2)*(r+26),12,t.muted,'center');
     }
   }
   S.pie={x:cx,y:cy,rOut:r*1.12,rIn:Math.max(6,r*0.35),slices:slices};
@@ -811,7 +818,7 @@ function drawPictogram(values,labels,R,o){
       var rIdx=Math.floor(k/cols),cIdx=k%cols;
       var y=base-rIdx*(chh+1)-chh;
       var x=colX+cIdx*(cw+1);
-      if(y<top-4)break;
+      if(y<top-bandH+18)break;
       box(x,y,cw,chh,1.5,col);
     }
     if(labels)label(truncate(labels[i],(R.x1-R.x0),12),R.x0+(R.x1-R.x0)/2,top-bandH+12,12,t.muted,'center');
@@ -839,7 +846,7 @@ function colorFor(i){
 function drawMeanChart(){
   var t=T(),d=S.data;
   var R={x0:58,y0:head()-14,x1:CW-24,y1:52};
-  label('Nilai '+d.values.length+' siswa kelas 7B',R.x0,26,14,t.muted,'left','700');
+  label('Nilai '+d.values.length+' siswa',R.x0,26,14,t.muted,'left','700');
   drawChart(d.values,null,R,{color:colorFor,base:0,labels:false});
 }
 function drawAxisStrip(){
@@ -993,6 +1000,12 @@ function hitPoint(idx){
   for(var j=0;j<S.hits.length;j++)if(S.hits[j].idx===idx)return {x:S.hits[j].cx,y:S.hits[j].cy};
   return null;
 }
+var dragging=false;
+function setGuessFromX(x){
+  var x0=58,x1=CW-24;
+  S.guess=clamp(Math.round((x-x0)/(x1-x0)*100),0,100);
+  syncControls();draw();
+}
 function canvasDown(ev){
   if(!S.started||S.paused||S.over||S.locked||!S.data)return;
   var pt=localPoint(ev);
@@ -1004,17 +1017,20 @@ function canvasDown(ev){
   }
   if(mode==='mean'){
     if(pt.y<axisY()-40)return;
-    var x0=58,x1=CW-24;
-    var v=clamp(Math.round((pt.x-x0)/(x1-x0)*100),0,100);
-    S.guess=v;syncControls();draw();
+    dragging=true;
+    setGuessFromX(pt.x);
   }
 }
 canvas.addEventListener('pointerdown',canvasDown);
 canvas.addEventListener('pointermove',function(ev){
-  if(!S.data||S.data.mode!=='read')return;
+  if(!S.data)return;
   var pt=localPoint(ev);
+  if(dragging&&S.data.mode==='mean'){if(!S.locked)setGuessFromX(pt.x);return;}
+  if(S.data.mode!=='read')return;
   canvas.style.cursor=hitAt(pt.x,pt.y)>=0?'pointer':'default';
 });
+window.addEventListener('pointerup',function(){dragging=false;});
+window.addEventListener('pointercancel',function(){dragging=false;});
 
 /* =====================* kontrol ====================== */
 diagramBtn.addEventListener('click',function(){
@@ -1033,6 +1049,7 @@ answerEl.addEventListener('input',function(){
   var v=clamp(Math.round(Number(answerEl.value)||0),0,100);
   S.guess=v;guessEl.value=String(v);draw();
 });
+answerEl.addEventListener('change',function(){answerEl.value=String(S.guess);});
 kirimBtn.addEventListener('click',submitGuess);
 decisionEl.addEventListener('input',function(){S.decision=Number(decisionEl.value);syncControls();});
 chips.forEach(function(chip){
@@ -1077,9 +1094,9 @@ function timeUp(){
   var d=S.data,msg;
   S.tries++;
   if(d.mode==='read'){
-    msg='Waktu habis! Jawaban untuk '+d.question.replace('Bacalah diagram. ','')+' belum ditemukan.';
+    msg='Waktu habis! Jawabannya '+d.labels[d.target]+' = '+d.answer+'.';
   }else if(d.mode==='mean'){
-    msg='Waktu habis! rerata = jumlah / banyak data = '+sum(d.values)+' / '+d.values.length+' = '+fmt(d.correct)+'.';
+    msg='Waktu habis! rerata = jumlah / banyak data = '+sum(d.values)+' / '+d.values.length+' '+eqFmt(d.correct)+'.';
   }else{
     msg='Waktu habis! '+compareReason(d);
   }
@@ -1092,7 +1109,7 @@ function loop(ts){
   var dt=S.last?Math.min(0.05,(ts-S.last)/1000):0;
   S.last=ts;
   if(!S.started||S.paused||S.over)return;
-  if(S.time>0){
+  if(S.time>0&&!S.locked){
     S.time=Math.max(0,S.time-dt);
     updateTimer();
     if(S.time===0)timeUp();

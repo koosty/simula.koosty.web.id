@@ -372,12 +372,13 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     var DEFAULT_EXPR = '3x + 2y - 5';
     var SUP = { 2: '\u00B2', 3: '\u00B3', 4: '\u2074' };
     var UNSUP = { '\u00B2': 2, '\u00B3': 3, '\u2074': 4 };
+    var ALIAS = { '\u2212': '-', '\u00D7': '*' };
 
     /* ---------------- tokenisasi & parse ---------------- */
     function tokenize(src) {
       var out = [], i = 0;
       while (i < src.length) {
-        var ch = src[i];
+        var ch = ALIAS[src[i]] || src[i];
         if (ch === ' ' || ch === '\t') { i++; continue; }
         if (ch >= '0' && ch <= '9') {
           var num = '';
@@ -385,12 +386,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
           out.push({ t: 'num', v: num });
           continue;
         }
-        if (/[a-zA-Z]/.test(ch)) {
-          var name = '';
-          while (i < src.length && /[a-zA-Z]/.test(src[i])) name += src[i++];
-          out.push({ t: 'id', v: name });
-          continue;
-        }
+        if (/[a-zA-Z]/.test(ch)) { out.push({ t: 'id', v: ch }); i++; continue; }
         if (UNSUP[ch]) { out.push({ t: 'exp', v: UNSUP[ch] }); i++; continue; }
         if (ch === '+' || ch === '-' || ch === '*' || ch === '(' || ch === ')') {
           out.push({ t: ch }); i++; continue;
@@ -480,11 +476,8 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       vars.sort(function (x, y) { return x.n < y.n ? -1 : x.n > y.n ? 1 : 0; });
       return { c: a.c * b.c, vars: vars };
     }
-    function addTerm(a, b) {
-      return { c: a.c + b.c, vars: a.vars.slice() };
-    }
 
-    // Ratakan penjumlahan di puncak menjadi daftar suku (tanpa mengembangkan perkalian).
+    // Ratakan penjumlahan di puncak menjadi daftar suku bertanda (tanpa mengembangkan perkalian).
     function topTerms(node) {
       if (node.type === 'add') {
         var out = [];
@@ -496,24 +489,34 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
         return out;
       }
       if (node.type === 'group') return topTerms(node.inner);
-      if (node.type === 'mul') {
-        if (node.args.some(isAddish)) return [{ t: { kind: 'kompleks', node: node }, sign: 1 }];
-        var acc = tNum(1);
-        for (var k = 0; k < node.args.length; k++) {
-          var a = node.args[k];
-          if (a.type === 'num') acc = termMul(acc, tNum(a.v));
-          else if (a.type === 'var') acc = termMul(acc, tVar(1, a.n, a.ex || 1));
-          else if (a.type === 'group') {
-            var sub = topTerms(a.inner);
-            if (sub.length !== 1) return [{ t: { kind: 'kompleks', node: node }, sign: 1 }];
-            acc = termMul(acc, sub[0].t);
-          }
-        }
-        return [{ t: acc, sign: 1 }];
+      if (isAddish(node)) return [kompleksItem(node)];
+      return [mkItem(simpleTerm(node), 1)];
+    }
+    // Perkalian yang memuat penjumlahan: tanda minus di depan dipindah ke tanda suku.
+    function kompleksItem(node) {
+      var parts = flatten(node, []), neg = false, mag = 1, rest = [];
+      for (var i = 0; i < parts.length; i++) {
+        if (parts[i].type === 'num') { if (parts[i].v < 0) neg = !neg; mag *= Math.abs(parts[i].v); }
+        else rest.push(parts[i]);
       }
-      if (node.type === 'num') return [{ t: tNum(node.v), sign: 1 }];
-      if (node.type === 'var') return [{ t: tVar(1, node.n, node.ex || 1), sign: 1 }];
-      return [{ t: tNum(0), sign: 1 }];
+      if (mag !== 1 || !rest.length) rest.unshift({ type: 'num', v: mag });
+      var body = rest.length === 1 ? rest[0] : { type: 'mul', args: rest };
+      return { t: { kind: 'kompleks', node: body }, sign: neg ? -1 : 1 };
+    }
+    function flatten(node, out) {
+      if (node.type === 'mul') {
+        for (var i = 0; i < node.args.length; i++) flatten(node.args[i], out);
+      } else if (node.type === 'group' && node.inner.type === 'mul') {
+        flatten(node.inner, out);
+      } else {
+        out.push(node);
+      }
+      return out;
+    }
+    // Besaran koefisien selalu ≥ 0; tanda disimpan terpisah pada item.
+    function mkItem(t, s) {
+      var c = t.c * s;
+      return { t: { c: Math.abs(c), vars: t.vars }, sign: c < 0 ? -1 : 1 };
     }
     function isAddish(node) {
       if (node.type === 'add') return true;
@@ -534,9 +537,16 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     }
 
     /* ---------------- aturan ---------------- */
-    function canonicalCompare(a, b) {
-      if ((a.vars.length === 0) !== (b.vars.length === 0)) return a.vars.length ? -1 : 1;
-      var ka = termKey(a), kb = termKey(b);
+    // Urutan komutatif: suku non-konstanta dulu (koefisien terbesar di depan), konstanta terakhir.
+    function komutatifCompare(a, b) {
+      var ca = a.t.kind !== 'kompleks' && a.t.vars.length === 0;
+      var cb = b.t.kind !== 'kompleks' && b.t.vars.length === 0;
+      if (ca !== cb) return ca ? 1 : -1;
+      var ma = a.t.kind === 'kompleks' ? 1 : a.t.c;
+      var mb = b.t.kind === 'kompleks' ? 1 : b.t.c;
+      if (ma !== mb) return mb - ma;
+      var ka = a.t.kind === 'kompleks' ? rawNode(a.t.node) : termKey(a.t);
+      var kb = b.t.kind === 'kompleks' ? rawNode(b.t.node) : termKey(b.t);
       return ka < kb ? -1 : ka > kb ? 1 : 0;
     }
 
@@ -547,12 +557,9 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
           return terms.length > 1;
         },
         apply: function (terms) {
-          var pos = terms.filter(function (x) { return x.sign > 0; }).map(function (x) { return x.t; });
-          var neg = terms.filter(function (x) { return x.sign < 0; }).map(function (x) { return x.t; });
-          pos.sort(canonicalCompare);
-          neg.sort(canonicalCompare);
-          return pos.map(function (t) { return { t: t, sign: 1 }; })
-            .concat(neg.map(function (t) { return { t: t, sign: -1 }; }));
+          var pos = terms.filter(function (x) { return x.sign > 0; }).sort(komutatifCompare);
+          var neg = terms.filter(function (x) { return x.sign < 0; }).sort(komutatifCompare);
+          return pos.concat(neg);
         },
         why: 'Sifat komutatif: urutan suku boleh ditukar, sehingga suku disusun dari koefisien terbesar dan konstanta diletakkan terakhir.'
       },
@@ -572,7 +579,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
           }
           return out;
         },
-        why: 'Sifat asosiatif: suku-suku sejenis dikelompokkan lalu dijumlahkan, sehingga koefisiennya bertambah.'
+        why: 'Sifat asosiatif: suku-suku sejenis dikelompokkan lalu koefisiennya dijumlahkan.'
       },
       distributif: {
         name: 'Distributif',
@@ -591,9 +598,9 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       }
     };
 
+    // Kumpulkan suku sejenis (variabel dan pangkatnya sama); koefisien dijumlahkan dengan tandanya.
     function groupLike(terms) {
-      var map = Object.create(null);
-      var order = [];
+      var map = Object.create(null), order = [];
       for (var i = 0; i < terms.length; i++) {
         var t = terms[i].t;
         if (t.kind === 'kompleks') continue;
@@ -604,82 +611,61 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       var out = [];
       for (var j = 0; j < order.length; j++) {
         var b = map[order[j]];
-        if (b.c === 0) continue;
-        out.push({ t: { c: b.c, vars: b.vars }, sign: b.c < 0 ? -1 : 1 });
+        if (b.c !== 0) out.push({ t: { c: Math.abs(b.c), vars: b.vars }, sign: b.c < 0 ? -1 : 1 });
       }
-      out.sort(function (a, b) { return canonicalCompare(a.t, b.t); });
+      if (!out.length) out.push({ t: tNum(0), sign: 1 });
+      // Konstanta diletakkan terakhir; suku lain mengikuti urutan kemunculan pertama.
+      out.sort(function (a, b) { return (a.t.vars.length === 0) - (b.t.vars.length === 0); });
       return out;
     }
 
-    // Kembangkan satu tingkat perkalian yang memuat penjumlahan.
+    // Kembangkan perkalian yang memuat penjumlahan; hasil berupa suku bertanda (tanda dipisah dari besaran).
     function expand(node, sign) {
       var parts = factorParts(node);
-      if (parts.length === 1) {
-        var p = parts[0];
-        if (p.isSum) return expandSum(p.value, sign);
-        return [{ t: applySign(p.term, sign), sign: 1 }];
-      }
       var acc = [tNum(1)];
       for (var i = 0; i < parts.length; i++) {
         var piece = parts[i];
-        var list = piece.isSum ? expandSum(piece.value, 1).map(function (e) { return e.t; }) : [piece.term];
+        var list = piece.isSum ? expandSum(piece.value, 1).map(signedTerm) : [piece.term];
         var next = [];
         for (var a = 0; a < acc.length; a++) {
           for (var b = 0; b < list.length; b++) next.push(termMul(acc[a], list[b]));
         }
         acc = next;
       }
-      var res = [];
-      for (var k = 0; k < acc.length; k++) res.push({ t: applySign(acc[k], sign), sign: 1 });
-      return res;
+      return acc.map(function (t) { return mkItem(t, sign); });
     }
+    // Kembangkan isi kurung penjumlahan; tiap suku mengikuti operator di depannya.
     function expandSum(node, sign) {
       var out = [];
       for (var i = 0; i < node.args.length; i++) {
-        var arg = node.args[i];
         var op = i === 0 ? 1 : (node.ops[i - 1] === '-' ? -1 : 1);
-        var s = sign * op;
-        if (arg.type === 'mul' && isAddish(arg)) {
-          var sub = expand(arg, s);
-          for (var j = 0; j < sub.length; j++) out.push(sub[j]);
-        } else {
-          var t = simpleTerm(arg);
-          out.push({ t: applySign(t, s), sign: 1 });
-        }
+        out.push.apply(out, expandNode(node.args[i], sign * op));
       }
       return out;
     }
-    function applySign(t, s) { return { c: t.c * s, vars: t.vars }; }
+    function expandNode(node, sign) {
+      if (node.type === 'group') return expandNode(node.inner, sign);
+      if (node.type === 'add') return expandSum(node, sign);
+      if (isAddish(node)) return expand(node, sign);
+      return [mkItem(simpleTerm(node), sign)];
+    }
+    function signedTerm(item) { return { c: item.t.c * item.sign, vars: item.t.vars }; }
     function simpleTerm(node) {
       if (node.type === 'group') return simpleTerm(node.inner);
       if (node.type === 'num') return tNum(node.v);
       if (node.type === 'var') return tVar(1, node.n, node.ex || 1);
-      if (node.type === 'mul') {
-        var acc = tNum(1);
-        for (var i = 0; i < node.args.length; i++) acc = termMul(acc, simpleTerm(node.args[i]));
-        return acc;
-      }
-      if (node.type === 'add') {
-        var r = tNum(0);
-        for (var k = 0; k < node.args.length; k++) {
-          var op = k === 0 ? 1 : (node.ops[k - 1] === '-' ? -1 : 1);
-          var t = simpleTerm(node.args[k]);
-          r = { c: r.c + t.c * op, vars: t.vars };
-        }
-        return r;
-      }
-      return tNum(0);
+      var acc = tNum(1);
+      for (var i = 0; i < node.args.length; i++) acc = termMul(acc, simpleTerm(node.args[i]));
+      return acc;
     }
+    // Faktor perkalian: suku biasa, atau penjumlahan yang harus dikembangkan.
     function factorParts(node) {
-      var inner = node.type === 'group' ? node.inner : node;
-      if (inner.type === 'mul') {
-        return inner.args.map(function (a) {
-          if (isAddish(a)) return { isSum: true, value: a.type === 'group' ? a.inner : a };
-          return { isSum: false, term: simpleTerm(a) };
-        });
-      }
-      if (isAddish(inner)) return [{ isSum: true, value: inner }];
-      return [{ isSum: false, term: simpleTerm(inner) }];
+      return flatten(node, []).map(function (f) {
+        if (!isAddish(f)) return { isSum: false, term: simpleTerm(f) };
+        var v = f;
+        while (v.type === 'group') v = v.inner;
+        return { isSum: true, value: v };
+      });
     }
 
     /* ---------------- state ---------------- */
@@ -709,9 +695,8 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
         var base = item.t.kind === 'kompleks'
           ? 'kompleks'
           : (isKonst ? 'konstanta' : 'suku');
-        var label = item.t.kind === 'kompleks'
-          ? rawComplex(item.t.node)
-          : (item.sign < 0 ? '\u2212' : '') + termText(item.t);
+        var label = (item.sign < 0 ? '\u2212' : '') +
+          (item.t.kind === 'kompleks' ? rawNode(item.t.node) : termText(item.t));
         var keyBase = base + '~' + label;
         used[keyBase] = (used[keyBase] || 0) + 1;
         var key = keyBase + '#' + used[keyBase];
@@ -769,29 +754,26 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       pool = chips;
     }
 
-    function rawComplex(node) {
-      var inner = node.type === 'group' ? node.inner : node;
-      if (inner.type === 'mul') {
-        return inner.args.map(rawComplex).join(' \u00D7 ');
-      }
-      return rawSimple(inner);
-    }
-    function rawSimple(node) {
-      if (node.type === 'group') return '(' + rawSum(node.inner) + ')';
-      if (node.type === 'num') return String(node.v);
-      if (node.type === 'var') return node.n + (node.ex > 1 ? (SUP[node.ex] || '^' + node.ex) : '');
+    // Teks suku/faktor untuk label dan isian kotak input (minus memakai U+2212 agar bisa diketik ulang).
+    function rawNode(node) {
+      if (node.type === 'group') return '(' + rawNode(node.inner) + ')';
       if (node.type === 'add') return rawSum(node);
-      if (node.type === 'mul') return node.args.map(rawSimple).join(' \u00D7 ');
+      if (node.type === 'mul') return flatten(node, []).map(rawNode).join(' \u00D7 ');
+      if (node.type === 'num') return numText(node.v);
+      if (node.type === 'var') return node.n + (node.ex > 1 ? (SUP[node.ex] || '^' + node.ex) : '');
       return '0';
     }
     function rawSum(node) {
       var out = '';
       for (var i = 0; i < node.args.length; i++) {
-        if (i > 0) out += node.ops[i - 1] === '-' ? ' \u2212 ' : ' + ';
-        out += rawSimple(node.args[i]);
+        var minus = i > 0 && node.ops[i - 1] === '-';
+        var s = rawNode(node.args[i]);
+        if (s.charAt(0) === '\u2212') { minus = !minus; s = s.slice(1); }
+        out += i === 0 ? (minus ? '\u2212' : '') + s : (minus ? ' \u2212 ' : ' + ') + s;
       }
       return out;
     }
+    function numText(v) { return v < 0 ? '\u2212' + String(-v) : String(v); }
 
     function makeChip() {
       var el = document.createElement('div');
@@ -812,7 +794,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       var t = item.t;
       if (t.vars.length) {
         var names = t.vars.map(function (v) { return v.n; }).join('');
-        tags.appendChild(mkTag('koefisien', 'koefisien ' + fmtCoeff(t.c)));
+        tags.appendChild(mkTag('koefisien', 'koefisien ' + fmtCoeff(item.sign * t.c)));
         tags.appendChild(mkTag('variabel', 'variabel ' + names));
       } else {
         tags.appendChild(mkTag('konstanta', 'konstanta'));
@@ -821,7 +803,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     function fmtCoeff(c) {
       if (c === 1) return '1';
       if (c === -1) return '\u22121';
-      return String(c);
+      return String(c).replace('-', '\u2212');
     }
     function mkTag(cls, text) {
       var s = document.createElement('span');
@@ -883,7 +865,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       var out = '';
       for (var i = 0; i < terms.length; i++) {
         var it = terms[i];
-        var label = it.t.kind === 'kompleks' ? rawComplex(it.t.node) : termText(it.t);
+        var label = it.t.kind === 'kompleks' ? rawNode(it.t.node) : termText(it.t);
         if (i === 0) out += (it.sign < 0 ? '\u2212' : '') + label;
         else out += (it.sign < 0 ? ' \u2212 ' : ' + ') + label;
       }
@@ -968,7 +950,9 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       }
     });
     input.addEventListener('input', function () {
-      if (setExpression(input.value, { animate: false })) syncButtons();
+      if (!setExpression(input.value, { animate: false })) return;
+      syncButtons();
+      if (fb.className === 'error') { fb.className = ''; fb.textContent = 'Bentuk aljabar siap diproses.'; }
     });
     input.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') { e.preventDefault(); document.getElementById('apply-btn').click(); }
@@ -990,7 +974,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     document.getElementById('reset-btn').addEventListener('click', resetAll);
 
     document.addEventListener('keydown', function (e) {
-      if (e.target === input) return;
+      if (e.target === input || e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.key === 'r' || e.key === 'R') { resetAll(); }
       if (e.key === 'k' || e.key === 'K') { applyRule('komutatif'); }
       if (e.key === 'a' || e.key === 'A') { applyRule('asosiatif'); }

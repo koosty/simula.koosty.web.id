@@ -358,7 +358,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     "presets": [
       { "name": "Soal suhu", "variables": { "card": 1 } },
       { "name": "Soal saldo", "variables": { "card": 3 } },
-      { "name": "Soal hutang", "variables": { "card": 6 } }
+      { "name": "Soal hutang", "variables": { "card": 4 } }
     ]
   }
   </script>
@@ -397,7 +397,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       {
         id: "suhu-freezer",
         op: "kurang",
-        story: "Suhu di dalam lemari freezer awalnya 4 derajat Celsius. Listrik padam seharian sehingga es-cair berubah menjadi air yang suhunya 12 derajat di bawah titik beku. Berapa suhu freezer sekarang?",
+        story: "Suhu di dalam lemari freezer awalnya 4 derajat Celsius. Suhunya kemudian diturunkan 16 derajat agar es tetap beku. Berapa suhu freezer sekarang?",
         answer: -12,
         unit: "derajat Celsius",
         numbers: [{ text: "4 °C", x: 150, y: 96 }, { text: "−12 °C", x: 450, y: 96 }],
@@ -415,27 +415,27 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       {
         id: "tinggi-bangunan",
         op: "kurang",
-        story: "Gedung sekolah punya 6 lantai. Lantai paling atas berada 4 meter di bawah puncak menara. Menara itu sendiri setinggi 15 meter dari atap gedung. Berapa tinggi menara dari atap gedung?",
+        story: "Sebuah gedung sekolah berdiri di atas tanah dengan atap setinggi 4 meter dari permukaan tanah. Di atas atap itu berdiri menara antena yang puncaknya 15 meter dari permukaan tanah. Berapa tinggi menara dari atap gedung?",
         answer: 11,
         unit: "meter",
-        numbers: [{ text: "15 m", x: 150, y: 90 }, { text: "−4 m", x: 330, y: 150 }, { text: "11 m", x: 500, y: 90 }],
+        numbers: [{ text: "15 m", x: 150, y: 90 }, { text: "4 m", x: 330, y: 150 }, { text: "11 m", x: 500, y: 90 }],
         draw: function (g) {
           g.appendChild(el("rect", { x: 70, y: 60, width: 200, height: 160, rx: 8, "class": "scene-shape" }));
           for (var i = 1; i <= 3; i++) {
             g.appendChild(el("rect", { x: 110 + i * 50, y: 80 + i * 40, width: 16, height: 16, "class": "scene-fill-accent" }));
           }
-          g.appendChild(el("text", { x: 170, y: 200, "text-anchor": "middle", "class": "scene-dim" }, "6 lantai"));
+          g.appendChild(el("text", { x: 170, y: 200, "text-anchor": "middle", "class": "scene-dim" }, "gedung sekolah"));
           g.appendChild(el("line", { x1: 330, y1: 220, x2: 330, y2: 90, "class": "scene-line" }));
           g.appendChild(el("line", { x1: 350, y1: 90, x2: 330, y2: 90, "class": "scene-line" }));
           g.appendChild(el("line", { x1: 350, y1: 220, x2: 330, y2: 220, "class": "scene-line" }));
           g.appendChild(el("line", { x1: 430, y1: 220, x2: 430, y2: 110, "class": "scene-line" }));
-          g.appendChild(el("text", { x: 460, y: 220, "class": "scene-dim" }, "−4 m"));
+          g.appendChild(el("text", { x: 460, y: 220, "class": "scene-dim" }, "4 m"));
         }
       },
       {
         id: "saldo-pulsa",
         op: "tambah",
-        story: "Sinta punya pulsa 50.000 rupiah. Ia mengisi ulang 30.000 rupiah. Setelah menambah saldo awal dengan pulsa yang baru dibeli, berapa saldo pulsanya sekarang?",
+        story: "Sinta punya pulsa 50.000 rupiah. Ia mengisi ulang pulsa 30.000 rupiah. Berapa saldo pulsanya sekarang?",
         answer: 80000,
         unit: "rupiah",
         rupiah: true,
@@ -451,7 +451,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       {
         id: "hutang-angkot",
         op: "kali",
-        story: "Budi berutang ongkos angkot selama 3 hari berturut-turut. Ongkos sekali naik Rp4.000. Berapa total hutang Budi?",
+        story: "Budi berutang ongkos angkot selama 3 hari berturut-turut. Setiap hari ia naik angkot sekali dengan ongkos Rp4.000. Berapa total hutang Budi?",
         answer: 12000,
         unit: "rupiah",
         rupiah: true,
@@ -468,11 +468,10 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       {
         id: "tinggi-kelas",
         op: "bagi",
-        story: "Di kelas 7A ada 35 murid. Murid duduk berpasangan, jadi setiap bangku dipakai 2 orang. Berapa bangku yang dipakai?",
-        answer: 17.5,
+        story: "Di kelas 7A ada 35 murid. Murid duduk berpasangan, jadi setiap bangku dipakai 2 orang. Berapa bangku minimal yang dibutuhkan agar semua murid dapat duduk?",
+        answer: 18,
         unit: "bangku",
-        accept: [17.5, 18],
-        numbers: [{ text: "35", x: 140, y: 110 }, { text: "÷ 2", x: 300, y: 170 }, { text: "17,5", x: 480, y: 110 }],
+        numbers: [{ text: "35", x: 140, y: 110 }, { text: "÷ 2", x: 300, y: 170 }, { text: "18", x: 480, y: 110 }],
         draw: function (g) {
           for (var i = 0; i < 5; i++) {
             g.appendChild(el("rect", { x: 90 + i * 100, y: 100, width: 70, height: 30, rx: 6, "class": "scene-shape" }));
@@ -613,12 +612,6 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     }
 
     function answerAccepted(card, val) {
-      if (card.accept) {
-        for (var i = 0; i < card.accept.length; i++) {
-          if (Math.abs(val - card.accept[i]) < 0.001) return true;
-        }
-        return false;
-      }
       return Math.abs(val - card.answer) < 0.001;
     }
 
@@ -692,17 +685,17 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     function explain(card, ok) {
       switch (card.id) {
         case "suhu-freezer":
-          return "Suhu 4 derajat turun 16 derajat, jadi 4 + (−16) = −12. Suhu di bawah titik beku ditulis dengan bilangan negatif.";
+          return "Suhu 4 derajat turun 16 derajat, jadi 4 − 16 = −12. Suhu di bawah titik beku (0 °C) ditulis dengan bilangan negatif.";
         case "tinggi-bangunan":
-          return "Puncak menara 4 meter di bawah atap gedung, jadi 15 + (−4) = 11 meter.";
+          return "Puncak menara 15 meter di atas tanah dan atap gedung 4 meter di atas tanah, jadi 15 − 4 = 11 meter.";
         case "saldo-pulsa":
           return "Saldo 50.000 ditambah isi ulang 30.000 jadi 80.000 rupiah. Menambah uang berarti menjumlahkan, bukan mengurangi.";
         case "hutang-angkot":
           return "Ongkos 4.000 rupiah selama 3 hari: 3 × 4.000 = 12.000 rupiah, jadi dikalikan.";
         case "tinggi-kelas":
-          return "35 murid dibagi 2 orang per bangku: 35 ÷ 2 = 17,5. Kalau dibulatkan ke atas karena bangku tidak bisa setengah, dibutuhkan 18 bangku.";
+          return "35 murid dibagi 2 orang per bangku: 35 ÷ 2 = 17,5. Bangku tidak bisa setengah, jadi 17 bangku hanya menampung 34 murid. Yang dibutuhkan 18 bangku.";
         case "suhu-gunung":
-          return "Suhu naik 5 lalu turun 3: 8 + 5 = 13, lalu 13 − 3 = 10 derajat Celsius.";
+          return "Suhu naik 5 lalu turun 3 berarti perubahan bersih +5 + (−3) = +2, jadi 8 + 2 = 10 derajat Celsius.";
         default:
           return ok ? "" : "";
       }

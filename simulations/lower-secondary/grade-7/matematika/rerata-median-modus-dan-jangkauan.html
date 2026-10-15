@@ -216,7 +216,7 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 </main>
 
 <script type="application/json" id="widget-config">
-{"type":"simulation","concept":"measures-of-center","description":"Murid menghitung ukuran pemusatan dan melihat dampaknya saat data berubah.","variables":[{"name":"nilai","label":"NilaiIPA","min":0,"max":10,"default":7,"unit":"nilai"},{"name":"jumlah","label":"Jumlahsiswa","min":5,"max":20,"default":10,"unit":"orang"}],"presets":[]}
+{"type":"simulation","concept":"measures-of-center","description":"Murid menghitung ukuran pemusatan dan melihat dampaknya saat data berubah.","variables":[{"name":"nilai","label":"NilaiIPA","min":0,"max":100,"default":90,"unit":"nilai"},{"name":"jumlah","label":"Jumlahsiswa","min":10,"max":11,"default":10,"unit":"orang"}],"presets":[]}
 </script>
 
 <script>
@@ -305,7 +305,7 @@ function updateAll() {
   if (mo.nilai.length === 0) {
     el('calc-mode').innerHTML = 'Tidak ada modus karena semua nilai muncul satu kali saja.';
   } else {
-    el('calc-mode').innerHTML = 'Nilai <strong>' + mo.nilai.join(', ') + '</strong> muncul <strong>' + mo.freq + ' kali</strong>, paling sering dari nilai lain.';
+    el('calc-mode').innerHTML = 'Nilai <strong>' + mo.nilai.join(', ') + '</strong> muncul <strong>' + mo.freq + ' kali</strong>, paling sering dibanding nilai lain.';
   }
 
   el('outlier-note').hidden = !outlier;
@@ -577,7 +577,8 @@ function urutkanData() {
   order.sort(function (a, b) { return data[a] - data[b] || a - b; });
   const frag = document.createDocumentFragment();
   const kids = Array.prototype.slice.call(chipsBox.children);
-  order.forEach(function (i) { frag.appendChild(kids[i]); });
+  const byIndex = new Map(kids.map(function (c) { return [Number(c.dataset.index), c]; }));
+  order.forEach(function (i) { frag.appendChild(byIndex.get(i)); });
   chipsBox.appendChild(frag);
   sortMode = true;
 
@@ -609,7 +610,7 @@ function urutkanData() {
     sortTimer = null;
   }, 560);
 
-  setPesan('Data sudah diurutkan dari yang terkecil. Median adalah nilai tengah, atau rerata dari dua nilai tengah bila banyak data genapel.');
+  setPesan('Data sudah diurutkan dari yang terkecil. Median adalah nilai tengah, atau rerata dari dua nilai tengah bila banyak data genap.');
 }
 
 function toggleDistraction() {
@@ -656,7 +657,7 @@ function setPesan(teks) {
 function cekJawaban() {
   const panel = el('feedback-panel');
   const ketik = el('cek-input').value.trim().replace(',', '.');
-  const nilai = parseFloat(ketik);
+  const nilai = Number(ketik);
   const target = rerataOf(data);
   panel.classList.remove('success', 'error');
   if (!isFinite(nilai) || ketik === '') {
@@ -664,7 +665,7 @@ function cekJawaban() {
     el('feedback-text').textContent = 'Kotak jawaban masih kosong atau bukan angka. Tulis rerata (mean) dengan angka saja, lalu tekan Cek jawaban saya.';
     return;
   }
-  if (Math.abs(nilai - target) <= 0.05) {
+  if (Math.abs(nilai - target) <= 0.005) {
     panel.classList.add('success');
     el('feedback-text').textContent = 'Benar! Rerata = ' + fmt2(target) + ', karena jumlah data ' + totalOf(data) + ' ÷ ' + data.length + ' data.';
   } else {

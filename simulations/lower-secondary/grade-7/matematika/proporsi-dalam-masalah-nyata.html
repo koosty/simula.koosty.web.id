@@ -284,7 +284,7 @@ tbody tr { border-bottom: 1px solid var(--border); }
 
       <div class="panel work-box" style="margin-top: var(--space-4);">
         <h3>Cara perkalian silang</h3>
-        <p class="readout-sm" id="cross-text">1 x ? = 12.000 x 1</p>
+        <p class="readout-sm" id="cross-text">1 x ? = 12.000 x 4</p>
         <p class="note" id="cross-note">Kalikan diagonal seberang, lalu bagi dengan nilai yang diketahui.</p>
       </div>
     </div>
@@ -316,38 +316,38 @@ tbody tr { border-bottom: 1px solid var(--border); }
   var SCENARIOS = [
     {
       title: 'Harga buah per kilogram',
-      desc: 'Buah mangga diwarung diharga Rp12.000 untuk setiap 1 kg.',
-      xLabel: 'Banyak (kg)', yLabel: 'Harga (Rp)', yUnit: 'Rp',
+      desc: 'Buah mangga di warung diharga Rp12.000 untuk setiap 1 kg.',
+      xLabel: 'Banyak (kg)', xUnit: 'kg', yLabel: 'Harga (Rp)', yUnit: 'Rp',
       rate: 12000, known: 1, blank: 4, rows: [1, 2, 3, 4], blankAt: 3
     },
     {
       title: 'Takaran resep kue',
-      desc: 'Resep nastar butuh 100 g feminino untuk 1 sitemap. Ibu mau membuat 5 sitemap.',
-      xLabel: 'Sitemap', yLabel: 'Tepung (g)', yUnit: 'g',
+      desc: 'Resep nastar butuh 100 g tepung untuk 1 loyang. Ibu mau membuat 5 loyang.',
+      xLabel: 'Loyang', xUnit: 'loyang', yLabel: 'Tepung (g)', yUnit: 'g',
       rate: 100, known: 1, blank: 5, rows: [1, 2, 3, 5], blankAt: 3
     },
     {
       title: 'Cat tembok',
       desc: 'Satu kaleng cat cukup untuk 10 meter persegi tembok.',
-      xLabel: 'Kaleng', yLabel: 'Luas tembok (m2)', yUnit: 'm2',
+      xLabel: 'Kaleng', xUnit: 'kaleng', yLabel: 'Luas tembok (m²)', yUnit: 'm²',
       rate: 10, known: 1, blank: 7, rows: [1, 2, 4, 7], blankAt: 3
     },
     {
-      title: 'Pembagian bahan prima',
+      title: 'Kebutuhan daging bakso',
       desc: 'Satu batch adonan bakso memakai 2 kg daging. Toko membuat 8 batch.',
-      xLabel: 'Batch', yLabel: 'Daging (kg)', yUnit: 'kg',
+      xLabel: 'Batch', xUnit: 'batch', yLabel: 'Daging (kg)', yUnit: 'kg',
       rate: 2, known: 1, blank: 8, rows: [1, 3, 5, 8], blankAt: 3
     },
     {
       title: 'Iuran kelas',
       desc: 'Iuran study tour Rp25.000 setiap siswa. Kelas 7A ada 28 siswa.',
-      xLabel: 'Siswa', yLabel: 'Iuran (Rp)', yUnit: 'Rp',
+      xLabel: 'Siswa', xUnit: 'siswa', yLabel: 'Iuran (Rp)', yUnit: 'Rp',
       rate: 25000, known: 1, blank: 28, rows: [1, 12, 20, 28], blankAt: 3
     },
     {
       title: 'Porsi buffet',
       desc: 'Satu porsi buffet berat 250 g. Dapur sekolah menyiapkan 32 porsi untuk acara kelas.',
-      xLabel: 'Porsi', yLabel: 'Berat (g)', yUnit: 'g',
+      xLabel: 'Porsi', xUnit: 'porsi', yLabel: 'Berat (g)', yUnit: 'g',
       rate: 250, known: 1, blank: 32, rows: [1, 8, 15, 32], blankAt: 3
     }
   ];
@@ -379,12 +379,15 @@ tbody tr { border-bottom: 1px solid var(--border); }
   var currentW = [];
   var targetW = [];
   var barRAF = null;
+  var tableFills = [];
+  var skalaMaks = 1;
 
   function formatId(n) {
     return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   }
 
   function valueFor(sc, x) { return sc.rate * x; }
+  function isHidden(sc, i) { return i === sc.blankAt && !state.revealed[state.index]; }
 
   function setFeedback(text, kind) {
     el.feedbackText.textContent = text;
@@ -398,7 +401,6 @@ tbody tr { border-bottom: 1px solid var(--border); }
     bars = [];
     currentW = [];
     targetW = [];
-    var maxV = valueFor(sc, sc.rows[sc.rows.length - 1]);
     for (var i = 0; i < sc.rows.length; i++) {
       var x = sc.rows[i];
       var y = valueFor(sc, x);
@@ -431,20 +433,31 @@ tbody tr { border-bottom: 1px solid var(--border); }
       value.setAttribute('x', '190');
       value.setAttribute('y', String(top + 13));
       value.setAttribute('class', 'svgmono');
-      value.textContent = formatId(y);
+      value.textContent = isHidden(sc, i) ? '?' : formatId(y);
 
       g.appendChild(label); g.appendChild(bg); g.appendChild(bar); g.appendChild(value);
       el.barRows.appendChild(g);
 
-      bars.push({ bar: bar, value: value, x: x });
-      var w = (y / maxV) * TRACK;
+      bars.push({ bar: bar, value: value, x: x, y: y });
+      var w = isHidden(sc, i) ? 0 : (y / skalaMaks) * TRACK;
       currentW.push(0);
       targetW.push(w);
     }
   }
 
+  /* Skala batang memakai baris yang sudah diketahui saja, agar panjang batang tidak membocorkan jawaban. */
+  function hitungSkala(sc) {
+    var maks = 0;
+    for (var j = 0; j < sc.rows.length; j++) {
+      if (j === sc.blankAt && !state.revealed[state.index]) continue;
+      maks = Math.max(maks, valueFor(sc, sc.rows[j]));
+    }
+    return maks;
+  }
+
   function renderTable(sc) {
     while (el.tableBody.firstChild) el.tableBody.removeChild(el.tableBody.firstChild);
+    tableFills = [];
     for (var i = 0; i < sc.rows.length; i++) {
       var x = sc.rows[i];
       var tr = document.createElement('tr');
@@ -461,6 +474,7 @@ tbody tr { border-bottom: 1px solid var(--border); }
         input.type = 'text';
         input.inputMode = 'numeric';
         input.className = 'cell-input';
+        input.placeholder = '?';
         input.id = 'answer-input';
         input.setAttribute('aria-label', 'Isi ' + sc.yLabel + ' untuk ' + x + ' ' + sc.xLabel);
         input.value = state.revealed[state.index] ? formatId(valueFor(sc, x)) : '';
@@ -472,12 +486,12 @@ tbody tr { border-bottom: 1px solid var(--border); }
 
       var tdBar = document.createElement('td');
       var mini = document.createElement('div');
-      var maxV = valueFor(sc, sc.rows[sc.rows.length - 1]);
-      var pct = (valueFor(sc, x) / maxV) * 100;
+      var pct = isHidden(sc, i) ? 0 : (valueFor(sc, x) / skalaMaks) * 100;
       mini.className = 'progress-track';
       var fill = document.createElement('div');
       fill.className = 'progress-fill';
       fill.style.width = pct.toFixed(1) + '%';
+      tableFills.push(fill);
       mini.appendChild(fill);
       tdBar.appendChild(mini);
 
@@ -488,7 +502,7 @@ tbody tr { border-bottom: 1px solid var(--border); }
 
   function updateRatio(sc) {
     el.ratioDisplay.textContent = formatId(sc.rate) + ' : 1';
-    el.ratioNote.textContent = 'Setiap 1 ' + sc.xLabel.replace(/\s*\(.*\)/, '') + ' selalu ' +
+    el.ratioNote.textContent = 'Setiap 1 ' + sc.xUnit + ' selalu ' +
       formatId(sc.rate) + ' ' + sc.yUnit + ', berapa pun banyak barisnya.';
   }
 
@@ -529,12 +543,13 @@ tbody tr { border-bottom: 1px solid var(--border); }
 
     updateRatio(sc);
     updateCross(sc);
+    skalaMaks = hitungSkala(sc);
     renderTable(sc);
     buildBars(sc);
     tweenBars();
 
     el.checkBtn.disabled = state.revealed[i];
-    el.nextBtn.disabled = i === 0;
+    el.nextBtn.disabled = !state.revealed[i];
     el.nextBtn.textContent = (i === SCENARIOS.length - 1) ? 'Ulangi dari awal' : 'Situasi berikutnya';
 
     if (state.revealed[i]) {
@@ -554,31 +569,37 @@ tbody tr { border-bottom: 1px solid var(--border); }
       setFeedback('Isi kotak dengan angka saja, lalu tekan Periksa.', 'error');
       return;
     }
+    var correct = valueFor(sc, sc.blank);
+    var work = sc.rate * sc.blank;
+
+    if (Math.abs(given - correct) >= 0.5) {
+      setFeedback('Belum tepat. Coba lagi: kalikan ' + formatId(sc.rate) + ' dengan ' + sc.blank + '.', 'error');
+      return;
+    }
+
     state.answered = true;
     input.disabled = true;
     el.checkBtn.disabled = true;
 
-    var correct = valueFor(sc, sc.blank);
-    var work = sc.rate * sc.blank;
     el.crossText.textContent = sc.known + ' x ' + formatId(correct) + ' = ' + formatId(sc.rate) + ' x ' + sc.blank;
     el.crossNote.textContent = 'Kedua ruas sama, jadi ' + sc.known + ' : ' + sc.blank + ' = ' +
       formatId(sc.rate) + ' : ' + formatId(correct) + '. Proporsinya terjaga.';
 
-    var maxV = valueFor(sc, sc.rows[sc.rows.length - 1]);
-    var idx = bars.length - 1;
-    targetW[idx] = (correct / maxV) * TRACK;
+    var idx = sc.blankAt;
+    bars[idx].y = correct;
+    if (correct > skalaMaks) skalaMaks = correct;
+    for (var k = 0; k < bars.length; k++) {
+      targetW[k] = (bars[k].y / skalaMaks) * TRACK;
+      tableFills[k].style.width = (bars[k].y / skalaMaks * 100).toFixed(1) + '%';
+    }
+    bars[idx].value.textContent = formatId(correct);
     tweenBars();
 
-    if (Math.abs(given - correct) < 0.5) {
-      state.score += 1;
-      state.revealed[state.index] = true;
-      el.scoreLabel.textContent = 'Skor ' + state.score;
-      el.progress.style.width = (((state.index + 1) / SCENARIOS.length) * 100).toFixed(1) + '%';
-      setFeedback('Benar! ' + sc.rate + ' x ' + sc.blank + ' = ' + formatId(work) + ' ' + sc.yUnit + '.', 'success');
-    } else {
-      setFeedback('Belum tepat. Coba bagi: ' + formatId(sc.rate) + ' x ' + sc.blank + ' = ' +
-        formatId(work) + ' ' + sc.yUnit + '.', 'error');
-    }
+    state.score += 1;
+    state.revealed[state.index] = true;
+    el.scoreLabel.textContent = 'Skor ' + state.score;
+    el.progress.style.width = (((state.index + 1) / SCENARIOS.length) * 100).toFixed(1) + '%';
+    setFeedback('Benar! ' + formatId(sc.rate) + ' x ' + sc.blank + ' = ' + formatId(work) + ' ' + sc.yUnit + '.', 'success');
     el.nextBtn.disabled = false;
   }
 
@@ -597,6 +618,7 @@ tbody tr { border-bottom: 1px solid var(--border); }
   el.resetBtn.addEventListener('click', resetState);
 
   document.addEventListener('keydown', function (e) {
+    if (e.target && e.target.tagName === 'BUTTON' && e.key === 'Enter') return;
     if (e.target && /input|textarea|select/i.test(e.target.tagName)) {
       if (e.key === 'Enter') { e.preventDefault(); checkAnswer(); }
       return;

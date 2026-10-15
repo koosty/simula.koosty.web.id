@@ -220,7 +220,7 @@ input[type="number"]:disabled{opacity:0.45;cursor:not-allowed}
   </div>
 </main>
 
-<script type="application/json" id="widget-config">{"type":"simulation","concept":"charts","description":"Murid menyusun, membaca, dan menafsirkan diagram batang dan diagram lingkaran termasuk sudut pusat.","variables":[{"name":"data","label":"Data","min":0,"max":8,"default":4,"unit":"kategori"},{"name":"slice","label":"Potongan terpilih","min":0,"max":3,"default":0,"unit":"iri"}],"presets":[]}</script>
+<script type="application/json" id="widget-config">{"type":"simulation","concept":"charts","description":"Murid menyusun, membaca, dan menafsirkan diagram batang dan diagram lingkaran termasuk sudut pusat.","variables":[{"name":"data","label":"Data","min":0,"max":5,"default":4,"unit":"kategori"},{"name":"slice","label":"Potongan terpilih","min":0,"max":4,"default":0,"unit":"iri"}],"presets":[]}</script>
 
 <script>
 (function(){
@@ -284,7 +284,7 @@ input[type="number"]:disabled{opacity:0.45;cursor:not-allowed}
   };
 
   /* Nilai yang sedang digambar (hasil interpolasi) dan nilai tujuan. */
-  var shown = [], pull = [], pullTo = [];
+  var pull = [], pullTo = [];
   var tween = 1;
   var tweenFrom = [], tweenTo = [];
   var pulse = null;
@@ -304,7 +304,7 @@ input[type="number"]:disabled{opacity:0.45;cursor:not-allowed}
       accent: g("--accent"), accentSoft: g("--accent-soft"), success: g("--success"),
       warning: g("--warning"), error: g("--error"), text: g("--text"),
       muted: g("--text-muted"), dim: g("--text-dim"), surface: g("--surface"),
-      border: g("--border"), strong: g("--border-strong")
+      border: g("--border"), strong: g("--border-strong"), font: g("--font")
     };
   }
 
@@ -371,13 +371,14 @@ input[type="number"]:disabled{opacity:0.45;cursor:not-allowed}
 
   function setTargets(animate){
     var n = nCats();
-    if(shown.length !== n || !animate){
-      shown = state.counts.slice();
+    if(tweenTo.length !== n || !animate){
+      tweenFrom = state.counts.slice();
+      tweenTo = state.counts.slice();
       pull = new Array(MAX_CATS).fill(0);
       pullTo = new Array(MAX_CATS).fill(0);
       tween = 1;
     } else {
-      tweenFrom = shown.slice();
+      tweenFrom = currentCounts();
       tweenTo = state.counts.slice();
       tween = 0;
     }
@@ -386,10 +387,9 @@ input[type="number"]:disabled{opacity:0.45;cursor:not-allowed}
   function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
 
   function currentCounts(){
-    var n = nCats(), out = new Array(n);
-    for(var i = 0; i < n; i++){
-      out[i] = tween < 1 ? tweenFrom[i] + (tweenTo[i] - tweenFrom[i]) * easeOutCubic(tween) : shown[i];
-    }
+    if(tween >= 1) return tweenTo.slice();
+    var n = nCats(), out = new Array(n), e = easeOutCubic(tween);
+    for(var i = 0; i < n; i++) out[i] = tweenFrom[i] + (tweenTo[i] - tweenFrom[i]) * e;
     return out;
   }
 
@@ -541,6 +541,13 @@ input[type="number"]:disabled{opacity:0.45;cursor:not-allowed}
   /* ---------------- tebak sudut pusat ---------------- */
 
   function startGuess(){
+    if(total() <= 0){
+      closeGuess();
+      kick();
+      els.feedback.className = "error";
+      els.feedbackText.textContent = "Isi dulu jumlah siswa minimal satu kategori, supaya sudut pusat bisa dihitung.";
+      return;
+    }
     var n = nCats();
     var i = 0;
     if(n > 1){
@@ -568,6 +575,11 @@ input[type="number"]:disabled{opacity:0.45;cursor:not-allowed}
     if(isNaN(v)){
       els.feedback.className = "error";
       els.feedbackText.textContent = "Tulis dulu angka untuk sudut pusat, lalu tekan Kirim jawaban.";
+      return;
+    }
+    if(total() <= 0){
+      els.feedback.className = "error";
+      els.feedbackText.textContent = "Jumlah siswa masih nol, jadi sudut pusat belum bisa dihitung. Isi dulu datanya.";
       return;
     }
     state.answered = true;
@@ -624,7 +636,15 @@ input[type="number"]:disabled{opacity:0.45;cursor:not-allowed}
 
   function drawBar(r, counts){
     var fs = Math.max(10, Math.min(14, r.w / 34));
-    var padL = 42 * state.zoom * 0.5 + 20, padR = 14, padT = 26, padB = 44;
+    var padL = 42 * state.zoom * 0.5 + 20, padR = 14, padT = 26;
+    var slotPre = (r.w - padL - padR) * state.zoom / counts.length;
+    var rotW = 0;
+    ctx.font = fs - 2 + "px " + tok.font;
+    for(var q = 0; q < counts.length; q++){
+      var lw = ctx.measureText(DATASETS[state.dataset].cats[q].label).width;
+      if(lw > slotPre - 4) rotW = Math.max(rotW, Math.min(lw, r.h * 0.3));
+    }
+    var padB = 44 + Math.ceil(rotW * 0.45);
     var pw = (r.w - padL - padR) * state.zoom;
     var ph = (r.h - padT - padB) * state.zoom;
     var px = r.x + (r.w - padL - padR - pw) / 2 + padL;
@@ -633,7 +653,7 @@ input[type="number"]:disabled{opacity:0.45;cursor:not-allowed}
     var maxC = 0;
     for(var i = 0; i < n; i++) maxC = Math.max(maxC, counts[i]);
     var top = niceMax(Math.max(maxC, 1));
-    ctx.font = fs - 2 + "px " + tok.muted;
+    ctx.font = fs - 2 + "px " + tok.font;
     ctx.textAlign = "right";
     ctx.textBaseline = "middle";
     for(var g = 0; g <= 4; g++){
@@ -660,10 +680,10 @@ input[type="number"]:disabled{opacity:0.45;cursor:not-allowed}
       else ctx.rect(cx - bw / 2, y0, bw, Math.max(h, 1));
       ctx.fill();
       ctx.fillStyle = k === active ? tok.text : tok.muted;
-      ctx.font = fs - 1 + "px " + tok.muted;
+      ctx.font = fs - 1 + "px " + tok.font;
       ctx.fillText(String(counts[k]), cx, y0 - fs * 0.8);
       ctx.fillStyle = tok.text;
-      ctx.font = (fs - 2) + "px " + tok.text;
+      ctx.font = (fs - 2) + "px " + tok.font;
       var lbl = DATASETS[state.dataset].cats[k].label;
       var measured = ctx.measureText(lbl).width;
       if(measured > slot - 4){
@@ -672,7 +692,7 @@ input[type="number"]:disabled{opacity:0.45;cursor:not-allowed}
         ctx.rotate(-Math.PI / 7);
         ctx.textAlign = "right";
         ctx.textBaseline = "middle";
-        ctx.fillText(fitText(ctx, lbl, ph * 0.6), 0, 0);
+        ctx.fillText(fitText(ctx, lbl, r.h * 0.3), 0, 0);
         ctx.restore();
       } else {
         ctx.fillText(lbl, cx, py + ph + fs + 8);
@@ -681,7 +701,7 @@ input[type="number"]:disabled{opacity:0.45;cursor:not-allowed}
     ctx.textAlign = "left";
     ctx.textBaseline = "alphabetic";
     ctx.fillStyle = tok.dim;
-    ctx.font = fs - 2 + "px " + tok.muted;
+    ctx.font = fs - 2 + "px " + tok.font;
     ctx.fillText("Jumlah siswa", r.x + 6, r.y + 14);
   }
 
@@ -692,7 +712,7 @@ input[type="number"]:disabled{opacity:0.45;cursor:not-allowed}
     var cx = r.x + r.w / 2, cy = r.y + r.h / 2;
     var rad = Math.min(r.w, r.h) * 0.34 * state.zoom;
     var fs = Math.max(10, Math.min(14, r.w / 34));
-    ctx.font = fs - 2 + "px " + tok.muted;
+    ctx.font = fs - 2 + "px " + tok.font;
     if(t <= 0){
       ctx.fillStyle = tok.muted;
       ctx.textAlign = "center";
@@ -725,7 +745,7 @@ input[type="number"]:disabled{opacity:0.45;cursor:not-allowed}
       ctx.stroke();
       if(sweep > 0.14){
         ctx.fillStyle = tok.text;
-        ctx.font = (fs - 2) + "px " + tok.text;
+        ctx.font = (fs - 2) + "px " + tok.font;
         ctx.textAlign = "center";
         var lr = rad * 1.16;
         var lp = counts[k] / t * 100;
@@ -773,7 +793,7 @@ input[type="number"]:disabled{opacity:0.45;cursor:not-allowed}
       var sm = sa + ss / 2;
       var tx = cx + Math.cos(sm) * rad * 0.82, ty = cy + Math.sin(sm) * rad * 0.82;
       var lbl2 = state.answered ? fmtAng(counts[state.guess] / t * 360) + "°" : "?";
-      ctx.font = (fs + 2) + "px " + tok.text;
+      ctx.font = (fs + 2) + "px " + tok.font;
       ctx.textAlign = "center";
       var w2 = ctx.measureText(lbl2).width;
       ctx.fillStyle = tok.surface;
@@ -784,7 +804,7 @@ input[type="number"]:disabled{opacity:0.45;cursor:not-allowed}
     }
     ctx.textAlign = "left";
     ctx.fillStyle = tok.dim;
-    ctx.font = fs - 2 + "px " + tok.muted;
+    ctx.font = fs - 2 + "px " + tok.font;
     ctx.fillText("Jumlah seluruh: " + t, r.x + 6, r.y + 14);
   }
 
@@ -816,7 +836,6 @@ input[type="number"]:disabled{opacity:0.45;cursor:not-allowed}
     var more = false;
     if(tween < 1){
       tween = Math.min(1, tween + (lastTs ? now - lastTs : 16) / 520);
-      shown = currentCounts();
       if(tween < 1) more = true;
     }
     var baseR = Math.min(cssW, cssH) * 0.34 * state.zoom;
@@ -828,7 +847,7 @@ input[type="number"]:disabled{opacity:0.45;cursor:not-allowed}
     if(pulse){
       if(now - pulse.start > pulse.dur) pulse = null; else more = true;
     }
-    lastTs = now;
+    lastTs = more ? now : 0;
     return more;
   }
 
@@ -990,7 +1009,6 @@ input[type="number"]:disabled{opacity:0.45;cursor:not-allowed}
     setView("bar");
     var zeros = [];
     for(i = 0; i < state.counts.length; i++) zeros.push(0);
-    shown = zeros.slice();
     tweenFrom = zeros.slice();
     tweenTo = state.counts.slice();
     tween = 0;

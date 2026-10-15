@@ -223,7 +223,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
   <div class="wrap">
     <header>
       <h1>Menebak Barisan Bilangan</h1>
-      <p class="lead">Barisannya lengkap dan diam, jadi kamu boleh-Berhenti berpikir sesuka hati. Tebak suku berikutnya, pakai petunjuk bila perlu, lalu jelaskan alasanmu dengan bahasa sendiri.</p>
+      <p class="lead">Barisannya sudah tampil lengkap, jadi kamu bebas berpikir sesuka hati. Tebak suku berikutnya, pakai petunjuk bila perlu, lalu jelaskan alasanmu dengan bahasa sendiri.</p>
     </header>
 
     <section class="panel" id="game-panel">
@@ -233,7 +233,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
         <div><span class="k">Skor</span><span class="v" id="score-display">0</span></div>
         <div><span class="k">Tingkat</span><span class="v" id="level-score-display">1/8</span></div>
         <div><span class="k">Benar</span><span class="v" id="correct-display">0</span></div>
-        <div><span class="k">Suku erreicht</span><span class="v" id="attempt-display">0/2</span></div>
+        <div><span class="k">Suku benar</span><span class="v" id="attempt-display">0/2</span></div>
       </div>
 
       <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="progress-fill" style="width: 0%"></div></div>
@@ -307,11 +307,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     "completionPoints": 20,
     "accuracyBonus": "benar di percobaan pertama dapat 20 poin, percobaan kedua 12, percobaan ketiga 8",
     "timeBonus": false
-  },
-  "achievements": [
-    { "id": "perfect_level", "name": "Tingkat Sempurna", "description": "Semua suku benar di percobaan pertama sampai tingkat 5" },
-    { "id": "all_levels", "name": "Juara Pola", "description": "Menyelesaikan seluruh 8 tingkat" }
-  ]
+  }
 }
   </script>
 
@@ -354,21 +350,21 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
           var d4 = ri(3, 12), a4 = ri(1, 15);
           for (var m = 0; m < 4; m++) seq.push(a4 + m * d4);
           answer = a4 + 4 * d4; diff = d4;
-          rule = "selisihnya tidak berubah, selalu " + d4 + ". Barisannya: " + seq[0] + ", " + seq[1] + ", " + seq[2] + ", " + seq[3] + ", " + answer + ".";
+          rule = "selisihnya tidak berubah, selalu " + d4 + ".";
           break;
         case 5:
           kind = "kali";
           var r5 = 2, a5 = ri(2, 9);
           for (var n = 0; n < 4; n++) seq.push(a5 * Math.pow(r5, n));
           answer = a5 * Math.pow(r5, 4); diff = answer - seq[3];
-          rule = "setiap suku dikali " + r5 + ". Barisannya: " + a5 + ", " + (a5 * r5) + ", " + (a5 * r5 * r5) + ", dan seterusnya sampai " + answer + ".";
+          rule = "setiap suku dikali " + r5 + " dari suku sebelumnya.";
           break;
         case 6:
           kind = "kali";
           var a6 = ri(1, 5), r6 = 3;
           for (var p = 0; p < 4; p++) seq.push(a6 * Math.pow(r6, p));
           answer = a6 * Math.pow(r6, 4); diff = answer - seq[3];
-          rule = "tiap suku dikali " + r6 + ". Perhatikan pangkatnya: " + a6 + " lalu dikali " + r6 + " berulang kali sampai " + answer + ".";
+          rule = "setiap suku dikali " + r6 + " dari suku sebelumnya.";
           break;
         case 7:
           kind = "jumlah";
@@ -376,15 +372,15 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
           seq.push(f1, f2);
           for (var q = 0; q < 2; q++) seq.push(seq[seq.length - 2] + seq[seq.length - 1]);
           answer = seq[3] + seq[2]; diff = answer - seq[3];
-          rule = "setiap suku adalah jumlah dua suku sebelumnya: " + seq[2] + " + " + seq[3] + " = " + answer + ".";
+          rule = "setiap suku adalah jumlah dua suku sebelumnya, misalnya " + seq[2] + " = " + seq[0] + " + " + seq[1] + ".";
           break;
         default:
           kind = "selang";
           var a8 = ri(1, 12), dA = ri(2, 5), dB = ri(6, 11);
           seq.push(a8);
           for (var s = 0; s < 4; s++) seq.push(seq[s] + (s % 2 === 0 ? dA : dB));
-          answer = seq[4] + dB; diff = dB;
-          rule = "selisihnya berganti-ganti antara " + dA + " dan " + dB + ": naik " + dA + ", naik " + dB + ", naik " + dA + ", lalu naik " + dB + " lagi.";
+          answer = seq[4] + dA; diff = dA;
+          rule = "selisihnya berganti-ganti antara " + dA + " dan " + dB + ": naik " + dA + ", naik " + dB + ", naik " + dA + ", naik " + dB + ", lalu naik " + dA + " lagi.";
           break;
       }
       second = seq[1];
@@ -449,7 +445,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       if (state.hinted >= 2) {
         items.push(r.diff === null
           ? "Bedanya tidak tetap, tapi polanya masih bisa diterka."
-          : "Selisih dari suku " + (r.seq.length - 1) + " ke suku berikutnya adalah " + r.diff + ".");
+          : "Selisih dari suku ke-" + r.seq.length + " ke suku berikutnya adalah " + r.diff + ".");
       }
       if (state.hinted >= 3) items.push("Aturannya: " + r.rule);
       ul.innerHTML = items.map(function (t) { return "<li>" + t + "</li>"; }).join("");
@@ -513,18 +509,18 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       renderScoreboard();
       renderSequence();
       renderHints();
-      setFeedback("Barisan ini punya pola. Tebagannya berapa? Salah tidak mengakhiri permainan.", null);
+      setFeedback("Barisan ini punya pola. Tebakannya berapa? Salah tidak mengakhiri permainan.", null);
     }
 
     function submitAnswer() {
       if (state.answered) return;
       var input = document.getElementById("answer-input");
       var raw = input.value.trim();
-      var v = parseInt(raw, 10);
-      if (raw === "" || isNaN(v)) {
-        setFeedback("Tulis dulu angka tebakanmu.", null);
+      if (!/^-?\d+$/.test(raw)) {
+        setFeedback("Tulis dulu angka tebakanmu, berupa bilangan bulat.", null);
         return;
       }
+      var v = parseInt(raw, 10);
       state.attempts++;
       var ok = v === state.round.answer;
       state.history.push({
@@ -569,7 +565,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
         "Petunjuk 2: perhatikan selisihnya.",
         "Petunjuk 3: ini aturan lengkapnya."
       ];
-      setFeedback(msgs[level - 1] + " Pakaiordinator jawaban di bawah untukolv.", null);
+      setFeedback(msgs[level - 1] + " Coba lagi di kotak jawaban.", null);
     }
 
     function compareExplanation() {

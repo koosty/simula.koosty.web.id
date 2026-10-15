@@ -223,7 +223,7 @@ h1 { font-size: var(--text-heading); margin-bottom: var(--space-2); }
           <div class="ctrl-head"><label class="control-label" for="b-slider">Besi B</label><span class="val" id="b-display">9</span></div>
           <input type="range" id="b-slider" min="1" max="12" step="1" value="9" aria-label="Besi B">
         </div>
-        <p class="note">Contoh: 6 kakao dan 9 susu.</p>
+        <p class="note">Contoh: besi A = 6 dan besi B = 9, jadi rasionya 6 : 9 = 2 : 3.</p>
       </div>
 
       <div class="panel" style="margin-top: var(--space-4);">
@@ -442,7 +442,7 @@ h1 { font-size: var(--text-heading); margin-bottom: var(--space-2); }
     var r = reducePair(state.a, state.b);
     el.ratioDisplay.textContent = state.a + ' : ' + state.b + ' = ' + r.ra + ' : ' + r.rb;
     if (r.g === 1) {
-      el.ratioNote.textContent = 'Keduanya sudah prima satu sama lain, jadi rasio tidak bisa disederhanakan.';
+      el.ratioNote.textContent = 'Keduanya relatif prima (FPB = 1), jadi rasio sudah paling sederhana.';
     } else {
       el.ratioNote.textContent = 'Sederhanakan dengan membagi keduanya dengan ' + r.g + '. Rasio ' +
         r.ra + ' : ' + r.rb + ' sama nilainya dengan ' + state.a + ' : ' + state.b + '.';
@@ -523,13 +523,15 @@ h1 { font-size: var(--text-heading); margin-bottom: var(--space-2); }
   function checkAnswer(choice) {
     if (!state.pair1 || state.answered) return;
     state.answered = true;
+    el.answer1.disabled = true;
+    el.answer2.disabled = true;
     var v1 = state.pair1.a / state.pair1.b;
     var v2 = state.pair2.a / state.pair2.b;
     var correct = (v1 > v2) ? 1 : ((v2 > v1) ? 2 : 0);
     var detail = 'Nilai pasangan 1 = ' + state.pair1.a + '/' + state.pair1.b + ' = ' + v1.toFixed(2) +
       '. Nilai pasangan 2 = ' + state.pair2.a + '/' + state.pair2.b + ' = ' + v2.toFixed(2) + '.';
     if (correct === 0) {
-      setFeedback('Keduanya sama besar. ' + detail + ' Tidak ada pasangan yang lebih besar di sini — tekan "Pasangan baru".', 'success');
+      setFeedback('Nilai kedua pasangan sama. ' + detail + ' Tidak ada pasangan yang lebih besar di sini — tekan "Pasangan baru".', 'success');
     } else if (choice === correct) {
       setFeedback('Benar! ' + detail + ' Ingat: rasio hanya membandingkan, tidak menyatakan bahwa dua perbandingan sama.', 'success');
     } else {
@@ -540,7 +542,6 @@ h1 { font-size: var(--text-heading); margin-bottom: var(--space-2); }
   function applyPreset(a, b) {
     el.aSlider.value = String(a);
     el.bSlider.value = String(b);
-    state.answered = false;
     readSliders();
   }
 

@@ -316,15 +316,15 @@
       <div class="angle-sliders">
         <div class="slider-row" id="row-a">
           <label class="control-label" for="angle-a-slider">Sudut A</label>
-          <input type="range" id="angle-a-slider" min="10" max="170" step="1" value="60" aria-label="Sudut A dalam derajat">
+          <input type="range" id="angle-a-slider" min="10" max="160" step="1" value="60" aria-label="Sudut A dalam derajat">
         </div>
         <div class="slider-row" id="row-b">
           <label class="control-label" for="angle-b-slider">Sudut B</label>
-          <input type="range" id="angle-b-slider" min="10" max="170" step="1" value="55" aria-label="Sudut B dalam derajat">
+          <input type="range" id="angle-b-slider" min="10" max="160" step="1" value="55" aria-label="Sudut B dalam derajat">
         </div>
         <div class="slider-row" id="row-c">
           <label class="control-label" for="angle-c-slider">Sudut C</label>
-          <input type="range" id="angle-c-slider" min="10" max="170" step="1" value="65" aria-label="Sudut C dalam derajat">
+          <input type="range" id="angle-c-slider" min="10" max="160" step="1" value="65" aria-label="Sudut C dalam derajat">
         </div>
       </div>
     </section>
@@ -371,9 +371,9 @@
       { "type": "drag", "target": "vertex-a", "param": "angleA" },
       { "type": "drag", "target": "vertex-b", "param": "angleB" },
       { "type": "drag", "target": "vertex-c", "param": "angleA,angleB" },
-      { "type": "slider", "param": "angleA", "min": 10, "max": 170, "default": 60, "unit": "\u00B0" },
-      { "type": "slider", "param": "angleB", "min": 10, "max": 170, "default": 55, "unit": "\u00B0" },
-      { "type": "slider", "param": "angleC", "min": 10, "max": 170, "default": 65, "unit": "\u00B0" },
+      { "type": "slider", "param": "angleA", "min": 10, "max": 160, "default": 60, "unit": "\u00B0" },
+      { "type": "slider", "param": "angleB", "min": 10, "max": 160, "default": 55, "unit": "\u00B0" },
+      { "type": "slider", "param": "angleC", "min": 10, "max": 160, "default": 65, "unit": "\u00B0" },
       { "type": "orbit", "target": "camera" },
       { "type": "button", "action": "zoomIn", "label": "Perbesar" },
       { "type": "button", "action": "zoomOut", "label": "Perkecil" },
@@ -408,11 +408,15 @@
     var BASE = 6;              /* panjang sisi alas yang tetap */
     var ARC_R = 0.62;          /* jari-jari busur sudut */
     var DEFAULTS = { a: 60, b: 55 };
+    var MIN_SUDUT = 10;        /* batas bawah sudut A dan B */
+    var MAKS_SUDUT = 160;      /* batas atas sudut A dan B */
+    var MAKS_JUMLAH = 170;     /* jumlah maksimum A + B, agar sudut C minimal 10 */
+    var ZONA_MATI = 0.4;       /* jarak kursor dari simpul A/B yang diabaikan (arah belum stabil) */
     var CHALLENGES = [
       { a: 50, b: 60, teks: 'Sebuah segitiga memiliki sudut A = 50&deg; dan sudut B = 60&deg;.' },
       { a: 35, b: 90, teks: 'Segitiga siku memiliki satu sudut 90&deg;. Di sini sudut A = 35&deg; dan sudut B = 90&deg;.' },
       { a: 110, b: 30, teks: 'Sudut A adalah sudut tumpul, yaitu 110&deg;, sedangkan sudut B = 30&deg;.' },
-      { a: 70, b: 25, teks: 'Sudut A = 70&deg; dan sudut B = 25&deg;. Kedua sudut itu kecil.' },
+      { a: 70, b: 25, teks: 'Sudut A = 70&deg; dan sudut B = 25&deg;. Keduanya sudut lancip.' },
       { a: 95, b: 45, teks: 'Sudut A = 95&deg; sedikit lebih besar dari siku, dan sudut B = 45&deg;.' },
       { a: 25, b: 85, teks: 'Sudut A = 25&deg; dan sudut B = 85&deg;.' }
     ];
@@ -433,10 +437,17 @@
       mode: 'jelajah',          /* jelajah | tantangan */
       index: 0,
       solved: 0,
-      answered: false
+      lulus: []
     };
 
     function sudutC() { return 180 - state.a - state.b; }
+
+    /* Sudut untuk tampilan dan kuis: bilangan bulat yang jumlahnya tepat 180. */
+    function sudutBulat() {
+      var ra = Math.round(state.a);
+      var rb = Math.round(state.b);
+      return [ra, rb, 180 - ra - rb];
+    }
 
     /* Posisi simpul segitiga dari sudut A dan B, dengan alas tetap. */
     function posisiSegitiga(a, b) {
@@ -696,6 +707,7 @@
     function perbaruiSegitiga() {
       var v = posisiSegitiga(state.a, state.b);
       var sudut = [state.a, state.b, sudutC()];
+      var bulat = sudutBulat();
 
       var pos = faceMesh.geometry.attributes.position.array;
       for (var i = 0; i < 3; i++) {
@@ -712,6 +724,7 @@
         handles[i].position.set(v[i].x, v[i].y, 0.18);
         isiBusur(arcs[i], v[i], v[(i + 1) % 3], v[(i + 2) % 3], sudut[i]);
       }
+      arcs[2].visible = !sudutTersembunyi();
 
       var nama = ['A', 'B', 'C'];
       for (i = 0; i < 3; i++) {
@@ -725,21 +738,26 @@
         var by = ny / nl + my / ml;
         var bl = Math.hypot(bx, by) || 1;
         labels[i].sprite.position.set(v[i].x + bx / bl * 0.85, v[i].y + by / bl * 0.85, 0.4);
-        perbaruiLabel(labels[i], nama[i] + ' = ' + Math.round(sudut[i]) + '\u00B0');
+        perbaruiLabel(labels[i], nama[i] + ' = ' + (i === 2 && sudutTersembunyi() ? '?' : bulat[i] + '\u00B0'));
       }
 
-      perbaruiBacaan(sudut);
     }
 
-    function perbaruiBacaan(sudut) {
-      var s = sudut || [state.a, state.b, sudutC()];
-      var jumlah = Math.round(s[0] + s[1] + s[2]);
+    /* Sudut C disembunyikan sampai soal tantangan dijawab benar. */
+    function sudutTersembunyi() {
+      return state.mode === 'tantangan' && !state.lulus[state.index];
+    }
+
+    function perbaruiBacaan() {
+      var s = sudutBulat();
+      var jumlah = s[0] + s[1] + s[2];
+      var c = sudutTersembunyi() ? '?' : s[2] + '\u00B0';
       sumDisplay.innerHTML = '<span class="readout-sum">' +
-        Math.round(s[0]) + '\u00B0 + ' + Math.round(s[1]) + '\u00B0 + ' + Math.round(s[2]) + '\u00B0' +
+        s[0] + '\u00B0 + ' + s[1] + '\u00B0 + ' + c +
         '</span> = ' + jumlah + '\u00B0';
-      if (document.activeElement !== sliderA) sliderA.value = Math.round(s[0]);
-      if (document.activeElement !== sliderB) sliderB.value = Math.round(s[1]);
-      if (document.activeElement !== sliderC) sliderC.value = Math.round(s[2]);
+      if (document.activeElement !== sliderA) sliderA.value = s[0];
+      if (document.activeElement !== sliderB) sliderB.value = s[1];
+      if (document.activeElement !== sliderC) sliderC.value = s[2];
     }
 
     function perbaruiKemajuan() {
@@ -784,7 +802,7 @@
       var kena = raycaster.intersectObjects(handles, false);
       if (kena.length === 0) return;
       var indeks = handles.indexOf(kena[0].object);
-      if (state.mode === 'tantangan' && indeks !== 2) return; /* sudut A dan B sudah diberikan */
+      if (state.mode === 'tantangan') return; /* mode tantangan: sudut A dan B diberikan, C tidak bisa diseret */
       dragging = indeks;
       controls.enabled = false;
       renderer.domElement.setPointerCapture(event.pointerId);
@@ -799,31 +817,25 @@
       var v = posisiSegitiga(state.a, state.b);
       var sudutBaru;
 
-      if (state.mode === 'jelajah') {
-        if (dragging === 0) {
-          sudutBaru = sudutDi(v[0], v[1], p);
-          if (sudutBaru === null) return;
-          state.a = clamp(sudutBaru, 10, 168);
-          if (state.a + state.b > 172) state.b = 172 - state.a;
-        } else if (dragging === 1) {
-          sudutBaru = sudutDi(v[1], v[0], p);
-          if (sudutBaru === null) return;
-          state.b = clamp(sudutBaru, 10, 168);
-          if (state.a + state.b > 172) state.a = 172 - state.b;
-        } else {
-          var aBaru = sudutDi(v[0], v[1], p);
-          var bBaru = sudutDi(v[1], v[0], p);
-          if (aBaru === null || bBaru === null) return;
-          aBaru = clamp(aBaru, 10, 162);
-          bBaru = clamp(bBaru, 10, 168 - aBaru);
-          state.a = aBaru;
-          state.b = bBaru;
-        }
+      /* Kursor terlalu dekat ke simpul A atau B: arah sudut belum stabil, jadi diabaikan. */
+      if ((dragging === 0 || dragging === 1) && Math.hypot(p.x - v[dragging].x, p.y - v[dragging].y) < ZONA_MATI) return;
+
+      if (dragging === 0) {
+        sudutBaru = sudutDi(v[0], v[1], p);
+        if (sudutBaru === null) return;
+        state.a = clamp(sudutBaru, MIN_SUDUT, MAKS_SUDUT);
+        if (state.a + state.b > MAKS_JUMLAH) state.b = MAKS_JUMLAH - state.a;
+      } else if (dragging === 1) {
+        sudutBaru = sudutDi(v[1], v[0], p);
+        if (sudutBaru === null) return;
+        state.b = clamp(sudutBaru, MIN_SUDUT, MAKS_SUDUT);
+        if (state.a + state.b > MAKS_JUMLAH) state.a = MAKS_JUMLAH - state.b;
       } else {
-        var cBaru = sudutDi(v[2], v[0], p);
-        if (cBaru === null) return;
-        cBaru = clamp(cBaru, 10, Math.min(160, 180 - state.a - 10));
-        state.b = 180 - state.a - cBaru;
+        var aBaru = sudutDi(v[0], v[1], p);
+        var bBaru = sudutDi(v[1], v[0], p);
+        if (aBaru === null || bBaru === null) return;
+        state.a = clamp(aBaru, MIN_SUDUT, MAKS_SUDUT);
+        state.b = clamp(bBaru, MIN_SUDUT, MAKS_JUMLAH - state.a);
       }
       sinkronkanKontrol();
     }
@@ -841,10 +853,12 @@
       var terkunci = state.mode === 'tantangan';
       rowA.classList.toggle('locked', terkunci);
       rowB.classList.toggle('locked', terkunci);
-      rowC.classList.remove('locked');
+      rowC.classList.toggle('locked', terkunci);
+      rowC.style.display = terkunci && !state.lulus[state.index] ? 'none' : '';
       sliderA.disabled = terkunci;
       sliderB.disabled = terkunci;
-      sliderC.disabled = terkunci && state.answered;
+      sliderC.disabled = terkunci;
+      perbaruiBacaan();
       if (sceneReady) perbaruiSegitiga();
     }
 
@@ -855,14 +869,13 @@
       var soal = CHALLENGES[state.index % CHALLENGES.length];
       state.a = soal.a;
       state.b = soal.b;
-      state.answered = false;
       question.innerHTML = soal.teks + ' <strong>Berapa besar sudut C?</strong>';
       answerInput.value = '';
       answerInput.disabled = false;
       checkBtn.disabled = false;
       nextBtn.disabled = true;
       feedback.className = '';
-      feedback.textContent = 'Ketik sudut C, lalu tekan Periksa Jawaban. Kamu juga bisa menyeret titik C.';
+      feedback.textContent = 'Ketik sudut C, lalu tekan Periksa Jawaban.';
       sinkronkanKontrol();
     }
 
@@ -873,9 +886,10 @@
         feedback.textContent = 'Isi dulu kolom jawaban dengan angka derajat, lalu tekan Periksa Jawaban.';
         return;
       }
-      var benar = Math.round(sudutC());
-      if (Math.abs(nilai - benar) <= 1) {
-        state.solved = Math.min(CHALLENGES.length, state.solved + 1);
+      var benar = sudutBulat()[2];
+      if (nilai === benar) {
+        state.lulus[state.index] = true;
+        state.solved = state.lulus.filter(Boolean).length;
         feedback.className = 'success';
         feedback.innerHTML = 'Benar! Sudut C = ' + benar + '&deg; karena ' +
           state.a + '&deg; + ' + state.b + '&deg; + ' + benar + '&deg; = 180&deg;.';
@@ -883,6 +897,7 @@
         answerInput.disabled = true;
         nextBtn.disabled = false;
         perbaruiKemajuan();
+        sinkronkanKontrol();
       } else {
         feedback.className = 'error';
         feedback.innerHTML = 'Belum tepat. Jumlah tiga sudut dalam segitiga selalu 180&deg;, jadi C = 180 &minus; (' +
@@ -902,11 +917,6 @@
       if (mode === 'tantangan') {
         muatTantangan();
       } else {
-        sliderA.disabled = false;
-        sliderB.disabled = false;
-        sliderC.disabled = false;
-        rowA.classList.remove('locked');
-        rowB.classList.remove('locked');
         question.textContent = 'Pilih mode Tantangan untuk mulai.';
         answerInput.disabled = true;
         answerInput.value = '';
@@ -920,19 +930,15 @@
 
     function setSudutDariSlider(event) {
       var asal = event.target;
-      if (state.mode === 'tantangan') {
-        if (asal !== sliderC) return;
-        var cBaru = clamp(parseFloat(sliderC.value) || 10, 10, Math.min(160, 180 - state.a - 10));
-        state.b = 180 - state.a - cBaru;
-      } else if (asal === sliderA) {
-        state.a = clamp(parseFloat(sliderA.value) || 10, 10, 170);
-        if (state.a + state.b > 172) state.b = 172 - state.a;
+      if (asal === sliderA) {
+        state.a = clamp(parseFloat(sliderA.value) || MIN_SUDUT, MIN_SUDUT, MAKS_SUDUT);
+        if (state.a + state.b > MAKS_JUMLAH) state.b = MAKS_JUMLAH - state.a;
       } else if (asal === sliderB) {
-        state.b = clamp(parseFloat(sliderB.value) || 10, 10, 170);
-        if (state.a + state.b > 172) state.a = 172 - state.b;
+        state.b = clamp(parseFloat(sliderB.value) || MIN_SUDUT, MIN_SUDUT, MAKS_SUDUT);
+        if (state.a + state.b > MAKS_JUMLAH) state.a = MAKS_JUMLAH - state.b;
       } else if (asal === sliderC) {
-        var cDari = clamp(parseFloat(sliderC.value) || 10, 10, 160);
-        state.a = Math.min(state.a, 180 - cDari - 10);
+        var cDari = clamp(parseFloat(sliderC.value) || MIN_SUDUT, MIN_SUDUT, MAKS_SUDUT);
+        state.a = Math.min(state.a, MAKS_JUMLAH - cDari);
         state.b = 180 - state.a - cDari;
       } else {
         return;
@@ -945,7 +951,7 @@
       state.b = DEFAULTS.b;
       state.index = 0;
       state.solved = 0;
-      state.answered = false;
+      state.lulus = [];
       setMode('jelajah');
       perbaruiKemajuan();
       resetKamera();
@@ -966,7 +972,7 @@
       camera.getWorldDirection(arah);
       var jarak = camera.position.distanceTo(controls.target) + jumlah;
       jarak = clamp(jarak, controls.minDistance, controls.maxDistance);
-      camera.position.copy(controls.target).addScaledVector(arah, jarak);
+      camera.position.copy(controls.target).addScaledVector(arah, -jarak);
     }
 
     function animasi() {

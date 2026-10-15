@@ -9,7 +9,7 @@
   <meta name="description" content="Murid menghitung laju perubahan, kecepatan rata-rata, dan mengaitkannya dengan waktu dan jarak lewat animasi perjalanan dan grafik jarak terhadap waktu.">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Laju Perubahan">
-  <meta property="og:description" content="Hitung laju perubahan dari jarak dan waktu, pilih gayaConoce jalan kaki, sepeda, motor, atau mobil, dan lihat grafik jarak terhadap waktu terbentuk saat animasi berjalan.">
+  <meta property="og:description" content="Hitung laju perubahan dari jarak dan waktu, pilih gaya jalan kaki, sepeda, motor, atau mobil, dan lihat grafik jarak terhadap waktu terbentuk saat animasi berjalan.">
   <meta property="og:locale" content="id">
   <style>
 :root {
@@ -215,7 +215,7 @@ h2 { font-size: var(--text-sm); color: var(--text-muted); }
 <body>
 <div class="wrap">
   <h1>Laju Perubahan</h1>
-  <p class="lead">Laju perubahan adalah jarak yang ditempuh setiap satuan waktu. Semakin besar laju, semakin cepat perjalanan selesai.</p>
+  <p class="lead">Laju perubahan = Δy ÷ Δx, yaitu perubahan jarak (Δy) dibagi perubahan waktu (Δx). Karena perjalanan dimulai dari 0 m dan 0 s, laju = jarak ÷ waktu, dalam m/s. Semakin besar laju, semakin cepat perjalanan selesai.</p>
 
   <div class="layout">
     <div class="side">
@@ -437,8 +437,12 @@ h2 { font-size: var(--text-sm); color: var(--text-muted); }
       var active = buttons[i].getAttribute('data-mode') === state.mode;
       buttons[i].className = active ? 'btn btn-primary' : 'btn btn-ghost';
     }
-    el.modeNote.textContent = 'Laju khas ' + MODES[state.mode].label.toLowerCase() +
-      ' sekitar ' + num(rate()) + ' m/s dengan pengaturan ini.';
+    if (state.mode === null) {
+      el.modeNote.textContent = 'Pengaturan jarak dan waktu sendiri menghasilkan laju ' + num(rate()) + ' m/s.';
+    } else {
+      el.modeNote.textContent = 'Laju khas ' + MODES[state.mode].label.toLowerCase() +
+        ' sekitar ' + num(rate()) + ' m/s dengan pengaturan ini.';
+    }
   }
 
   function updateReadouts() {
@@ -585,6 +589,7 @@ h2 { font-size: var(--text-sm); color: var(--text-muted); }
 
   el.distanceSlider.addEventListener('input', function () {
     state.distance = parseInt(el.distanceSlider.value, 10);
+    state.mode = null;
     if (state.phase !== 'idle') { resetRun(); }
     updateReadouts();
     paintHud();
@@ -592,6 +597,7 @@ h2 { font-size: var(--text-sm); color: var(--text-muted); }
 
   el.timeSlider.addEventListener('input', function () {
     state.time = parseInt(el.timeSlider.value, 10);
+    state.mode = null;
     if (state.phase !== 'idle') { resetRun(); }
     updateReadouts();
     paintHud();

@@ -347,9 +347,9 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
   "concept": "Operasi hitung bilangan rasional",
   "description": "Latihan operasi hitung campur pada bilangan rasional, termasuk perkalian dan pembagian pecahan.",
   "variables": [
-    { "name": "a1", "label": "Pembilang pertama", "min": 1, "max": 12, "default": 2, "unit": "" },
+    { "name": "a1", "label": "Pembilang pertama", "min": 0, "max": 12, "default": 2, "unit": "" },
     { "name": "b1", "label": "Penyebut pertama", "min": 1, "max": 12, "default": 3, "unit": "" },
-    { "name": "a2", "label": "Pembilang kedua", "min": 1, "max": 12, "default": 3, "unit": "" },
+    { "name": "a2", "label": "Pembilang kedua", "min": 0, "max": 12, "default": 3, "unit": "" },
     { "name": "b2", "label": "Penyebut kedua", "min": 1, "max": 12, "default": 4, "unit": "" }
   ],
   "presets": [
@@ -368,21 +368,33 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     var CONTEXTS = [
       { id: "none", name: "Tanpa konteks (pecahan biasa)", text: null },
       {
-        id: "harga", name: "Jumlah barang",
-        text: function (a, b, op) {
-          return "Dina membeli " + a + "/" + b + " kg cokelat. Ia membeli " + a + "/" + b + " kg cokelat lagi. Berapa kilogram cokelat yang dibeli Dina?";
+        id: "harga", name: "Jumlah cokelat",
+        text: function (a1, b1, a2, b2, op) {
+          var p = a1 + "/" + b1, q = a2 + "/" + b2;
+          if (op === "+") return "Dina membeli " + p + " kg cokelat, lalu membeli lagi " + q + " kg. Berapa kilogram cokelat yang dibeli Dina seluruhnya?";
+          if (op === "-") return "Dina punya " + p + " kg cokelat, lalu memberikan " + q + " kg kepada temannya. Berapa kilogram sisa cokelat Dina?";
+          if (op === "*") return "Dina membeli " + p + " bagian dari " + q + " kg cokelat. Berapa kilogram cokelat yang dibeli Dina?";
+          return "Dina punya " + p + " kg cokelat yang akan dibagi ke dalam potongan " + q + " kg. Berapa kali ukuran potongan itu terkandung dalam cokelat Dina?";
         }
       },
       {
         id: "panjang", name: "Panjang papan",
-        text: function (a, b) {
-          return "Sebuah papan panjangnya " + a + "/" + b + " meter. Papan kedua dipotong menjadi " + a + "/" + b + " meter. Berapa panjang kedua papan setelah digabung?";
+        text: function (a1, b1, a2, b2, op) {
+          var p = a1 + "/" + b1, q = a2 + "/" + b2;
+          if (op === "+") return "Sebuah papan panjangnya " + p + " m, dan papan kedua panjangnya " + q + " m. Berapa panjang kedua papan jika digabung?";
+          if (op === "-") return "Sebuah papan panjangnya " + p + " m. Potongan sepanjang " + q + " m diambil dari papan itu. Berapa panjang sisa papan?";
+          if (op === "*") return "Sebuah papan panjangnya " + q + " m. Bagian sepanjang " + p + " m dari papan itu dicat. Berapa panjang bagian yang dicat?";
+          return "Sebuah papan panjangnya " + p + " m akan dipotong-potong menjadi bagian sepanjang " + q + " m. Berapa kali ukuran bagian itu terkandung dalam papan?";
         }
       },
       {
-        id: "kecepatan", name: "Waktu tempuh",
-        text: function (a, b) {
-          return "Rani menempuh jalan selama " + a + "/" + b + " jam, lalu perjalanan kedua memakan " + a + "/" + b + " jam. Berapa total waktu tempuhnya?";
+        id: "kecepatan", name: "Perjalanan Rani",
+        text: function (a1, b1, a2, b2, op) {
+          var p = a1 + "/" + b1, q = a2 + "/" + b2;
+          if (op === "+") return "Rani menempuh perjalanan selama " + p + " jam, lalu perjalanan kedua selama " + q + " jam. Berapa total waktu tempuhnya (jam)?";
+          if (op === "-") return "Perjalanan Rani direncanakan selama " + p + " jam. Setelah " + q + " jam berjalan, berapa sisa waktu perjalanannya (jam)?";
+          if (op === "*") return "Rani berjalan dengan kecepatan " + q + " km per jam selama " + p + " jam. Berapa jarak yang ditempuh (km)?";
+          return "Rani menempuh jarak " + p + " km dengan kecepatan " + q + " km per jam. Berapa lama waktu tempuhnya (jam)?";
         }
       }
     ];
@@ -399,7 +411,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       score: 0,
       correct: 0,
       attempts: 0,
-      solved: false
+      closed: false
     };
 
     var canvas = document.getElementById("canvas");
@@ -420,11 +432,13 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     function token(name) {
       return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
     }
+
+    function opSym(op) { return op === "*" ? "x" : (op === "/" ? ":" : op); }
     function decText(v) {
+      if (!isFinite(v)) return "-";
       var neg = v < 0;
-      var x = Math.abs(v);
-      var s = x.toFixed(4).replace(/0+$/, "").replace(/\.$/, "");
-      s = s.replace(".", ",");
+      var s = Math.abs(v).toFixed(4).replace(/0+$/, "").replace(/\.$/, "").replace(".", ",");
+      return (neg && s !== "0" ? "-" : "") + s;
     }
     /* ---------- computation ---------- */
     function compute(a1, b1, a2, b2, op) {
@@ -444,6 +458,12 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
         steps.push({ k: "Perkalian silang", v: "Pembilang: " + a1 + " x " + a2 + " = " + num + ". Penyebut: " + b1 + " x " + b2 + " = " + den + "." });
         steps.push({ k: "Hasil belum disederhanakan", v: num + "/" + den + "." });
         title = "Perkalian: pembilang dengan pembilang, penyebut dengan penyebut";
+      } else if (a2 === 0) {
+        return {
+          num: null, den: null, invalid: true,
+          title: "Pembagian dengan nol tidak terdefinisi",
+          steps: [{ k: "Pembagi nol", v: "Pembagi " + a2 + "/" + b2 + " sama dengan 0. Pembagian dengan nol tidak terdefinisi, jadi tidak ada hasilnya." }]
+        };
       } else {
         num = a1 * b2;
         den = b1 * a2;
@@ -482,10 +502,12 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       readInputs();
       writeInputs();
       var r = compute(state.a1, state.b1, state.a2, state.b2, state.op);
-      var value = r.num / r.den;
+      var value = r.invalid ? NaN : r.num / r.den;
+      var sym = opSym(state.op);
+      var expr = state.a1 + "/" + state.b1 + " " + sym + " " + state.a2 + "/" + state.b2;
 
-      document.getElementById("op-display").textContent = state.op === "*" ? "x" : (state.op === "/" ? ":" : state.op);
-      document.getElementById("result-display").textContent = r.num + "/" + r.den;
+      document.getElementById("op-display").textContent = sym;
+      document.getElementById("result-display").textContent = r.invalid ? "Tidak terdefinisi" : r.num + "/" + r.den;
       document.getElementById("decimal-display").textContent = decText(value);
 
       var stepsHtml = '<h3>Langkah: ' + r.title + "</h3>";
@@ -494,18 +516,35 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       });
       var ctxDef = CONTEXTS.filter(function (c) { return c.id === state.context; })[0];
       if (ctxDef && ctxDef.text) {
-        stepsHtml += '<div class="step-row"><p><b>Contoh konteks.</b> ' + ctxDef.text(state.a1, state.b1, state.op) + " Hasilnya tetap sama: <span class=\"mono\">" + state.a1 + "/" + state.b1 + " " + (state.op === "*" ? "x" : state.op) + " " + state.a2 + "/" + state.b2 + " = " + r.num + "/" + r.den + "</span>.</p></div>";
+        var ctxText;
+        if (r.invalid) {
+          ctxText = "Konteks cerita tidak ditampilkan, karena pembagian dengan nol tidak terdefinisi.";
+        } else if (state.op === "-" && value < 0) {
+          ctxText = "Konteks cerita tidak ditampilkan, karena hasil pengurangan ini negatif (pecahan pertama lebih kecil dari pecahan kedua).";
+        } else {
+          ctxText = ctxDef.text(state.a1, state.b1, state.a2, state.b2, state.op) + " Hasilnya tetap sama: <span class=\"mono\">" + expr + " = " + r.num + "/" + r.den + "</span>.";
+        }
+        stepsHtml += '<div class="step-row"><p><b>Contoh konteks.</b> ' + ctxText + "</p></div>";
       }
       document.getElementById("steps").innerHTML = stepsHtml;
 
       var fb = document.getElementById("feedback-panel");
-      var big = Math.abs(value);
-      fb.textContent = state.a1 + "/" + state.b1 + " " + (state.op === "*" ? "x" : state.op) + " " + state.a2 + "/" + state.b2 +
-        " = " + r.num + "/" + r.den + " = " + decText(value) + ". Bar di bawah menunjukkan besar hasilnya: " +
-        (big > 1 ? "lebih besar dari 1" : (Math.abs(big - 1) < 1e-9 ? "sama dengan 1" : "kurang dari 1")) + ".";
-      fb.className = "";
+      if (r.invalid) {
+        fb.textContent = expr + " tidak dapat dihitung, karena pembagi sama dengan nol.";
+        fb.className = "error";
+      } else {
+        var big = Math.abs(value);
+        fb.textContent = expr + " = " + r.num + "/" + r.den + " = " + decText(value) + ". Bar di atas menunjukkan besar hasilnya: " +
+          (big > 1 ? "lebih besar dari 1" : (Math.abs(big - 1) < 1e-9 ? "sama dengan 1" : "kurang dari 1")) + ".";
+        fb.className = "";
+      }
 
       drawBars(value);
+    }
+
+    function redrawBars() {
+      var r = compute(state.a1, state.b1, state.a2, state.b2, state.op);
+      drawBars(r.invalid ? NaN : r.num / r.den);
     }
 
     function drawBars(value) {
@@ -526,7 +565,8 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
 
       var v1 = state.a1 / state.b1;
       var v2 = state.a2 / state.b2;
-      var scaleMax = Math.max(3, Math.ceil(Math.max(Math.abs(v1), Math.abs(v2), Math.abs(value)) + 1));
+      var big = Math.max(Math.abs(v1), Math.abs(v2), isFinite(value) ? Math.abs(value) : 0);
+      var scaleMax = Math.max(3, Math.ceil(big + 1));
 
       function row(y, label, v, color) {
         ctx.fillStyle = muted;
@@ -540,13 +580,9 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
         ctx.strokeStyle = border;
         ctx.lineWidth = 1;
         ctx.strokeRect(bx + 0.5, y - 11.5, bw, 23);
-        var w = Math.min(bw, Math.max(2, Math.abs(v) * per));
-        ctx.fillStyle = color;
-        if (v < 0) {
-          var zx = bx + Math.min(scaleMax, -v) * per;
-          ctx.fillRect(zx, y - 11, Math.min(bw, Math.abs(v) * per), 22);
-        } else {
-          ctx.fillRect(bx, y - 11, w, 22);
+        if (isFinite(v)) {
+          ctx.fillStyle = color;
+          ctx.fillRect(bx, y - 11, Math.min(bw, Math.max(2, Math.abs(v) * per)), 22);
         }
         ctx.fillStyle = token("--text");
         ctx.font = "700 12px " + token("--font-mono");
@@ -556,7 +592,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       ctx.fillStyle = dim;
       ctx.font = "11px " + token("--font");
       ctx.textAlign = "left";
-      ctx.fillText("Besar tiap bilangan (satu garis penuh = 1)", 12, 18);
+      ctx.fillText("Besar bilangan (panjang bar sebanding dengan nilai)", 12, 18);
 
       row(66, "Pecahan 1", v1, muted);
       row(140, "Pecahan 2", v2, muted);
@@ -598,7 +634,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       state.idx = 0;
       state.score = 0;
       state.correct = 0;
-      state.solved = false;
+      state.closed = false;
       renderProblem();
     }
 
@@ -610,7 +646,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       document.getElementById("score-display").textContent = String(state.score);
       document.getElementById("correct-display").textContent = String(state.correct);
       document.getElementById("progress-fill").style.width = (state.idx / TOTAL * 100) + "%";
-      document.getElementById("question-display").textContent = p.a1 + "/" + p.b1 + " " + p.op + " " + p.a2 + "/" + p.b2 + " = ?";
+      document.getElementById("question-display").textContent = p.a1 + "/" + p.b1 + " " + opSym(p.op) + " " + p.a2 + "/" + p.b2 + " = ?";
       document.getElementById("ans-num").value = "";
       document.getElementById("ans-den").value = "";
       document.getElementById("practice-steps").innerHTML = "";
@@ -620,28 +656,29 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     }
 
     function checkAnswer() {
-      if (state.solved) return;
+      if (state.closed) return;
       var p = state.problems[state.idx];
+      if (!p) return;
       var n = clampInt(document.getElementById("ans-num").value, -99, 99);
       var d = clampInt(document.getElementById("ans-den").value, 1, 99);
       document.getElementById("ans-num").value = String(n);
       document.getElementById("ans-den").value = String(d);
       state.attempts++;
       var fb = document.getElementById("practice-feedback");
-      var ok = (n === p.num && d === p.den) || (n * p.den === p.num * d && d !== 0);
-      if (ok) {
-        state.solved = true;
+      var expr = p.a1 + "/" + p.b1 + " " + opSym(p.op) + " " + p.a2 + "/" + p.b2;
+      if (n === p.num && d === p.den) {
+        state.closed = true;
         state.correct++;
         var gained = state.attempts === 1 ? 10 : 4;
         state.score += gained;
-        fb.textContent = "Benar! " + p.a1 + "/" + p.b1 + " " + p.op + " " + p.a2 + "/" + p.b2 + " = " + p.num + "/" + p.den + ". Skor +" + gained + ".";
+        fb.textContent = "Benar! " + expr + " = " + p.num + "/" + p.den + ". Skor +" + gained + ".";
         if (state.attempts > 1) {
           fb.textContent += " Kamu mencoba " + state.attempts + " kali, tetap dapat poin karena sudah paham.";
         }
         fb.className = "success";
         renderStepsFor(p);
       } else {
-        fb.textContent = "Belum tepat. Ingat, hasilnya harus sudah disederhanakan. Coba lagi, skormu tidak hilang. Explanasi lengkapnya baru muncul setelah jawabanmu benar.";
+        fb.textContent = "Belum tepat. Ingat, hasilnya harus sudah disederhanakan. Coba lagi, skormu tidak hilang. Penjelasan lengkapnya baru muncul setelah jawabanmu benar atau kamu melewati soal ini.";
         fb.className = "error";
       }
       document.getElementById("score-display").textContent = String(state.score);
@@ -659,6 +696,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     function nextProblem() {
       if (state.idx >= TOTAL - 1) {
         state.idx = TOTAL;
+        state.closed = true;
         document.getElementById("progress-fill").style.width = "100%";
         var fb = document.getElementById("practice-feedback");
         fb.textContent = "Selesai! Skor akhir " + state.score + " dari " + (TOTAL * 10) + ". Benar " + state.correct + " dari " + TOTAL + ". Tekan Mulai ulang untuk mengulang latihan.";
@@ -667,7 +705,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
         return;
       }
       state.idx++;
-      state.solved = false;
+      state.closed = false;
       renderProblem();
     }
 
@@ -708,7 +746,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       });
       writeInputs();
       state.problems = [];
-      state.idx = 0; state.score = 0; state.correct = 0; state.solved = false; state.attempts = 0;
+      state.idx = 0; state.score = 0; state.correct = 0; state.closed = false; state.attempts = 0;
       document.getElementById("ans-num").value = "";
       document.getElementById("ans-den").value = "";
       document.getElementById("practice-steps").innerHTML = "";
@@ -759,11 +797,12 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     document.getElementById("reset-btn").addEventListener("click", resetState);
     document.getElementById("check-btn").addEventListener("click", checkAnswer);
     document.getElementById("skip-btn").addEventListener("click", function () {
-      if (state.solved) { nextProblem(); return; }
+      if (state.closed) { nextProblem(); return; }
       var p = state.problems[state.idx];
       if (!p) return;
+      state.closed = true;
       var fb = document.getElementById("practice-feedback");
-      fb.textContent = "Dilewati. Jawaban yang benar: " + p.num + "/" + p.den + ". Tekan Periksa lagi kalau mau mencoba, atau Lanjut ke soal berikutnya.";
+      fb.textContent = "Dilewati, soal ini tidak mendapat poin. Jawaban yang benar: " + p.num + "/" + p.den + ". Tekan Soal berikutnya untuk lanjut.";
       fb.className = "error";
       renderStepsFor(p);
     });
@@ -777,7 +816,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     nextBtn.id = "next-btn";
     nextBtn.textContent = "Soal berikutnya";
     nextBtn.addEventListener("click", function () {
-      if (!state.solved) {
+      if (!state.closed) {
         var fb = document.getElementById("practice-feedback");
         fb.textContent = "Selesaikan dulu soal ini, atau tekan Lewati untuk melihat jawabannya.";
         fb.className = "error";
@@ -792,9 +831,9 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     });
 
     if (window.ResizeObserver) {
-      new ResizeObserver(function () { if (state.mode === "explore") drawBars(state.a1 / state.b1); }).observe(canvas.parentElement);
+      new ResizeObserver(function () { if (state.mode === "explore") redrawBars(); }).observe(canvas.parentElement);
     } else {
-      window.addEventListener("resize", function () { if (state.mode === "explore") drawBars(state.a1 / state.b1); });
+      window.addEventListener("resize", function () { if (state.mode === "explore") redrawBars(); });
     }
 
     writeInputs();

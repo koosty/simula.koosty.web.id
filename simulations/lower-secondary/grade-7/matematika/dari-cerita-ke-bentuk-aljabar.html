@@ -312,11 +312,11 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     </section>
 
     <section class="panel">
-      <p class="panel-heading">Parameter <span id="param-name" class="mono">x</span></p>
+      <p class="panel-heading">Parameter <span id="param-name" class="mono">a</span></p>
       <div class="param-row">
         <input type="range" id="param-slider" min="1" max="10" step="1" value="4" aria-label="Nilai parameter">
         <div class="readout">
-          <span id="param-value" class="mono">x = 4</span>
+          <span id="param-value" class="mono">a = 4</span>
           <span>Bentukmu: <b id="yours-display" class="mono">\u2014</b></span>
           <span>Seharusnya: <b id="target-display" class="mono">\u2014</b></span>
         </div>
@@ -338,7 +338,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     "startMode": "word-to-algebra",
     "description": "Murid memodelkan situasi sehari-hari menjadi bentuk aljabar, misalnya harga barang dan luas denah.",
     "variables": [
-      { "name": "param", "label": "Nilai parameter x", "min": 1, "max": 10, "default": 4 }
+      { "name": "param", "label": "Nilai parameter a", "min": 1, "max": 12, "default": 4 }
     ],
     "presets": [
       { "name": "Situasi 1", "variables": { "index": 0 } },
@@ -385,12 +385,12 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
         paramLabel: 'a',
         paramMeaning: 'bilangan tambahan untuk panjang (meter)',
         paramMax: 12,
-        satuan: 'm\u00B2',
+        satuan: 'm',
         alasan: 'Luas = panjang \u00D7 lebar = (a + 4) \u00D7 6 = 6a + 24. Sifat distributif berlaku.'
       },
       {
-        nama: 'Ongkos jajan bulanan',
-        cerita: 'Warung Bu Tini menjual bakso seharga Rp12.000 dan paying seharga Rp8.000. Sari makan bakso <span class="given">a</span> kali dan paying <span class="given">b</span> kali. Bentuk aljabar total yang harus dibayar adalah?',
+        nama: 'Jajan di warung Bu Tini',
+        cerita: 'Warung Bu Tini menjual bakso seharga Rp12.000 per porsi dan es jeruk seharga Rp8.000 per gelas. Sari membeli <span class="given">a</span> porsi bakso dan <span class="given">b</span> gelas es jeruk. Bentuk aljabar total yang harus dibayar Sari adalah?',
         var: 'a',
         target: [{ c: 12000, vars: [{ n: 'a', e: 1 }] }, { c: 8000, vars: [{ n: 'b', e: 1 }] }],
         bank: [
@@ -399,14 +399,14 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
           { t: { c: 1200, vars: [{ n: 'a', e: 1 }] } }, { t: { c: 80000, vars: [] } }
         ],
         paramLabel: 'a',
-        paramMeaning: 'jumlah bakso yang dimakan',
+        paramMeaning: 'jumlah porsi bakso',
         paramMax: 8,
         rupiah: true,
-        alasan: 'Bakso Rp12.000 \u00D7 a memberi 12.000a; paying Rp8.000 \u00D7 b memberi 8.000b.'
+        alasan: 'Bakso Rp12.000 \u00D7 a porsi memberi 12.000a; es jeruk Rp8.000 \u00D7 b gelas memberi 8.000b.'
       },
       {
         nama: 'Isi air dalam botol',
-        cerita: 'Sebuah botol gambir bervolume awal <span class="given">500</span> ml. Setiap kali dituangkan, isinya bertambah <span class="given">a</span> ml. Bentuk aljabar isi botol setelah dituangkan adalah?',
+        cerita: 'Sebuah botol berisi air dengan volume awal <span class="given">500</span> ml. Setiap kali air dituangkan ke dalamnya, isinya bertambah <span class="given">a</span> ml. Bentuk aljabar isi botol setelah sekali dituangkan adalah?',
         var: 'a',
         target: [{ c: 1, vars: [{ n: 'a', e: 1 }] }, { c: 500, vars: [] }],
         bank: [
@@ -415,14 +415,14 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
           { t: { c: 50, vars: [] } }, { t: { c: 1, vars: [] } }
         ],
         paramLabel: 'a',
-        paramMeaning: 'jumlah kali dituangkan (ml per kali)',
+        paramMeaning: 'tambahan isi setiap kali dituangkan (ml)',
         paramMax: 10,
         satuan: 'ml',
         alasan: 'Isi awal 500 ml adalah konstanta, setiap tambahan a ml memberi suku a.'
       },
       {
-        nama: 'Hemat uang mingle',
-        cerita: 'Dina menabung <span class="given">100.000</span> rupiah. Setiap minggu ia menggunakan <span class="given">2.000</span> rupiah untuk jajan dan <span class="given">1.500</span> rupiah untuk biaya sekolah. Bentuk aljabar sisa uangnya adalah?',
+        nama: 'Tabungan Dina',
+        cerita: 'Dina menabung <span class="given">100.000</span> rupiah. Ia mengeluarkan <span class="given">2.000</span> rupiah per minggu untuk jajan selama <span class="given">a</span> minggu, dan <span class="given">1.500</span> rupiah per minggu untuk biaya sekolah selama <span class="given">b</span> minggu. Bentuk aljabar sisa uang Dina adalah?',
         var: 'a',
         target: [{ c: -2000, vars: [{ n: 'a', e: 1 }] }, { c: -1500, vars: [{ n: 'b', e: 1 }] }, { c: 100000, vars: [] }],
         bank: [
@@ -431,7 +431,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
           { t: { c: 1500, vars: [{ n: 'b', e: 1 }] } }, { t: { c: 10000, vars: [] } }
         ],
         paramLabel: 'a',
-        paramMeaning: 'jumlah minggu jajan',
+        paramMeaning: 'jumlah minggu untuk jajan',
         paramMax: 10,
         rupiah: true,
         alasan: 'Sisa uang = 100.000 \u2212 2.000a \u2212 1.500b. Suku bertanda negatif mengurangi.'
@@ -454,7 +454,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       }
     ];
 
-    var state = { index: 0, score: 0, placed: [], param: 4, hinted: false, solved: false, solvedCount: 0 };
+    var state = { index: 0, score: 0, placed: [], param: 4, hinted: false, solved: false, solvedCount: 0, counted: false };
     var slotsEl = document.getElementById('slots');
     var bankEl = document.getElementById('bank');
     var storyEl = document.getElementById('story');
@@ -496,11 +496,13 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
           t.vars.forEach(function (v) { f *= Math.pow(p, v.e); });
           total += t.c * f;
         } else {
-          sisa.push(signedText(t));
+          sisa.push(t);
         }
       });
+      if (!sisa.length) return fmtNum(total);
+      if (total === 0) return exprText(sisa);
       var teks = fmtNum(total);
-      if (sisa.length) teks += (total === 0 ? '' : ' ') + sisa.join(' ');
+      sisa.forEach(function (t) { teks += (t.c < 0 ? ' \u2212 ' : ' + ') + termText(t); });
       return teks;
     }
     function fmtNum(n) {
@@ -540,7 +542,10 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
           }
           el.addEventListener('click', function () {
             if (state.placed[i]) {
-              state.placed.splice(i, 1);
+              var lepas = state.placed.splice(i, 1)[0];
+              state.solved = false;
+              fb.className = '';
+              fb.textContent = 'Suku ' + signedText(lepas) + ' dilepas dari slot ' + (i + 1) + '.';
               renderSlots();
               renderBank();
               updateReadout();
@@ -575,6 +580,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
             fb.textContent = 'Suku terlalu banyak. Bentuk aljabar ini hanya punya ' + SITUASI[state.index].target.length + ' suku.';
             return;
           }
+          state.solved = false;
           fb.className = '';
           fb.textContent = 'Suku ' + signedText(item.t) + ' ditaruh di slot ' + state.placed.length + '.';
           renderSlots();
@@ -608,6 +614,11 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       nextBtn.disabled = !state.solved;
     }
 
+    function belumAda(s) {
+      return s.target.filter(function (t) {
+        return !state.placed.some(function (p) { return termKey(p) === termKey(t); });
+      });
+    }
     function check() {
       var s = SITUASI[state.index];
       if (state.placed.length < s.target.length) {
@@ -618,7 +629,8 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       var placedKeys = state.placed.map(termKey).sort().join(';');
       var targetKeys = s.target.map(termKey).sort().join(';');
       if (placedKeys === targetKeys) {
-        if (!state.solved) {
+        if (!state.counted) {
+          state.counted = true;
           state.solvedCount++;
           if (!state.hinted) state.score += 10;
         }
@@ -630,9 +642,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
         updateReadout();
       } else {
         fb.className = 'error';
-        var missing = s.target.filter(function (t) {
-          return !state.placed.some(function (p) { return termKey(p) === termKey(t); });
-        });
+        var missing = belumAda(s);
         fb.textContent = 'Belum tepat. Periksa kembali: ' + s.alasan +
           (missing.length ? ' Suku yang belum tepat: ' + missing.map(signedText).join(', ') + '.' : '');
       }
@@ -653,7 +663,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     function hint() {
       var s = SITUASI[state.index];
       state.hinted = true;
-      var target = s.target[state.placed.length];
+      var target = belumAda(s)[0];
       if (!target) {
         fb.className = '';
         fb.textContent = 'Semua slot sudah terisi. Tekan Periksa untuk melihat hasilnya.';
@@ -668,6 +678,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       state.placed = [];
       state.param = 4;
       state.hinted = false;
+      state.counted = false;
       state.solved = false;
       slider.value = '4';
       slider.max = String(SITUASI[i].paramMax || 10);
@@ -704,6 +715,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     document.addEventListener('keydown', function (e) {
       if (e.target.tagName === 'INPUT' && e.target.type !== 'range') return;
       if (e.key === 'r' || e.key === 'R') { resetAll(); return; }
+      if (e.key === 'Enter' && e.target.tagName === 'BUTTON') return;
       if (e.key === 'Enter') { e.preventDefault(); check(); }
     });
 
