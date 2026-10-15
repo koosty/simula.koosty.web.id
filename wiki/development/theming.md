@@ -25,11 +25,11 @@ Sources: [CONTEXT.md:43-45](), [src/layouts/Base.astro:35]()
 
 ```ts
 export const TOKENS: Record<TokenName, string> = {
-  bg: '#0b0c16',
-  surface: '#1a1b32',
-  panel: 'rgba(18, 19, 36, 0.92)',
-  border: 'rgba(138, 43, 226, 0.4)',
-  borderStrong: '#8a2be2',
+  bg: '#12131d',
+  surface: '#1a1b25',
+  panel: '#1e1f2a',
+  border: '#3b494b',
+  borderStrong: '#849495',
   text: '#e2e1f0',
   textMuted: '#b9cacb',
   textDim: '#849495',
