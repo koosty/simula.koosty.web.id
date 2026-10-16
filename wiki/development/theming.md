@@ -91,6 +91,8 @@ export const TOKENS_LIGHT: Palette = {
 
 The type system splits the set three ways: `OpaqueToken` is what contrast arithmetic can be handed, `SurfaceToken` is what a page paints as a background, and `ForegroundToken` is what a page draws on a surface.
 
+Fonts are not part of the palette. They are declared once in `src/layouts/Base.astro` as `--font-display` (Space Grotesk, headings), `--font-body` (Plus Jakarta Sans, body) and `--font-mono` (JetBrains Mono, labels and tabs). Both Stitch light and dark screens use these three families; the light design guide's text saying Space Grotesk for body copy does not match the screens.
+
 Sources: [src/lib/theme.ts](../../src/lib/theme.ts)
 
 ## Choosing a palette
@@ -181,7 +183,6 @@ Sources: [test/theme.test.ts](../../test/theme.test.ts), [test/chrome-built.test
 
 - Simulations still load KaTeX, marked, highlight.js and three.js from cdnjs and unpkg. The palette does not change that.
 - Simulations have no light palette. In light mode, an embedded simulation shows its dark frame.
-- Fonts: the light design guide uses Space Grotesk for body text, while the site uses Plus Jakarta Sans for body text in both palettes. Not changed in this step.
 
 ## Related pages
 

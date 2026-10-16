@@ -102,16 +102,27 @@ const navLinks = navLinksFor(catalog, Astro.url.pathname);
     color: var(--text);
   }
 
+  /* The three families the Stitch screens use: Space Grotesk for headings,
+     Plus Jakarta Sans for body text, and JetBrains Mono for labels, numbers and
+     the tab bar. They are declared once here. Components name a role, such as
+     var(--font-mono), so a missing declaration used to fall back silently to
+     the body face. */
+  :root {
+    --font-display: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  }
+
   body {
     margin: 0;
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-family: var(--font-body);
     line-height: 1.6;
   }
 
   h1,
   h2,
   h3 {
-    font-family: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-family: var(--font-display);
   }
 
   /* Links take the palette's link colour rather than the browser's default.
