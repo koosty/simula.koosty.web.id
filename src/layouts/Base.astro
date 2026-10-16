@@ -15,9 +15,9 @@ const { title, description, noindex = false } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 
 // The footer shows the release and links to the repository. Both are plain
-// text here: a version read from package.json would say 0.0.1, which is not
-// the release this site ships as.
-const siteVersion = 'v1.0.0';
+// text here so the footer stays correct even if package.json is not the
+// release this site ships as.
+const siteVersion = 'v1.1.0';
 const repoUrl = 'https://github.com/koosty/simula.koosty.web.id';
 
 // Every page carries the same navigation, so it is built once here rather than
