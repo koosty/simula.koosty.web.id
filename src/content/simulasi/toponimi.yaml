@@ -1,0 +1,11 @@
+# Satu entri katalog per simulasi. Kunci adalah pengenal bahasa Inggris;
+# nilainya Bahasa Indonesia karena menjadi bagian URL.
+# Katalog adalah sumber kebenaran atas metadata simulasi (docs/adr/0004).
+title: "Toponimi"
+description: >-
+  Permainan menelusuri asal-usul nama tempat dari sumber tertulis, peta kuno, wawancara, dan penanda geografis.
+level: smp
+grade: 7
+subject: ips
+order: 84
+scene: "s13"

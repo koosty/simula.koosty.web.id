@@ -1,0 +1,11 @@
+# Satu entri katalog per simulasi. Kunci adalah pengenal bahasa Inggris;
+# nilainya Bahasa Indonesia karena menjadi bagian URL.
+# Katalog adalah sumber kebenaran atas metadata simulasi (docs/adr/0004).
+title: "Potensi Indonesia Menjadi Negara Maju"
+description: >-
+  Proyeksi OECD untuk ekonomi Indonesia, potensi sumber daya alam, dan bonus demografi.
+level: smp
+grade: 7
+subject: ips
+order: 83
+scene: "s12"

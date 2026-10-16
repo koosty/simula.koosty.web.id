@@ -1,0 +1,11 @@
+# Satu entri katalog per simulasi. Kunci adalah pengenal bahasa Inggris;
+# nilainya Bahasa Indonesia karena menjadi bagian URL.
+# Katalog adalah sumber kebenaran atas metadata simulasi (docs/adr/0004).
+title: "Konsep Dasar Ilmu Sejarah"
+description: >-
+  Asal kata sejarah, ciri-ciri sejarah, dan tiga jenis sumber sejarah.
+level: smp
+grade: 7
+subject: ips
+order: 78
+scene: "s7"

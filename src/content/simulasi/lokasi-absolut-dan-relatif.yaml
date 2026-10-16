@@ -1,0 +1,11 @@
+# Satu entri katalog per simulasi. Kunci adalah pengenal bahasa Inggris;
+# nilainya Bahasa Indonesia karena menjadi bagian URL.
+# Katalog adalah sumber kebenaran atas metadata simulasi (docs/adr/0004).
+title: "Lokasi Absolut dan Relatif"
+description: >-
+  Siswa menentukan lokasi absolut (garis lintang dan bujur) dan melihat bagaimana lokasi relatif berubah sesuai keadaan sekitar.
+level: smp
+grade: 7
+subject: ips
+order: 72
+scene: "s1"

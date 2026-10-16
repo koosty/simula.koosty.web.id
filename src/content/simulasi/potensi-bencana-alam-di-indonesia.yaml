@@ -1,0 +1,11 @@
+# Satu entri katalog per simulasi. Kunci adalah pengenal bahasa Inggris;
+# nilainya Bahasa Indonesia karena menjadi bagian URL.
+# Katalog adalah sumber kebenaran atas metadata simulasi (docs/adr/0004).
+title: "Potensi Bencana Alam di Indonesia"
+description: >-
+  Simulasi pertemuan tiga lempeng dunia dan jalur gunung api, serta bencana gempa, tsunami, dan letusan yang mengikutinya.
+level: smp
+grade: 7
+subject: ips
+order: 75
+scene: "s4"

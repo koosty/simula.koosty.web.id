@@ -1,0 +1,11 @@
+# Satu entri katalog per simulasi. Kunci adalah pengenal bahasa Inggris;
+# nilainya Bahasa Indonesia karena menjadi bagian URL.
+# Katalog adalah sumber kebenaran atas metadata simulasi (docs/adr/0004).
+title: "Sejarah Tokoh Lokal: Sultan Nuku, Ratu Kalinyamat, Keumalahayati"
+description: >-
+  Tiga tokoh sejarah lokal yang berjuang melawan bangsa asing: Sultan Nuku di Maluku dan Papua, Ratu Kalinyamat di Jepara, dan Keumalahayati di Aceh.
+level: smp
+grade: 7
+subject: ips
+order: 88
+scene: "s17"

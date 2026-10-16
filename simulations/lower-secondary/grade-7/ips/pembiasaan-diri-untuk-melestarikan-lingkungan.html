@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pembiasaan Diri untuk Melestarikan Lingkungan · IPS SMP Kelas VII</title>
+  <meta name="description" content="Simulasi pelestarian udara, air, dan tanah, termasuk perbandingan pupuk organik dan pupuk kimia.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Pembiasaan Diri untuk Melestarikan Lingkungan">
+  <meta property="og:description" content="Simulasi pelestarian udara, air, dan tanah, termasuk perbandingan pupuk organik dan pupuk kimia.">
+  <meta property="og:locale" content="id">
+  <style>
+:root {
+  /* Colour. Dark is the default: the Neo-Arcade STEM palette (docs/adr/0017). */
+  --bg: #12131d;          /* page background; also the 3D canvas background */
+  --surface: #1a1b25;     /* panels, cards, step rows */
+  --panel: #1e1f2a;       /* raised controls and hover */
+  --border: #3b494b;
+  --border-strong: #849495;
+  --text: #e2e1f0;
+  --text-muted: #b9cacb;
+  --text-dim: #849495;
+  --accent: #00f0ff;      /* primary action, slider thumb, active state */
+  --accent-hover: #7df4ff;
+  --accent-text: #0b0c16;  /* text/icon colour sitting on --accent fills */
+  --success: #39ff14;     /* completion, headings, callouts */
+  --warning: #f3db00;     /* warnings; reading code highlight */
+  --error: #ff4a8d;
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-none: none;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type. The site's three families (docs/adr/0019), with system fallbacks. */
+  --font-display: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 13px;
+  --text-caption: 11px;   /* uppercase control labels */
+  --text-heading: 24px;
+  --font-weight-display: 600;  /* headings */
+  --font-weight-number: 500;   /* monospaced readouts */
+
+  /* Focus, motion, stacking */
+  --focus-ring: 0 0 0 3px rgba(0, 240, 255, 0.5);
+  --motion: 0.2s;
+  --motion-slow: 0.3s;
+  --z-overlay: 100;        /* panels, tooltips */
+  --z-modal: 1000;         /* loading screens, modal dialogs */
+}
+
+/* Light values. Written twice on purpose: under the explicit attribute, and
+   under the system query for a page that has no attribute. Keep them identical. */
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --panel: #f1f5f9;
+  --border: #cbd5e1;
+  --border-strong: #475569;
+  --text: #0f172a;
+  --text-muted: #334155;
+  --text-dim: #64748b;
+  --accent: #0092ac;
+  --accent-hover: #3fc8dc;
+  --accent-text: #0f172a;
+  --success: #047857;
+  --warning: #d97706;
+  --error: #b8126b;
+  --focus-ring: 0 0 0 3px rgba(0, 146, 172, 0.5);
+  --shadow-soft: 0 4px 16px rgba(15, 23, 42, 0.08);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --panel: #f1f5f9;
+    --border: #cbd5e1;
+    --border-strong: #475569;
+    --text: #0f172a;
+    --text-muted: #334155;
+    --text-dim: #64748b;
+    --accent: #0092ac;
+    --accent-hover: #3fc8dc;
+    --accent-text: #0f172a;
+    --success: #047857;
+    --warning: #d97706;
+    --error: #b8126b;
+    --focus-ring: 0 0 0 3px rgba(0, 146, 172, 0.5);
+    --shadow-soft: 0 4px 16px rgba(15, 23, 42, 0.08);
+  }
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+h1, h2, h3 { font-weight: var(--font-weight-display); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-4);
+}
+.panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+
+.btn {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  min-height: 44px;            /* never below 44px, mobile */
+  min-width: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  transition: background var(--motion), transform var(--motion), box-shadow var(--motion);
+  box-shadow: 0 4px 0 var(--border);   /* keycap base */
+}
+.btn:hover { background: var(--panel); border-color: var(--accent); }
+.btn:active { transform: translateY(4px); box-shadow: none; }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring), 0 4px 0 var(--border); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--accent) 65%, var(--accent-text)), 0 0 16px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-ghost { background: transparent; border-color: var(--border); color: var(--text); }
+.btn-ghost:hover { background: var(--surface); }
+
+.control-label {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+/* Arcade accents: decoration only, never behind small text. */
+.panel-heading::before {
+  content: '';
+  display: inline-block;
+  width: 8px; height: 8px;
+  margin-right: var(--space-2);
+  vertical-align: middle;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+}
+.stage {
+  min-height: 220px;
+  background-color: var(--surface);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--border) 45%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--border) 45%, transparent) 1px, transparent 1px),
+    radial-gradient(ellipse at 50% 70%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%);
+  background-size: 32px 32px, 32px 32px, 100% 100%;
+}
+.readout { box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 15%, transparent); }
+@media (prefers-reduced-motion: reduce) {
+  .btn { transition: none; }
+}
+
+/* Icons (docs/adr/0022): inline Lucide SVG with currentColor, no external load.
+   Only the start or run button and the reset button carry an icon. Keep the
+   text label beside it. If script rewrites a button's label, put the label in
+   a <span> so the icon survives. Paths: play and rotate-ccw in src/lib/icons.ts. */
+
+input[type="range"] {
+  width: 100%; height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Visually hidden but announced by screen readers. Use when a layout has no
+   room for a visible <h1> (e.g. a full-bleed canvas) — never as an excuse to
+   drop a heading. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+#feedback-panel {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+#feedback-panel.success { border-left-color: var(--success); }
+#feedback-panel.error { border-left-color: var(--error); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.mono-value { font-family: var(--font-mono); font-weight: var(--font-weight-number); }
+
+.sources {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+.sources-heading {
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+.source-item { font-size: var(--text-xs); color: var(--text-dim); margin-bottom: var(--space-1); }
+.source-item a { color: var(--accent); text-decoration: none; }
+.source-item a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+.reading-article {
+  max-width: 720px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+.reading-article h2 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+.reading-article h3 { margin-top: var(--space-5); margin-bottom: var(--space-2); }
+.reading-article p, .reading-article ul, .reading-article ol, .reading-article table { margin-bottom: var(--space-4); }
+.reading-article ul, .reading-article ol { padding-left: var(--space-5); }
+.reading-article blockquote {
+  border-left: 3px solid var(--border-strong);
+  padding-left: var(--space-4);
+  color: var(--text-muted);
+  margin-bottom: var(--space-4);
+}
+.reading-article img { max-width: 100%; border-radius: var(--radius-md); }
+.reading-article code { font-family: var(--font-mono); font-size: var(--text-xs); background: var(--surface); padding: 2px 6px; border-radius: var(--radius-sm); }
+.reading-article pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+}
+.reading-article pre code { background: none; padding: 0; }
+.reading-article table { width: 100%; border-collapse: collapse; }
+.reading-article th, .reading-article td { border: 1px solid var(--border); padding: var(--space-2) var(--space-3); text-align: left; }
+.reading-article details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.reading-article summary {
+  cursor: pointer;
+  font-weight: var(--font-weight-display);
+  color: var(--text);
+}
+.reading-article details[open] summary { margin-bottom: var(--space-2); }
+.glossary-term {
+  text-decoration: underline dotted var(--text-dim);
+  text-decoration-thickness: 1px;
+  cursor: help;
+}
+.katex-display { margin: var(--space-4) 0; overflow-x: auto; }
+
+/* highlight.js token colours — mapped to the token set, not a canned theme */
+.hljs { color: var(--text); }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: var(--accent); }
+.hljs-string, .hljs-title, .hljs-name, .hljs-type, .hljs-attribute, .hljs-symbol, .hljs-bullet, .hljs-addition, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: var(--success); }
+.hljs-comment, .hljs-quote, .hljs-deletion, .hljs-meta { color: var(--text-dim); }
+.hljs-number { color: var(--warning); }
+
+
+.layout{display:grid;gap:var(--space-4);grid-template-columns:1fr}
+@media (min-width:760px){.layout{grid-template-columns:1.2fr 1fr}}
+.stack{display:grid;gap:var(--space-3)}
+.controls label{display:block;font-size:var(--text-sm);color:var(--text-muted);margin-bottom:var(--space-1)}
+input[type="range"]{height:44px;background:transparent;}
+input[type="range"]::-webkit-slider-runnable-track{height:6px;background:var(--border-strong);border-radius:var(--radius-pill)}
+input[type="range"]::-moz-range-track{height:6px;background:var(--border-strong);border-radius:var(--radius-pill)}
+.presets{display:flex;flex-wrap:wrap;gap:var(--space-2)}
+.canvas-wrap{min-height:300px;position:relative}
+#stage-canvas{width:100%;height:300px;display:block;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--bg)}
+.readout{font-family:var(--font-mono);font-weight:var(--font-weight-number);font-size:var(--text-sm);color:var(--text)}
+.muted{color:var(--text-muted);font-size:var(--text-sm)}
+.toggle{display:flex;flex-wrap:wrap;gap:var(--space-2)}
+.toggle .btn[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
+
+  </style>
+</head>
+<body>
+  <main class="panel" style="max-width:920px;margin:var(--space-4) auto;">
+    <h1 style="font-family:var(--font-display);font-size:var(--text-heading);color:var(--success);margin-bottom:var(--space-3)">Pembiasaan Diri untuk Melestarikan Lingkungan</h1>
+  <p class="muted">Pilih jenis pupuk untuk melihat keterangannya. Pemanfaatan pupuk organik lebih aman bagi tanah dibandingkan pupuk kimia.</p>
+  <div class="layout" style="margin-top:var(--space-4)">
+    <div class="stack">
+      <div class="canvas-wrap"><canvas id="stage-canvas" role="img" aria-label="Perbandingan keadaan tanah dengan pupuk organik dan pupuk kimia"></canvas></div>
+      <div class="panel">
+        <p class="panel-heading">Keterangan</p>
+        <p class="readout" id="fert-readout"></p>
+        <p class="muted" id="fert-text"></p>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="panel controls">
+        <p class="panel-heading">Pilih pupuk</p>
+        <div class="toggle">
+          <button class="btn" id="organik-btn" type="button" aria-pressed="true" data-fert="organik">Pupuk organik</button>
+          <button class="btn" id="kimia-btn" type="button" aria-pressed="false" data-fert="kimia">Pupuk kimia</button>
+        </div>
+      </div>
+      <div class="panel">
+        <button class="btn btn-primary" id="reset-btn" type="button">Reset</button>
+      </div>
+    </div>
+  </div>
+  </main>
+  <script type="application/json" id="widget-config">
+{
+  "type": "simulation",
+  "concept": "pelestarian-tanah-dengan-pupuk",
+  "description": "Perbandingan pupuk organik dan pupuk kimia bagi tanah.",
+  "variables": [],
+  "presets": []
+}
+  </script>
+  <script>
+(() => {
+  const canvas = document.getElementById('stage-canvas');
+  const ctx = canvas.getContext('2d');
+  const state = { fert: 'organik' };
+  const info = {
+    organik: 'Pemanfaatan pupuk organik lebih aman bagi tanah dibandingkan dengan penggunaan pupuk kimia.',
+    kimia: 'Pupuk kimia yang digunakan secara berlebihan dapat membuat tanah yang dahulu produktif menjadi tidak produktif.'
+  };
+  const tok = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  function draw() {
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.max(1, Math.round(w * dpr));
+    canvas.height = Math.max(1, Math.round(h * dpr));
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = tok('--bg'); ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = tok('--panel');
+    ctx.fillRect(20, h * 0.2, w - 40, h * 0.6);
+    ctx.fillStyle = state.fert === 'organik' ? tok('--success') : tok('--warning');
+    ctx.fillRect(20, h * 0.2, (w - 40) * (state.fert === 'organik' ? 1 : 0.5), h * 0.6);
+    ctx.fillStyle = tok('--text'); ctx.font = '600 13px ' + tok('--font');
+    ctx.fillText(state.fert === 'organik' ? 'Tanah: lebih aman' : 'Tanah: berisiko', 20, h * 0.15);
+  }
+  function render() {
+    document.querySelectorAll('[data-fert]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.fert === state.fert)));
+    document.getElementById('fert-readout').textContent = state.fert === 'organik' ? 'Pupuk organik' : 'Pupuk kimia';
+    document.getElementById('fert-text').textContent = info[state.fert];
+    draw();
+  }
+  function resetState() { state.fert = 'organik'; render(); }
+  document.querySelectorAll('[data-fert]').forEach(b => b.addEventListener('click', () => { state.fert = b.dataset.fert; render(); }));
+  document.getElementById('reset-btn').addEventListener('click', resetState);
+  document.addEventListener('keydown', e => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.target.matches('input, textarea, select')) return;
+    if (e.key === 'r' || e.key === 'R') resetState();
+  });
+  new ResizeObserver(draw).observe(canvas);
+  render();
+})();
+  </script>
+</body>
+</html>

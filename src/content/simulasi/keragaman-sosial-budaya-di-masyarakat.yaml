@@ -1,0 +1,11 @@
+# Satu entri katalog per simulasi. Kunci adalah pengenal bahasa Inggris;
+# nilainya Bahasa Indonesia karena menjadi bagian URL.
+# Katalog adalah sumber kebenaran atas metadata simulasi (docs/adr/0004).
+title: "Keragaman Sosial Budaya di Masyarakat"
+description: >-
+  Diagram keragaman budaya Indonesia dari sisi kepulauan, suku bangsa, dan contoh rumah adat Baduy.
+level: smp
+grade: 7
+subject: ips
+order: 87
+scene: "s16"

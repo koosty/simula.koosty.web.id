@@ -1,0 +1,11 @@
+# Satu entri katalog per simulasi. Kunci adalah pengenal bahasa Inggris;
+# nilainya Bahasa Indonesia karena menjadi bagian URL.
+# Katalog adalah sumber kebenaran atas metadata simulasi (docs/adr/0004).
+title: "Bentuk Interaksi Sosial"
+description: >-
+  Permainan mengelompokkan contoh interaksi ke bentuk asosiatif atau disosiatif.
+level: smp
+grade: 7
+subject: ips
+order: 77
+scene: "s6"

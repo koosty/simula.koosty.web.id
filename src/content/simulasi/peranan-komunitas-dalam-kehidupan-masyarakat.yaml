@@ -1,0 +1,11 @@
+# Satu entri katalog per simulasi. Kunci adalah pengenal bahasa Inggris;
+# nilainya Bahasa Indonesia karena menjadi bagian URL.
+# Katalog adalah sumber kebenaran atas metadata simulasi (docs/adr/0004).
+title: "Peranan Komunitas dalam Kehidupan Masyarakat"
+description: >-
+  Pengertian komunitas, jenis-jenisnya, dan contoh komunitas yang berperan dalam masyarakat.
+level: smp
+grade: 7
+subject: ips
+order: 90
+scene: "s19"

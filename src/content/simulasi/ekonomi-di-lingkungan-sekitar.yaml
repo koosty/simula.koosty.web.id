@@ -1,0 +1,11 @@
+# Satu entri katalog per simulasi. Kunci adalah pengenal bahasa Inggris;
+# nilainya Bahasa Indonesia karena menjadi bagian URL.
+# Katalog adalah sumber kebenaran atas metadata simulasi (docs/adr/0004).
+title: "Ekonomi di Lingkungan Sekitar"
+description: >-
+  Simulasi pelaku ekonomi dan pasar di sekitar tempat tinggal, menurut waktu pertemuan penjual dan pembeli.
+level: smp
+grade: 7
+subject: ips
+order: 85
+scene: "s14"

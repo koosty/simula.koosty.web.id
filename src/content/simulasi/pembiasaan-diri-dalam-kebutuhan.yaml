@@ -1,0 +1,11 @@
+# Satu entri katalog per simulasi. Kunci adalah pengenal bahasa Inggris;
+# nilainya Bahasa Indonesia karena menjadi bagian URL.
+# Katalog adalah sumber kebenaran atas metadata simulasi (docs/adr/0004).
+title: "Pembiasaan Diri dalam Kebutuhan"
+description: >-
+  Diagram 17 tujuan pembangunan berkelanjutan (SDGs) dan masalah pokok ekonomi: apa, bagaimana, dan untuk siapa barang diproduksi.
+level: smp
+grade: 7
+subject: ips
+order: 81
+scene: "s10"

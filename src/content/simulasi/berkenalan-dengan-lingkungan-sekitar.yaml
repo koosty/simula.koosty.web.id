@@ -1,0 +1,11 @@
+# Satu entri katalog per simulasi. Kunci adalah pengenal bahasa Inggris;
+# nilainya Bahasa Indonesia karena menjadi bagian URL.
+# Katalog adalah sumber kebenaran atas metadata simulasi (docs/adr/0004).
+title: "Berkenalan dengan Lingkungan Sekitar"
+description: >-
+  Jenis pencemaran udara, air, dan tanah, serta dinamika sosial dalam masyarakat.
+level: smp
+grade: 7
+subject: ips
+order: 79
+scene: "s8"
