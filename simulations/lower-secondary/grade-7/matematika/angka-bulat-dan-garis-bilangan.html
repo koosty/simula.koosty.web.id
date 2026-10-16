@@ -185,6 +185,16 @@ body {
 }
 
 .panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+.panel-heading::before {
+  content: '';
+  display: inline-block;
+  width: 8px; height: 8px;
+  margin-right: var(--space-2);
+  vertical-align: middle;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+}
 
 .btn {
   font-family: var(--font-display);
@@ -200,18 +210,19 @@ body {
   background: var(--surface);
   color: var(--text);
   cursor: pointer;
-  transition: background var(--motion);
+  transition: background var(--motion), transform var(--motion), box-shadow var(--motion);
+  box-shadow: 0 4px 0 var(--border);
 }
 .btn:hover { background: var(--panel); border-color: var(--accent); }
-.btn:active { transform: scale(0.95); }
-.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:active { transform: translateY(4px); box-shadow: none; }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring), 0 4px 0 var(--border); }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .btn-primary {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-text);
-  box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 35%, transparent);
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--accent) 65%, var(--accent-text)), 0 0 16px color-mix(in srgb, var(--accent) 35%, transparent);
 }
 .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
 
@@ -311,7 +322,15 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     h3 { font-size: var(--text-sm); color: var(--text-muted); font-weight: 600; }
     p { font-size: var(--text-sm); color: var(--text-muted); }
 
-    .stage { min-height: 220px; }
+    .stage {
+      min-height: 220px;
+      background-color: var(--surface);
+      background-image:
+        linear-gradient(color-mix(in srgb, var(--border) 45%, transparent) 1px, transparent 1px),
+        linear-gradient(90deg, color-mix(in srgb, var(--border) 45%, transparent) 1px, transparent 1px),
+        radial-gradient(ellipse at 50% 70%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%);
+      background-size: 32px 32px, 32px 32px, 100% 100%;
+    }
     #line-svg { display: block; width: 100%; height: auto; touch-action: none; }
 
     .readouts {
@@ -325,6 +344,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
       padding: var(--space-3);
+      box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 15%, transparent);
     }
     .readout .k { font-size: var(--text-caption); text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
     .readout .v { font-family: var(--font-mono); font-size: var(--text-heading); }
@@ -342,18 +362,19 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       background: var(--accent);
       border-color: var(--accent);
       color: var(--accent-text);
+      box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 40%, transparent);
     }
 
     .tick-label { font-family: var(--font-mono); fill: var(--text-muted); }
     .axis { stroke: var(--border-strong); stroke-width: 2; }
     .tick { stroke: var(--border-strong); stroke-width: 1.5; }
-    .tick.zero { stroke: var(--accent); stroke-width: 3; }
+    .tick.zero { stroke: var(--accent); stroke-width: 3; filter: drop-shadow(0 0 4px var(--accent)); }
     .zero-label { fill: var(--accent); }
-    .marker-body { fill: var(--accent); }
+    .marker-body { fill: var(--accent); filter: drop-shadow(0 0 6px var(--accent)); }
     .marker-stem { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 4 4; }
     .marker-value { font-family: var(--font-mono); font-size: 15px; font-weight: 700; fill: var(--text); }
     .step-dot { fill: var(--success); }
-    .trace-line { stroke: var(--success); stroke-width: 3; }
+    .trace-line { stroke: var(--success); stroke-width: 3; filter: drop-shadow(0 0 4px var(--success)); }
     .arrow-head { fill: var(--success); }
     .zone-neg { fill: var(--border); opacity: 0.35; }
 
@@ -375,6 +396,10 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     @media (max-width: 420px) {
       .wrap { padding: var(--space-3) var(--space-2) var(--space-5); }
       .readout .v { font-size: var(--text-base); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .btn { transition: none; }
     }
   </style>
 </head>
