@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="dark">
+<html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -74,6 +74,7 @@
     }
 
 :root {
+  color-scheme: dark;
   /* Colour */
   --bg: #12131d;          /* page background; also the 3D canvas background */
   --surface: #1a1b25;     /* panels, cards, step rows */
@@ -127,6 +128,48 @@
   --z-modal: 1000;         /* loading screens, modal dialogs */
     }
 
+/* The light palette, from the site's Stitch light screen (docs/adr/0019).
+   It applies when the page sets data-theme="light" on this frame, or when the
+   page sets no choice and the system asks for light. The site mirrors its
+   header switch onto the frame, so this simulation follows the reader. */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --panel: #f1f5f9;
+  --border: #cbd5e1;
+  --border-strong: #475569;
+  --text: #0f172a;
+  --text-muted: #334155;
+  --text-dim: #64748b;
+  --accent: #0092ac;
+  --accent-hover: #3fc8dc;
+  --accent-text: #0f172a;
+  --success: #047857;
+  --error: #b8126b;
+  --focus-ring: 0 0 0 3px rgba(0, 146, 172, 0.5);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    color-scheme: light;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --panel: #f1f5f9;
+    --border: #cbd5e1;
+    --border-strong: #475569;
+    --text: #0f172a;
+    --text-muted: #334155;
+    --text-dim: #64748b;
+    --accent: #0092ac;
+    --accent-hover: #3fc8dc;
+    --accent-text: #0f172a;
+    --success: #047857;
+    --error: #b8126b;
+    --focus-ring: 0 0 0 3px rgba(0, 146, 172, 0.5);
+  }
+}
+
     h1, h2, h3 { font-family: var(--font-display); }
 
 
@@ -148,27 +191,50 @@ h1, h2, h3 { font-weight: var(--font-weight-display); }
   padding: var(--space-4);
 }
 .panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+.panel-heading::before {
+  content: '';
+  display: inline-block;
+  width: 8px; height: 8px;
+  margin-right: var(--space-2);
+  vertical-align: middle;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+}
 
 .btn {
-  font-family: inherit;
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   font-size: var(--text-sm);
   min-height: 44px;            /* never below 44px, mobile */
   min-width: 44px;
   padding: var(--space-3) var(--space-5);
   border: 1px solid var(--border-strong);
-  border-radius: var(--radius-md);
-  background: var(--border-strong);
-  color: var(--bg);
-  box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--text);
   cursor: pointer;
-  transition: background var(--motion);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  transition: background var(--motion), transform var(--motion), box-shadow var(--motion);
+  box-shadow: 0 4px 0 var(--border);
 }
-.btn:hover { background: var(--text-muted); }
-.btn:active { transform: scale(0.95); }
-.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:hover { background: var(--panel); border-color: var(--accent); }
+.btn:active { transform: translateY(4px); box-shadow: none; }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring), 0 4px 0 var(--border); }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn .icon { width: 1.1em; height: 1.1em; flex: none; }
 
-.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--accent) 65%, var(--accent-text)), 0 0 16px color-mix(in srgb, var(--accent) 35%, transparent);
+}
 .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
 
 .btn-ghost { background: transparent; border-color: var(--border); color: var(--text); }
@@ -297,8 +363,10 @@ input[type="range"]::-webkit-slider-thumb {
 /* ---- Scene layout (appearance uses tokens only) ---- */
 .page { max-width: 1040px; margin: 0 auto; padding: var(--space-4); display: grid; gap: var(--space-4); }
 .layout { display: grid; gap: var(--space-4); }
-@media (min-width: 768px) {
-  .layout { grid-template-columns: minmax(0, 320px) minmax(0, 1fr); align-items: start; }
+@media (min-width: 760px) {
+  .layout { grid-template-columns: minmax(0, 1fr) minmax(300px, 360px); align-items: start; }
+  .stage { grid-column: 1; grid-row: 1; }
+  .layout > section:not(.stage) { grid-column: 2; grid-row: 1; }
 }
 .muted { color: var(--text-muted); font-size: var(--text-sm); }
 .control-group { display: grid; gap: var(--space-2); margin-top: var(--space-4); }
@@ -306,7 +374,7 @@ input[type="range"]::-webkit-slider-thumb {
 .role { font-size: var(--text-caption); color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
 .choice-row { display: grid; gap: var(--space-2); }
 .choice-row .btn { width: 100%; text-align: left; }
-.choice-row .btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.choice-row .btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-text); box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 40%, transparent); }
 .actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-4); }
 .actions .btn { flex: 1 1 auto; }
 input[type="range"] { height: 8px; }
@@ -321,6 +389,10 @@ input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; background: v
 .presets { display: grid; gap: var(--space-2); margin-top: var(--space-4); }
 .presets .btn { width: 100%; text-align: left; }
 .hint { font-size: var(--text-caption); color: var(--text-dim); margin-top: var(--space-3); }
+
+@media (prefers-reduced-motion: reduce) {
+  .btn { transition: none; }
+}
   </style>
 </head>
 <body>
@@ -362,8 +434,8 @@ input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; background: v
         <p class="description" id="state-description" style="margin-top: var(--space-4);"></p>
 
         <div class="actions">
-          <button type="button" class="btn btn-primary" id="start-btn">Mulai</button>
-          <button type="button" class="btn btn-ghost" id="reset-btn">Reset</button>
+          <button type="button" class="btn btn-primary" id="start-btn"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" /></svg><span id="start-label">Mulai</span></button>
+          <button type="button" class="btn btn-ghost" id="reset-btn"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>Reset</button>
         </div>
 
         <div class="presets" aria-label="Contoh pengaturan">
@@ -551,7 +623,7 @@ input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; background: v
 
         setText($('energy-display'), Math.round(speedFactor() * 100) + ' %');
         setText($('state-description'), DESCRIPTIONS[state.wujud]);
-        setText($('start-btn'), state.running ? 'Jeda' : 'Mulai');
+        setText($('start-label'), state.running ? 'Jeda' : 'Mulai');
       }
 
       function setWujud(w) {

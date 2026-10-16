@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="dark">
+<html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -78,6 +78,7 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:var(--font);font-size:var(--text-base);line-height:1.5;background:var(--bg);color:var(--text)}
 :root {
+  color-scheme: dark;
   /* Colour */
   --bg:#12131d;
   --surface:#1a1b25;
@@ -113,15 +114,59 @@ body{font-family:var(--font);font-size:var(--text-base);line-height:1.5;backgrou
   --z-overlay:100;--z-modal:1000;
     }
 
+/* The light palette, from the site's Stitch light screen (docs/adr/0019). */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --panel: #f1f5f9;
+  --border: #cbd5e1;
+  --border-strong: #475569;
+  --text: #0f172a;
+  --text-muted: #334155;
+  --text-dim: #64748b;
+  --accent: #0092ac;
+  --accent-hover: #3fc8dc;
+  --accent-text: #0f172a;
+  --success: #047857;
+  --error: #b8126b;
+  --focus-ring: 0 0 0 3px rgba(0, 146, 172, 0.5);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    color-scheme: light;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --panel: #f1f5f9;
+    --border: #cbd5e1;
+    --border-strong: #475569;
+    --text: #0f172a;
+    --text-muted: #334155;
+    --text-dim: #64748b;
+    --accent: #0092ac;
+    --accent-hover: #3fc8dc;
+    --accent-text: #0f172a;
+    --success: #047857;
+    --error: #b8126b;
+    --focus-ring: 0 0 0 3px rgba(0, 146, 172, 0.5);
+  }
+}
+
     h1, h2, h3 { font-family: var(--font-display); }
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-4)}
 .panel-heading{font-size:var(--text-sm);color:var(--text-muted);margin-bottom:var(--space-2)}
-.btn{font-family:inherit;font-size:var(--text-sm);min-height:44px;min-width:44px;padding:var(--space-3) var(--space-5);border:1px solid var(--border-strong);border-radius:var(--radius-md);background:var(--border-strong);color: var(--bg);cursor:pointer;transition:background var(--motion);touch-action:manipulation}
-.btn:hover{background:var(--text-muted)}
-.btn:active{transform:scale(0.95)}
-.btn:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+.panel-heading::before,.panel > h2::before{
+  content:'';display:inline-block;width:8px;height:8px;margin-right:var(--space-2);vertical-align:middle;
+  border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);
+}
+.btn{font-family:var(--font-display);font-weight:700;text-transform:uppercase;letter-spacing:0.04em;font-size:var(--text-sm);min-height:44px;min-width:44px;padding:var(--space-3) var(--space-5);border:1px solid var(--border-strong);border-radius:var(--radius-lg);background:var(--surface);color:var(--text);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);transition:background var(--motion),transform var(--motion),box-shadow var(--motion);box-shadow:0 4px 0 var(--border);touch-action:manipulation}
+.btn:hover{background:var(--panel);border-color:var(--accent)}
+.btn:active{transform:translateY(4px);box-shadow:none}
+.btn:focus-visible{outline:none;box-shadow:var(--focus-ring),0 4px 0 var(--border)}
 .btn:disabled{opacity:0.45;cursor:not-allowed}
-.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-text)}
+.btn .icon{width:1.1em;height:1.1em;flex:none}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-text);box-shadow:0 4px 0 color-mix(in srgb, var(--accent) 65%, var(--accent-text)), 0 0 16px color-mix(in srgb, var(--accent) 35%, transparent)}
 .btn-primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
 .btn-ghost{background:transparent;border-color:var(--border);color:var(--text)}
 .btn-ghost:hover{background:var(--surface)}
@@ -186,6 +231,9 @@ tbody tr.new{animation:flash var(--motion-slow) ease-out}
 .legend b{font-family:var(--font-mono)}
 @media(min-width:768px){
   .two{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4)}
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn{transition:none}
 }
 </style>
 </head>
@@ -275,7 +323,7 @@ tbody tr.new{animation:flash var(--motion-slow) ease-out}
     <p id="conclusion" class="mono" style="font-size:var(--text-sm)"></p>
     <div class="row fill" style="margin-top:var(--space-4)">
       <button class="btn" id="print-btn">Tandai investigasi selesai</button>
-      <button class="btn btn-ghost" id="reset-btn">Reset semua</button>
+      <button class="btn btn-ghost" id="reset-btn"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>Reset semua</button>
     </div>
     <p class="hint" id="done-hint" style="margin-top:var(--space-2)"></p>
   </section>

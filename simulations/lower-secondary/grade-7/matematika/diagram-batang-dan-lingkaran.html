@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="dark">
+<html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -78,6 +78,7 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:var(--font);font-size:var(--text-base);line-height:1.5;background:var(--bg);color:var(--text)}
 :root {
+  color-scheme: dark;
   /* Colour */
   --bg:#12131d;
   --surface:#1a1b25;
@@ -109,15 +110,59 @@ body{font-family:var(--font);font-size:var(--text-base);line-height:1.5;backgrou
   --z-overlay:100;--z-modal:1000;
     }
 
+  /* The light palette, from the site's Stitch light screen (docs/adr/0019). */
+  :root[data-theme='light'] {
+    color-scheme: light;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --panel: #f1f5f9;
+    --border: #cbd5e1;
+    --border-strong: #475569;
+    --text: #0f172a;
+    --text-muted: #334155;
+    --text-dim: #64748b;
+    --accent: #0092ac;
+    --accent-hover: #3fc8dc;
+    --accent-text: #0f172a;
+    --success: #047857;
+    --error: #b8126b;
+    --focus-ring: 0 0 0 3px rgba(0, 146, 172, 0.5);
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme='dark']) {
+      color-scheme: light;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --panel: #f1f5f9;
+      --border: #cbd5e1;
+      --border-strong: #475569;
+      --text: #0f172a;
+      --text-muted: #334155;
+      --text-dim: #64748b;
+      --accent: #0092ac;
+      --accent-hover: #3fc8dc;
+      --accent-text: #0f172a;
+      --success: #047857;
+      --error: #b8126b;
+      --focus-ring: 0 0 0 3px rgba(0, 146, 172, 0.5);
+    }
+  }
+
     h1, h2, h3 { font-family: var(--font-display); }
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-4)}
 .panel-heading{font-size:var(--text-sm);color:var(--text-muted);margin-bottom:var(--space-2)}
-.btn{font-family:inherit;font-size:var(--text-sm);min-height:44px;min-width:44px;padding:var(--space-3) var(--space-5);border:1px solid var(--border-strong);border-radius:var(--radius-md);background:var(--border-strong);color: var(--bg);cursor:pointer;transition:background var(--motion);touch-action:manipulation}
-.btn:hover{background:var(--text-muted)}
-.btn:active{transform:scale(0.95)}
-.btn:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+.panel-heading::before,.panel > h2::before{
+  content:'';display:inline-block;width:8px;height:8px;margin-right:var(--space-2);vertical-align:middle;
+  border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);
+}
+.btn{font-family:var(--font-display);font-weight:700;text-transform:uppercase;letter-spacing:0.04em;font-size:var(--text-sm);min-height:44px;min-width:44px;padding:var(--space-3) var(--space-5);border:1px solid var(--border-strong);border-radius:var(--radius-lg);background:var(--surface);color:var(--text);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);transition:background var(--motion),transform var(--motion),box-shadow var(--motion);box-shadow:0 4px 0 var(--border);touch-action:manipulation}
+.btn:hover{background:var(--panel);border-color:var(--accent)}
+.btn:active{transform:translateY(4px);box-shadow:none}
+.btn:focus-visible{outline:none;box-shadow:var(--focus-ring),0 4px 0 var(--border)}
 .btn:disabled{opacity:0.45;cursor:not-allowed}
-.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-text)}
+.btn .icon{width:1.1em;height:1.1em;flex:none}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-text);box-shadow:0 4px 0 color-mix(in srgb, var(--accent) 65%, var(--accent-text)), 0 0 16px color-mix(in srgb, var(--accent) 35%, transparent)}
 .btn-primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
 .btn-ghost{background:transparent;border-color:var(--border);color:var(--text)}
 .btn-ghost:hover{background:var(--surface)}
@@ -174,6 +219,20 @@ input[type="number"]:disabled{opacity:0.45;cursor:not-allowed}
 .sw{width:14px;height:14px;border-radius:var(--radius-sm);border:1px solid var(--border);flex:0 0 auto}
 .two{display:flex;flex-direction:column;gap:var(--space-4)}
 @media (min-width:768px){.two{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);align-items:start}}
+
+@media (min-width:760px){
+  .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,360px);align-items:start}
+  .wrap > header{grid-column:1 / -1}
+  .wrap > .stage{grid-column:1;grid-row:2}
+  .wrap > .controls{grid-column:2;grid-row:2 / span 2}
+  .wrap > #feedback-panel{grid-column:1;grid-row:3}
+  .wrap > section:nth-of-type(4){grid-column:1;grid-row:4}
+  .wrap > .two{grid-column:1 / -1}
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn { transition: none; }
+}
 .hidden{display:none}
   </style>
 </head>
@@ -229,7 +288,7 @@ input[type="number"]:disabled{opacity:0.45;cursor:not-allowed}
     <div class="ctrl">
       <h3>Tebak sudut pusat</h3>
       <div class="row">
-        <button type="button" class="btn btn-primary" id="guess-btn" onclick="startGuess()">Mulai tebak</button>
+        <button type="button" class="btn btn-primary" id="guess-btn" onclick="startGuess()"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" /></svg><span id="guess-label">Mulai tebak</span></button>
       </div>
       <div class="guess-row" id="guess-row">
         <label class="sr-only" for="guess-input">Jawaban sudut pusat dalam derajat</label>
@@ -244,7 +303,7 @@ input[type="number"]:disabled{opacity:0.45;cursor:not-allowed}
     </div>
 
     <div class="row">
-      <button type="button" class="btn btn-ghost" id="reset-btn" onclick="resetState()">Mulai ulang</button>
+      <button type="button" class="btn btn-ghost" id="reset-btn" onclick="resetState()"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>Mulai ulang</button>
     </div>
   </section>
 
@@ -320,6 +379,7 @@ input[type="number"]:disabled{opacity:0.45;cursor:not-allowed}
     zoomSlider: document.getElementById("zoom-slider"),
     zoomDisplay: document.getElementById("zoom-display"),
     guessBtn: document.getElementById("guess-btn"),
+    guessLabel: document.getElementById("guess-label"),
     guessInput: document.getElementById("guess-input"),
     guessSubmit: document.getElementById("guess-submit-btn"),
     scoreDisplay: document.getElementById("score-display"),
@@ -618,7 +678,7 @@ input[type="number"]:disabled{opacity:0.45;cursor:not-allowed}
     state.answered = false;
     selectSlice(i);
     if(state.view === "bar") setView("pie");
-    els.guessBtn.textContent = "Tebak irisan lain";
+    els.guessLabel.textContent = "Tebak irisan lain";
     els.feedback.className = "";
     els.feedbackText.innerHTML = "Berapa besar sudut pusat irisan berwarna <strong>" + colorNames[i] +
       "</strong> (" + DATASETS[state.dataset].cats[i].label + ")? Tulis jawabannya dalam derajat, ya.";
@@ -658,7 +718,7 @@ input[type="number"]:disabled{opacity:0.45;cursor:not-allowed}
       els.feedbackText.innerHTML = "Belum tepat. Seharusnya <strong>" + fmtAng(want) + "°</strong>. " +
         "Sudut pusat = (jumlah / total) × 360° = (" + state.counts[i] + " / " + t + ") × 360° = " + fmtAng(want) + "°.";
     }
-    els.guessBtn.textContent = "Tebak irisan lain";
+    els.guessLabel.textContent = "Tebak irisan lain";
     els.scoreDisplay.textContent = state.right + " dari " + state.tries;
     els.progressFill.style.width = (state.tries > 0 ? state.right / state.tries * 100 : 0) + "%";
     kick();
@@ -1036,7 +1096,7 @@ input[type="number"]:disabled{opacity:0.45;cursor:not-allowed}
     els.guessInput.value = "";
     els.guessInput.disabled = true;
     els.guessSubmit.disabled = true;
-    els.guessBtn.textContent = "Mulai tebak";
+    els.guessLabel.textContent = "Mulai tebak";
     els.feedback.className = "";
     els.feedbackText.innerHTML = "Pilih <strong>Mulai tebak</strong>, lalu jawab berapa besar sudut pusat irisan yang ditandai.";
   }

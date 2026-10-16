@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="dark">
+<html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -78,6 +78,7 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:var(--font);font-size:var(--text-base);line-height:1.5;background:var(--bg);color:var(--text)}
 :root {
+  color-scheme: dark;
   /* Colour */
   --bg:#12131d;
   --surface:#1a1b25;
@@ -109,15 +110,56 @@ body{font-family:var(--font);font-size:var(--text-base);line-height:1.5;backgrou
   --z-overlay:100;--z-modal:1000;
     }
 
+  /* The light palette, from the site's Stitch light screen (docs/adr/0019). */
+  :root[data-theme='light'] {
+    color-scheme: light;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --panel: #f1f5f9;
+    --border: #cbd5e1;
+    --border-strong: #475569;
+    --text: #0f172a;
+    --text-muted: #334155;
+    --text-dim: #64748b;
+    --accent: #0092ac;
+    --accent-hover: #3fc8dc;
+    --accent-text: #0f172a;
+    --success: #047857;
+    --error: #b8126b;
+    --focus-ring: 0 0 0 3px rgba(0, 146, 172, 0.5);
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme='dark']) {
+      color-scheme: light;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --panel: #f1f5f9;
+      --border: #cbd5e1;
+      --border-strong: #475569;
+      --text: #0f172a;
+      --text-muted: #334155;
+      --text-dim: #64748b;
+      --accent: #0092ac;
+      --accent-hover: #3fc8dc;
+      --accent-text: #0f172a;
+      --success: #047857;
+      --error: #b8126b;
+      --focus-ring: 0 0 0 3px rgba(0, 146, 172, 0.5);
+    }
+  }
+
     h1, h2, h3 { font-family: var(--font-display); }
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-4)}
 .panel-heading{font-size:var(--text-sm);color:var(--text-muted);margin-bottom:var(--space-2)}
-.btn{font-family:inherit;font-size:var(--text-sm);min-height:44px;min-width:44px;padding:var(--space-3) var(--space-5);border:1px solid var(--border-strong);border-radius:var(--radius-md);background:var(--border-strong);color: var(--bg);cursor:pointer;transition:background var(--motion);touch-action:manipulation}
-.btn:hover{background:var(--text-muted)}
-.btn:active{transform:scale(0.95)}
-.btn:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+.panel-heading::before,.panel h2::before{content:'';display:inline-block;width:8px;height:8px;margin-right:var(--space-2);vertical-align:middle;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+.btn{font-family:var(--font-display);font-weight:700;text-transform:uppercase;letter-spacing:0.04em;font-size:var(--text-sm);min-height:44px;min-width:44px;padding:var(--space-3) var(--space-5);border:1px solid var(--border-strong);border-radius:var(--radius-lg);background:var(--surface);color:var(--text);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);transition:background var(--motion),transform var(--motion),box-shadow var(--motion);box-shadow:0 4px 0 var(--border);touch-action:manipulation}
+.btn:hover{background:var(--panel);border-color:var(--accent)}
+.btn:active{transform:translateY(4px);box-shadow:none}
+.btn:focus-visible{outline:none;box-shadow:var(--focus-ring),0 4px 0 var(--border)}
 .btn:disabled{opacity:0.45;cursor:not-allowed}
-.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-text)}
+.btn .icon{width:1.1em;height:1.1em;flex:none}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-text);box-shadow:0 4px 0 color-mix(in srgb, var(--accent) 65%, var(--accent-text)),0 0 16px color-mix(in srgb, var(--accent) 35%, transparent)}
 .btn-primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
 .btn-ghost{background:transparent;border-color:var(--border);color:var(--text)}
 .btn-ghost:hover{background:var(--surface)}
@@ -146,7 +188,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
 .stack{display:flex;flex-direction:column;gap:var(--space-4)}
 h1{font-size:var(--text-heading);line-height:1.25}
 .sub{font-size:var(--text-sm);color:var(--text-muted);margin-top:var(--space-2);max-width:70ch}
-.stage{position:relative;width:100%;min-height:300px;aspect-ratio:4/3;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.stage{position:relative;width:100%;min-height:220px;aspect-ratio:4/3;background-color:var(--surface);background-image:linear-gradient(color-mix(in srgb, var(--border) 45%, transparent) 1px, transparent 1px),linear-gradient(90deg, color-mix(in srgb, var(--border) 45%, transparent) 1px, transparent 1px),radial-gradient(ellipse at 50% 70%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%);background-size:32px 32px,32px 32px,100% 100%;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
 canvas{display:block;width:100%;height:100%;touch-action:none}
 .controls{display:flex;flex-direction:column;gap:var(--space-3)}
 .ctl{display:flex;flex-direction:column;gap:var(--space-2)}
@@ -157,13 +199,13 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .chip{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:44px;min-width:48px;padding:var(--space-2) var(--space-3);font-family:inherit;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);color:var(--text);cursor:pointer;touch-action:manipulation}
 .chip:hover{border-color:var(--accent)}
 .chip:focus-visible{outline:none;box-shadow:var(--focus-ring)}
-.chip[aria-pressed="true"]{border-color:var(--accent);background:var(--panel)}
+.chip[aria-pressed="true"]{border-color:var(--accent);background:var(--panel);box-shadow:0 0 12px color-mix(in srgb, var(--accent) 40%, transparent)}
 .chip-name{font-size:var(--text-caption);color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px}
 .chip-val{font-family:var(--font-mono);font-size:var(--text-sm)}
 .btn-row{display:flex;flex-wrap:wrap;gap:var(--space-2)}
 .btn-row .btn{flex:1 1 44%}
 .readouts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3)}
-.stat{display:flex;flex-direction:column;gap:var(--space-1)}
+.stat{display:flex;flex-direction:column;gap:var(--space-1);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-3);box-shadow:0 0 12px color-mix(in srgb, var(--accent) 15%, transparent)}
 .stat-val{font-family:var(--font-mono);font-size:var(--text-heading);line-height:1.2}
 .note{font-size:var(--text-sm);color:var(--text-muted);border-left:3px solid var(--warning);background:var(--bg);border-radius:var(--radius-sm);padding:var(--space-2) var(--space-3)}
 .cek-row{display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}
@@ -173,7 +215,11 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .panel h3{font-size:var(--text-base);color:var(--accent);margin:var(--space-3) 0 var(--space-1)}
 .calc{font-family:var(--font-mono);font-size:var(--text-sm);overflow-wrap:anywhere;color:var(--text-muted)}
 .calc strong{color:var(--text)}
-@media(min-width:768px){.cols{display:grid;grid-template-columns:1fr 320px;gap:var(--space-4);align-items:start}.stage{aspect-ratio:16/9}.btn-row .btn{flex:1 1 100%}}
+@media(min-width:760px){.cols{display:grid;grid-template-columns:1fr 320px;gap:var(--space-4);align-items:start}.stage{aspect-ratio:16/9}.btn-row .btn{flex:1 1 100%}}
+
+    @media (prefers-reduced-motion: reduce) {
+      .btn { transition: none; }
+    }
 </style>
 </head>
 <body>
@@ -237,7 +283,7 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
           <button class="btn" id="sort-btn" type="button" onclick="urutkanData()">Urutkan data</button>
           <button class="btn" id="distraction-btn" type="button" onclick="toggleDistraction()">Tambah nilai ekstrem</button>
           <button class="btn" id="random-btn" type="button" onclick="dataAcak()">Data acak</button>
-          <button class="btn btn-ghost" id="reset-btn" type="button" onclick="resetState()">Reset</button>
+          <button class="btn btn-ghost" id="reset-btn" type="button" onclick="resetState()"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>Reset</button>
         </div>
 
         <div class="ctl">

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="dark">
+<html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -74,6 +74,7 @@
     }
 
 :root {
+  color-scheme: dark;
   /* Colour */
   --bg: #12131d;          /* page background; also the 3D canvas background */
   --surface: #1a1b25;     /* panels, cards, step rows */
@@ -126,6 +127,48 @@
   --z-overlay: 100;        /* panels, tooltips */
   --z-modal: 1000;         /* loading screens, modal dialogs */
     }
+/* The light palette, from the site's Stitch light screen (docs/adr/0019).
+   It applies when the page sets data-theme="light" on this frame, or when the
+   page sets no choice and the system asks for light. */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --panel: #f1f5f9;
+  --border: #cbd5e1;
+  --border-strong: #475569;
+  --text: #0f172a;
+  --text-muted: #334155;
+  --text-dim: #64748b;
+  --accent: #0092ac;
+  --accent-hover: #3fc8dc;
+  --accent-text: #0f172a;
+  --success: #047857;
+  --warning: #92400e;
+  --error: #b8126b;
+  --focus-ring: 0 0 0 3px rgba(0, 146, 172, 0.5);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    color-scheme: light;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --panel: #f1f5f9;
+    --border: #cbd5e1;
+    --border-strong: #475569;
+    --text: #0f172a;
+    --text-muted: #334155;
+    --text-dim: #64748b;
+    --accent: #0092ac;
+    --accent-hover: #3fc8dc;
+    --accent-text: #0f172a;
+    --success: #047857;
+    --warning: #92400e;
+    --error: #b8126b;
+    --focus-ring: 0 0 0 3px rgba(0, 146, 172, 0.5);
+  }
+}
 
     h1, h2, h3 { font-family: var(--font-display); }
 
@@ -147,27 +190,50 @@ h1, h2, h3 { font-weight: var(--font-weight-display); }
   padding: var(--space-4);
 }
 .panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
+.panel-heading::before {
+  content: '';
+  display: inline-block;
+  width: 8px; height: 8px;
+  margin-right: var(--space-2);
+  vertical-align: middle;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+}
 
 .btn {
-  font-family: inherit;
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   font-size: var(--text-sm);
   min-height: 44px;            /* never below 44px, mobile */
   min-width: 44px;
   padding: var(--space-3) var(--space-5);
   border: 1px solid var(--border-strong);
-  border-radius: var(--radius-md);
-  background: var(--border-strong);
-  color: var(--bg);
-  box-shadow: var(--shadow-none);  /* buttons stay flat; only .panel lifts */
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--text);
   cursor: pointer;
-  transition: background var(--motion);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  transition: background var(--motion), transform var(--motion), box-shadow var(--motion);
+  box-shadow: 0 4px 0 var(--border);
 }
-.btn:hover { background: var(--text-muted); }
-.btn:active { transform: scale(0.95); }
-.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:hover { background: var(--panel); border-color: var(--accent); }
+.btn:active { transform: translateY(4px); box-shadow: none; }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring), 0 4px 0 var(--border); }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn .icon { width: 1.1em; height: 1.1em; flex: none; }
 
-.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--accent) 65%, var(--accent-text)), 0 0 16px color-mix(in srgb, var(--accent) 35%, transparent);
+}
 .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
 
 .btn-ghost { background: transparent; border-color: var(--border); color: var(--text); }
@@ -299,7 +365,7 @@ input[type="range"]::-webkit-slider-thumb {
     .intro p { color: var(--text-muted); }
     .start-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-4); }
     .hud { display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: space-between; align-items: center; font-size: var(--text-sm); color: var(--text-muted); }
-    .hud .mono-value { color: var(--text); }
+    .hud .mono-value { color: var(--text); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-1) var(--space-3); box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 15%, transparent); }
     .organism { font-size: var(--text-base); font-weight: var(--font-weight-display); font-style: italic; }
     .layout { display: flex; flex-direction: column; gap: var(--space-4); }
     .slot-list { list-style: none; display: flex; flex-direction: column; gap: var(--space-2); }
@@ -308,7 +374,7 @@ input[type="range"]::-webkit-slider-thumb {
     .slot-btn { flex: 1; text-align: left; min-width: 0; overflow-wrap: anywhere; }
     .slot-btn.is-filled { border-color: var(--success); color: var(--text); }
     .card-pool { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-    .card-btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+    .card-btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-text); box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 40%, transparent); }
     .hint { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-3); }
     .btn-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
     .achievement-list { list-style: none; display: flex; flex-direction: column; gap: var(--space-2); font-size: var(--text-sm); color: var(--text-muted); }
@@ -318,10 +384,13 @@ input[type="range"]::-webkit-slider-thumb {
     #pause-overlay[hidden] { display: none; }
     [hidden] { display: none !important; }
     #pause-overlay .panel { max-width: 320px; text-align: center; }
-    @media (min-width: 800px) {
+    @media (min-width: 760px) {
       .layout { flex-direction: row; align-items: flex-start; }
       .play-col { flex: 1 1 0; min-width: 0; }
       .side { width: 320px; flex-shrink: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .btn { transition: none; }
     }
   </style>
 </head>
@@ -340,7 +409,7 @@ input[type="range"]::-webkit-slider-thumb {
       <li>Kesalahan mengurangi satu nyawa. Tekan kotak berisi kartu untuk mengembalikannya ke kotak kartu.</li>
     </ol>
     <div class="start-actions">
-      <button class="btn btn-primary" id="start-btn" type="button" onclick="startGame()">Mulai permainan</button>
+      <button class="btn btn-primary" id="start-btn" type="button" onclick="startGame()"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" /></svg>Mulai permainan</button>
     </div>
   </section>
 
@@ -392,7 +461,7 @@ input[type="range"]::-webkit-slider-thumb {
       <div class="btn-row" style="margin-top: var(--space-4);">
         <button class="btn" id="pause-btn" type="button">Jeda</button>
         <button class="btn btn-primary" id="next-round-btn" type="button" hidden>Ronde berikutnya</button>
-        <button class="btn btn-ghost" id="reset-btn" type="button">Atur ulang</button>
+        <button class="btn btn-ghost" id="reset-btn" type="button"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>Atur ulang</button>
       </div>
     </aside>
   </div>
