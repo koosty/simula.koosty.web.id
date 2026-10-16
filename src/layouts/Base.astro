@@ -44,6 +44,9 @@ const navLinks = navLinksFor(catalog, Astro.url.pathname);
       }
     </script>
     <link rel="stylesheet" href="/fonts/fonts.css" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
@@ -53,9 +56,12 @@ const navLinks = navLinksFor(catalog, Astro.url.pathname);
     <nav class="site-nav" aria-label="Navigasi utama">
       <p class="site-name">
         <a href="/">
-          <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <rect x="3" y="3" width="18" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2" />
-            <path d="M8 15 L12 8 L16 15" fill="none" stroke="currentColor" stroke-width="2" />
+          <svg class="brand-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <path d="M2 16H22" />
+            <path d="M5 14V18" />
+            <path d="M12 14V18" />
+            <path d="M5 11.5C5 4 19 4 19 11.5" />
+            <circle cx="19" cy="16" r="2.5" stroke="none" style="fill: var(--secondary)" />
           </svg>
           Simula
         </a>
