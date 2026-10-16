@@ -187,13 +187,16 @@ body {
 .panel-heading { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-2); }
 
 .btn {
-  font-family: inherit;
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   font-size: var(--text-sm);
   min-height: 44px;            /* never below 44px, mobile */
   min-width: 44px;
   padding: var(--space-3) var(--space-5);
   border: 1px solid var(--border-strong);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: var(--surface);
   color: var(--text);
   cursor: pointer;
@@ -204,7 +207,12 @@ body {
 .btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
-.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 35%, transparent);
+}
 .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
 
 .btn-ghost { background: transparent; border-color: var(--border); color: var(--text); }
