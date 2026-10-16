@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="{{courseLang}}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{sceneTitle}} · {{courseTitle}}</title>
+  <meta name="description" content="{{sceneDescription155}}">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{{sceneTitle}}">
+  <meta property="og:description" content="{{sceneDescription200}}">
+  <meta property="og:locale" content="{{courseLangHyphenated}}">
+  <style>
+    /* === Paste the full :root / [data-theme="light"] token block and
+       component classes from VISUAL-STYLE.md verbatim above this comment,
+       including the "Reading article" classes. Do not hand-roll colours
+       here. ===
+
+       === Paste the exact text of
+       https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css
+       below this comment (fetch it, don't retype it from memory).
+       MUST be the literal CSS text inline here, NOT a <link>/@import:
+       confirmed by direct testing that cross-origin stylesheet rules
+       (both <link rel="stylesheet"> and @import) silently fail to apply
+       to a file:// document in this environment — the request succeeds
+       (200, CORS headers present) but the CSSOM never gets the rules, so
+       KaTeX's accessibility-only MathML fallback stays visible instead of
+       clipped, duplicating every equation. Pasting the text makes it part
+       of this document's own stylesheet, which has none of that
+       restriction — and it keeps the "no external stylesheet" page
+       contract rule intact instead of working around it. === */
+  </style>
+</head>
+<body>
+  <main class="reading-article panel">
+    <h1>{{sceneTitle}}</h1>
+    <div id="reading-content"><!-- filled from #reading-source by marked.js on load --></div>
+    <!-- {{#if hasSources}} -->
+    <section class="sources">
+      <p class="sources-heading">Sources</p>
+      <!-- one .source-item per resolved source, repeat: -->
+      <p class="source-item">{{sourceTitle}} — {{sourcePublisher}} ({{sourceDate}}) — <a href="{{sourceUrl}}" target="_blank" rel="noopener">{{sourceUrlHost}}</a></p>
+    </section>
+    <!-- {{/if}} -->
+  </main>
+
+  <!-- Raw markdown, byte-for-byte the same text as scenes/{{sceneId}}.md.
+       Kept as an inert <script> block (never executed, never fetched) so
+       the page stays a single self-contained file that works offline and
+       under file://. -->
+  <script type="text/markdown" id="reading-source">{{markdownBody}}</script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/18.1.1/lib/marked.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.2/highlight.min.js"></script>
+  <script>
+    const raw = document.getElementById('reading-source').textContent;
+    const host = document.getElementById('reading-content');
+    marked.setOptions({ breaks: false, gfm: true });
+    host.innerHTML = marked.parse(raw);
+
+    host.querySelectorAll('pre code').forEach((block) => {
+      hljs.highlightElement(block);
+    });
+
+    renderMathInElement(host, {
+      delimiters: [
+        { left: '$$', right: '$$', display: true },
+        { left: '$', right: '$', display: false }
+      ],
+      throwOnError: false
+    });
+  </script>
+</body>
+</html>
