@@ -2,15 +2,27 @@ import type { CatalogEntry, SimulationMeta, ValidationResult } from './types';
 import { LEVEL_BY_SIMULATION_NAME } from './simulations';
 
 /**
+ * The path a simulation is served at, split into segments. A Tingkat entry
+ * carries a class; a spesialisasi entry does not (docs/adr/0027).
+ */
+export type SimulasiSegments =
+  | { tingkat: string; kelas: string; mataPelajaran: string; slug: string }
+  | { tingkat: 'spesialisasi'; mataPelajaran: string; slug: string };
+
+/**
  * The path segments of a simulation's URL, in the site's Bahasa order
- * (docs/adr/0003): level, then class, then subject, then the slug.
+ * (docs/adr/0003): level, then class, then subject, then the slug. A
+ * spesialisasi entry has no class segment.
  *
  * Astro wants these as a route's params and simulasiUrl wants the whole path,
  * so both are built from here rather than written out twice.
  */
 export function simulasiUrlSegments(
   entry: Pick<CatalogEntry, 'level' | 'grade' | 'subject' | 'slug'>,
-): { tingkat: string; kelas: string; mataPelajaran: string; slug: string } {
+): SimulasiSegments {
+  if (entry.level === 'spesialisasi') {
+    return { tingkat: 'spesialisasi', mataPelajaran: entry.subject, slug: entry.slug };
+  }
   return {
     tingkat: entry.level,
     // The class segment is "kelas-7", not a bare "7", so a URL reads as a
@@ -29,6 +41,7 @@ export function simulasiUrlSegments(
  */
 export function simulasiUrl(entry: Pick<CatalogEntry, 'level' | 'grade' | 'subject' | 'slug'>): string {
   const s = simulasiUrlSegments(entry);
+  if (!('kelas' in s)) return `/${s.tingkat}/${s.mataPelajaran}/${s.slug}/`;
   return `/${s.tingkat}/${s.kelas}/${s.mataPelajaran}/${s.slug}/`;
 }
 

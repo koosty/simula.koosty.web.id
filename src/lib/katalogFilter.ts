@@ -89,13 +89,15 @@ function optionLabel(field: FilterField['field'], value: string | number): strin
  * Build each filter's choices from the catalog.
  *
  * Only choices with simulations behind them are offered, so choosing a filter
- * never produces an empty list by itself.
+ * never produces an empty list by itself. A spesialisasi entry has no grade, so
+ * no Kelas choice is offered for it (docs/adr/0027).
  */
 export function buildFilterFields(entries: CatalogEntry[]): BuiltFilterField[] {
   return KATALOG_FILTER_FIELDS.map(({ field, label }) => {
     const seen = new Map<string | number, number>();
     for (const entry of entries) {
       const value = entry[field];
+      if (value === undefined) continue;
       seen.set(value, (seen.get(value) ?? 0) + 1);
     }
 
@@ -149,11 +151,12 @@ export function searchCatalog(entries: CatalogEntry[], term: string): CatalogEnt
 
 /** The simulations of one Kelas, plus the Kelas's own heading. */
 export interface KelasGroup {
-  /** 'smp/kelas-7': stable, readable, and usable as an element id. */
+  /** 'smp/kelas-7' or 'spesialisasi': stable, readable, and usable as an element id. */
   key: string;
   level: string;
-  grade: number;
-  /** The heading a reader sees, e.g. 'SMP — Kelas 7'. */
+  /** Absent for the spesialisasi group, which has no class (docs/adr/0027). */
+  grade?: number;
+  /** The heading a reader sees, e.g. 'SMP — Kelas 7' or 'Spesialisasi'. */
   label: string;
   simulations: CatalogEntry[];
 }
@@ -162,20 +165,24 @@ export interface KelasGroup {
  * Group simulations by their Kelas, in ascending grade order.
  *
  * Within a Kelas the simulations keep their catalog display order, which the
- * build validates as unique, so two simulations never tie.
+ * build validates as unique, so two simulations never tie. Spesialisasi has no
+ * class, so all of it forms one group, listed after every Kelas (docs/adr/0027).
  */
 export function groupByKelas(entries: CatalogEntry[]): KelasGroup[] {
   const byKey = new Map<string, KelasGroup>();
 
   for (const entry of entries) {
-    const key = `${entry.level}/kelas-${entry.grade}`;
+    const isSpesialisasi = entry.level === 'spesialisasi';
+    const key = isSpesialisasi ? 'spesialisasi' : `${entry.level}/kelas-${entry.grade}`;
     let group = byKey.get(key);
     if (!group) {
       group = {
         key,
         level: entry.level,
         grade: entry.grade,
-        label: `${tingkatLabel(entry.level)} — Kelas ${entry.grade}`,
+        label: isSpesialisasi
+          ? tingkatLabel(entry.level)
+          : `${tingkatLabel(entry.level)} — Kelas ${entry.grade}`,
         simulations: [],
       };
       byKey.set(key, group);
@@ -189,7 +196,11 @@ export function groupByKelas(entries: CatalogEntry[]): KelasGroup[] {
 
   // Classes read from the lowest grade upwards, and at the same grade from the
   // lowest school stage upwards, which is the order a pupil moves through.
+  // Spesialisasi has no grade, so it comes after every class.
   return [...byKey.values()].sort((a, b) => {
+    if (a.grade === undefined || b.grade === undefined) {
+      return (a.grade === undefined ? 1 : 0) - (b.grade === undefined ? 1 : 0);
+    }
     if (a.grade !== b.grade) return a.grade - b.grade;
     return tingkatProgression(a.level) - tingkatProgression(b.level);
   });

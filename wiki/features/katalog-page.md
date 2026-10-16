@@ -55,7 +55,7 @@ Sources: [src/pages/katalog.astro:21-22](../../src/pages/katalog.astro), [src/li
 
 | Control | Catalog field | Choice labels | Sort order |
 |---|---|---|---|
-| Tingkat (chips) | `level` | `tingkatLabel(value)`, plus "Semua" | School progression: sd, smp, sma, smk; unknown sorts last. |
+| Tingkat (chips) | `level` | `tingkatLabel(value)`, plus "Semua" | School progression: sd, smp, sma, then spesialisasi last; the set is locked (docs/adr/0027). |
 | Kelas (dropdown) | `grade` | `Kelas {value}` | Ascending number. |
 | Mata Pelajaran (dropdown) | `subject` | `subjectLabel(value)` | The label the reader sees, locale `id`. |
 

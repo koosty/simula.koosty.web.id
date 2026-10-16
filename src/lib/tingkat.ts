@@ -1,28 +1,34 @@
-/** Indonesian names for the Tingkat, so a pupil never sees a bare "smp". */
+/** The Tingkat a tingkat-first URL may use. Locked: a new one is a decision (docs/adr/0027). */
+export const TINGKAT = ['sd', 'smp', 'sma'] as const;
+
+/** Subjects not taught by class. They have no kelas segment (docs/adr/0027). */
+export const SPESIALISASI = 'spesialisasi';
+
+export type Tingkat = (typeof TINGKAT)[number];
+
 const TINGKAT_LABELS: Record<string, string> = {
   sd: 'Sekolah Dasar',
   smp: 'SMP',
   sma: 'SMA',
+  [SPESIALISASI]: 'Spesialisasi',
 };
 
 /**
  * The order an Indonesian reader expects the Tingkat in, from primary upwards.
  *
- * Sorting the URL segments instead would put "sma" before "smp", which reads
- * backwards. A segment not listed here sorts after the ones that are, keeping
- * a newly added stage at the end rather than dropping it.
+ * Spesialisasi comes last: it is not a school level, so it does not sit between
+ * the stages. Sorting the URL segments instead would put "sma" before "smp".
  */
 const TINGKAT_PROGRESSION: Record<string, number> = {
   sd: 0,
   smp: 1,
   sma: 2,
-  smk: 3,
+  [SPESIALISASI]: 3,
 };
 
 /**
- * How a Tingkat sorts against another at the same grade.
- *
- * Lower comes first; an unknown segment comes last rather than being dropped.
+ * How a Tingkat sorts against another. Lower comes first. An unknown value
+ * comes last rather than being dropped.
  */
 export function tingkatProgression(level: string): number {
   return TINGKAT_PROGRESSION[level] ?? Number.MAX_SAFE_INTEGER;

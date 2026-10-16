@@ -28,7 +28,8 @@ const dropdownFields = filterFields.filter((field) => field.field !== 'level');
 const cardAttributes = (entry: CatalogEntry) => ({
   'data-slug': entry.slug,
   'data-level': entry.level,
-  'data-grade': String(entry.grade),
+  // Spesialisasi has no class, so it carries no grade (docs/adr/0027).
+  'data-grade': entry.grade === undefined ? undefined : String(entry.grade),
   'data-subject': entry.subject,
 });
 
@@ -173,7 +174,7 @@ const landing = landingPages(catalog);
       title: card.querySelector('h3 a')?.textContent ?? '',
       description: card.querySelector('.card-description')?.textContent ?? '',
       level: card.dataset.level ?? '',
-      grade: Number(card.dataset.grade),
+      grade: card.dataset.grade === undefined ? undefined : Number(card.dataset.grade),
       subject: card.dataset.subject ?? '',
       order: 0,
     }));

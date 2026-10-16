@@ -124,7 +124,6 @@ Sources: [README.md:155-164]()
 | Variable | Read by | Purpose |
 |---|---|---|
 | `SIMULA_DEPLOY_HOOK` | `scripts/publish-batch.mjs` via `checkDeployHook` | POST after a batch is written. |
-| `SIMULA_TOOL_REPO` | `scripts/publish-batch.mjs` | Default for `--tool`, so a hook needs no argument. |
 
 Sources: [scripts/publish-batch.mjs:62-64](), [README.md:107-113]()
 

@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 /**
- * Publish a batch of simulations from the tool into this site.
+ * Publish a batch of simulations from courses/ into this site.
  *
- * Reads the tool's outline and its scene files, decides what each scene would do
- * to the site, and writes the simulation files and catalog entries. Run with
- * --check it writes nothing and only reports, which is what a hook should call
- * to find out whether there is anything to publish.
+ * Reads each course's outline and its scene files under courses/ in this
+ * repository, decides what each scene would do to the site, and writes the
+ * simulation files and catalog entries (docs/adr/0026).
  *
  * Nothing here renames or deletes. A simulation whose content the tool rewrote
  * keeps its file name, its catalog entry and its URL (docs/adr/0007), so a
@@ -14,12 +13,11 @@
  * Run with --check it writes nothing and only reports, which is what a hook
  * should call to find out whether there is anything to publish.
  *
- * Usage:
- *   npm run publish:check -- --tool <path>
- *   npm run publish -- --tool <path>
+ *   npm run publish:check
+ *   npm run publish
  *
- *   --tool    the tool's repository root, or the course directory inside it.
- *             Defaults to $SIMULA_TOOL_REPO so a hook needs no argument.
+ *   --tool    a course directory, to publish one that is not under courses/.
+ *             Defaults to the courses/ folder of this repository.
  *   --check   decide and report, write nothing
  *   --trigger POST the deploy hook named by SIMULA_DEPLOY_HOOK when done
  */
@@ -57,16 +55,17 @@ function option(name) {
   return index === -1 ? null : args[index + 1];
 }
 
-const CHECK_ONLY = flag('check');
 const TRIGGER = flag('trigger');
-// From SIMULA_TOOL_REPO when set, so a hook or CI step needs no argument, and
-// from --tool when a person is running it by hand.
-const toolArg = option('tool') ?? process.env.SIMULA_TOOL_REPO;
+const CHECK_ONLY = flag('check');
 
-if (!toolArg) {
+// Without --tool the repository root is searched, and findCourseDir looks in
+// its courses/ folder. That folder is not tracked by Git (docs/adr/0026).
+const toolArg = option('tool') ?? resolve('.');
+
+if (!existsSync(toolArg)) {
   console.error(
-    'Usage: npm run publish -- --tool <path> [--subject <mapel>] [--stage <stage>] [--grade <n>]\n' +
-      'Atau setel SIMULA_TOOL_REPO agar tidak perlu menulis path setiap kali.\n' +
+    `Folder tidak ditemukan: ${toolArg}\n` +
+      'Buat courses/<slug>/ di repo ini, atau beri path dengan --tool <path>.\n' +
       'Subject, stage dan grade dibaca dari nama course kalau namanya "<mapel>-<smp>-kelas-<vii>";\n' +
       'kalau tidak, isi flag-nya. Stage: primary, lower-secondary, upper-secondary.',
   );
@@ -107,8 +106,9 @@ function findCourseDir(root) {
  * published from a folder that spells the stage differently.
  */
 function sourceFolderFor(courseFolder, outline, overrides) {
-  const stage = { sd: 'primary', smp: 'lower-secondary', sma: 'upper-secondary' };
-  const named = courseFolder.match(/-(sd|smp|sma)-/);
+  const stage = { sd: 'primary', smp: 'lower-secondary', sma: 'upper-secondary', spesialisasi: 'spesialisasi' };
+  // Spesialisasi is named "<mapel>-spesialisasi" with no class (docs/adr/0027).
+  const named = courseFolder.match(/-(sd|smp|sma)-/) ?? courseFolder.match(/-(spesialisasi)$/);
   const fromName = named ? stage[named[1]] : null;
   const chosenStage = overrides.stage ?? fromName;
 
@@ -134,6 +134,9 @@ function sourceFolderFor(courseFolder, outline, overrides) {
         `Atau namai course "<mapel>-<sd|smp|sma>-kelas-<romawi>" agar tidak perlu flag.`,
     );
   }
+
+  // Spesialisasi has no class, so it has no grade and no grade folder (docs/adr/0027).
+  if (chosenStage === 'spesialisasi') return `spesialisasi/${chosenSubject}`;
 
   const chosenGrade = overrides.grade ?? outline.grade;
   if (!Number.isInteger(chosenGrade) || chosenGrade <= 0) {
@@ -217,7 +220,8 @@ function toYaml(simulation) {
     `description: >-`,
     `  ${simulation.description}`,
     `level: ${simulation.level}`,
-    `grade: ${simulation.grade}`,
+    // Spesialisasi has no class, so it has no grade line (docs/adr/0027).
+    ...(simulation.grade === undefined ? [] : [`grade: ${simulation.grade}`]),
     `subject: ${simulation.subject}`,
     `order: ${simulation.order}`,
     `scene: ${JSON.stringify(simulation.scene)}`,

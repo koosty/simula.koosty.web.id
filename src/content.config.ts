@@ -11,17 +11,16 @@ import { z } from 'astro/zod';
  * Keys are English identifiers; values are Bahasa Indonesia because they become
  * URL segments.
  *
- * `level` and `subject` are free-form strings rather than enums. Mata Pelajaran
- * is an open set, and a fixed list would fail the build the first time a new
- * subject arrived.
+ * `level` is one of the locked Tingkat (docs/adr/0027). `subject` stays a free
+ * string, because Mata Pelajaran is an open set.
  */
 const simulasi = defineCollection({
   loader: glob({ pattern: '**/*.yaml', base: './src/content/simulasi' }),
   schema: z.object({
     title: z.string().min(1),
     description: z.string().min(1),
-    level: z.string().min(1),
-    grade: z.number().int().min(1).max(12),
+    level: z.enum(['sd', 'smp', 'sma', 'spesialisasi']),
+    grade: z.number().int().min(1).max(12).optional(),
     subject: z.string().min(1),
     order: z.number().int().min(1),
     /**
@@ -35,6 +34,14 @@ const simulasi = defineCollection({
      * back to matching on the slug their own title produces.
      */
     scene: z.string().min(1).optional(),
+  }).superRefine((entry, ctx) => {
+    const isSpesialisasi = entry.level === 'spesialisasi';
+    if (!isSpesialisasi && entry.grade === undefined) {
+      ctx.addIssue({ code: 'custom', path: ['grade'], message: 'grade wajib untuk sd, smp, sma.' });
+    }
+    if (isSpesialisasi && entry.grade !== undefined) {
+      ctx.addIssue({ code: 'custom', path: ['grade'], message: 'spesialisasi tidak punya grade (docs/adr/0027).' });
+    }
   }),
 });
 

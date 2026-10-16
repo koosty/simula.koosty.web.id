@@ -15,10 +15,13 @@ import Icon from '../../../../components/Icon.astro';
 export const getStaticPaths = (async () => {
   const catalog = await loadCatalog();
 
-  return catalog.map((entry) => ({
-    params: simulasiUrlSegments(entry),
-    props: { entry },
-  }));
+  // Spesialisasi has no class, so it has its own route (docs/adr/0027).
+  return catalog
+    .filter((entry) => entry.level !== 'spesialisasi')
+    .map((entry) => ({
+      params: simulasiUrlSegments(entry),
+      props: { entry },
+    }));
 }) satisfies GetStaticPaths;
 
 const { entry } = Astro.props;
@@ -40,10 +43,11 @@ const breadcrumb = [
   { label: 'Beranda', path: '/' },
   { label: 'Katalog', path: '/katalog/' },
   { label: tingkatLabel(entry.level), path: `/${segments.tingkat}/` },
-  {
-    label: `Kelas ${entry.grade}`,
-    path: `/${segments.tingkat}/${segments.kelas}/`,
-  },
+  // This route serves Tingkat entries only; spesialisasi has its own route
+  // (docs/adr/0027), so the class segment is always present here.
+  ...('kelas' in segments
+    ? [{ label: `Kelas ${entry.grade}`, path: `/${segments.tingkat}/${segments.kelas}/` }]
+    : []),
 ];
 ---
 

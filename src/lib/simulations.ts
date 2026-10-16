@@ -41,6 +41,7 @@ const SOURCE_LEVEL: Record<string, string> = {
   'lower-secondary': 'smp',
   'middle-school': 'smp',
   'upper-secondary': 'sma',
+  spesialisasi: 'spesialisasi',
 };
 
 /** The Indonesian segment for a tool folder, or null when the folder is unknown. */
@@ -78,10 +79,15 @@ export function discoverSimulations(root: string): SimulationScan {
       continue;
     }
 
-    for (const grade of readdirSync(join(root, stage.name), { withFileTypes: true })) {
+    // Spesialisasi has no class, so its folder holds subjects directly
+    // (docs/adr/0027). Every other stage holds grades, then subjects.
+    const groups = stage.name === 'spesialisasi'
+      ? [{ name: '', isDirectory: () => true }]
+      : readdirSync(join(root, stage.name), { withFileTypes: true });
+    for (const grade of groups) {
       if (!grade.isDirectory()) continue;
 
-      const gradeFolder = `${stage.name}/${grade.name}`;
+      const gradeFolder = grade.name === '' ? stage.name : `${stage.name}/${grade.name}`;
       for (const entry of readdirSync(join(root, gradeFolder), { withFileTypes: true })) {
         // A simulation sits under its subject. One placed directly in the grade
         // folder has no subject, so it would be filed under whichever subject the

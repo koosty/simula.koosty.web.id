@@ -18,8 +18,8 @@ The frame carries a `title` naming the simulation, sits under a breadcrumb, and 
 
 ## When a simulation file may be edited, and when it may not
 
-This project holds that the simulation files are the tool's output and are not
-edited to suit the site. That rule did the work it was written for: the site's
+This project holds that the simulation files are the output of the course pipeline and are not
+edited to suit the site. Since `0026`, that output is produced in `courses/` in this repository, and publish copies it to `simulations/`. That rule did the work it was written for: the site's
 dark palette was matched to the simulations rather than the reverse, so nothing
 was restyled and no simulation stopped being its original bytes.
 

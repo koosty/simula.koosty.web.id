@@ -2,8 +2,9 @@
 
 A static, Bahasa Indonesia catalogue of interactive learning simulations.
 
-Simulations are produced by an external tool as self-contained HTML files and are
-copied into the site verbatim. This repository does not reshape them to suit the
+Simulations are generated from course sources in `courses/` and published into
+`simulations/` by `npm run publish` (`docs/adr/0026`). They are copied into the site
+verbatim. This repository does not reshape them to suit the
 site, though a simulation that is broken on its own terms is fixed in place. See
 `CONTEXT.md` for the domain vocabulary and `docs/adr/` for the decisions behind the
 site's shape.
@@ -34,7 +35,7 @@ Linting is ESLint with `eslint-plugin-astro`, which reads a whole `.astro` file:
 frontmatter, template and `<script>` together. That is the reason for choosing
 it, since a linter that reads only the frontmatter calls every variable the
 template uses unused. Simulation files under `simulations/` are skipped,
-because the external tool produces them and this repository does not reshape them.
+because they are generated output and this repository does not reshape them.
 
 ## Colour
 
@@ -100,24 +101,28 @@ site builds on push to the main branch.
 
 ## Publishing a batch of simulations
 
-Simulations arrive from the external tool as its own HTML files. `npm run publish`
-copies them in and writes their catalog entries. Nothing is edited by hand, and
-nothing is renamed.
+Course sources live in `courses/<slug>/`: an `outline.yaml` and `scenes/<id>.html`.
+That folder is not tracked by Git, because scenes are often fixed by hand after
+generation. `npm run publish` copies each ready scene into `simulations/` and writes
+its catalog entry. Those two folders are tracked, and they are the published result
+(`docs/adr/0026`).
 
 ```
-SIMULA_TOOL_REPO=/path/to/simula-w npm run publish
+npm run publish:check
+npm run publish
 ```
 
-The path may be the tool's repository root or the course directory inside it;
-`--tool` overrides it for one run. `--check` reports what would change and
-writes nothing, which is what to run first.
+The course is read from `courses/` by default. A course stored elsewhere is published
+with `--tool <course-dir>`, which overrides that default for one run. `--check`
+reports what would change and writes nothing, which is what to run first.
 
 The stage, grade and subject are read from the course folder name when it is
-`<mapel>-<sd|smp|sma>-kelas-<romawi>`. A course named any other way says them
-with flags instead, which also override the name:
+`<mapel>-<sd|smp|sma>-kelas-<romawi>`, or `<mapel>-spesialisasi` for a subject with
+no class (docs/adr/0027). A course named any other way says them with flags instead,
+which also override the name. A spesialisasi course has no grade.
 
 ```
-npm run publish -- --tool /path/to/course --subject ipa --stage lower-secondary --grade 7
+npm run publish -- --tool courses/matematika-smp-kelas-vii --subject matematika --stage lower-secondary --grade 7
 ```
 
 An IPA scene and a Matematika scene may share a scene id, because a scene id

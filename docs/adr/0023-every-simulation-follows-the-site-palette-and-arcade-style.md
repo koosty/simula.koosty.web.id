@@ -15,11 +15,11 @@ Amends `0017` and `0019`. Builds on `0020` (full-width frame) and `0022` (Lucide
 
 ## Why
 
-- The publish pipeline copies each simulation verbatim (`scripts/publish-batch.mjs`). Users asked for one look across the catalog, and the dark-only palette made the light site look like two products.
+- The publish pipeline copies each simulation verbatim from `courses/` into `simulations/` (`scripts/publish-batch.mjs`; see `0026`). Users asked for one look across the catalog, and the dark-only palette made the light site look like two products.
 - Contrast was checked in both modes in a real browser for all 71 pages. Six pages failed on one token, which was then fixed.
 
 ## Consequences
 
-- These edits are made directly in the simulation files. A new publish from the tool repo replaces them. The tool's template must receive the same changes, or the next publish will reverse this work.
+- These edits are made directly in the simulation files under `simulations/`. A new publish from `courses/` replaces them. The generator's template must receive the same changes, or the next publish will reverse this work. Rule `0026` makes the fix for any new simulation belong in `courses/<slug>/scenes/`.
 - Each simulation now has about 90 more CSS lines. The Angka Bulat file remains the reference.
 - Canvas drawing is unchanged. Where a canvas paints its own opaque background, the stage grid is hidden behind it. That is accepted, because changing the canvas would change the simulation logic.

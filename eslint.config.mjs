@@ -23,6 +23,7 @@ export default [
       // Skills installed by a tool, not project code. They carry their own
       // vendored browser scripts, which no project lint rule is written for.
       '.agents/**',
+      '.omp/skills/**',
       'skills-lock.json',
       // Generated output, none of it written by hand.
       'dist/**',

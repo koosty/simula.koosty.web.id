@@ -25,19 +25,20 @@ See [Catalog Model](../content/catalog-model.md) for what the written entries me
 ## Usage
 
 ```
-SIMULA_TOOL_REPO=/path/to/simula-w npm run publish
+npm run publish:check
+npm run publish
 ```
 
 Sources: [scripts/publish-batch.mjs:2-25](), [README.md:107-113]()
 
 | Flag | Default | Effect |
 |---|---|---|
-| `--tool <path>` | `$SIMULA_TOOL_REPO` | The tool's repository root, or the course directory inside it. |
+| `--tool <path>` | `courses/` in this repository | A course directory, to publish one kept elsewhere. |
 | `--check` | off | Decide and report; write nothing. |
 | `--trigger` | off | POST the deploy hook when done. |
 | `--subject <mapel>` | read from the course folder name | Override the Mata Pelajaran. |
-| `--stage <stage>` | read from the course folder name | One of `primary`, `lower-secondary`, `upper-secondary`. |
-| `--grade <n>` | read from `outline.grade` | The grade number. |
+| `--stage <stage>` | read from the course folder name | One of `primary`, `lower-secondary`, `upper-secondary`, `spesialisasi`. |
+| `--grade <n>` | read from `outline.grade` | The grade number. Not used for `spesialisasi`. |
 
 Sources: [scripts/publish-batch.mjs:49-64](), [scripts/publish-batch.mjs:157-161]()
 
@@ -69,7 +70,7 @@ The subject is the segment before the school level, lower-cased:
 
 ```ts
 export function subjectOf(courseFolder: string): string | null {
-  const match = courseFolder.match(/^(.+)-(?:smp|sma|sd|smk)-/);
+  const match = courseFolder.match(/^(.+)-(?:smp|sma|sd)-/) ?? courseFolder.match(/^(.+)-spesialisasi$/);
   if (!match) return null;
   return match[1].toLowerCase();
 }

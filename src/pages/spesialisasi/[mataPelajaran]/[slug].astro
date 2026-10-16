@@ -1,0 +1,279 @@
+---
+import type { GetStaticPaths } from 'astro';
+import Base from '../../../layouts/Base.astro';
+import { simulasiFileUrl, simulasiUrl, simulasiUrlSegments } from '../../../lib/catalog';
+import { tingkatLabel } from '../../../lib/tingkat';
+import { loadCatalog } from '../../../lib/loadCatalog';
+import { relatedSimulations } from '../../../lib/related';
+import { subjectLabel } from '../../../lib/katalogFilter';
+import { FALLBACK_HEIGHT, UNMEASURABLE_HEIGHT, FRAME_ID } from '../../../lib/frame';
+import Icon from '../../../components/Icon.astro';
+
+// Spesialisasi has no class, so its route is one level shorter than the
+// Tingkat route. The segments still come from simulasiUrlSegments, so the page
+// and the catalog agree on the address (docs/adr/0027).
+export const getStaticPaths = (async () => {
+  const catalog = await loadCatalog();
+
+  return catalog
+    .filter((entry) => entry.level === 'spesialisasi')
+    .map((entry) => {
+      const s = simulasiUrlSegments(entry);
+      if ('kelas' in s) throw new Error(`Entri ${entry.slug} bukan spesialisasi.`);
+      return { params: { mataPelajaran: s.mataPelajaran, slug: s.slug }, props: { entry } };
+    });
+}) satisfies GetStaticPaths;
+
+const { entry } = Astro.props;
+// The iframe points at the level the simulation file actually lives under, not
+// the level the catalog entry claims, so a level disagreement can never turn
+// into a dead link.
+const rawFileUrl = simulasiFileUrl(entry, entry.fileLevel);
+
+// Same list as a Tingkat page uses: the neighbours in display order, drawn from
+// the same subject (docs/adr/0027).
+const related = relatedSimulations(await loadCatalog(), entry);
+
+const breadcrumb = [
+  { label: 'Beranda', path: '/' },
+  { label: 'Katalog', path: '/katalog/' },
+  { label: tingkatLabel('spesialisasi'), path: '/spesialisasi/' },
+];
+---
+
+<Base title={`${entry.title} · Simula`} description={entry.description}>
+  <main class="wrap">
+    <article>
+      <nav class="breadcrumb" aria-label="Lokasi">
+        {
+          breadcrumb.map((crumb, index) => (
+            <>
+              {index > 0 && <span aria-hidden="true"> / </span>}
+              <a href={crumb.path}>{crumb.label}</a>
+            </>
+          ))
+        }
+        <span aria-hidden="true"> / </span>
+        <a href={`/spesialisasi/${simulasiUrlSegments(entry).mataPelajaran}/`}>{subjectLabel(entry.subject)}</a>
+      </nav>
+
+      <header>
+        <h1>{entry.title}</h1>
+        <p class="meta">
+          {tingkatLabel(entry.level)} · {subjectLabel(entry.subject)}
+        </p>
+      </header>
+
+      <section class="about" aria-labelledby="about-heading">
+        <h2 id="about-heading">Tentang simulasi</h2>
+        <p class="description">{entry.description}</p>
+      </section>
+
+      <div class="stage">
+        <iframe
+          id={FRAME_ID}
+          src={rawFileUrl}
+          title={entry.title}
+          loading="lazy"
+          data-fallback-height={String(FALLBACK_HEIGHT)}
+          data-unmeasurable-height={String(UNMEASURABLE_HEIGHT)}
+        ></iframe>
+
+        <p class="fallback">
+          <a href={rawFileUrl} target="_blank" rel="noopener"><Icon name="external-link" /> Buka simulasi ini di tab baru</a>{' '}
+          jika simulasi tidak muncul di atas.
+        </p>
+      </div>
+
+      {
+        related.length > 0 && (
+          <nav class="related" aria-labelledby="related-heading">
+            <h2 id="related-heading">Simulasi lain di {subjectLabel(entry.subject)}</h2>
+            <ul>
+              {related.map((item) => (
+                <li>
+                  <a href={simulasiUrl(item)}>{item.title}</a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )
+      }
+    </article>
+  </main>
+</Base>
+
+<script>
+  import { attachFrameResize, attachThemeSync, FRAME_ID } from '../../../lib/frame';
+
+  // The script only grows the frame; the simulation inside is shown either way,
+  // so a reader without scripting sees a frame at its fallback height rather
+  // than a blank page.
+  const frame = document.getElementById(FRAME_ID) as HTMLIFrameElement | null;
+  if (frame) {
+    attachFrameResize(frame, {
+      fallbackHeight: Number(frame.dataset.fallbackHeight),
+      unmeasurableHeight: Number(frame.dataset.unmeasurableHeight),
+    });
+    attachThemeSync(frame);
+  }
+</script>
+
+<style>
+  .breadcrumb {
+    margin-bottom: 16px;
+    font-size: 0.875rem;
+    color: var(--text-dim);
+  }
+
+  .breadcrumb a {
+    color: var(--link);
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    margin: 0 0 12px;
+  }
+
+  .description {
+    font-size: 1.0625rem;
+    color: var(--text-muted);
+    max-width: 65ch;
+    margin: 0 0 8px;
+  }
+
+  /* The status strip above the simulation, as in the Stitch workspace: the
+     stage, class and subject in one bar, with the lit edge of a panel. */
+  .meta {
+    margin: 0 0 16px;
+    padding: 8px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--tertiary);
+    border-radius: var(--radius-small);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  iframe {
+    display: block;
+    width: 100%;
+    /* border-box, because the frame has a border and the default content-box
+       counts it as extra width. Measured at a phone width: the frame came out
+       330px inside a 328px column, so it overflowed the column it is meant to
+       fill. A frame wider than its column is exactly the criterion 5 failure. */
+    box-sizing: border-box;
+    /* A fixed fallback so something usable shows before the script measures the
+       simulation's real height, and so the frame's own height cannot stretch
+       the document being measured (docs/adr/0005). Written as a literal
+       because an Astro <style> block does not interpolate a constant from the
+       frontmatter, so {FALLBACK_HEIGHT} was silently dropped here. A test
+       asserts this equals the constant the script starts from. */
+    height: 400px;
+    /* The frame is painted the simulation's own background, so the seam between
+       the chrome and the thing it frames carries no contrast of its own. A
+       border that is lighter than both sides would draw the edge the ticket
+       asks not to be drawn, so it is the shared hairline instead: the only edge
+       a reader sees is the one the simulation itself draws. */
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    /* No colour-scheme here: the page follows the reader's choice, and the
+       simulation sets its own. */
+  }
+
+  /* The frame holds a whole application, so a reader tabbing into it has to be
+     able to see where they went, and has to be able to get back out.
+
+     The ring is drawn on :focus-visible rather than :focus because the keyboard
+     ends up *inside* the simulation, not on this element: tabbing in moves the
+     caret into the frame's own document, so the host stops matching :focus and
+     a ring bound to it would never appear. What the reader sees instead is the
+     simulation's own focus indicator, which is the right one to trust — it is
+     the thing that actually has focus.
+
+     Measured before this rule was written: after eleven tabs the host was
+     document.activeElement but matched neither :focus nor :focus-visible, and
+     the focused element was a node inside the simulation's document. Offset
+     further than the links because the frame is a large target and a ring tight
+     against its edge reads as a change in the simulation rather than as focus. */
+  iframe:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 3px;
+  }
+
+  /* The frame takes the full width of the page. The description sits above it
+     and the related list below, so the simulation has the room it needs for its
+     own columns (docs/adr/0020). */
+  .stage {
+    min-width: 0;
+  }
+
+  .about {
+    margin: 0 0 16px;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .about h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+
+  .fallback {
+    margin-top: 16px;
+    font-size: 0.9375rem;
+    color: var(--text-dim);
+  }
+
+  /* This link had no colour of its own, so it rendered in the browser's default
+     link blue: a dark blue on a dark background, at 1.4:1. That was the one
+     contrast failure on any page of this site. */
+  .fallback a {
+    color: var(--link);
+  }
+
+  .related {
+    margin: 16px 0 0;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .related h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0 0 12px;
+  }
+
+  .related ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+
+  .related li {
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+
+  .related a {
+    color: var(--link);
+  }
+</style>

@@ -1,6 +1,6 @@
 import type { CatalogEntry } from './types';
 import { simulasiUrl } from './catalog';
-import { groupByKelas, subjectLabel } from './katalogFilter';
+import { groupByKelas, subjectLabel, type KelasGroup } from './katalogFilter';
 import { kelasSegment, landingPath } from './landing';
 import { tingkatLabel } from './tingkat';
 
@@ -65,12 +65,15 @@ export function sheetPath(level: string, classSegment: string): string {
  * holds nothing anyway.
  */
 export function sheetPages(entries: CatalogEntry[]): SheetPage[] {
-  return groupByKelas(entries).map((group) => ({
-    level: group.level,
-    grade: group.grade,
-    path: sheetPath(group.level, kelasSegment(group.grade)),
-    items: sheetItems(group.simulations),
-  }));
+  // A printable sheet is per class, and spesialisasi has no class (docs/adr/0027).
+  return groupByKelas(entries)
+    .filter((group): group is KelasGroup & { grade: number } => group.grade !== undefined)
+    .map((group) => ({
+      level: group.level,
+      grade: group.grade,
+      path: sheetPath(group.level, kelasSegment(group.grade)),
+      items: sheetItems(group.simulations),
+    }));
 }
 
 /**

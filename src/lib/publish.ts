@@ -30,7 +30,8 @@ export interface PublishedSimulation {
   title: string;
   description: string;
   level: string;
-  grade: number;
+  /** Absent for spesialisasi, which has no class (docs/adr/0027). */
+  grade?: number;
   subject: string;
   order: number;
   /** Absent on entries published before the scene id was recorded. */
@@ -172,7 +173,7 @@ export function planPublish(scenes: SceneSource[], existing: CatalogEntry[]): Pu
       title: scene.title.split(COURSE_SEPARATOR)[0].trim(),
       description: scene.description,
       level,
-      grade: gradeFromSourceFolder(scene.sourceFolder),
+      grade: level === 'spesialisasi' ? undefined : gradeFromSourceFolder(scene.sourceFolder),
       subject,
       // Provisional: renumberNew assigns the real one below.
       order: 0,
@@ -215,7 +216,8 @@ function gradeFromSourceFolder(sourceFolder: string): number {
  * file an IPA scene under Matematika and publish it at a wrong address.
  */
 export function subjectOf(courseFolder: string): string | null {
-  const match = courseFolder.match(/^(.+)-(?:smp|sma|sd|smk)-/);
+  // The locked Tingkat, or the spesialisasi suffix with no class (docs/adr/0027).
+  const match = courseFolder.match(/^(.+)-(?:smp|sma|sd)-/) ?? courseFolder.match(/^(.+)-spesialisasi$/);
   if (!match) return null;
   return match[1].toLowerCase();
 }

@@ -197,7 +197,7 @@ Links read stage by stage in school order, and within a stage list the stage its
 
 Sources: [src/lib/nav.ts:37-46]()
 
-`tingkatProgression` orders stages from primary upwards — `sd` 0, `smp` 1, `sma` 2, `smk` 3 — because sorting the URL segments would put `sma` before `smp`, which reads backwards. An unknown segment sorts last rather than being dropped, keeping a newly added stage at the end.
+`tingkatProgression` orders stages from primary upwards — `sd` 0, `smp` 1, `sma` 2, then `spesialisasi` 3, which is not a school level and so comes last. Sorting the URL segments instead would put `sma` before `smp`, which reads backwards. An unknown segment sorts last rather than being dropped.
 
 Sources: [src/lib/tingkat.ts:12-18](), [src/lib/tingkat.ts:25-27]()
 

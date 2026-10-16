@@ -106,7 +106,8 @@ export function landingPages(entries: CatalogEntry[]): LandingPage[] {
 
   for (const entry of entries) {
     collect('tingkat', entry.level, entry.level, entry);
-    collect('kelas', entry.level, kelasSegment(entry.grade), entry);
+    // Spesialisasi has no class, so it gets no kelas page (docs/adr/0027).
+    if (entry.grade !== undefined) collect('kelas', entry.level, kelasSegment(entry.grade), entry);
     collect('mataPelajaran', entry.level, entry.subject, entry);
   }
 

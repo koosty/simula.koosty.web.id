@@ -1,5 +1,5 @@
 import type { CatalogEntry } from './types';
-import { groupByKelas } from './katalogFilter';
+import { groupByKelas, type KelasGroup } from './katalogFilter';
 import { tingkatLabel, tingkatProgression } from './tingkat';
 import { kelasSegment, landingPath } from './landing';
 
@@ -42,14 +42,17 @@ export interface HomeClassSection {
  * and finds empty is worse than no section.
  */
 export function homeClassSections(entries: CatalogEntry[]): HomeClassSection[] {
-  return groupByKelas(entries).map((group) => ({
-    key: group.key,
-    level: group.level,
-    label: group.label,
-    path: landingPath(group.level, kelasSegment(group.grade)),
-    total: group.simulations.length,
-    simulations: group.simulations.slice(0, HOME_CLASS_PREVIEW_SIZE),
-  }));
+  // Spesialisasi has no class, so it has no class section (docs/adr/0027).
+  return groupByKelas(entries)
+    .filter((group): group is KelasGroup & { grade: number } => group.grade !== undefined)
+    .map((group) => ({
+      key: group.key,
+      level: group.level,
+      label: group.label,
+      path: landingPath(group.level, kelasSegment(group.grade)),
+      total: group.simulations.length,
+      simulations: group.simulations.slice(0, HOME_CLASS_PREVIEW_SIZE),
+    }));
 }
 
 /** One school stage the home page links into, with what it holds. */

@@ -12,3 +12,5 @@ The scanner refuses two things rather than guessing:
 Published addresses do not change. Raw and Halaman URLs still use only the level and the slug, so a title can belong to one subject per level. Putting the subject into every URL was considered and not chosen, because it would change the raw addresses the frame loads (ADR 0007) and no two current subjects share a title. This should be revisited if they ever do.
 
 The loader warns when a simulation's subject folder does not match the subject its catalog entry names.
+
+Amended by `0027`: a spesialisasi simulation has no grade folder. Its source tree is `simulations/spesialisasi/<subject>/<slug>.html`, and its URL is `/spesialisasi/<subject>/<slug>/`. The subject is in the address because a spesialisasi has no class to hold it. The rule that a file name is unique across subjects still applies.

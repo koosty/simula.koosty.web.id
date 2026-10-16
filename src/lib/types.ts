@@ -6,7 +6,8 @@ export interface CatalogEntry {
   description: string;
   /** Bahasa URL segment: 'smp' for the lower secondary stage. */
   level: string;
-  grade: number;
+  /** Absent for spesialisasi, which has no class (docs/adr/0027). */
+  grade?: number;
   /** Bahasa URL segment, an open set: new subjects appear as content arrives. */
   subject: string;
   /** Display order within a class. The only prominence signal. */

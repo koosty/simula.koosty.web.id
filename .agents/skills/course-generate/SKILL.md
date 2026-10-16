@@ -1,6 +1,6 @@
 ---
 name: course-generate
-description: Generate all queued scenes of an approved course by dispatching each scene to the widget-page skill. Use after the outline is approved.
+description: Generate all queued scenes of a course by dispatching each scene to the widget-page skill. Use after the outline has been reviewed in conversation.
 metadata:
   opencode/slash: "true"
 ---
@@ -13,12 +13,10 @@ Execute `courses/<slug>/outline.yaml` (or the path in `$ARGUMENTS`) into scene b
 
 1. Read `courses/<slug>/outline.yaml` (or the path in `$ARGUMENTS`).
 2. **Validate before doing anything. Refuse on any failure and name every problem found — do not stop at the first one.**
-   - `approved` MUST parse as exactly boolean `true`. Missing, a quoted string like `"yes"` or `"true"`, a typo key such as `apprved`, or any other value REFUSES. Refusal message: "outline not approved — set `approved: true` (exact boolean) in `<path>`". Do not infer approval from the value looking truthy.
    - `kind` ∈ `reading | widget | quiz`; `status` ∈ `queued | generating | ready`; `widgetType` ∈ `simulation | diagram | code | game | visualization3d | procedural-skill`.
    - Every `kind: widget` scene carries both `widgetType` (non-empty) and `widgetConfig`. `kind: quiz` has no `widget-page` template yet (known gap) — flag every `quiz` scene now rather than failing mid-run.
    - Scene `id`s are unique and non-empty.
-   - If `researchSources` is present, each entry needs `id`, `title`, `url` (unique `id`s). Every scene's `sources` list, if present, MUST reference an `id` that exists in `researchSources` — refuse and name any dangling id.
-   - `lang` is present and a plausible BCP-47 tag (e.g. `en`, `zh-CN`, `pt-BR`). It becomes the page's `<html lang>`, so a missing or wrong value mislabels every scene's accessibility. Refuse rather than defaulting to `en`.
+   - `lang` is present and a plausible BCP-47 tag (e.g. `en`, `zh-CN`, `pt-BR`). It becomes the page's `<html lang>`.
    - If the file is not valid YAML, or is a legacy `outline.json`, refuse and say so. There is no JSON fallback.
 3. Report resume state: count scenes by reading the file, then report how many are `ready` out of the total. Skip every scene with `status: ready` whose body file(s) exist and are non-empty — `<id>.html` for every scene, and also `<id>.md` for `kind: reading` scenes; either missing or empty means not actually ready. Do not use `grep` — an unmatched pattern silently reports 0.
 4. In outline order, for each `queued` (or stale `generating`, reset to `queued`) scene:
