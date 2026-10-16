@@ -33,7 +33,7 @@ style-card roles, this skill's identity is:
 - **Colour roles**: `--bg`/`--surface`/`--panel` (bg, surface), `--text`/`--text-muted`/`--text-dim` (text, muted), `--accent`/`--accent-hover`/`--accent-text` (accent, accent on-fill text), `--border`/`--border-strong` (line), `--error`/`--warning` (warn).
 - **Border**: hairline only — every divider and control border is a 1px low-contrast line (`--border`), never `none` or a heavy `solid` rule.
 - **Radius**: `--radius-md` (8px) is the base corner language — rounded enough to feel approachable, not pill-shaped except on tracks/pills.
-- **Shadow**: `soft` — `--shadow-soft` lifts panels off the background. The primary button glows with its accent; nothing else casts a shadow.
+- **Shadow**: `soft` — `--shadow-soft` lifts panels off the background. Buttons have a keycap base shadow (`0 4px 0 var(--border)`) that sinks on press. The primary button also glows with its accent. Other glows are decoration only (see Arcade accents below the button classes).
 - **Density**: `regular` — the `--space-*` scale is tuned for a control-panel density, not compact (cramped) or airy (sparse).
 - **Weight**: `--font-weight-display` (600) on headings, `--font-weight-number` (500) on monospaced readouts — body text stays regular weight.
 
@@ -115,7 +115,7 @@ something is missing, add it here first.
   --accent: #0092ac;
   --accent-hover: #3fc8dc;
   --accent-text: #0f172a;
-  --success: #059669;
+  --success: #047857;
   --warning: #d97706;
   --error: #b8126b;
   --focus-ring: 0 0 0 3px rgba(0, 146, 172, 0.5);
@@ -136,7 +136,7 @@ something is missing, add it here first.
     --accent: #0092ac;
     --accent-hover: #3fc8dc;
     --accent-text: #0f172a;
-    --success: #059669;
+    --success: #047857;
     --warning: #d97706;
     --error: #b8126b;
     --focus-ring: 0 0 0 3px rgba(0, 146, 172, 0.5);
@@ -186,26 +186,31 @@ h1, h2, h3 { font-weight: var(--font-weight-display); }
   min-width: 44px;
   padding: var(--space-3) var(--space-5);
   border: 1px solid var(--border-strong);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: var(--surface);
   color: var(--text);
   cursor: pointer;
-  transition: background var(--motion);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  transition: background var(--motion), transform var(--motion), box-shadow var(--motion);
+  box-shadow: 0 4px 0 var(--border);   /* keycap base */
 }
 .btn:hover { background: var(--panel); border-color: var(--accent); }
-.btn:active { transform: scale(0.95); }
-.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:active { transform: translateY(4px); box-shadow: none; }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring), 0 4px 0 var(--border); }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .btn-primary {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-text);
-  box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 35%, transparent);
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--accent) 65%, var(--accent-text)), 0 0 16px color-mix(in srgb, var(--accent) 35%, transparent);
 }
 .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
 
-.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost { background: transparent; border-color: var(--border); color: var(--text); }
 .btn-ghost:hover { background: var(--surface); }
 
 .control-label {
@@ -214,6 +219,36 @@ h1, h2, h3 { font-weight: var(--font-weight-display); }
   letter-spacing: 0.5px;
   color: var(--text-muted);
 }
+
+/* Arcade accents: decoration only, never behind small text. */
+.panel-heading::before {
+  content: '';
+  display: inline-block;
+  width: 8px; height: 8px;
+  margin-right: var(--space-2);
+  vertical-align: middle;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+}
+.stage {
+  min-height: 220px;
+  background-color: var(--surface);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--border) 45%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--border) 45%, transparent) 1px, transparent 1px),
+    radial-gradient(ellipse at 50% 70%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%);
+  background-size: 32px 32px, 32px 32px, 100% 100%;
+}
+.readout { box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 15%, transparent); }
+@media (prefers-reduced-motion: reduce) {
+  .btn { transition: none; }
+}
+
+/* Icons (docs/adr/0022): inline Lucide SVG with currentColor, no external load.
+   Only the start or run button and the reset button carry an icon. Keep the
+   text label beside it. If script rewrites a button's label, put the label in
+   a <span> so the icon survives. Paths: play and rotate-ccw in src/lib/icons.ts. */
 
 input[type="range"] {
   width: 100%; height: 6px;
@@ -353,6 +388,10 @@ Run this before returning any page.
       classes above, not bespoke selectors.
 - [ ] Interactive targets are at least 44 × 44px.
 - [ ] Keyboard focus is visible via `--focus-ring`.
+- [ ] Text contrast is at least 4.5:1 for labels, headings, and buttons in both light and dark.
+- [ ] Glow and shadow are decoration only; no glow sits behind small text.
+- [ ] Reduced motion turns off button transitions.
+- [ ] Only the start or run button and the reset button carry an icon.
 - [ ] Existing ID conventions are unchanged (`{var}-slider`, `{action}-btn`,
       `node-{id}`, `#step-N-control`, `#feedback-panel`, zoom/reset IDs).
       Classes were added, not substituted.
