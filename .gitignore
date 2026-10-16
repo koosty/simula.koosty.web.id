@@ -6,3 +6,10 @@ dist/
 *.log
 .DS_Store
 .playwright-cli/
+
+# Course sources for simulations. Kept on the machine that generates them,
+# not in Git (docs/adr/0026).
+courses/
+
+# Optional, general-purpose skills. Kept on this machine, not in Git.
+.omp/skills/

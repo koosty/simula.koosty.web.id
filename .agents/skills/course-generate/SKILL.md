@@ -7,11 +7,11 @@ metadata:
 
 # Course Generate
 
-Execute `@courses/<slug>/outline.yaml` (or the path in `$ARGUMENTS`) into scene body files under `scenes/` — `<id>.html` for every scene, plus `<id>.md` for `kind: reading` scenes — one scene at a time. This skill orchestrates — the page itself is always built by the `widget-page` skill under the hood.
+Execute `courses/<slug>/outline.yaml` (or the path in `$ARGUMENTS`) into scene body files under `courses/<slug>/scenes/` — `<id>.html` for every scene, plus `<id>.md` for `kind: reading` scenes — one scene at a time. This skill orchestrates — the page itself is always built by the `widget-page` skill under the hood. Paths are relative to this repository; `courses/` is not tracked by Git (docs/adr/0026).
 
 ## Workflow
 
-1. Read `@courses/<slug>/outline.yaml` (or the path in `$ARGUMENTS`).
+1. Read `courses/<slug>/outline.yaml` (or the path in `$ARGUMENTS`).
 2. **Validate before doing anything. Refuse on any failure and name every problem found — do not stop at the first one.**
    - `approved` MUST parse as exactly boolean `true`. Missing, a quoted string like `"yes"` or `"true"`, a typo key such as `apprved`, or any other value REFUSES. Refusal message: "outline not approved — set `approved: true` (exact boolean) in `<path>`". Do not infer approval from the value looking truthy.
    - `kind` ∈ `reading | widget | quiz`; `status` ∈ `queued | generating | ready`; `widgetType` ∈ `simulation | diagram | code | game | visualization3d | procedural-skill`.
