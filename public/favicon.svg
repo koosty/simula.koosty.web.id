@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <title>Simula</title>
+  <rect width="32" height="32" rx="7" fill="#12131d"/>
+  <g fill="none" stroke="#00f0ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M5 22H24"/>
+    <path d="M8 18V26"/>
+    <path d="M16 18V26"/>
+    <path d="M8 14C8 4 24 4 24 14"/>
+  </g>
+  <circle cx="24" cy="22" r="4" fill="#ff4a8d"/>
+</svg>
