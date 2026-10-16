@@ -7,6 +7,7 @@ import { loadCatalog } from '../../../../lib/loadCatalog';
 import { relatedSimulations } from '../../../../lib/related';
 import { subjectLabel } from '../../../../lib/katalogFilter';
 import { FALLBACK_HEIGHT, UNMEASURABLE_HEIGHT, FRAME_ID } from '../../../../lib/frame';
+import Icon from '../../../../components/Icon.astro';
 
 // The route params and the full URL are both composed by simulasiUrlSegments,
 // so the page and the catalog can never disagree about where a simulation
@@ -85,7 +86,7 @@ const breadcrumb = [
         ></iframe>
 
         <p class="fallback">
-          <a href={rawFileUrl} target="_blank" rel="noopener">Buka simulasi ini di tab baru</a>{' '}
+          <a href={rawFileUrl} target="_blank" rel="noopener"><Icon name="external-link" /> Buka simulasi ini di tab baru</a>{' '}
           jika simulasi tidak muncul di atas.
         </p>
       </div>

@@ -4,6 +4,7 @@ import { simulasiFileUrl, simulasiUrl } from '../lib/catalog';
 import { loadCatalog } from '../lib/loadCatalog';
 import { subjectLabel } from '../lib/katalogFilter';
 import { homeClassSections, homeFeatured, homeStages } from '../lib/home';
+import Icon from '../components/Icon.astro';
 
 // The Katalog is the whole catalog, always. The home page is an entrance into
 // it, so it reads the same data rather than a filtered copy that could disagree.
@@ -37,7 +38,7 @@ const subjects = new Set(catalog.map((entry) => entry.subject)).size;
           tanpa memasang aplikasi apa pun.
         </p>
 
-        <a class="insert-coin" href="/katalog/">Mulai belajar</a>
+        <a class="insert-coin" href="/katalog/">Mulai belajar <Icon name="arrow-right" /></a>
 
         <ul class="stats" aria-label="Isi katalog">
           <li class="stat">
