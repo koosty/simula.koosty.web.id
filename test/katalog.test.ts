@@ -75,8 +75,13 @@ describe('the Katalog page is built', () => {
     }
   });
 
-  it('offers a filter for each of Tingkat, Kelas and Mata Pelajaran', () => {
-    for (const field of ['level', 'grade', 'subject']) {
+  it('offers Tingkat as chips and Kelas and Mata Pelajaran as dropdowns', () => {
+    // Tingkat is a row of buttons the script reads as one selection, so it has
+    // no <select>. Kelas and Mata Pelajaran stay dropdowns.
+    expect(page).toMatch(/<div[^>]*class="chips"[^>]*role="group"[^>]*aria-label="Tingkat"/);
+    expect(page).toMatch(/<button[^>]*class="chip"[^>]*data-level=""[^>]*aria-pressed="true"[^>]*>Semua/);
+    expect(page).not.toContain('data-filter="level"');
+    for (const field of ['grade', 'subject']) {
       expect(page).toContain(`data-filter="${field}"`);
     }
   });
@@ -95,17 +100,19 @@ describe('the Katalog page is built', () => {
     expect(bundles).toMatch(/\.hidden=[A-Za-z_$][\w$]*!==0/);
   });
 
-  it('offers a choice for every subject the catalog holds, and no others', () => {
-    // A subject with no simulation would filter the reader to an empty list, so
+  it('offers a choice for every subject and Tingkat the catalog holds, and no others', () => {
+    // A choice with no simulation would filter the reader to an empty list, so
     // the choices follow the catalog rather than being written down here.
     const options = [...page.matchAll(/<option[^>]*>([^<]*)<\/option>/g)].map((m) => m[1].trim());
-    expect(options).toContain('SMP');
+    const chipLabels = [...page.matchAll(/<button type="button" class="chip"[^>]*>\s*([^<]*?)\s*<\/button>/g)].map((m) => m[1]);
     expect(options).toContain('Kelas 7');
+    expect(chipLabels).toContain('SMP');
     for (const label of SUBJECT_LABELS) {
       expect(options).toContain(label);
     }
     expect(options).not.toContain('SMA');
-    expect(options).not.toContain('Sekolah Dasar');
+    expect(chipLabels).not.toContain('SMA');
+    expect(chipLabels).not.toContain('Sekolah Dasar');
   });
 
   it('removes the controls when scripting is unavailable', () => {

@@ -393,9 +393,15 @@ const navLinks = navLinksFor(catalog, Astro.url.pathname);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     background: var(--surface);
+    transition: border-color 0.2s, transform 0.2s;
   }
 
-  /* The lit marquee bar along the top edge of a panel. */
+  .card:hover {
+    border-color: var(--accent);
+  }
+
+  /* The lit marquee bar along the top edge of a panel. The glow is on this
+     decorative bar only, never on text. */
   .card::before {
     content: '';
     position: absolute;
@@ -405,12 +411,17 @@ const navLinks = navLinksFor(catalog, Astro.url.pathname);
     height: 2px;
     border-radius: var(--radius) var(--radius) 0 0;
     background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
   }
+
 
   .card h3 {
     margin: 0 0 8px;
+    font-family: var(--font-display);
     font-size: 1.0625rem;
-    font-weight: 600;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
   }
 
   .card a {

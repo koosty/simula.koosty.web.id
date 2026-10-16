@@ -16,6 +16,11 @@ const catalog = await loadCatalogEntries();
 
 const filterFields = buildFilterFields(catalog);
 
+// Tingkat is a row of chips rather than a dropdown, so it is taken out of the
+// dropdown fields. The chips list every Tingkat in the catalog, in school order.
+const levelChoices = filterFields.find((field) => field.field === 'level')?.choices ?? [];
+const dropdownFields = filterFields.filter((field) => field.field !== 'level');
+
 // The filter hides and shows cards by these attributes, so the catalog travels
 // with the page and filtering needs no fetch and no framework runtime. The
 // title and description are not copied in: the script reads them back out of
@@ -41,35 +46,50 @@ const landing = landingPages(catalog);
   description="Daftar seluruh simulasi pembelajaran di Simula, dapat disaring menurut tingkat, kelas, dan mata pelajaran."
 >
   <main class="wrap">
-    <h1>Katalog Simulasi</h1>
+    <div class="kicker">
+      <span class="kicker-dot" aria-hidden="true"></span>
+      <span>Katalog simulasi arcade</span>
+    </div>
+    <h1>Kabinet sains utama</h1>
     <p class="lead">
-      Seluruh simulasi di Simula, disusun dalam urutan materi. Saring menurut
-      tingkat, kelas, atau mata pelajaran, atau ketik sebagian judul untuk
-      mencari.
+      Seluruh simulasi di Simula, disusun dalam urutan materi. Pilih tingkat,
+      lalu saring kelas atau mata pelajaran, atau ketik sebagian judul untuk mencari.
     </p>
 
     <!-- Filtering is done by the script below, so this form is never submitted. -->
     <form class="filters" id="filters">
-      <p class="filters-heading">Saring dan cari</p>
+      <p class="filters-heading">Tingkat</p>
+      <div class="chips" role="group" aria-label="Tingkat">
+        <button type="button" class="chip" data-level="" aria-pressed="true">Semua</button>
+        {
+          levelChoices.map((choice) => (
+            <button type="button" class="chip" data-level={String(choice.value)} aria-pressed="false">
+              {choice.label}
+            </button>
+          ))
+        }
+      </div>
 
-      {
-        filterFields.map((field) => (
-          <p class="filter">
-            <label for={`filter-${field.field}`}>{field.label}</label>
-            <select id={`filter-${field.field}`} name={field.field} data-filter={field.field}>
-              <option value="">Semua</option>
-              {field.choices.map((choice) => (
-                <option value={String(choice.value)}>{choice.label}</option>
-              ))}
-            </select>
-          </p>
-        ))
-      }
+      <div class="filters-row">
+        {
+          dropdownFields.map((field) => (
+            <p class="filter">
+              <label for={`filter-${field.field}`}>{field.label}</label>
+              <select id={`filter-${field.field}`} name={field.field} data-filter={field.field}>
+                <option value="">Semua</option>
+                {field.choices.map((choice) => (
+                  <option value={String(choice.value)}>{choice.label}</option>
+                ))}
+              </select>
+            </p>
+          ))
+        }
 
-      <p class="filter">
-        <label for="search">Cari simulasi</label>
-        <input id="search" name="search" type="search" placeholder="misal: segitiga" />
-      </p>
+        <p class="filter">
+          <label for="search">Cari simulasi</label>
+          <input id="search" name="search" type="search" placeholder="misal: segitiga" />
+        </p>
+      </div>
 
       <p class="result-count" id="result-count" role="status"></p>
     </form>
@@ -88,14 +108,15 @@ const landing = landingPages(catalog);
               <ul class="cards">
                 {group.simulations.map((entry) => (
                   <li class="card" {...cardAttributes(entry)}>
+                    <p class="card-tag">{subjectLabel(entry.subject)}</p>
                     <h3>
                       <a href={simulasiUrl(entry)}>{entry.title}</a>
                     </h3>
                     <p class="card-meta">
-                      {tingkatLabel(entry.level)} · Kelas {entry.grade} ·{' '}
-                      {subjectLabel(entry.subject)}
+                      {tingkatLabel(entry.level)} · Kelas {entry.grade}
                     </p>
                     <p class="card-description">{entry.description}</p>
+                    <a class="card-stretch" href={simulasiUrl(entry)} aria-hidden="true" tabindex="-1"></a>
                   </li>
                 ))}
               </ul>
@@ -149,7 +170,7 @@ const landing = landingPages(catalog);
     const cardList = [...results.querySelectorAll<HTMLElement>('.card')];
     const catalog: CatalogEntry[] = cardList.map((card) => ({
       slug: card.dataset.slug ?? '',
-      title: card.querySelector('a')?.textContent ?? '',
+      title: card.querySelector('h3 a')?.textContent ?? '',
       description: card.querySelector('.card-description')?.textContent ?? '',
       level: card.dataset.level ?? '',
       grade: Number(card.dataset.grade),
@@ -158,14 +179,16 @@ const landing = landingPages(catalog);
     }));
 
     const selects = [...controls.querySelectorAll<HTMLSelectElement>('[data-filter]')];
+    const chips = [...controls.querySelectorAll<HTMLButtonElement>('.chip')];
     const searchBox = controls.querySelector<HTMLInputElement>('#search');
 
     const apply = () => {
       const selection: { level?: string; grade?: number; subject?: string } = {};
+      const activeChip = chips.find((chip) => chip.getAttribute('aria-pressed') === 'true');
+      if (activeChip?.dataset.level) selection.level = activeChip.dataset.level;
       for (const select of selects) {
         if (select.value === '') continue;
         if (select.dataset.filter === 'grade') selection.grade = Number(select.value);
-        else if (select.dataset.filter === 'level') selection.level = select.value;
         else if (select.dataset.filter === 'subject') selection.subject = select.value;
       }
 
@@ -194,6 +217,12 @@ const landing = landingPages(catalog);
     };
 
     for (const select of selects) select.addEventListener('change', apply);
+    for (const chip of chips) {
+      chip.addEventListener('click', () => {
+        for (const other of chips) other.setAttribute('aria-pressed', String(other === chip));
+        apply();
+      });
+    }
 
     // Pressing Enter in the search box would otherwise submit this form and
     // reload the page, discarding the search term and every chosen filter.
@@ -223,6 +252,25 @@ const landing = landingPages(catalog);
     margin: 0 0 12px;
   }
 
+  .kicker {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 8px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--secondary);
+  }
+
+  .kicker-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--secondary);
+  }
+
   .lead {
     font-size: 1.0625rem;
     color: var(--text-muted);
@@ -231,10 +279,6 @@ const landing = landingPages(catalog);
   }
 
   .filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    align-items: end;
     padding: 16px;
     margin-bottom: 32px;
     border: 1px solid var(--border);
@@ -244,11 +288,56 @@ const landing = landingPages(catalog);
   }
 
   .filters-heading {
-    width: 100%;
-    margin: 0;
-    font-size: 0.875rem;
-    font-weight: 600;
+    margin: 0 0 8px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
     color: var(--text-dim);
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .chip {
+    min-height: 44px;
+    padding: 8px 16px;
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    cursor: pointer;
+  }
+
+  .chip:hover {
+    color: var(--text);
+  }
+
+  .chip[aria-pressed='true'] {
+    color: var(--accent-text);
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .chip:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  .filters-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: end;
   }
 
   .filter {
@@ -296,6 +385,29 @@ const landing = landingPages(catalog);
     border-left: 4px solid var(--secondary);
   }
 
+  .card-tag {
+    display: inline-block;
+    margin: 0 0 12px;
+    padding: 2px 8px;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--secondary);
+    border: 1px solid var(--secondary);
+    border-radius: var(--radius);
+  }
+
+  .card-stretch {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .card h3 a {
+    position: relative;
+    z-index: 1;
+  }
 
   .empty,
   .no-match {

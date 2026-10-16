@@ -49,17 +49,19 @@ Sources: [src/pages/katalog.astro:19-28](), [src/pages/katalog.astro:147-158]()
 
 ## Filters
 
-Three filters are named, in the order a reader works through them: Tingkat, Kelas, Mata Pelajaran. The choices are built from whatever the catalog actually holds, so the site never offers a filter with nothing behind it and never needs a fixed list updated when content arrives.
+Tingkat is a row of chips, and Kelas and Mata Pelajaran are dropdowns. The choices are built from whatever the catalog actually holds, so the site never offers a filter with nothing behind it and never needs a fixed list updated when content arrives.
 
-Sources: [src/lib/katalogFilter.ts:26-35](), [src/lib/katalogFilter.ts:88-113]()
+Sources: [src/pages/katalog.astro:21-22](../../src/pages/katalog.astro), [src/lib/katalogFilter.ts:26-35](../../src/lib/katalogFilter.ts), [src/lib/katalogFilter.ts:88-113]()
 
-| Filter | Catalog field | Choice labels | Sort order |
+| Control | Catalog field | Choice labels | Sort order |
 |---|---|---|---|
-| Tingkat | `level` | `tingkatLabel(value)` | School progression: sd, smp, sma, smk; unknown sorts last. |
-| Kelas | `grade` | `Kelas {value}` | Ascending number. |
-| Mata Pelajaran | `subject` | `subjectLabel(value)` | The label the reader sees, locale `id`. |
+| Tingkat (chips) | `level` | `tingkatLabel(value)`, plus "Semua" | School progression: sd, smp, sma, smk; unknown sorts last. |
+| Kelas (dropdown) | `grade` | `Kelas {value}` | Ascending number. |
+| Mata Pelajaran (dropdown) | `subject` | `subjectLabel(value)` | The label the reader sees, locale `id`. |
 
-Sources: [src/lib/katalogFilter.ts:78-86](), [src/lib/katalogFilter.ts:101-112](), [src/lib/tingkat.ts:12-27]()
+Sources: [src/lib/katalogFilter.ts:78-86](../../src/lib/katalogFilter.ts), [src/lib/katalogFilter.ts:101-112](../../src/lib/katalogFilter.ts), [src/lib/tingkat.ts:12-27]()
+
+Each chip is a `<button>` with `aria-pressed`. Choosing one sets the others to `false`, so exactly one Tingkat is active at a time. "Semua" is the chip with an empty `data-level`, which means no Tingkat filter.
 
 Kelas reads as a sequence of numbers and Tingkat reads in school order, which sorting the segments would get backwards (`sd`, `sma`, `smp`). Mata Pelajaran sorts by its visible label, so a mapping that renames a subject does not reorder the list away from its own wording.
 
@@ -107,8 +109,8 @@ Sources: [src/pages/katalog.astro:177-193]()
 
 ```mermaid
 flowchart TD
-  Input["select change or search input"] --> Apply["apply()"]
-  Apply --> Sel["build selection from non-empty selects"]
+  Input["chip click, select change or search input"] --> Apply["apply()"]
+  Apply --> Sel["build selection from the active chip and non-empty selects"]
   Sel --> Filter["filterCatalog(catalog, selection)"]
   Filter --> Search["searchCatalog(entries, term)"]
   Search --> Hide["card.hidden per match"]
@@ -120,7 +122,7 @@ flowchart TD
 
 Sources: [src/pages/katalog.astro:163-194]()
 
-Listeners are attached for `change` on each select and `input` on the search box. The form's `submit` is prevented, because pressing Enter would otherwise reload the page and discard the search term and every chosen filter.
+Listeners are attached for `click` on each Tingkat chip, `change` on each dropdown, and `input` on the search box. Clicking a chip moves `aria-pressed` to that chip and clears the others, so only one Tingkat is active. The form's `submit` is prevented, because pressing Enter would otherwise reload the page and discard the search term and every chosen filter.
 
 Sources: [src/pages/katalog.astro:196-202]()
 
@@ -133,11 +135,11 @@ Sources: [src/pages/katalog.astro:206-214]()
 | Element | Condition | Sources |
 |---|---|---|
 | `<h1>Katalog Simulasi</h1>` | Always | [src/pages/katalog.astro:44]() |
-| Filter form `#filters` | Always; hidden by `<noscript>` CSS when scripting is off | [src/pages/katalog.astro:51-75](), [src/pages/katalog.astro:206-214]() |
-| Empty-catalog paragraph | `catalog.length === 0` | [src/pages/katalog.astro:77-82]() |
-| `#results` with one `.kelas` section per class | `catalog.length > 0` | [src/pages/katalog.astro:84-104]() |
-| Landing-page navigation | `landing.length > 0`, rendered *outside* `#results` | [src/pages/katalog.astro:108-126]() |
-| `#no-match` | Hidden by default, shown by the script | [src/pages/katalog.astro:128-130]() |
+| Tingkat chips in `#filters` | Always; hidden by `<noscript>` CSS when scripting is off | [src/pages/katalog.astro:62-72](../../src/pages/katalog.astro), [src/pages/katalog.astro:235-243]() |
+| Empty-catalog paragraph | `catalog.length === 0` | [src/pages/katalog.astro:98-103]() |
+| `#results` with one `.kelas` section per class | `catalog.length > 0` | [src/pages/katalog.astro:104-131]() |
+| Landing-page navigation | `landing.length > 0`, rendered *outside* `#results` | [src/pages/katalog.astro:132-146]() |
+| `#no-match` | Hidden by default, shown by the script | [src/pages/katalog.astro:149-151]() |
 
 The landing-page navigation sits outside the filtered region because these are pages rather than results: narrowing the list must not hide the way into them.
 

@@ -43,9 +43,20 @@ function printRules(css: string): { selector: string; value: string }[] {
   return found;
 }
 
-/** Every style block on a built page, concatenated. */
+/**
+ * Every stylesheet a built page applies, concatenated: its inline style blocks
+ * and the linked files it points at. Astro inlines small stylesheets and writes
+ * larger ones to `/_astro/*.css`, so reading only inline blocks would make the
+ * global rules vanish whenever the layout grows past that size.
+ */
 function cssOf(path: string): string {
-  return [...htmlAt(path).matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map((m) => m[1]).join('\n');
+  const html = htmlAt(path);
+  const inline = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map((m) => m[1]);
+  const linked = [...html.matchAll(/<link[^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)]
+    .map((m) => m[1])
+    .filter((href) => href.startsWith('/') && href.endsWith('.css'))
+    .map((href) => readFileSync(resolve(DIST, href.slice(1)), 'utf8'));
+  return [...inline, ...linked].join('\n');
 }
 
 describe('every page carries the palette', () => {
