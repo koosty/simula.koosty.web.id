@@ -287,6 +287,25 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
       flex-direction: column;
       gap: var(--space-4);
     }
+
+    /* From 760px of frame width, the canvas and its readouts sit on the left and
+       the controls on the right, so a reader sees and changes the controls without
+       scrolling. Below that width the sections stack in document order. The DOM
+       order does not change, so the tab order stays the same. */
+    @media (min-width: 760px) {
+      .wrap {
+        max-width: none;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+        align-items: start;
+      }
+      .wrap > header { grid-column: 1 / -1; }
+      .wrap > section:nth-of-type(1) { grid-column: 1; grid-row: 2; }
+      .wrap > section:nth-of-type(2) { grid-column: 1; grid-row: 3; }
+      .wrap > section:nth-of-type(3) { grid-column: 2; grid-row: 2; }
+      .wrap > section:nth-of-type(4) { grid-column: 2; grid-row: 3; }
+      .wrap > .footnote { grid-column: 1 / -1; }
+    }
     h1 { font-size: var(--text-heading); line-height: 1.2; }
     h2 { font-size: var(--text-base); color: var(--text-muted); font-weight: 600; }
     h3 { font-size: var(--text-sm); color: var(--text-muted); font-weight: 600; }

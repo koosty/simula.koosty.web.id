@@ -1,5 +1,7 @@
 # The simulation page places an information column beside the frame
 
+Superseded by `0020` for the layout. The information column described below is removed, and the frame takes the page width.
+
 Refines `0005` for layout only. The frame, its measurement and its tab order are unchanged.
 
 ## Decision
