@@ -28,7 +28,7 @@ See [Catalog Model](../content/catalog-model.md) for what the written entries me
 SIMULA_TOOL_REPO=/path/to/simula-w npm run publish
 ```
 
-Sources: [scripts/publish-batch.mjs:2-25](), [README.md:108-113]()
+Sources: [scripts/publish-batch.mjs:2-25](), [README.md:107-113]()
 
 | Flag | Default | Effect |
 |---|---|---|
@@ -63,7 +63,7 @@ Sources: [scripts/publish-batch.mjs:93-96](), [src/lib/publish.ts:209-221]()
 
 Not every course is named that way. `ipa-kelas-7-kurikulum-merdeka` says neither the school level nor the level in the form the name uses, so `--subject`, `--stage` and `--grade` say it instead. They override the name whatever it holds.
 
-Sources: [scripts/publish-batch.mjs:97-108](), [README.md:123-131]()
+Sources: [scripts/publish-batch.mjs:97-108](), [README.md:115-121]()
 
 The subject is the segment before the school level, lower-cased:
 
@@ -131,7 +131,7 @@ Sources: [src/lib/publish.ts:65-75]()
 
 The course suffix the tool appends after a middle dot is dropped. Every run of non-alphanumerics reduces to one hyphen — including a hyphen already inside a word, which Indonesian uses as a hyphen rather than a separator.
 
-Sources: [src/lib/publish.ts:56-64](), [README.md:141-142]()
+Sources: [src/lib/publish.ts:56-64](), [README.md:136-137]()
 
 ## What it will not do
 
@@ -161,7 +161,7 @@ export function simulationPathFor(sourceFolder: string, slug: string): string {
 
 Sources: [src/lib/publish.ts:262-264](), [src/lib/publish.ts:275-277]()
 
-The simulation file is copied byte for byte from the tool's scene file. This site never edits it; a simulation broken on its own terms is fixed where it lives, and its `noindex` is delivered as a header.
+The simulation file is copied byte for byte from the tool's scene file. The publisher does not reshape it; a simulation broken on its own terms is fixed where it lives, and its `noindex` is delivered as a header. ADR 0023 is the exception: its palette and arcade styling were hand-edited into the files in this repository, and the next publish overwrites them.
 
 Sources: [scripts/publish-batch.mjs:230-241](), [docs/adr/0005-embed-simulations-in-iframe.md:19-25]()
 
@@ -180,7 +180,7 @@ Sources: [scripts/publish-batch.mjs:211-226]()
 
 The script never commits or pushes. Whoever runs it decides what goes into git — a hook on another host may do that part itself.
 
-Sources: [README.md:182-184]()
+Sources: [README.md:178-179]()
 
 ## Deploy hook
 
@@ -197,7 +197,7 @@ Sources: [src/lib/deployHook.ts:23-26](), [scripts/publish-batch.mjs:254](), [sc
 
 The URL is the credential. It is pasted by hand out of a Cloudflare dashboard, so it arrives with the typos a paste brings: a truncated string, a stray space, or a URL from somewhere else entirely. Posting it to whatever host it happens to name would hand that credential to a third party, so it must be `https` on `api.cloudflare.com`.
 
-Sources: [src/lib/deployHook.ts:1-11](), [src/lib/deployHook.ts:36-45](), [README.md:163-176]()
+Sources: [src/lib/deployHook.ts:1-11](), [src/lib/deployHook.ts:36-45](), [README.md:166-176]()
 
 | Situation | Behaviour | Sources |
 |---|---|---|

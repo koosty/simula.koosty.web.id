@@ -131,6 +131,10 @@ Heading levels follow the page kind: a class page's card headings are `h2`, and 
 
 Sources: [src/components/LandingPage.astro:65-72]()
 
+The page heading uses the display face in uppercase (`h1` in the component's own style). The simulation cards carry no style of their own: they use the shared `.card` from the layout, so they match the home page and the Katalog.
+
+Sources: [src/components/LandingPage.astro:142-149](), [src/layouts/Base.astro:321-327]()
+
 The sheet link is built in the component, not in the route, so the route stays a pure delegation.
 
 Sources: [src/components/LandingPage.astro:28](), [src/lib/sheet.ts:53-56]()
@@ -147,7 +151,7 @@ Sources: [src/lib/nav.ts:35-46]()
 
 A link is marked current only when its path equals the current pathname with a trailing slash on both sides, so a reader who arrived without one is still recognised.
 
-Sources: [src/lib/nav.ts:53-60](), [src/layouts/Base.astro:46-54]()
+Sources: [src/lib/nav.ts:53-60](), [src/layouts/Base.astro:71-75]()
 
 ## Looking a page up
 

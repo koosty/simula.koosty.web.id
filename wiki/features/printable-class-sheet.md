@@ -122,7 +122,7 @@ Sources: [src/lib/sheet.ts:102-105](), [src/lib/sheet.ts:111-115]()
 
 The sheet is `noindex`: it repeats the class page's content at a second address, and two URLs serving the same words split the ranking between them. It is linked from the class page, so it is reachable without being indexed.
 
-Sources: [src/components/Sheet.astro:24-28](), [src/layouts/Base.astro:36-39](), [docs/adr/0008-printable-sheet-per-class.md:1-3]()
+Sources: [src/components/Sheet.astro:24-28](), [src/layouts/Base.astro:53](), [docs/adr/0008-printable-sheet-per-class.md:1-3]()
 
 It is also absent from the sitemap. `sitemapEntries` builds from the Katalog and landing pages, and the sheet is neither.
 
@@ -151,7 +151,7 @@ Sources: [src/components/Sheet.astro:158-167]()
 
 The sheet needs no print settings changed — the browser's own print dialog is enough.
 
-Sources: [README.md:186-195]()
+Sources: [README.md:181-190]()
 
 Everything a reader uses on screen is removed rather than shrunk: the site navigation and the link back to the class page, which is dead weight on paper. Ink is black on white, because a dark background spends a cartridge to print a grey page.
 

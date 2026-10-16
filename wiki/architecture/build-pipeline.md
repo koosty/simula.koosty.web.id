@@ -118,7 +118,7 @@ Sources: [src/integrations/serveSimulations.ts:15-31]()
 
 Sources: [src/integrations/copySimulations.ts:178-186]()
 
-Each file is copied byte for byte. Injecting a script so it could post its own height, as a resizing library would, would mean editing the tool's output, which this site never does.
+Each file is copied byte for byte. Injecting a script so it could post its own height, as a resizing library would, would mean editing the tool's output, which the build never does. The hand edits of ADR 0023 are made in the repository, outside the build, and are described in [Architecture Overview](overview.md).
 
 Sources: [src/integrations/copySimulations.ts:119-127]()
 

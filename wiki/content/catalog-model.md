@@ -153,7 +153,7 @@ Sources: [src/lib/catalog.ts:17-20](), [docs/adr/0003-bahasa-url-path-segments.m
 
 Renaming a simulation file by hand fails the build, because its catalog entry then points at a file that is not there. The supported route is the publish script, which writes both files together.
 
-Sources: [src/lib/catalog.ts:75-82](), [README.md:157-158]()
+Sources: [src/lib/catalog.ts:75-82](), [README.md:152-153]()
 
 A stage, class or subject with no entry yet publishes no landing page and appears in no navigation — pages are derived, not listed in advance.
 

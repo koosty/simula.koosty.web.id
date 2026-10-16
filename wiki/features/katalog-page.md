@@ -13,13 +13,14 @@ The following files were used as context for generating or updating this documen
 - [`src/layouts/Base.astro`](../../src/layouts/Base.astro)
 - [`test/katalog.test.ts`](../../test/katalog.test.ts)
 - [`test/katalogFilter.test.ts`](../../test/katalogFilter.test.ts)
-- [`test/katalog-built.test.ts`](../../test/katalog.test.ts)
 - [`CONTEXT.md`](../../CONTEXT.md)
 </details>
 
 # Katalog Page
 
 The Katalog at `/katalog/` is the site's complete list of simulations, grouped into classes. Every simulation is present in the delivered HTML in display order; filtering and search only hide what is already there, so the page is fully readable with scripting unavailable. See [Catalog Model](../content/catalog-model.md) for the data behind it and [Landing Pages](landing-pages.md) for the addresses it also links to.
+
+Sources: [src/pages/katalog.astro:10-17](../../src/pages/katalog.astro), [src/pages/katalog.astro:138-146](../../src/pages/katalog.astro)
 
 ## Data
 
@@ -40,7 +41,7 @@ Sources: [src/pages/katalog.astro:15-36]()
 
 Every simulation is in the HTML in display order, and the script below only hides what is already there. Display order is applied by `groupByKelas`, which owns it; sorting here as well would be a second pass over the same data that could disagree with it.
 
-Sources: [src/pages/katalog.astro:10-15]()
+Sources: [src/pages/katalog.astro:10-14](), [src/pages/katalog.astro:30]()
 
 The card carries the catalog fields as `data-*` attributes so filtering needs no fetch and no framework runtime. Title and description are deliberately *not* copied into attributes — the script reads them back out of the card text, so there is one copy of each rather than two that could drift.
 
@@ -102,7 +103,7 @@ Sources: [src/lib/katalogFilter.ts:131-143]()
 
 After matching, the script hides non-matching cards, hides any class section whose cards are all hidden, writes the count into a `role="status"` element, and toggles the no-match paragraph.
 
-Sources: [src/pages/katalog.astro:177-194]()
+Sources: [src/pages/katalog.astro:177-193]()
 
 ```mermaid
 flowchart TD
@@ -123,30 +124,33 @@ Listeners are attached for `change` on each select and `input` on the search box
 
 Sources: [src/pages/katalog.astro:196-202]()
 
+When scripting is off, the `<noscript>` block hides the filter form, so the page shows the full list without controls that do nothing.
+
+Sources: [src/pages/katalog.astro:206-214]()
+
 ## Structure
 
 | Element | Condition | Sources |
 |---|---|---|
 | `<h1>Katalog Simulasi</h1>` | Always | [src/pages/katalog.astro:44]() |
-| Filter form `#filters` | Always; hidden by `<noscript>` CSS when scripting is off | [src/pages/katalog.astro:52-75](), [src/pages/katalog.astro:206-214]() |
-| Empty-catalog paragraph | `catalog.length === 0` | [src/pages/katalog.astro:78-82]() |
+| Filter form `#filters` | Always; hidden by `<noscript>` CSS when scripting is off | [src/pages/katalog.astro:51-75](), [src/pages/katalog.astro:206-214]() |
+| Empty-catalog paragraph | `catalog.length === 0` | [src/pages/katalog.astro:77-82]() |
 | `#results` with one `.kelas` section per class | `catalog.length > 0` | [src/pages/katalog.astro:84-104]() |
-| Landing-page navigation | `landing.length > 0`, rendered *outside* `#results` | [src/pages/katalog.astro:110-126]() |
+| Landing-page navigation | `landing.length > 0`, rendered *outside* `#results` | [src/pages/katalog.astro:108-126]() |
 | `#no-match` | Hidden by default, shown by the script | [src/pages/katalog.astro:128-130]() |
 
 The landing-page navigation sits outside the filtered region because these are pages rather than results: narrowing the list must not hide the way into them.
 
 Sources: [src/pages/katalog.astro:108-109]()
 
-Each card renders the title as a link to `simulasiUrl(entry)`, a meta line of `{tingkatLabel(level)} · Kelas {grade} · {subjectLabel(subject)}`, and the description.
+Each card renders the title as a link to `simulasiUrl(entry)`, a meta line of `{tingkatLabel(level)} · Kelas {grade} · {subjectLabel(subject)}`, and the description. The cards use the shared `.card` style from the layout.
 
-Sources: [src/pages/katalog.astro:89-100](), [src/lib/catalog.ts:33]()
+Sources: [src/pages/katalog.astro:89-100](), [src/lib/catalog.ts:33](), [src/layouts/Base.astro:321-327]()
 
 ## Testing
 
 - [`test/katalog.test.ts`](../../test/katalog.test.ts)
 - [`test/katalogFilter.test.ts`](../../test/katalogFilter.test.ts)
-- [`test/katalog-built.test.ts`](../../test/katalog.test.ts)
 
 ## Related pages
 

@@ -46,7 +46,7 @@ Sources: [wrangler.jsonc:6-18]()
 
 Setting `html_handling` to `none` was tried and is wrong: it disables folder index resolution too, and every page URL on the site then returns 404.
 
-Sources: [wrangler.jsonc:16-18](), [README.md:94-95]()
+Sources: [wrangler.jsonc:16-18](), [README.md:83-86]()
 
 Wrangler falls back to `.gitignore` when an assets directory carries no `.assetsignore`, so a pattern added to `.gitignore` that matches a built file would delete it from the deploy with no warning. Nothing there may gain a pattern like `*.html`.
 
@@ -61,11 +61,11 @@ Sources: [wrangler.jsonc:19-22]()
 | 3. Attach the domain | Custom Domains | Add `simula.koosty.web.id`; Cloudflare adds the DNS record when the zone is on the same account. |
 | 4. Verify | Browser | The home page answers over HTTPS with `lang="id"`. |
 
-Sources: [README.md:64-104]()
+Sources: [README.md:59-99]()
 
 A push also runs `.github/workflows/verify.yml`, which is `npm run verify`. It gates nothing on its own, but it is the same work the deploy does, so a red run is a build that would have failed.
 
-Sources: [README.md:73-77](), [.github/workflows/verify.yml:1-7]()
+Sources: [README.md:71-73](), [.github/workflows/verify.yml:1-7]()
 
 ## Response headers
 
@@ -97,7 +97,7 @@ There is deliberately **no Content-Security-Policy**: the simulations ship their
 
 Sources: [src/integrations/copySimulations.ts:32-37](), [docs/adr/0013-security-headers-that-cannot-break-a-simulation.md:1-3]()
 
-The second block is per-path. A simulation must stay byte-identical to what the tool produced, so its `noindex` is delivered as a header rather than by editing the file.
+The second block is per-path. A simulation should stay byte-identical to what the tool produced, so its `noindex` is delivered as a header rather than by editing the file. ADR 0023 is the exception: its palette and arcade styling were hand-edited into the files in this repository.
 
 Sources: [src/integrations/copySimulations.ts:29-38]()
 
@@ -119,22 +119,22 @@ The hook URL is a credential, so it belongs in the environment and not in the re
 SIMULA_DEPLOY_HOOK=https://api.cloudflare.com/client/v4/workers/builds/deploy_hooks/<uuid>
 ```
 
-Sources: [README.md:160-176]()
+Sources: [README.md:155-164]()
 
 | Variable | Read by | Purpose |
 |---|---|---|
 | `SIMULA_DEPLOY_HOOK` | `scripts/publish-batch.mjs` via `checkDeployHook` | POST after a batch is written. |
 | `SIMULA_TOOL_REPO` | `scripts/publish-batch.mjs` | Default for `--tool`, so a hook needs no argument. |
 
-Sources: [scripts/publish-batch.mjs:62-64](), [README.md:110-113]()
+Sources: [scripts/publish-batch.mjs:62-64](), [README.md:107-113]()
 
 The URL is checked before anything is sent: it must be `https` and must name `api.cloudflare.com`. A URL that fails the check is reported and the script exits; the batch is already written either way, so nothing is lost. The request gives up after 30 seconds rather than hanging the publish.
 
-Sources: [src/lib/deployHook.ts:1-11](), [src/lib/deployHook.ts:28-45](), [README.md:168-181]()
+Sources: [src/lib/deployHook.ts:1-11](), [src/lib/deployHook.ts:28-45](), [README.md:166-172]()
 
 With the hook set, `npm run publish` writes the batch and asks Cloudflare to rebuild. Without it the batch is still written and the script says so; commit and push it by hand instead.
 
-Sources: [README.md:178-181]()
+Sources: [README.md:174-176]()
 
 ## Locally
 
