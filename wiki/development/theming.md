@@ -182,7 +182,8 @@ Sources: [test/theme.test.ts](../../test/theme.test.ts), [test/chrome-built.test
 ## Known gaps
 
 - Simulations still load KaTeX, marked, highlight.js and three.js from cdnjs and unpkg. The palette does not change that.
-- Simulations have no light palette. In light mode, an embedded simulation shows its dark frame.
+- Only `Angka Bulat dan Garis Bilangan` follows the light palette. The other simulations are dark only, so in light mode their frame stays dark.
+- The header switch is copied onto the simulation frame by `attachThemeSync` in `src/lib/frame.ts`, which writes `data-theme` into the frame's document. A simulation with no choice follows the system setting.
 
 ## Related pages
 

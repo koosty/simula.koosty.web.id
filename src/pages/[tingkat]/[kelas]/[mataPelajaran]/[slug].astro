@@ -113,7 +113,7 @@ const breadcrumb = [
 </Base>
 
 <script>
-  import { attachFrameResize, FRAME_ID } from '../../../../lib/frame';
+  import { attachFrameResize, attachThemeSync, FRAME_ID } from '../../../../lib/frame';
 
   // The script only grows the frame; the simulation inside is shown either way,
   // so a reader without scripting sees a frame at its fallback height rather
@@ -124,6 +124,7 @@ const breadcrumb = [
       fallbackHeight: Number(frame.dataset.fallbackHeight),
       unmeasurableHeight: Number(frame.dataset.unmeasurableHeight),
     });
+    attachThemeSync(frame);
   }
 </script>
 
@@ -193,7 +194,8 @@ const breadcrumb = [
     border: 1px solid var(--border);
     border-radius: var(--radius);
     background: var(--bg);
-    color-scheme: dark;
+    /* No colour-scheme here: the page follows the reader's choice, and the
+       simulation sets its own. */
   }
 
   /* The frame holds a whole application, so a reader tabbing into it has to be

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="dark">
+<html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -75,6 +75,7 @@
     }
 
 :root {
+  color-scheme: dark;
   /* Colour */
   --bg: #12131d;          /* page background; also the 3D canvas background */
   --surface: #1a1b25;     /* panels, cards, step rows */
@@ -86,10 +87,8 @@
   --text-dim: #849495;
   --accent: #00f0ff;      /* primary action, slider thumb, active state */
   --accent-hover: #7df4ff;
-  --accent-soft: rgba(138, 43, 226, 0.95);  /* tooltips, transient overlays */
   --accent-text: #0b0c16;
   --success: #39ff14;     /* completion, headings, callouts */
-  --warning: #ffe600;
   --error: #ff4a8d;
 
   /* Spacing scale */
@@ -124,6 +123,48 @@
   --z-modal: 1000;         /* loading screens, modal dialogs */
     }
 
+  /* The light palette, from the site's Stitch light screen (docs/adr/0019).
+     It applies when the page sets data-theme="light" on this frame, or when the
+     page sets no choice and the system asks for light. The site mirrors its
+     header switch onto the frame, so this simulation follows the reader. */
+  :root[data-theme='light'] {
+    color-scheme: light;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --panel: #f1f5f9;
+    --border: #cbd5e1;
+    --border-strong: #475569;
+    --text: #0f172a;
+    --text-muted: #334155;
+    --text-dim: #64748b;
+    --accent: #0092ac;
+    --accent-hover: #3fc8dc;
+    --accent-text: #0f172a;
+    --success: #059669;
+    --error: #b8126b;
+    --focus-ring: 0 0 0 3px rgba(0, 146, 172, 0.5);
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme='dark']) {
+      color-scheme: light;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --panel: #f1f5f9;
+      --border: #cbd5e1;
+      --border-strong: #475569;
+      --text: #0f172a;
+      --text-muted: #334155;
+      --text-dim: #64748b;
+      --accent: #0092ac;
+      --accent-hover: #3fc8dc;
+      --accent-text: #0f172a;
+      --success: #059669;
+      --error: #b8126b;
+      --focus-ring: 0 0 0 3px rgba(0, 146, 172, 0.5);
+    }
+  }
+
     h1, h2, h3 { font-family: var(--font-display); }
 
 
@@ -153,12 +194,12 @@ body {
   padding: var(--space-3) var(--space-5);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-md);
-  background: var(--border-strong);
-  color: var(--bg);
+  background: var(--surface);
+  color: var(--text);
   cursor: pointer;
   transition: background var(--motion);
 }
-.btn:hover { background: var(--text-muted); }
+.btn:hover { background: var(--panel); border-color: var(--accent); }
 .btn:active { transform: scale(0.95); }
 .btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
@@ -273,6 +314,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border: 0; ba
     #op-group .btn[aria-pressed="true"] {
       background: var(--accent);
       border-color: var(--accent);
+      color: var(--accent-text);
     }
 
     .tick-label { font-family: var(--font-mono); fill: var(--text-muted); }

@@ -11,7 +11,7 @@ Extends `0017` for the site chrome. The simulations stay dark and keep the dark 
 - A small inline script in `<head>` applies a stored choice before first paint, so a reader does not see the other palette flash.
 - A new token `accentText` is the text colour on the accent. It is `#12131d` in dark and `#0f172a` in light. Text on a filled accent uses it, not `--bg`: `#f8fafc` on the light cyan is 3.68:1, below the 4.5:1 for text.
 - Fonts are the same in both palettes: Space Grotesk for headings, Plus Jakarta Sans for body text, and JetBrains Mono for labels, numbers and the tab bar. These match the font roles in both Stitch screens. They are declared once in `Base.astro` as `--font-display`, `--font-body` and `--font-mono`. Before this, `--font-display` and `--font-mono` were never declared, so headings and labels silently used the body face.
-- The simulations do not change. They keep the dark values in their own `:root` blocks. In light mode an embedded simulation still shows its dark frame.
+- The simulation `angka-bulat-dan-garis-bilangan` follows the switch. It has light and dark token blocks, and the header writes `data-theme` on its frame (`attachThemeSync`). Its pressed operation button now has dark text on the cyan. The other 70 simulations keep the dark palette and are not changed in this step.
 
 ## Consequences
 

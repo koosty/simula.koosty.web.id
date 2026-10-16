@@ -128,6 +128,33 @@ export function attachFrameResize(frame: HTMLIFrameElement, options: ResizeOptio
   }
 }
 
+/**
+ * Give the frame the reader's theme choice, and keep it in step with the header.
+ *
+ * The header's switch writes `data-theme` on the page's <html>. The simulation
+ * is same-origin, so its document can carry the same attribute, and the
+ * simulation's own stylesheet then picks the palette. With no choice stored the
+ * attribute is absent on both sides, and the simulation follows the system.
+ */
+export function attachThemeSync(frame: HTMLIFrameElement): void {
+  const mirror = (): void => {
+    const doc = frame.contentDocument;
+    if (!doc) return;
+    const choice = document.documentElement.dataset.theme;
+    if (choice) {
+      doc.documentElement.dataset.theme = choice;
+    } else {
+      delete doc.documentElement.dataset.theme;
+    }
+  };
+
+  // The header writes the attribute on every switch. A frame's document is
+  // replaced each time the simulation loads, so the choice is copied again then.
+  new MutationObserver(mirror).observe(document.documentElement, { attributeFilter: ['data-theme'] });
+  frame.addEventListener('load', mirror);
+  mirror();
+}
+
 /** One laid-out box, as the browser reports it. */
 interface ContentBox {
   top: number;
