@@ -100,7 +100,7 @@ Sources: [README.md:33-37](../../README.md), [eslint.config.mjs](../../eslint.co
 
 | Test file | What it protects | Sources |
 |---|---|---|
-| `test/theme.test.ts` | The palette's roles meet their ratios on both surfaces, both palettes; the light palette is written for a reader who chose it or whose system asks for it. | [src/lib/theme.ts:161-162](../../src/lib/theme.ts), [src/lib/theme.ts:236-246](../../src/lib/theme.ts) |
+| `test/theme.test.ts` | The palette's roles meet their ratios on both surfaces, both palettes; the light palette is written only under `[data-theme='light']`, never under the system query (ADR 0025). | [src/lib/theme.ts:161-162](../../src/lib/theme.ts), [src/lib/theme.ts:236-246](../../src/lib/theme.ts) |
 | `test/chrome-built.test.ts` | The built pages carry the palette's values, not literals. | [test/chrome-built.test.ts:9-16](../../test/chrome-built.test.ts) |
 | `test/frame-height.test.ts` | `contentHeight` returns the tallest non-fixed bottom edge plus scroll, or `null`. | [src/lib/frame.ts:201-210](../../src/lib/frame.ts) |
 | `test/simulation-externals.test.ts` | Every script a simulation loads comes from `cdnjs.cloudflare.com` or `unpkg.com`, pins an exact version in the URL, carries a `sha384` integrity hash and `crossorigin="anonymous"`, and every import-map module URL is pinned. | [test/simulation-externals.test.ts:5-14](../../test/simulation-externals.test.ts), [test/simulation-externals.test.ts:22-51](../../test/simulation-externals.test.ts) |

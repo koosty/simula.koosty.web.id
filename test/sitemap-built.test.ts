@@ -198,7 +198,11 @@ describe('the HTML sitemap page', () => {
     // not a link a reader follows.
     const hrefs = [...page.matchAll(/<a [^>]*href="([^"]*)"/g)].map((m) => m[1]);
     expect(hrefs.length).toBeGreaterThan(0);
+    // The footer's credit links to the repository. It is the one absolute link
+    // a page carries, so it is the one href allowed to skip the slash checks.
+    const REPO_URL = 'https://github.com/koosty/simula.koosty.web.id';
     for (const href of hrefs) {
+      if (href === REPO_URL) continue;
       expect(href, `tautan rusak: ${href}`).toMatch(/^\//);
       expect(href, `tautan rusak: ${href}`).not.toMatch(/\/\//);
     }

@@ -34,6 +34,7 @@ export type TokenName =
   | 'accentText'
   | 'secondary'
   | 'tertiary'
+  | 'error'
   | 'focusRing'
   | 'radius'
   | 'radiusSmall';
@@ -80,6 +81,7 @@ export const TOKENS: Palette = {
   accentText: '#12131d',
   secondary: '#ff4a8d',
   tertiary: '#f3db00',
+  error: '#ffb4ab',
   focusRing: '#00f0ff',
   radius: '8px',
   radiusSmall: '4px',
@@ -108,6 +110,7 @@ export const TOKENS_LIGHT: Palette = {
   accentText: '#0f172a',
   secondary: '#b8126b',
   tertiary: '#d97706',
+  error: '#ba1a1a',
   focusRing: '#0092ac',
   radius: '8px',
   radiusSmall: '4px',
@@ -129,10 +132,9 @@ export function themeCustomProperties(tokens: Palette = TOKENS, selector = ':roo
 /**
  * Every palette rule the site writes into <head>.
  *
- * The dark palette is the default. A reader who has chosen light, or whose
- * system asks for light and who has not chosen dark, gets the light palette.
- * The choice is stored by the header toggle as `data-theme` on <html>, and an
- * explicit choice beats the system setting.
+ * The dark palette is the default, whatever the system asks for (ADR 0025).
+ * The light palette applies only when the reader has chosen it. The choice is
+ * stored by the header toggle as `data-theme` on <html>.
  *
  * `color-scheme` follows the same rules, so form controls and scrollbars match
  * the palette in use.
@@ -140,13 +142,11 @@ export function themeCustomProperties(tokens: Palette = TOKENS, selector = ':roo
 export function themeStylesheet(): string {
   const lightSelector = "[data-theme='light']";
   const darkSelector = ":root, [data-theme='dark']";
-  const systemLight = ":root:not([data-theme='dark'])";
   return [
     `${darkSelector} {\n  color-scheme: dark;\n}`,
     themeCustomProperties(TOKENS, darkSelector),
     `${lightSelector} {\n  color-scheme: light;\n}`,
     themeCustomProperties(TOKENS_LIGHT, lightSelector),
-    `@media (prefers-color-scheme: light) {\n  ${systemLight} {\n  color-scheme: light;\n  }\n${themeCustomProperties(TOKENS_LIGHT, systemLight)}\n}`,
   ].join('\n');
 }
 

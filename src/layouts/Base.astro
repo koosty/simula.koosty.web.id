@@ -14,6 +14,12 @@ interface Props {
 const { title, description, noindex = false } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 
+// The footer shows the release and links to the repository. Both are plain
+// text here: a version read from package.json would say 0.0.1, which is not
+// the release this site ships as.
+const siteVersion = 'v1.0.0';
+const repoUrl = 'https://github.com/koosty/simula.koosty.web.id';
+
 // Every page carries the same navigation, so it is built once here rather than
 // in each one. The catalog is read again per page rather than cached: Astro
 // already holds the content collection for the build, and a cache here would
@@ -38,9 +44,10 @@ const navLinks = navLinksFor(catalog, Astro.url.pathname);
     <script is:inline>
       try {
         const stored = localStorage.getItem('theme');
-        if (stored === 'light' || stored === 'dark') document.documentElement.dataset.theme = stored;
+        document.documentElement.dataset.theme = stored === 'light' ? 'light' : 'dark';
       } catch {
-        // Storage can be blocked; the system setting then applies.
+        // Storage can be blocked; the page then stays dark, as the default is.
+        document.documentElement.dataset.theme = 'dark';
       }
     </script>
     <link rel="stylesheet" href="/fonts/fonts.css" />
@@ -84,14 +91,20 @@ const navLinks = navLinksFor(catalog, Astro.url.pathname);
       </button>
     </nav>
     <slot />
+    <footer class="site-footer">
+      <p class="site-footer-version">{siteVersion}</p>
+      <p class="site-footer-credit">
+        <a href={repoUrl}>Made with <Icon name="heart" class="footer-heart" /><span class="visually-hidden">Love</span> by Papa Caca</a>
+      </p>
+    </footer>
     <script>
       const root = document.documentElement;
       const toggle = document.getElementById('theme-toggle');
-      const systemLight = matchMedia('(prefers-color-scheme: light)').matches;
       const label = document.getElementById('theme-label');
       const lightIcon = document.getElementById('theme-icon-light');
       const darkIcon = document.getElementById('theme-icon-dark');
-      const currentMode = () => root.dataset.theme ?? (systemLight ? 'light' : 'dark');
+      if (!toggle || !label || !lightIcon || !darkIcon) throw new Error('The theme switch is missing from the header.');
+      const currentMode = () => (root.dataset.theme === 'light' ? 'light' : 'dark');
       // The button names the mode it switches to, with the matching flashlight icon.
       const showTarget = (target: 'light' | 'dark') => {
         label.textContent = target === 'light' ? 'Mode terang' : 'Mode gelap';
@@ -304,6 +317,62 @@ const navLinks = navLinksFor(catalog, Astro.url.pathname);
 
     .site-name a {
       font-size: 1.0625rem;
+    }
+  }
+
+  /* The footer uses the nav's bar style, mirrored to the bottom edge. The
+     version sits in a bordered tag, as the Stitch prototype's status tag does,
+     and the credit is a link to the repository. Hidden when printed, so a
+     printed page carries only its own content, as the navigation does. */
+  .site-footer {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px max(16px, calc((100% - 1440px) / 2));
+    background: var(--surface);
+    border-top: 2px solid var(--border-strong);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 24px;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+  }
+
+  .site-footer p {
+    margin: 0;
+  }
+
+  .site-footer-version {
+    padding: 4px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-small);
+    color: var(--text-muted);
+  }
+
+  /* The heart is a solid red shape. Icon draws outlines, so its fill is set
+     here; the colour is the palette's error token, not a literal. */
+  .footer-heart {
+    color: var(--error);
+    fill: currentColor;
+  }
+
+  /* The word "Love" stays in the text for screen readers while the heart is
+     shown in its place. The standard clip pattern hides it on screen. */
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  @media print {
+    .site-footer {
+      display: none;
     }
   }
 

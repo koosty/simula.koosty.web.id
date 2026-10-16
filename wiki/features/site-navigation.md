@@ -23,7 +23,7 @@ The following files were used as context for generating or updating this documen
 
 Every page on the site renders through [`src/layouts/Base.astro`](../../src/layouts/Base.astro), which owns the document head, the site navigation, the global palette and the header's light and dark switch. The navigation itself is built from the Katalog rather than written out, so a new stage, class or subject reaches it by being added as content. See [Architecture Overview](../architecture/overview.md) for the shape of the whole site.
 
-The header is an arcade bar: the Simula name with its logo on the left, subject tabs in the middle, and the mode switch on the right. The current tab is filled with the accent colour. The switch chooses between the light and dark palettes; the choice is stored, and without one the system setting applies (`docs/adr/0017`, `docs/adr/0019`). On a phone the tabs become one row that scrolls sideways, and the switch wraps to a second row, because the tab list takes the full width.
+The header is an arcade bar: the Simula name with its logo on the left, subject tabs in the middle, and the mode switch on the right. The current tab is filled with the accent colour. The switch chooses between the light and dark palettes. The choice is stored, and without one the page is dark, whatever the system asks for (`docs/adr/0017`, `docs/adr/0019`, `docs/adr/0025`). On a phone the tabs become one row that scrolls sideways, and the switch wraps to a second row, because the tab list takes the full width.
 
 Sources: [src/layouts/Base.astro:56-85](../../src/layouts/Base.astro), [src/layouts/Base.astro:189-200](../../src/layouts/Base.astro), [src/layouts/Base.astro:291-308](../../src/layouts/Base.astro)
 
@@ -49,8 +49,8 @@ Sources: [src/layouts/Base.astro:7-15](../../src/layouts/Base.astro)
 |---|---|---|
 | `<html lang="id">` | Static | The whole site is Bahasa Indonesia. |
 | `<meta charset>`, `<meta name="viewport">` | Static | |
-| `<style set:html={themeStylesheet()}>` | `src/lib/theme.ts` | Emits both palettes and the system query. |
-| Inline `<script>` | Static | Reads `localStorage` key `theme` and sets `data-theme` before first paint. |
+| `<style set:html={themeStylesheet()}>` | `src/lib/theme.ts` | Emits the dark palette as the default and the light palette under `data-theme`. |
+| Inline `<script>` | Static | Reads `localStorage` key `theme` and sets `data-theme` before first paint: `light` if stored, otherwise `dark` (ADR 0025). |
 | `<link rel="stylesheet" href="/fonts/fonts.css">` | `public/fonts/` | Self-hosted fonts. |
 | `<link rel="icon">` (`.ico` 32px, `.svg`), `<link rel="apple-touch-icon">` | `public/` | The favicon set. |
 | `<title>{title}</title>` | Prop | |
@@ -227,10 +227,23 @@ The print sheet overrides the global styles under `@media print`.
 
 Sources: [src/components/Sheet.astro:158-162](../../src/components/Sheet.astro)
 
+## The footer
+
+Every page ends with a footer below its content (ADR 0024). It uses the header's bar style, mirrored to the bottom edge, with a border on its top edge.
+
+- The left side is the release, `v1.0.0`, in a bordered tag. It is a constant in the layout, so it changes with each release.
+- The right side is the credit "Made with", a solid heart, and "by Papa Caca". The heart is the `heart` icon filled with the `error` token. "Love" is kept in the markup as screen-reader text. The credit links to the repository, `https://github.com/koosty/simula.koosty.web.id`, the only absolute link a page carries.
+- Under `@media print` the footer is hidden, as the navigation is, so a printed page carries only its own content.
+
+The Stitch footer's status pill, telemetry line, company name and "insert coin" line are not copied (ADR 0024).
+
+Sources: [src/layouts/Base.astro:20-21](../../src/layouts/Base.astro), [src/layouts/Base.astro:93-98](../../src/layouts/Base.astro), [src/layouts/Base.astro:326-358](../../src/layouts/Base.astro), [docs/adr/0024-site-footer-shows-release-and-credit.md](../../docs/adr/0024-site-footer-shows-release-and-credit.md)
+
 ## Testing
 
 - [`test/nav.test.ts`](../../test/nav.test.ts)
 - [`test/nav-built.test.ts`](../../test/nav-built.test.ts)
+- [`test/sitemap-built.test.ts`](../../test/sitemap-built.test.ts) (the one external link, the repository, is the exception to the slash check)
 - [`test/chrome-built.test.ts`](../../test/chrome-built.test.ts)
 
 ## Related pages

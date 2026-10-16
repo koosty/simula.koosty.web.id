@@ -9,7 +9,7 @@ Start with [Architecture Overview](architecture/overview.md).
 ## Reading order
 
 1. [Architecture Overview](architecture/overview.md) — what the site is, how a build runs, the two trust boundaries.
-2. [Architecture Decisions](architecture/decisions.md) — the twenty-three ADRs and which are superseded or amended.
+2. [Architecture Decisions](architecture/decisions.md) — the twenty-five ADRs and which are superseded or amended.
 3. [Catalog Model](content/catalog-model.md) — the one source of truth and its validation rules.
 4. [Simulation Discovery](content/simulation-discovery.md) — how the tool's English folders become Indonesian URLs.
 
@@ -35,7 +35,7 @@ Start with [Architecture Overview](architecture/overview.md).
 | Page | What it covers | Importance |
 |---|---|---|
 | [Home Page](features/home-page.md) | The hero, stat cards, the featured simulation, stage and class previews. | Medium |
-| [Site Navigation and Layout](features/site-navigation.md) | `Base.astro`, the document head, the header and its light and dark switch, the logo, icons and favicon. | Medium |
+| [Site Navigation and Layout](features/site-navigation.md) | `Base.astro`, the document head, the header and its light and dark switch, the logo, icons, favicon and footer. | Medium |
 | [Landing Pages](features/landing-pages.md) | Stage, class and subject pages, and the addresses that select them. | High |
 | [Katalog Page](features/katalog-page.md) | The full list, its three filters, and the client script that hides cards. | High |
 | [Simulation Page](features/simulation-page.md) | The Halaman Simulasi, the full-width iframe, the frame measurement and theme sync. | High |
@@ -72,7 +72,7 @@ The project fixes its own domain terms in [`CONTEXT.md`](../CONTEXT.md): **Simul
 | Simulation files | [`simulations/`](../simulations/) — 71 files |
 | Tooling scripts | [`scripts/`](../scripts/) |
 | Tests | [`test/`](../test/) — 25 files |
-| Decisions | [`docs/adr/`](../docs/adr/) — 23 records |
+| Decisions | [`docs/adr/`](../docs/adr/) — 25 records |
 
 ## Known coverage gaps
 

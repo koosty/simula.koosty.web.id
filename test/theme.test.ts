@@ -33,6 +33,7 @@ describe('the palette', () => {
         'panel',
         'radius',
         'radiusSmall',
+        'error',
         'secondary',
         'tertiary',
         'surface',
@@ -192,12 +193,12 @@ describe('themeCustomProperties', () => {
     expect(properties.length).toBe(Object.keys(TOKENS).length);
   });
 
-  it('writes the light palette for a reader who chose it or whose system asks for it', () => {
-    // The light palette sits under the explicit attribute and under the system
-    // query. The header toggle sets the attribute, so both selectors must exist.
+  it('writes the light palette only under the explicit attribute, never under the system query', () => {
+    // The default is dark whatever the system asks for (ADR 0025), so the light
+    // palette sits under the header's attribute and nowhere else.
     const css = themeStylesheet();
     expect(css).toContain("[data-theme='light'] {");
-    expect(css).toContain('@media (prefers-color-scheme: light) {');
+    expect(css).not.toContain('prefers-color-scheme');
     expect(css).toContain(`--bg: ${TOKENS_LIGHT.bg};`);
   });
 

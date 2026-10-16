@@ -18,6 +18,8 @@ The following files were used as context for generating or updating this documen
 - [`docs/adr/0021-simulations-may-load-pinned-cdn-libraries.md`](../../docs/adr/0021-simulations-may-load-pinned-cdn-libraries.md)
 - [`docs/adr/0022-icons-are-lucide-inline-svg.md`](../../docs/adr/0022-icons-are-lucide-inline-svg.md)
 - [`docs/adr/0023-every-simulation-follows-the-site-palette-and-arcade-style.md`](../../docs/adr/0023-every-simulation-follows-the-site-palette-and-arcade-style.md)
+- [`docs/adr/0024-site-footer-shows-release-and-credit.md`](../../docs/adr/0024-site-footer-shows-release-and-credit.md)
+- [`docs/adr/0025-default-palette-is-dark-whatever-the-system-asks.md`](../../docs/adr/0025-default-palette-is-dark-whatever-the-system-asks.md)
 - [`src/lib/theme.ts`](../../src/lib/theme.ts)
 - [`src/layouts/Base.astro`](../../src/layouts/Base.astro)
 - [`src/lib/icons.ts`](../../src/lib/icons.ts)
@@ -53,11 +55,13 @@ Each record is a single Markdown file numbered from `0001`. Where an ADR is cite
 | 0016 | [The site uses tab navigation and card grids](../../docs/adr/0016-tab-navigation-and-card-grids.md) | **Superseded by 0017** | [src/layouts/Base.astro](../../src/layouts/Base.astro), [src/pages/index.astro](../../src/pages/index.astro) |
 | 0017 | [The Stitch arcade prototype is the v1.0.0 design](../../docs/adr/0017-stitch-arcade-prototype-is-the-v1-design.md) | Current, amended by `0021` and `0023` | [src/lib/theme.ts](../../src/lib/theme.ts), [src/layouts/Base.astro](../../src/layouts/Base.astro), [src/pages/index.astro](../../src/pages/index.astro) |
 | 0018 | [The simulation page places an information column beside the frame](../../docs/adr/0018-simulation-page-workspace-beside-the-frame.md) | Superseded by `0020` | [src/pages/[tingkat]/[kelas]/[mataPelajaran]/[slug].astro](../../src/pages/[tingkat]/[kelas]/[mataPelajaran]/[slug].astro) |
-| 0019 | [The site has a light and a dark palette](../../docs/adr/0019-site-has-a-light-and-a-dark-palette.md) | Current, extended by `0023` | [src/lib/theme.ts](../../src/lib/theme.ts), [src/layouts/Base.astro](../../src/layouts/Base.astro), [test/theme.test.ts](../../test/theme.test.ts) |
+| 0019 | [The site has a light and a dark palette](../../docs/adr/0019-site-has-a-light-and-a-dark-palette.md) | Current, extended by `0023`, amended by `0025` | [src/lib/theme.ts](../../src/lib/theme.ts), [src/layouts/Base.astro](../../src/layouts/Base.astro), [test/theme.test.ts](../../test/theme.test.ts) |
 | 0020 | [The simulation frame takes the page width](../../docs/adr/0020-simulation-frame-takes-the-page-width.md) | Current | [src/pages/[tingkat]/[kelas]/[mataPelajaran]/[slug].astro](../../src/pages/[tingkat]/[kelas]/[mataPelajaran]/[slug].astro), [simulations/lower-secondary/grade-7/matematika/angka-bulat-dan-garis-bilangan.html](../../simulations/lower-secondary/grade-7/matematika/angka-bulat-dan-garis-bilangan.html) |
 | 0021 | [Simulations may load pinned libraries from a CDN, with integrity hashes](../../docs/adr/0021-simulations-may-load-pinned-cdn-libraries.md) | Current, amends `0005` and `0017` | [test/simulation-externals.test.ts](../../test/simulation-externals.test.ts), [simulations/](../../simulations/) |
 | 0022 | [Icons are Lucide paths drawn as inline SVG](../../docs/adr/0022-icons-are-lucide-inline-svg.md) | Current | [src/lib/icons.ts](../../src/lib/icons.ts), [src/components/Icon.astro](../../src/components/Icon.astro), [src/layouts/Base.astro](../../src/layouts/Base.astro) |
 | 0023 | [Every simulation follows the site palette and arcade style](../../docs/adr/0023-every-simulation-follows-the-site-palette-and-arcade-style.md) | Current, amends `0017` and `0019` | [simulations/](../../simulations/), [src/lib/frame.ts](../../src/lib/frame.ts) |
+| 0024 | [The site footer shows the release and a credit](../../docs/adr/0024-site-footer-shows-release-and-credit.md) | Current | [src/layouts/Base.astro](../../src/layouts/Base.astro) |
+| 0025 | [The default palette is dark, whatever the system asks for](../../docs/adr/0025-default-palette-is-dark-whatever-the-system-asks.md) | Current, amends `0019` | [src/layouts/Base.astro](../../src/layouts/Base.astro), [src/lib/theme.ts](../../src/lib/theme.ts), [test/theme.test.ts](../../test/theme.test.ts) |
 
 Sources: [docs/adr/](../../docs/adr/), [docs/adr/0009-chrome-paints-with-the-simulations-palette.md](../../docs/adr/0009-chrome-paints-with-the-simulations-palette.md), [docs/adr/0010-site-keeps-its-own-dark-palette.md](../../docs/adr/0010-site-keeps-its-own-dark-palette.md)
 
@@ -70,6 +74,10 @@ Sources: [docs/adr/0009-chrome-paints-with-the-simulations-palette.md:1-3](../..
 ADR 0019 adds the light palette and the header switch to the dark palette of 0017. ADR 0020 replaces the information column of 0018 with a frame that takes the full page width. ADR 0021 allows simulations to load pinned libraries from two CDN hosts, which amends 0005 (no external loads) and 0017. ADR 0023 extends 0019 and 0017 to the simulations: all 71 files carry their own light and dark palette blocks and the arcade styling.
 
 Sources: [docs/adr/0019-site-has-a-light-and-a-dark-palette.md](../../docs/adr/0019-site-has-a-light-and-a-dark-palette.md), [docs/adr/0020-simulation-frame-takes-the-page-width.md](../../docs/adr/0020-simulation-frame-takes-the-page-width.md), [docs/adr/0021-simulations-may-load-pinned-cdn-libraries.md](../../docs/adr/0021-simulations-may-load-pinned-cdn-libraries.md), [docs/adr/0023-every-simulation-follows-the-site-palette-and-arcade-style.md](../../docs/adr/0023-every-simulation-follows-the-site-palette-and-arcade-style.md)
+
+ADR 0025 amends 0019: without a stored choice the site is dark, whatever the system asks for. The site no longer reads `prefers-color-scheme`.
+
+Sources: [docs/adr/0025-default-palette-is-dark-whatever-the-system-asks.md](../../docs/adr/0025-default-palette-is-dark-whatever-the-system-asks.md)
 
 ADR 0014 keeps the deploy hook working that ADR 0002 established. The dashboard settings the project was built against are Workers settings.
 

@@ -112,9 +112,8 @@ Sources: [src/layouts/Base.astro:46](../../src/layouts/Base.astro), [src/layouts
 
 - The dark block on `:root, [data-theme='dark']`, with `color-scheme: dark`.
 - The light block on `[data-theme='light']`, with `color-scheme: light`.
-- The light block again under `@media (prefers-color-scheme: light)`, on `:root:not([data-theme='dark'])`.
 
-So a reader with no stored choice gets the palette their system asks for, and the default is dark when the system asks for nothing. The header button sets `data-theme` on `<html>` and stores the choice in `localStorage` under `theme`. A stored choice beats the system setting. An inline script in `<head>` applies a stored choice before first paint.
+So a reader with no stored choice gets the dark palette, whatever the system asks for (ADR 0025). The header button sets `data-theme` on `<html>` and stores the choice in `localStorage` under `theme`. The pre-paint script in `<head>` writes `data-theme` on every load, `light` only when light is stored and `dark` otherwise, so simulation frames copy the choice too.
 
 The button shows the mode it will switch to: "Mode gelap" while the page is light, "Mode terang" while it is dark. The icon matches the label: a flashlight for "Mode terang", a flashlight-off for "Mode gelap" (ADR 0022).
 
@@ -145,7 +144,7 @@ export function themeCustomProperties(tokens: Palette = TOKENS, selector = ':roo
 
 Sources: [src/lib/theme.ts:116-127](../../src/lib/theme.ts)
 
-`themeCustomProperties` writes one block for one palette under one selector. `themeStylesheet` combines the blocks for both palettes and the system query. The layout calls `themeStylesheet` through `set:html`, because an Astro `<style>` block is not a template expression site.
+`themeCustomProperties` writes one block for one palette under one selector. `themeStylesheet` combines the blocks for both palettes. There is no system query (ADR 0025). The layout calls `themeStylesheet` through `set:html`, because an Astro `<style>` block is not a template expression site.
 
 Sources: [src/lib/theme.ts:129-151](../../src/lib/theme.ts), [src/layouts/Base.astro:30-36](../../src/layouts/Base.astro)
 
@@ -189,7 +188,7 @@ Sources: [src/pages/[tingkat]/[kelas]/[mataPelajaran]/[slug].astro:157-169](../.
 
 ## Tests
 
-- [`test/theme.test.ts`](../../test/theme.test.ts) checks the palette's roles, the accent and the focus ring against the ratio their use needs, for both palettes, and checks that `themeCustomProperties` writes the light palette for a reader who chose it or whose system asks for it.
+- [`test/theme.test.ts`](../../test/theme.test.ts) checks the palette's roles, the accent and the focus ring against the ratio their use needs, for both palettes, and checks that the stylesheet writes the light palette under `[data-theme='light']` only, never under the system query.
 - [`test/chrome-built.test.ts`](../../test/chrome-built.test.ts) reads the built pages and confirms they carry palette values rather than literals. The palette blocks are exempt.
 
 Sources: [test/theme.test.ts:19-63](../../test/theme.test.ts), [test/theme.test.ts:181-206](../../test/theme.test.ts), [test/chrome-built.test.ts](../../test/chrome-built.test.ts)
