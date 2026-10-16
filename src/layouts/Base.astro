@@ -1,6 +1,7 @@
 ---
 import { loadCatalogEntries } from '../lib/loadCatalog';
 import { themeStylesheet } from '../lib/theme';
+import Icon from '../components/Icon.astro';
 import { navLinksFor } from '../lib/nav';
 
 interface Props {
@@ -70,28 +71,38 @@ const navLinks = navLinksFor(catalog, Astro.url.pathname);
           ))
         }
       </ul>
-      <button type="button" id="theme-toggle" class="theme-toggle">Mode terang</button>
+      <button type="button" id="theme-toggle" class="theme-toggle">
+        <span id="theme-icon-light"><Icon name="flashlight" /></span>
+        <span id="theme-icon-dark" hidden><Icon name="flashlight-off" /></span>
+        <span id="theme-label">Mode terang</span>
+      </button>
     </nav>
     <slot />
     <script>
       const root = document.documentElement;
       const toggle = document.getElementById('theme-toggle');
-      if (toggle) {
-        const systemLight = matchMedia('(prefers-color-scheme: light)').matches;
-        const shown = root.dataset.theme ?? (systemLight ? 'light' : 'dark');
-        toggle.textContent = shown === 'light' ? 'Mode gelap' : 'Mode terang';
-        toggle.addEventListener('click', () => {
-          const now = root.dataset.theme ?? (systemLight ? 'light' : 'dark');
-          const next = now === 'light' ? 'dark' : 'light';
-          root.dataset.theme = next;
-          try {
-            localStorage.setItem('theme', next);
-          } catch {
-            // Storage can be blocked; the choice then lasts for this page only.
-          }
-          toggle.textContent = next === 'light' ? 'Mode gelap' : 'Mode terang';
-        });
-      }
+      const systemLight = matchMedia('(prefers-color-scheme: light)').matches;
+      const label = document.getElementById('theme-label');
+      const lightIcon = document.getElementById('theme-icon-light');
+      const darkIcon = document.getElementById('theme-icon-dark');
+      const currentMode = () => root.dataset.theme ?? (systemLight ? 'light' : 'dark');
+      // The button names the mode it switches to, with the matching flashlight icon.
+      const showTarget = (target: 'light' | 'dark') => {
+        label.textContent = target === 'light' ? 'Mode terang' : 'Mode gelap';
+        lightIcon.hidden = target !== 'light';
+        darkIcon.hidden = target !== 'dark';
+      };
+      showTarget(currentMode() === 'light' ? 'dark' : 'light');
+      toggle.addEventListener('click', () => {
+        const next = currentMode() === 'light' ? 'dark' : 'light';
+        root.dataset.theme = next;
+        try {
+          localStorage.setItem('theme', next);
+        } catch {
+          // Storage can be blocked; the choice then lasts for this page only.
+        }
+        showTarget(next === 'light' ? 'dark' : 'light');
+      });
     </script>
   </body>
 </html>
@@ -241,8 +252,12 @@ const navLinks = navLinksFor(catalog, Astro.url.pathname);
     font-weight: 700;
   }
 
-  /* The light and dark switch. It shows the mode it will change to. */
+  /* The light and dark switch. It shows the mode it will change to, with a
+     flashlight icon: on for light, off for dark. */
   .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     font-family: var(--font-mono);
     font-size: 0.8125rem;
     letter-spacing: 0.06em;
@@ -253,6 +268,11 @@ const navLinks = navLinksFor(catalog, Astro.url.pathname);
     border: 1px solid var(--border-strong);
     border-radius: var(--radius-small);
     cursor: pointer;
+  }
+
+  .theme-toggle .icon {
+    width: 1.25em;
+    height: 1.25em;
   }
 
   .theme-toggle:hover {
