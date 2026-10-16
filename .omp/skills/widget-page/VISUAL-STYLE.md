@@ -362,9 +362,7 @@ Run this before returning any page.
 - [ ] Reset restores all state, progress, feedback, and control enablement. (`reading` scenes have no reset control and no state beyond native `<details>` open/closed — this item doesn't apply to them.)
 - [ ] Exactly one `<!DOCTYPE html>`, no fences, no leftover `{{placeholder}}`.
 - [ ] Page contract satisfied: `<html lang>` is the course's BCP-47 `lang`, `<title>` is `{sceneTitle} · {courseTitle}` (no placeholder like "3D Visualization" or "Untitled"), meta description present, OG tags present, no canonical/Twitter/favicon, and exactly one `<h1>` carrying the scene title (`.sr-only` is acceptable for full-bleed layouts).
-- [ ] Inline CSS/JS only, system fonts, no fetch/XHR/WebSocket, no
-      iframe/object/embed/form, CDNs limited to `unpkg.com`,
-      `cdn.jsdelivr.net`, `cdnjs.cloudflare.com`.
+- [ ] Inline CSS/JS only; fonts from the site's `/fonts/` with system fallbacks; libraries only from `unpkg.com` or `cdnjs.cloudflare.com`, each pinned to a version with `integrity` and `crossorigin="anonymous"` (docs/adr/0021); no fetch/XHR/WebSocket, no iframe/object/embed/form.
 - [ ] If the scene carries `sources`, a `.sources` footer lists each one
       (title, publisher, date, linked url) and every sourced claim in the
       body text is attributed — no claim grounded in `sources` left bare.

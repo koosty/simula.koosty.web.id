@@ -10,7 +10,7 @@ Supersedes `0015` for the palette values and `0016` for the layout. The rest of 
 - The home page opens with an eyebrow chip, a large uppercase heading, an insert-coin button, and stat cards.
 - The catalogue and class pages use card grids. A card has a coloured top bar, a preview area, and a difficulty or subject label.
 - Simulation pages use the workspace frame from the Stitch screens: a status strip above the simulation, and the simulation in the main area.
-- Icons are inline SVG. Images are inline SVG or files in `public/`. Nothing is loaded from Google or other hosts, as the standalone rule requires.
+- Icons are inline SVG. Images are inline SVG or files in `public/`. Fonts are self-hosted from `public/fonts/`, never from Google or another host. Libraries may come from the pinned, hashed CDNs in `0021`.
 
 ## What is not copied from the prototype
 

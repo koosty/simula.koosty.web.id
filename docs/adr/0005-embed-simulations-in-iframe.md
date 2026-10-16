@@ -1,6 +1,6 @@
 # Simulations are embedded in an iframe, not linked
 
-Each Halaman Simulasi embeds its simulation in an iframe instead of linking to the raw HTML file. The simulations are fully self-contained, with no external asset references and inline style and script, so an iframe has nothing to break on, and the pupil keeps their place with the site's navigation and back button intact.
+Each Halaman Simulasi embeds its simulation in an iframe instead of linking to the raw HTML file. The simulations are self-contained: inline style and script, and any library loaded from a pinned, hashed CDN (`0021`, which amends this rule). An iframe then has nothing to break on, and the pupil keeps their place with the site's navigation and back button intact.
 
 The alternative, navigating to or opening the raw file in a new tab, was rejected because it exposes a second URL serving identical content with no canonical link pointing at the Halaman Simulasi, leaving a crawler to guess which page is real. The Halaman Simulasi carries a canonical link to itself and the raw file is linked with `noindex` so it is the only indexed URL for a simulation.
 

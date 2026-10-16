@@ -98,7 +98,7 @@ Per type (all optional, default sensibly):
 - Animations use elapsed time (a `performance.now()` delta), not per-frame counters.
 - Embedded `<script type="application/json" id="widget-config">` per the type's schema (see `SCHEMAS.md`).
 - Visual style is NOT per-page: paste the token block and component classes from `VISUAL-STYLE.md` verbatim and use them everywhere. Layout varies per scene; palette, spacing, type, radius, motion, and control rendering do not.
-- External loads only from `unpkg.com`, `cdn.jsdelivr.net`, `cdnjs.cloudflare.com`. No fetch/XHR/WebSocket, no iframe/object/embed/form.
+- External loads only from `unpkg.com` and `cdnjs.cloudflare.com`. Each script pins an exact version in its URL and carries `integrity="sha384-…"` and `crossorigin="anonymous"` (docs/adr/0021). Fonts come from the site's `/fonts/` with system fallbacks. No fetch/XHR/WebSocket, no iframe/object/embed/form.
 - `type: "reading"` is a distinct output shape: two files per scene
   (`scenes/<id>.md` + `scenes/<id>.html`), no `widgetConfig`, no reset, no
   `{var}-slider` conventions. See `templates/reading-system.md`.

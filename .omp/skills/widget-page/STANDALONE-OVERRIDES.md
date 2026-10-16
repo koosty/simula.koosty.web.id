@@ -22,5 +22,5 @@ standalone pages with no parent. This file wins wherever they disagree:
   Pyodide stdout pattern for Python, diagram edge maths, procedural
   judgment/consequence/proxy/gating rules, and every Quality Checklist.
 - No byte budgets or host validators are enforced here, but keep pages
-  compact and self-contained (inline CSS/JS, system fonts).
+  compact and self-contained (inline CSS/JS; libraries from the pinned, hashed CDNs in docs/adr/0021; fonts from the site with system fallbacks).
 
